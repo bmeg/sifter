@@ -1,0 +1,11 @@
+
+class: PlayBook
+
+prep:
+  - cmd: tar xvzf $(inputs.inTar)
+
+inputs:
+  inTar:
+    type: Tarball
+
+steps:

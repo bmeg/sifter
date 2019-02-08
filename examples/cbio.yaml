@@ -2,10 +2,76 @@
 class: PlayBook
 
 prep:
-  - cmd: tar xvzf $(inputs.inTar)
-
-inputs:
-  inTar:
-    type: Tarball
+  - download: http://download.cbioportal.org/gbm_tcga_pub2013.tar.gz
+  - cmd: tar xvzf gbm_tcga_pub2013.tar.gz
+  - chdir: gbm_tcga_pub2013
 
 steps:
+  - input: data_clinical_patient.txt
+    desc: Loading Patient List
+    matrixLoad:
+      rowLabel: Case
+  - input: data_clinical_sample.txt
+    desc: Loading Patient List
+    matrixLoad:
+      rowLabel: Sample
+  - input: data_RNA_Seq_v2_expression_median.txt
+    desc: Loading Expression Data
+    matrixLoad:
+      rowLabel: RNASeq
+      rowPrefix: "RNA:"
+      exclude:
+        - "RNA:Hugo_Symbol"
+      transpose: True
+      indexCol: 1
+  - input: data_RNA_Seq_v2_expression_median.txt
+    desc: Connecting Expression Data
+    matrixLoad:
+      transpose: True
+      indexCol: True
+      indexCol: 1
+      noVertex: True
+      edge:
+        - to: 'RNA:{_gid}'
+          label: rna
+  - input: data_clinical_sample.txt
+    desc: Creating Subtypes and connecting samples
+    matrixLoad:
+      noVertex: True
+      edge:
+        - to: "{EXPRESSION_SUBTYPE}"
+          label: subtype
+      destVertex:
+        - gid: "{EXPRESSION_SUBTYPE}"
+          label: Subtype
+  - input: data_RNA_Seq_v2_expression_median.txt
+    desc: Building Gene List
+    matrixLoad:
+      columnInclude: Entrez_Gene_Id
+      rowLabel: Gene
+  - input: data_mutations_extended.txt
+    desc: Loading Mutations
+    matrixLoad:
+      rowSkip: 1
+      indexCol: -1
+      columnReplace:
+        - col: Matched_Norm_Sample_Barcode
+          pattern: '\-\d\d$'
+          replace: ''
+      edge:
+        - to: '{Matched_Norm_Sample_Barcode}'
+          label: variantIn
+        - to: '{Hugo_Symbol}'
+          label: effectsGene
+      columnExclude:
+        - ma_func.impact
+        - ma_fi.score
+        - MA_FI.score
+        - MA_Func.Impact
+        - MA:link.MSA
+        - MA:FImpact
+        - MA:protein.change
+        - MA:link.var
+        - MA:FIS
+        - MA:link.PDB
+      rowLabel: Variant

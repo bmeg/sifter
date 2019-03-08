@@ -1,0 +1,10 @@
+
+class: Playbook
+
+prep:
+  - argsCopy: input.manifest
+
+steps:
+  - desc: Loading Files
+    manifestLoad:
+      input: input.manifest

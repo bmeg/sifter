@@ -2,18 +2,25 @@
 package playbook
 
 import (
+  //"io"
   "github.com/ghodss/yaml"
   "path/filepath"
   "io/ioutil"
   "fmt"
+  "github.com/bmeg/grip/gripql"
 )
 
 type StepConfig interface {}
+
+type Loader interface {
+  Load() chan gripql.GraphElement
+}
 
 type PrepStep struct {
   Download string
   Command string
   Chdir string
+  ArgsCopy string
 }
 
 type EdgeCreationStep struct {
@@ -47,10 +54,14 @@ type MatrixLoadStep struct {
   ColumnExclude []string `json:"columnExclude"`
 }
 
-type ImportStep struct {
+type ManifestLoadStep struct {
   Input string `json:"input"`
+}
+
+type ImportStep struct {
   Desc  string `json:"desc"`
   MatrixLoad *MatrixLoadStep `json:"matrixLoad"`
+  ManifestLoad *ManifestLoadStep `json:"manifestLoad"`
 }
 
 type Playbook struct {

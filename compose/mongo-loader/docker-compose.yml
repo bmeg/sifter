@@ -1,0 +1,25 @@
+version: '3'
+services:
+
+  mongo:
+    image: mongo:3.6
+    container_name: mongo
+    volumes:
+       - ./mongo-data:/data/db
+
+  grip:
+    image: bmeg/grip
+    container_name: grip
+    # defaults to 8201
+    entrypoint: ["grip", "server"]
+    depends_on:
+      - mongo
+
+  etl:
+    image: bmeg/sifter
+    container_name: sifter
+    # use env_file to overwrite env values
+    # see SERVICE_ACCOUNT_EMAIL
+    depends_on:
+      - grip
+      - mongo

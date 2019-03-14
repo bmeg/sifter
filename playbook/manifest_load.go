@@ -50,7 +50,7 @@ func (ml *ManifestLoadStep) Load(man manager.Manager) chan gripql.GraphElement {
     }
 
     for _, l := range entries {
-      if vertexRE.Match(l) {
+      if edgeRE.Match(l) {
         url := ml.BaseURL + string(l)
         log.Printf("Download: %s", url)
         path, err := man.DownloadFile(url)

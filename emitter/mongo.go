@@ -27,6 +27,9 @@ var batchSize int = 100
 // NewMongoEmitter
 // url : "mongodb://localhost:27017"
 func NewMongoEmitter(uri string, graph string) (MongoEmitter, error) {
+
+	var database string = "gripdb"
+
 	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
 	if err != nil {
 		return MongoEmitter{}, err
@@ -34,10 +37,10 @@ func NewMongoEmitter(uri string, graph string) (MongoEmitter, error) {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	err = client.Connect(ctx)
 
-	addGraph(client, "grip", graph)
+	addGraph(client, database, graph)
 
-	edgeCol := edgeCollection(client, "grip", graph)
-	vertexCol := vertexCollection(client, "grip", graph)
+	edgeCol := edgeCollection(client, database, graph)
+	vertexCol := vertexCollection(client, database, graph)
 
 	edgeChan := make(chan bson.M, 100)
 	vertexChan := make(chan bson.M, 100)

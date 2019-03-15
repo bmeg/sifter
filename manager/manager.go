@@ -23,7 +23,7 @@ func Init(args []string) Manager {
 		log.Fatal(err)
 	}
 	//s := emitter.StdoutEmitter{}
-	s, _ := emitter.NewMongoEmitter("localhost:27017")
+	s, _ := emitter.NewMongoEmitter("localhost:27017", "test")
 	return Manager{dir, args, s}
 }
 

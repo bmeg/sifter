@@ -2,6 +2,7 @@ package emitter
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -25,7 +26,7 @@ var batchSize int = 100
 
 // NewMongoEmitter
 // url : "mongodb://localhost:27017"
-func NewMongoEmitter(uri string) (MongoEmitter, error) {
+func NewMongoEmitter(uri string, graph string) (MongoEmitter, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
 	if err != nil {
 		return MongoEmitter{}, err
@@ -33,8 +34,10 @@ func NewMongoEmitter(uri string) (MongoEmitter, error) {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	err = client.Connect(ctx)
 
-	edgeCol := client.Database("grip").Collection("database_edges")
-	vertexCol := client.Database("grip").Collection("database_vertices")
+	addGraph(client, "grip", graph)
+
+	edgeCol := edgeCollection(client, "grip", graph)
+	vertexCol := vertexCollection(client, "grip", graph)
 
 	edgeChan := make(chan bson.M, 100)
 	vertexChan := make(chan bson.M, 100)
@@ -48,54 +51,73 @@ func NewMongoEmitter(uri string) (MongoEmitter, error) {
 	return MongoEmitter{edgeCol, vertexCol, edgeChan, vertexChan, s}, nil
 }
 
-/*
-func addGraph(client mongo.Client, database string) {
+func boolPtr(a bool) *bool {
+	return &a
+}
+
+func addGraph(client *mongo.Client, database string, graph string) error {
 	graphs := client.Database(database).Collection("graphs")
-	err = graphs.Insert(bson.M{"_id": graph})
+	_, err := graphs.InsertOne(context.Background(), bson.M{"_id": graph})
 	if err != nil {
 		return fmt.Errorf("failed to insert graph %s: %v", graph, err)
 	}
 
-	e := ma.EdgeCollection(session, graph)
-	err := e.EnsureIndex(mgo.Index{
-		Key:        []string{"from"},
-		Unique:     false,
-		DropDups:   false,
-		Sparse:     false,
-		Background: true,
-	})
-	if err != nil {
-		return fmt.Errorf("failed create index for graph %s: %v", graph, err)
-	}
-	err = e.EnsureIndex(mgo.Index{
-		Key:        []string{"to"},
-		Unique:     false,
-		DropDups:   false,
-		Sparse:     false,
-		Background: true,
-	})
-	if err != nil {
-		return fmt.Errorf("failed create index for graph %s: %v", graph, err)
-	}
-	err = e.EnsureIndex(mgo.Index{
-		Key:        []string{"label"},
-		Unique:     false,
-		DropDups:   false,
-		Sparse:     false,
-		Background: true,
-	})
+	e := edgeCollection(client, database, graph)
+	eiv := e.Indexes()
+	_, err = eiv.CreateOne(
+		context.Background(),
+		mongo.IndexModel{
+			Keys: []string{"from"},
+			Options: &options.IndexOptions{
+				Unique:     boolPtr(false),
+				Sparse:     boolPtr(false),
+				Background: boolPtr(true),
+			},
+		})
 	if err != nil {
 		return fmt.Errorf("failed create index for graph %s: %v", graph, err)
 	}
 
-	v := ma.VertexCollection(session, graph)
-	err = v.EnsureIndex(mgo.Index{
-		Key:        []string{"label"},
-		Unique:     false,
-		DropDups:   false,
-		Sparse:     false,
-		Background: true,
-	})
+	_, err = eiv.CreateOne(
+		context.Background(),
+		mongo.IndexModel{
+			Keys: []string{"to"},
+			Options: &options.IndexOptions{
+				Unique:     boolPtr(false),
+				Sparse:     boolPtr(false),
+				Background: boolPtr(true),
+			},
+		})
+	if err != nil {
+		return fmt.Errorf("failed create index for graph %s: %v", graph, err)
+	}
+
+	_, err = eiv.CreateOne(
+		context.Background(),
+		mongo.IndexModel{
+			Keys: []string{"label"},
+			Options: &options.IndexOptions{
+				Unique:     boolPtr(false),
+				Sparse:     boolPtr(false),
+				Background: boolPtr(true),
+			},
+		})
+	if err != nil {
+		return fmt.Errorf("failed create index for graph %s: %v", graph, err)
+	}
+
+	v := vertexCollection(client, database, graph)
+	viv := v.Indexes()
+	_, err = viv.CreateOne(
+		context.Background(),
+		mongo.IndexModel{
+			Keys: []string{"label"},
+			Options: &options.IndexOptions{
+				Unique:     boolPtr(false),
+				Sparse:     boolPtr(false),
+				Background: boolPtr(true),
+			},
+		})
 	if err != nil {
 		return fmt.Errorf("failed create index for graph %s: %v", graph, err)
 	}
@@ -103,7 +125,14 @@ func addGraph(client mongo.Client, database string) {
 	return nil
 
 }
-*/
+
+func vertexCollection(session *mongo.Client, database string, graph string) *mongo.Collection {
+	return session.Database(database).Collection(fmt.Sprintf("%s_vertices", graph))
+}
+
+func edgeCollection(session *mongo.Client, database string, graph string) *mongo.Collection {
+	return session.Database(database).Collection(fmt.Sprintf("%s_edges", graph))
+}
 
 func docWriter(col *mongo.Collection, docChan chan bson.M, sn *sync.WaitGroup) {
 	defer sn.Done()

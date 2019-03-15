@@ -1,57 +1,56 @@
-
 package playbook
 
 import (
-  //"io"
-  "github.com/ghodss/yaml"
-  "path/filepath"
-  "io/ioutil"
-  "fmt"
-  "github.com/bmeg/grip/gripql"
+	//"io"
+	"fmt"
+	"io/ioutil"
+	"path/filepath"
+
+	"github.com/bmeg/grip/gripql"
+	"github.com/ghodss/yaml"
 )
 
-type StepConfig interface {}
+type StepConfig interface{}
 
 type Loader interface {
-  Load() chan gripql.GraphElement
+	Load() chan gripql.GraphElement
 }
 
 type PrepStep struct {
-  Download string
-  Command string
-  Chdir string
-  ArgsCopy string
+	Download string
+	Command  string
+	Chdir    string
+	ArgsCopy string
 }
 
 type EdgeCreationStep struct {
-  To string `json:"to"`
-  From string `json:"from"`
-  Label string `json:"label"`
+	To    string `json:"to"`
+	From  string `json:"from"`
+	Label string `json:"label"`
 }
 
 type DestVertexCreateStep struct {
-  Gid string `json:"gid"`
-  Label string `json:"label"`
+	Gid   string `json:"gid"`
+	Label string `json:"label"`
 }
 
 type ColumnReplaceStep struct {
-  Column string `json:"col"`
-  Pattern string `json:"pattern"`
-  Replace string `json:"replace"`
+	Column  string `json:"col"`
+	Pattern string `json:"pattern"`
+	Replace string `json:"replace"`
 }
 
 type ImportStep struct {
-  Desc  string `json:"desc"`
-  MatrixLoad *MatrixLoadStep `json:"matrixLoad"`
-  ManifestLoad *ManifestLoadStep `json:"manifestLoad"`
+	Desc         string            `json:"desc"`
+	MatrixLoad   *MatrixLoadStep   `json:"matrixLoad"`
+	ManifestLoad *ManifestLoadStep `json:"manifestLoad"`
 }
 
 type Playbook struct {
-  Class string `json:"class"`
-  Prep  []PrepStep `json:"prep"`
-  Steps  []ImportStep `json:steps`
+	Class string       `json:"class"`
+	Prep  []PrepStep   `json:"prep"`
+	Steps []ImportStep `json:steps`
 }
-
 
 // Parse parses a YAML doc into the given Config instance.
 func Parse(raw []byte, conf *Playbook) error {

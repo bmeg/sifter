@@ -3,7 +3,7 @@ info:
   title: Sifter API
   description: API Load and status API
   version: 1.0.0
-basePath: /v1
+basePath: /api
 paths:
   /manifest:
     post:
@@ -14,3 +14,27 @@ paths:
       responses:
         200:
           description: OK
+  /status:
+    get:
+      summary: Get Loading Status
+      responses:
+        '200':
+          description: Status Data
+          schema:
+            type: object
+            properties:
+              current:
+                type: string
+                description: Current element being loaded
+              stepNum:
+                type: integer
+                description: Current Step being loaded
+              stepTotal:
+                type: integer
+                description: Total number of steps
+              vertexCount:
+                type: integer
+                description: Number of vertices loaded so far
+              edgeCount:
+                type: integer
+                description: Number of edges loaded so far

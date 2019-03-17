@@ -8,7 +8,7 @@ API Load and status API
     Schemes:
       http
     Host: localhost
-    BasePath: /v1
+    BasePath: /api
     Version: 1.0.0
 
     Consumes:

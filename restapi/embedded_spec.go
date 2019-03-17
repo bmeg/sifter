@@ -24,7 +24,7 @@ func init() {
     "title": "Sifter API",
     "version": "1.0.0"
   },
-  "basePath": "/v1",
+  "basePath": "/api",
   "paths": {
     "/manifest": {
       "post": {
@@ -39,6 +39,41 @@ func init() {
           }
         }
       }
+    },
+    "/status": {
+      "get": {
+        "summary": "Get Loading Status",
+        "responses": {
+          "200": {
+            "description": "Status Data",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "current": {
+                  "description": "Current element being loaded",
+                  "type": "string"
+                },
+                "edgeCount": {
+                  "description": "Number of edges loaded so far",
+                  "type": "integer"
+                },
+                "stepNum": {
+                  "description": "Current Step being loaded",
+                  "type": "integer"
+                },
+                "stepTotal": {
+                  "description": "Total number of steps",
+                  "type": "integer"
+                },
+                "vertexCount": {
+                  "description": "Number of vertices loaded so far",
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }`))
@@ -49,7 +84,7 @@ func init() {
     "title": "Sifter API",
     "version": "1.0.0"
   },
-  "basePath": "/v1",
+  "basePath": "/api",
   "paths": {
     "/manifest": {
       "post": {
@@ -61,6 +96,41 @@ func init() {
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "summary": "Get Loading Status",
+        "responses": {
+          "200": {
+            "description": "Status Data",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "current": {
+                  "description": "Current element being loaded",
+                  "type": "string"
+                },
+                "edgeCount": {
+                  "description": "Number of edges loaded so far",
+                  "type": "integer"
+                },
+                "stepNum": {
+                  "description": "Current Step being loaded",
+                  "type": "integer"
+                },
+                "stepTotal": {
+                  "description": "Total number of steps",
+                  "type": "integer"
+                },
+                "vertexCount": {
+                  "description": "Number of vertices loaded so far",
+                  "type": "integer"
+                }
+              }
+            }
           }
         }
       }

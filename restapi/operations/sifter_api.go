@@ -37,6 +37,9 @@ func NewSifterAPI(spec *loads.Document) *SifterAPI {
 		BearerAuthenticator: security.BearerAuth,
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
+		GetStatusHandler: GetStatusHandlerFunc(func(params GetStatusParams) middleware.Responder {
+			return middleware.NotImplemented("operation GetStatus has not yet been implemented")
+		}),
 		PostManifestHandler: PostManifestHandlerFunc(func(params PostManifestParams) middleware.Responder {
 			return middleware.NotImplemented("operation PostManifest has not yet been implemented")
 		}),
@@ -71,6 +74,8 @@ type SifterAPI struct {
 	// JSONProducer registers a producer for a "application/json" mime type
 	JSONProducer runtime.Producer
 
+	// GetStatusHandler sets the operation handler for the get status operation
+	GetStatusHandler GetStatusHandler
 	// PostManifestHandler sets the operation handler for the post manifest operation
 	PostManifestHandler PostManifestHandler
 
@@ -134,6 +139,10 @@ func (o *SifterAPI) Validate() error {
 
 	if o.JSONProducer == nil {
 		unregistered = append(unregistered, "JSONProducer")
+	}
+
+	if o.GetStatusHandler == nil {
+		unregistered = append(unregistered, "GetStatusHandler")
 	}
 
 	if o.PostManifestHandler == nil {
@@ -237,6 +246,11 @@ func (o *SifterAPI) initHandlerCache() {
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/status"] = NewGetStatus(o.context, o.GetStatusHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)

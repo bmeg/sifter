@@ -32,11 +32,16 @@ func configureAPI(api *operations.SifterAPI) http.Handler {
 	api.JSONConsumer = runtime.JSONConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
-
-	api.PostManifestHandler = operations.PostManifestHandlerFunc(func(params operations.PostManifestParams) middleware.Responder {
-		return middleware.NotImplemented("operation .PostManifest has not yet been implemented")
-	})
-
+	if api.GetStatusHandler == nil {
+		api.GetStatusHandler = operations.GetStatusHandlerFunc(func(params operations.GetStatusParams) middleware.Responder {
+			return middleware.NotImplemented("operation .GetStatus has not yet been implemented")
+		})
+	}
+	if api.PostManifestHandler == nil {
+		api.PostManifestHandler = operations.PostManifestHandlerFunc(func(params operations.PostManifestParams) middleware.Responder {
+			return middleware.NotImplemented("operation .PostManifest has not yet been implemented")
+		})
+	}
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))

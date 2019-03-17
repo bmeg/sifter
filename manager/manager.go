@@ -17,14 +17,15 @@ type Manager struct {
 	Output  emitter.Emitter
 }
 
-func Init(args []string) Manager {
+func Init(args []string) (Manager, error) {
 	dir, err := ioutil.TempDir("./", "sifterwork_")
 	if err != nil {
 		log.Fatal(err)
 	}
 	//s := emitter.StdoutEmitter{}
-	s, _ := emitter.NewMongoEmitter("localhost:27017", "test")
-	return Manager{dir, args, s}
+	//s, _ := emitter.NewMongoEmitter("localhost:27017", "test")
+	s, err := emitter.NewGripEmitter("localhost:8202", "test")
+	return Manager{dir, args, s}, err
 }
 
 func (m Manager) Close() {

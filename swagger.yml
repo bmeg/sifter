@@ -1,0 +1,16 @@
+swagger: "2.0"
+info:
+  title: Sifter API
+  description: API Load and status API
+  version: 1.0.0
+basePath: /v1
+paths:
+  /manifest:
+    post:
+      summary: Starts loading a manifest
+      description: Post a manifest to start loading into GRIP
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK

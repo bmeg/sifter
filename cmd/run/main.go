@@ -18,7 +18,11 @@ var Cmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		pb := playbook.Playbook{}
-		man := manager.Init(args[1:])
+		man, err := manager.Init(args[1:])
+		if err != nil {
+			log.Printf("Error stating load manager: %s", err)
+			return err
+		}
 
 		playFile := args[0]
 

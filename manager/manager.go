@@ -48,3 +48,23 @@ func (m Manager) EmitVertex(v *gripql.Vertex) error {
 func (m Manager) EmitEdge(e *gripql.Edge) error {
 	return m.Output.EmitEdge(e)
 }
+
+func (m Manager) GetCurrent() string {
+	return "Stuff"
+}
+
+func (m Manager) GetVertexCount() int64 {
+	return 5
+}
+
+func (m Manager) GetEdgeCount() int64 {
+	return 5
+}
+
+func (m Manager) GetStepNum() int64 {
+	return 1
+}
+
+func (m Manager) GetStepTotal() int64 {
+	return 10
+}

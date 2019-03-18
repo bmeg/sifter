@@ -27,3 +27,6 @@ lint:
 
 swagger:
 	swagger generate server --exclude-main
+
+swagger-code:
+	go get -u github.com/go-swagger/go-swagger/cmd/swagger

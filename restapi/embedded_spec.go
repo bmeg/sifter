@@ -33,6 +33,16 @@ func init() {
           "application/json"
         ],
         "summary": "Starts loading a manifest",
+        "parameters": [
+          {
+            "name": "manifest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -93,6 +103,16 @@ func init() {
           "application/json"
         ],
         "summary": "Starts loading a manifest",
+        "parameters": [
+          {
+            "name": "manifest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"

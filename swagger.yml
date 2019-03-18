@@ -11,9 +11,16 @@ paths:
       description: Post a manifest to start loading into GRIP
       produces:
         - application/json
+      parameters:
+        - in: body
+          name: manifest
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: OK
+
   /status:
     get:
       summary: Get Loading Status

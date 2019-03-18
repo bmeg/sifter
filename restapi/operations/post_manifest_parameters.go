@@ -6,9 +6,11 @@ package operations
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"io"
 	"net/http"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 )
 
@@ -27,6 +29,12 @@ type PostManifestParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
+
+	/*
+	  Required: true
+	  In: body
+	*/
+	Manifest string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -38,6 +46,22 @@ func (o *PostManifestParams) BindRequest(r *http.Request, route *middleware.Matc
 
 	o.HTTPRequest = r
 
+	if runtime.HasBody(r) {
+		defer r.Body.Close()
+		var body string
+		if err := route.Consumer.Consume(r.Body, &body); err != nil {
+			if err == io.EOF {
+				res = append(res, errors.Required("manifest", "body"))
+			} else {
+				res = append(res, errors.NewParseError("manifest", "body", "", err))
+			}
+		} else {
+			// no validation required on inline body
+			o.Manifest = body
+		}
+	} else {
+		res = append(res, errors.Required("manifest", "body"))
+	}
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}

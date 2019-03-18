@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 
+	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/restapi"
 	"github.com/bmeg/sifter/restapi/operations"
 	"github.com/spf13/cobra"
@@ -31,6 +32,12 @@ var Cmd = &cobra.Command{
 
 		log.Printf("Starting server")
 
+
+		man, err := manager.Init([]string{})
+		if err != nil {
+			log.Fatalln(err)
+		}
+
 		api := operations.NewSifterAPI(swaggerSpec)
 
 		//restapi.StaticDir = webDir
@@ -47,7 +54,15 @@ var Cmd = &cobra.Command{
 		api.GetStatusHandler = operations.GetStatusHandlerFunc(
 			func(params operations.GetStatusParams) middleware.Responder {
 				log.Printf("Status requested")
-				return operations.NewGetStatusOK()
+				body := operations.GetStatusOKBody{
+					Current: man.GetCurrent(),
+					EdgeCount: man.GetEdgeCount(),
+					StepNum: man.GetStepNum(),
+					StepTotal: man.GetStepTotal(),
+					VertexCount: man.GetVertexCount(),
+				}
+				out := operations.NewGetStatusOK().WithPayload(&body)
+				return out
 			})
 		server.ConfigureAPI()
 

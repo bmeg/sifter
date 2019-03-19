@@ -1,4 +1,4 @@
-package playbook
+package manager
 
 import (
 	//"io"
@@ -16,11 +16,16 @@ type Loader interface {
 	Load() chan gripql.GraphElement
 }
 
-type PrepStep struct {
-	Download string
-	Command  string
-	Chdir    string
-	ArgsCopy string
+/*
+type CopyFilePrep struct {
+	Source string `json:"source"`
+	Dest   string `json:"dest"`
+}
+*/
+
+type DownloadStep struct {
+	Source string `json:"source"`
+	Dest   string `json:"dest"`
 }
 
 type EdgeCreationStep struct {
@@ -40,16 +45,18 @@ type ColumnReplaceStep struct {
 	Replace string `json:"replace"`
 }
 
-type ImportStep struct {
+type Step struct {
 	Desc         string            `json:"desc"`
 	MatrixLoad   *MatrixLoadStep   `json:"matrixLoad"`
 	ManifestLoad *ManifestLoadStep `json:"manifestLoad"`
+	Download     *DownloadStep     `json:"download"`
+	//CopyFile     *CopyFilePrep     `json:copyFile`
 }
 
 type Playbook struct {
-	Class string       `json:"class"`
-	Prep  []PrepStep   `json:"prep"`
-	Steps []ImportStep `json:steps`
+	Name  string `json:"name"`
+	Class string `json:"class"`
+	Steps []Step `json:steps`
 }
 
 // Parse parses a YAML doc into the given Config instance.

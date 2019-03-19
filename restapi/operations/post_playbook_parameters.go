@@ -14,18 +14,18 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 )
 
-// NewPostManifestParams creates a new PostManifestParams object
+// NewPostPlaybookParams creates a new PostPlaybookParams object
 // no default values defined in spec.
-func NewPostManifestParams() PostManifestParams {
+func NewPostPlaybookParams() PostPlaybookParams {
 
-	return PostManifestParams{}
+	return PostPlaybookParams{}
 }
 
-// PostManifestParams contains all the bound params for the post manifest operation
+// PostPlaybookParams contains all the bound params for the post playbook operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters PostManifest
-type PostManifestParams struct {
+// swagger:parameters PostPlaybook
+type PostPlaybookParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
@@ -40,8 +40,8 @@ type PostManifestParams struct {
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls.
 //
-// To ensure default values, the struct must have been initialized with NewPostManifestParams() beforehand.
-func (o *PostManifestParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+// To ensure default values, the struct must have been initialized with NewPostPlaybookParams() beforehand.
+func (o *PostPlaybookParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
 	o.HTTPRequest = r

@@ -35,14 +35,24 @@ func configureAPI(api *operations.SifterAPI) http.Handler {
 
 	api.JSONProducer = runtime.JSONProducer()
 
+	if api.GetPlaybookHandler == nil {
+		api.GetPlaybookHandler = operations.GetPlaybookHandlerFunc(func(params operations.GetPlaybookParams) middleware.Responder {
+			return middleware.NotImplemented("operation .GetPlaybook has not yet been implemented")
+		})
+	}
 	if api.GetStatusHandler == nil {
 		api.GetStatusHandler = operations.GetStatusHandlerFunc(func(params operations.GetStatusParams) middleware.Responder {
 			return middleware.NotImplemented("operation .GetStatus has not yet been implemented")
 		})
 	}
-	if api.PostManifestHandler == nil {
-		api.PostManifestHandler = operations.PostManifestHandlerFunc(func(params operations.PostManifestParams) middleware.Responder {
-			return middleware.NotImplemented("operation .PostManifest has not yet been implemented")
+	if api.PostPlaybookHandler == nil {
+		api.PostPlaybookHandler = operations.PostPlaybookHandlerFunc(func(params operations.PostPlaybookParams) middleware.Responder {
+			return middleware.NotImplemented("operation .PostPlaybook has not yet been implemented")
+		})
+	}
+	if api.PostPlaybookIDHandler == nil {
+		api.PostPlaybookIDHandler = operations.PostPlaybookIDHandlerFunc(func(params operations.PostPlaybookIDParams) middleware.Responder {
+			return middleware.NotImplemented("operation .PostPlaybookID has not yet been implemented")
 		})
 	}
 

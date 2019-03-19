@@ -1,64 +1,80 @@
 package manager
 
 import (
-	"io/ioutil"
+	"fmt"
 	"log"
-	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/bmeg/grip/gripql"
 	"github.com/bmeg/sifter/emitter"
-	"github.com/hashicorp/go-getter"
 )
 
 type Manager struct {
-	Workdir string
-	Args    []string
-	Output  emitter.Emitter
+	Playbooks   map[string]Playbook
+	Output      emitter.Emitter
+	Status      string
+	VertexCount int64
+	EdgeCount   int64
 }
 
-func Init(args []string) (Manager, error) {
-	dir, err := ioutil.TempDir("./", "sifterwork_")
-	if err != nil {
-		log.Fatal(err)
+func Init(playbookDirs ...string) (*Manager, error) {
+	pbMap := map[string]Playbook{}
+	for _, pbDir := range playbookDirs {
+		g, _ := filepath.Glob(filepath.Join(pbDir, "*.yaml"))
+		for _, p := range g {
+			pb := Playbook{}
+			if err := ParseFile(p, &pb); err != nil {
+				log.Printf("Parse Error: %s", err)
+			} else {
+				pbMap[pb.Name] = pb
+			}
+		}
 	}
+
 	//s := emitter.StdoutEmitter{}
 	//s, _ := emitter.NewMongoEmitter("localhost:27017", "test")
 	s, err := emitter.NewGripEmitter("localhost:8202", "test")
-	return Manager{dir, args, s}, err
+	return &Manager{pbMap, s, "Start", 0, 0}, err
 }
 
-func (m Manager) Close() {
-	os.RemoveAll(m.Workdir)
+func (m *Manager) Close() {
+
 }
 
-func (m Manager) Path(p string) string {
-	return path.Join(m.Workdir, p)
+func (m *Manager) GetPlaybooks() []Playbook {
+	out := make([]Playbook, 0, len(m.Playbooks))
+	for _, i := range m.Playbooks {
+		out = append(out, i)
+	}
+	return out
 }
 
-func (m Manager) DownloadFile(url string) (string, error) {
-	d := m.Path(path.Base(url))
-	return d, getter.GetFile(d, url+"?archive=false")
-}
-
-func (m Manager) EmitVertex(v *gripql.Vertex) error {
+func (m *Manager) EmitVertex(v *gripql.Vertex) error {
+	m.VertexCount += 1
 	return m.Output.EmitVertex(v)
 }
 
-func (m Manager) EmitEdge(e *gripql.Edge) error {
+func (m *Manager) EmitEdge(e *gripql.Edge) error {
+	m.EdgeCount += 1
 	return m.Output.EmitEdge(e)
 }
 
-func (m Manager) GetCurrent() string {
-	return "Stuff"
+func (m *Manager) Printf(s string, x ...interface{}) {
+	c := fmt.Sprintf(s, x...)
+	log.Printf(c)
+	m.Status = c
 }
 
-func (m Manager) GetVertexCount() int64 {
-	return 5
+func (m *Manager) GetCurrent() string {
+	return m.Status
+}
+
+func (m *Manager) GetVertexCount() int64 {
+	return m.VertexCount
 }
 
 func (m Manager) GetEdgeCount() int64 {
-	return 5
+	return m.EdgeCount
 }
 
 func (m Manager) GetStepNum() int64 {

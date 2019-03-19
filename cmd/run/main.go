@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/bmeg/sifter/manager"
-	"github.com/bmeg/sifter/playbook"
 
 	"github.com/spf13/cobra"
 )
@@ -17,8 +16,7 @@ var Cmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		pb := playbook.Playbook{}
-		man, err := manager.Init(args[1:])
+		man, err := manager.Init()
 		if err != nil {
 			log.Printf("Error stating load manager: %s", err)
 			return err
@@ -27,16 +25,10 @@ var Cmd = &cobra.Command{
 		playFile := args[0]
 
 		fmt.Printf("Starting: %s\n", playFile)
-
-		if err := playbook.ParseFile(playFile, &pb); err != nil {
+		pb := manager.Playbook{}
+		if err := manager.ParseFile(playFile, &pb); err != nil {
 			log.Printf("%s", err)
 		}
-
-		for _, prep := range pb.Prep {
-			prep.Run(man)
-		}
-
-		//fmt.Printf("%s", pb)
 
 		for _, step := range pb.Steps {
 			if step.MatrixLoad != nil {
@@ -48,7 +40,7 @@ var Cmd = &cobra.Command{
 			}
 			if step.ManifestLoad != nil {
 				log.Printf("Manifest %s\n", step.Desc)
-				elemStream := step.ManifestLoad.Load(man)
+				elemStream := step.ManifestLoad.Load(man.NewTask(map[string]interface{}{}))
 				for elem := range elemStream {
 					log.Printf("%s", elem)
 				}

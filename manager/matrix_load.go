@@ -1,4 +1,4 @@
-package playbook
+package manager
 
 import (
 	"github.com/bmeg/grip/gripql"

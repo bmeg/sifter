@@ -5,7 +5,7 @@ info:
   version: 1.0.0
 basePath: /api
 paths:
-  /manifest:
+  /playbook:
     post:
       summary: Starts loading a manifest
       description: Post a manifest to start loading into GRIP
@@ -23,6 +23,44 @@ paths:
       responses:
         200:
           description: OK
+    get:
+      summary: Get list of playbooks
+      produces:
+         - application/json
+      responses:
+        200:
+          description: List of playbooks
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of playbook
+  /playbook/{id}:
+    post:
+      summary: Post a run request
+      parameters:
+        - in: path
+          name: id
+          type: string
+          required: True
+        - in: body
+          name: params
+          schema:
+            type: string
+
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+
+
 
   /status:
     get:

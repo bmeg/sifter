@@ -12,13 +12,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/bmeg/sifter/playbook"
-
 	loads "github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
 )
 
 var webDir string = "./static"
+var playbookDir string = "./playbooks"
 var port int = 8090
 
 // Cmd is the declaration of the command line
@@ -35,7 +34,7 @@ var Cmd = &cobra.Command{
 
 		log.Printf("Starting server")
 
-		man, err := manager.Init([]string{})
+		man, err := manager.Init()
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -47,15 +46,25 @@ var Cmd = &cobra.Command{
 		// set the port this service will be run on
 		server.Port = port
 
-		api.PostManifestHandler = operations.PostManifestHandlerFunc(
-			func(params operations.PostManifestParams) middleware.Responder {
-				fmt.Printf("Manifest Posted:\n%s", params.Manifest)
+		api.PostPlaybookHandler = operations.PostPlaybookHandlerFunc(
+			func(params operations.PostPlaybookParams) middleware.Responder {
+				fmt.Printf("Playbook Posted:\n%s", params.Manifest)
 				pbTxt := []byte(params.Manifest)
-				pb := playbook.Playbook{}
-				if err := playbook.Parse(pbTxt, &pb); err != nil {
+				pb := manager.Playbook{}
+				if err := manager.Parse(pbTxt, &pb); err != nil {
 					log.Printf("Parse Error: %s", err)
 				}
-				return operations.NewPostManifestOK()
+				return operations.NewPostPlaybookOK()
+			})
+
+		api.GetPlaybookHandler = operations.GetPlaybookHandlerFunc(
+			func(params operations.GetPlaybookParams) middleware.Responder {
+				body := []*operations.GetPlaybookOKBodyItems0{}
+				for _, i := range man.GetPlaybooks() {
+					body = append(body, &operations.GetPlaybookOKBodyItems0{Name: i.Name})
+				}
+				out := operations.NewGetPlaybookOK().WithPayload(body)
+				return out
 			})
 
 		api.GetStatusHandler = operations.GetStatusHandlerFunc(
@@ -96,6 +105,7 @@ var Cmd = &cobra.Command{
 
 func init() {
 	flags := Cmd.Flags()
-	flags.StringVar(&webDir, "webdir", webDir, "Web Server Content Dir")
+	flags.StringVar(&webDir, "web", webDir, "Web Server Content Dir")
+	flags.StringVar(&playbookDir, "playbooks", playbookDir, "Playbook Dir")
 	flags.IntVar(&port, "port", port, "Server Port")
 }

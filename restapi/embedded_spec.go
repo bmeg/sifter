@@ -26,7 +26,30 @@ func init() {
   },
   "basePath": "/api",
   "paths": {
-    "/manifest": {
+    "/playbook": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Get list of playbooks",
+        "responses": {
+          "200": {
+            "description": "List of playbooks",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "Name of playbook",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "description": "Post a manifest to start loading into GRIP",
         "consumes": [
@@ -50,6 +73,39 @@ func init() {
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/playbook/{id}": {
+      "post": {
+        "summary": "Post a run request",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "params",
+            "in": "body",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
@@ -100,7 +156,30 @@ func init() {
   },
   "basePath": "/api",
   "paths": {
-    "/manifest": {
+    "/playbook": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Get list of playbooks",
+        "responses": {
+          "200": {
+            "description": "List of playbooks",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "Name of playbook",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "description": "Post a manifest to start loading into GRIP",
         "consumes": [
@@ -124,6 +203,39 @@ func init() {
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/playbook/{id}": {
+      "post": {
+        "summary": "Post a run request",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "params",
+            "in": "body",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }

@@ -38,11 +38,17 @@ func NewSifterAPI(spec *loads.Document) *SifterAPI {
 		UrlformConsumer:     runtime.DiscardConsumer,
 		TxtConsumer:         runtime.TextConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
+		GetPlaybookHandler: GetPlaybookHandlerFunc(func(params GetPlaybookParams) middleware.Responder {
+			return middleware.NotImplemented("operation GetPlaybook has not yet been implemented")
+		}),
 		GetStatusHandler: GetStatusHandlerFunc(func(params GetStatusParams) middleware.Responder {
 			return middleware.NotImplemented("operation GetStatus has not yet been implemented")
 		}),
-		PostManifestHandler: PostManifestHandlerFunc(func(params PostManifestParams) middleware.Responder {
-			return middleware.NotImplemented("operation PostManifest has not yet been implemented")
+		PostPlaybookHandler: PostPlaybookHandlerFunc(func(params PostPlaybookParams) middleware.Responder {
+			return middleware.NotImplemented("operation PostPlaybook has not yet been implemented")
+		}),
+		PostPlaybookIDHandler: PostPlaybookIDHandlerFunc(func(params PostPlaybookIDParams) middleware.Responder {
+			return middleware.NotImplemented("operation PostPlaybookID has not yet been implemented")
 		}),
 	}
 }
@@ -77,10 +83,14 @@ type SifterAPI struct {
 	// JSONProducer registers a producer for a "application/json" mime type
 	JSONProducer runtime.Producer
 
+	// GetPlaybookHandler sets the operation handler for the get playbook operation
+	GetPlaybookHandler GetPlaybookHandler
 	// GetStatusHandler sets the operation handler for the get status operation
 	GetStatusHandler GetStatusHandler
-	// PostManifestHandler sets the operation handler for the post manifest operation
-	PostManifestHandler PostManifestHandler
+	// PostPlaybookHandler sets the operation handler for the post playbook operation
+	PostPlaybookHandler PostPlaybookHandler
+	// PostPlaybookIDHandler sets the operation handler for the post playbook ID operation
+	PostPlaybookIDHandler PostPlaybookIDHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -148,12 +158,20 @@ func (o *SifterAPI) Validate() error {
 		unregistered = append(unregistered, "JSONProducer")
 	}
 
+	if o.GetPlaybookHandler == nil {
+		unregistered = append(unregistered, "GetPlaybookHandler")
+	}
+
 	if o.GetStatusHandler == nil {
 		unregistered = append(unregistered, "GetStatusHandler")
 	}
 
-	if o.PostManifestHandler == nil {
-		unregistered = append(unregistered, "PostManifestHandler")
+	if o.PostPlaybookHandler == nil {
+		unregistered = append(unregistered, "PostPlaybookHandler")
+	}
+
+	if o.PostPlaybookIDHandler == nil {
+		unregistered = append(unregistered, "PostPlaybookIDHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -260,12 +278,22 @@ func (o *SifterAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/playbook"] = NewGetPlaybook(o.context, o.GetPlaybookHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/status"] = NewGetStatus(o.context, o.GetStatusHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/manifest"] = NewPostManifest(o.context, o.PostManifestHandler)
+	o.handlers["POST"]["/playbook"] = NewPostPlaybook(o.context, o.PostPlaybookHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/playbook/{id}"] = NewPostPlaybookID(o.context, o.PostPlaybookIDHandler)
 
 }
 

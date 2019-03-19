@@ -34,7 +34,7 @@ var Cmd = &cobra.Command{
 
 		log.Printf("Starting server")
 
-		man, err := manager.Init()
+		man, err := manager.Init(playbookDir)
 		if err != nil {
 			log.Fatalln(err)
 		}

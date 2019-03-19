@@ -1,5 +1,6 @@
 
 class: PlayBook
+name: CBioPortal
 
 prep:
   - download: http://download.cbioportal.org/gbm_tcga_pub2013.tar.gz

@@ -1,5 +1,6 @@
 
 class: Playbook
+name: GraphManifest
 
 prep:
   - argsCopy: input.manifest

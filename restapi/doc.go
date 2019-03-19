@@ -12,7 +12,8 @@ API Load and status API
     Version: 1.0.0
 
     Consumes:
-    - application/json
+    - application/x-www-form-urlencoded
+    - text/plain
 
     Produces:
     - application/json

@@ -8,4 +8,5 @@ steps:
   - desc: Loading Files
     manifestLoad:
       input: input.manifest
-      baseURL: "https://storage.googleapis.com/data.bmeg.io/bmeg-data.20190228/"
+      #baseURL: "https://storage.googleapis.com/data.bmeg.io/bmeg-data.20190228/"
+      baseURL: "http://localhost:8080/"

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/bmeg/sifter/manager"
@@ -10,6 +11,8 @@ import (
 
 	"net/http"
 	"strings"
+
+	"github.com/bmeg/sifter/playbook"
 
 	loads "github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
@@ -32,7 +35,6 @@ var Cmd = &cobra.Command{
 
 		log.Printf("Starting server")
 
-
 		man, err := manager.Init([]string{})
 		if err != nil {
 			log.Fatalln(err)
@@ -47,7 +49,12 @@ var Cmd = &cobra.Command{
 
 		api.PostManifestHandler = operations.PostManifestHandlerFunc(
 			func(params operations.PostManifestParams) middleware.Responder {
-				log.Printf("Manifest Posted")
+				fmt.Printf("Manifest Posted:\n%s", params.Manifest)
+				pbTxt := []byte(params.Manifest)
+				pb := playbook.Playbook{}
+				if err := playbook.Parse(pbTxt, &pb); err != nil {
+					log.Printf("Parse Error: %s", err)
+				}
 				return operations.NewPostManifestOK()
 			})
 
@@ -55,10 +62,10 @@ var Cmd = &cobra.Command{
 			func(params operations.GetStatusParams) middleware.Responder {
 				log.Printf("Status requested")
 				body := operations.GetStatusOKBody{
-					Current: man.GetCurrent(),
-					EdgeCount: man.GetEdgeCount(),
-					StepNum: man.GetStepNum(),
-					StepTotal: man.GetStepTotal(),
+					Current:     man.GetCurrent(),
+					EdgeCount:   man.GetEdgeCount(),
+					StepNum:     man.GetStepNum(),
+					StepTotal:   man.GetStepTotal(),
 					VertexCount: man.GetVertexCount(),
 				}
 				out := operations.NewGetStatusOK().WithPayload(&body)

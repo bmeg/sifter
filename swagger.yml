@@ -11,6 +11,9 @@ paths:
       description: Post a manifest to start loading into GRIP
       produces:
         - application/json
+      consumes:
+        - text/plain
+        - application/x-www-form-urlencoded
       parameters:
         - in: body
           name: manifest

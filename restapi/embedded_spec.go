@@ -29,6 +29,10 @@ func init() {
     "/manifest": {
       "post": {
         "description": "Post a manifest to start loading into GRIP",
+        "consumes": [
+          "text/plain",
+          "application/x-www-form-urlencoded"
+        ],
         "produces": [
           "application/json"
         ],
@@ -99,6 +103,10 @@ func init() {
     "/manifest": {
       "post": {
         "description": "Post a manifest to start loading into GRIP",
+        "consumes": [
+          "text/plain",
+          "application/x-www-form-urlencoded"
+        ],
         "produces": [
           "application/json"
         ],

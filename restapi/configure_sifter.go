@@ -29,9 +29,12 @@ func configureAPI(api *operations.SifterAPI) http.Handler {
 	// Example:
 	// api.Logger = log.Printf
 
-	api.JSONConsumer = runtime.JSONConsumer()
+	api.UrlformConsumer = runtime.DiscardConsumer
+
+	api.TxtConsumer = runtime.TextConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
+
 	if api.GetStatusHandler == nil {
 		api.GetStatusHandler = operations.GetStatusHandlerFunc(func(params operations.GetStatusParams) middleware.Responder {
 			return middleware.NotImplemented("operation .GetStatus has not yet been implemented")
@@ -42,6 +45,7 @@ func configureAPI(api *operations.SifterAPI) http.Handler {
 			return middleware.NotImplemented("operation .PostManifest has not yet been implemented")
 		})
 	}
+
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))

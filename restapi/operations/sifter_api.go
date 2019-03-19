@@ -35,7 +35,8 @@ func NewSifterAPI(spec *loads.Document) *SifterAPI {
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-		JSONConsumer:        runtime.JSONConsumer(),
+		UrlformConsumer:     runtime.DiscardConsumer,
+		TxtConsumer:         runtime.TextConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
 		GetStatusHandler: GetStatusHandlerFunc(func(params GetStatusParams) middleware.Responder {
 			return middleware.NotImplemented("operation GetStatus has not yet been implemented")
@@ -68,8 +69,10 @@ type SifterAPI struct {
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 
-	// JSONConsumer registers a consumer for a "application/json" mime type
-	JSONConsumer runtime.Consumer
+	// UrlformConsumer registers a consumer for a "application/x-www-form-urlencoded" mime type
+	UrlformConsumer runtime.Consumer
+	// TxtConsumer registers a consumer for a "text/plain" mime type
+	TxtConsumer runtime.Consumer
 
 	// JSONProducer registers a producer for a "application/json" mime type
 	JSONProducer runtime.Producer
@@ -133,8 +136,12 @@ func (o *SifterAPI) RegisterFormat(name string, format strfmt.Format, validator 
 func (o *SifterAPI) Validate() error {
 	var unregistered []string
 
-	if o.JSONConsumer == nil {
-		unregistered = append(unregistered, "JSONConsumer")
+	if o.UrlformConsumer == nil {
+		unregistered = append(unregistered, "UrlformConsumer")
+	}
+
+	if o.TxtConsumer == nil {
+		unregistered = append(unregistered, "TxtConsumer")
 	}
 
 	if o.JSONProducer == nil {
@@ -182,8 +189,11 @@ func (o *SifterAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consume
 	for _, mt := range mediaTypes {
 		switch mt {
 
-		case "application/json":
-			result["application/json"] = o.JSONConsumer
+		case "application/x-www-form-urlencoded":
+			result["application/x-www-form-urlencoded"] = o.UrlformConsumer
+
+		case "text/plain":
+			result["text/plain"] = o.TxtConsumer
 
 		}
 

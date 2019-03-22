@@ -1,7 +1,7 @@
 package manager
 
 import (
-	"github.com/bmeg/grip/gripql"
+	"fmt"
 )
 
 type MatrixLoadStep struct {
@@ -18,8 +18,6 @@ type MatrixLoadStep struct {
 	ColumnExclude []string               `json:"columnExclude"`
 }
 
-func (ml *MatrixLoadStep) Load() chan gripql.GraphElement {
-	out := make(chan gripql.GraphElement, 10)
-	close(out)
-	return out
+func (ml *MatrixLoadStep) Run(man *Task) error {
+	return fmt.Errorf("Not Implemented")
 }

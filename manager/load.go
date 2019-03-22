@@ -90,3 +90,13 @@ func ParseFile(relpath string, conf *Playbook) error {
 	}
 	return nil
 }
+
+// ParseDataFile parses input file
+func ParseDataFile(path string, data *map[string]interface{}) error {
+
+	raw, err := ioutil.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("failed to read data at path %s: \n%v", path, err)
+	}
+	return yaml.Unmarshal(raw, data)
+}

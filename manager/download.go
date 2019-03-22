@@ -1,7 +1,19 @@
 package manager
 
+import (
+	"log"
+
+	"github.com/bmeg/sifter/evaluate"
+)
+
 func (ps *DownloadStep) Run(task *Task) error {
-	_, err := task.DownloadFile(ps.Source)
+	srcURL, err := evaluate.ExpressionString(ps.Source, task.Inputs)
+	if err != nil {
+		log.Printf("Expression failed: %s", err)
+		return err
+	}
+	task.Printf("Downloading: %s", srcURL)
+	_, err = task.DownloadFile(ps.Source)
 	return err
 }
 

@@ -2,6 +2,7 @@ package manager
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"path/filepath"
 
@@ -38,7 +39,7 @@ func Init(playbookDirs ...string) (*Manager, error) {
 }
 
 func (m *Manager) Close() {
-
+	m.Output.Close()
 }
 
 func (m *Manager) GetPlaybooks() []Playbook {
@@ -73,14 +74,22 @@ func (m *Manager) GetVertexCount() int64 {
 	return m.VertexCount
 }
 
-func (m Manager) GetEdgeCount() int64 {
+func (m *Manager) GetEdgeCount() int64 {
 	return m.EdgeCount
 }
 
-func (m Manager) GetStepNum() int64 {
+func (m *Manager) GetStepNum() int64 {
 	return 1
 }
 
-func (m Manager) GetStepTotal() int64 {
+func (m *Manager) GetStepTotal() int64 {
 	return 10
+}
+
+func (m *Manager) NewRuntime() Runtime {
+	dir, err := ioutil.TempDir("./", "sifterwork_")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return Runtime{m, dir}
 }

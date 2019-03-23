@@ -95,6 +95,7 @@ var Cmd = &cobra.Command{
 
 		// serve API
 		defer server.Shutdown()
+		defer man.Close()
 		if err := server.Serve(); err != nil {
 			log.Fatalln(err)
 		}

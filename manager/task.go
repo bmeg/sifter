@@ -1,8 +1,6 @@
 package manager
 
 import (
-	"io/ioutil"
-	"log"
 	"path"
 
 	"github.com/bmeg/grip/gripql"
@@ -15,21 +13,17 @@ type Task struct {
 	Inputs  map[string]interface{}
 }
 
-func (man *Manager) NewTask(inputs map[string]interface{}) *Task {
-	dir, err := ioutil.TempDir("./", "sifterwork_")
-	if err != nil {
-		log.Fatal(err)
-	}
-	return &Task{man, dir, inputs}
-}
-
 func (m *Task) Path(p string) string {
 	return path.Join(m.Workdir, p)
 }
 
-func (m *Task) DownloadFile(url string) (string, error) {
-	d := m.Path(path.Base(url))
-	return d, getter.GetFile(d, url+"?archive=false")
+func (m *Task) DownloadFile(url string, dest string) (string, error) {
+	if dest == "" {
+		dest = m.Path(path.Base(url))
+	} else {
+		dest = m.Path(dest)
+	}
+	return dest, getter.GetFile(dest, url+"?archive=false")
 }
 
 func (m *Task) EmitVertex(v *gripql.Vertex) error {

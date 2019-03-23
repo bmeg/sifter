@@ -12,8 +12,9 @@ func (ps *DownloadStep) Run(task *Task) error {
 		log.Printf("Expression failed: %s", err)
 		return err
 	}
-	task.Printf("Downloading: %s", srcURL)
-	_, err = task.DownloadFile(ps.Source)
+	dstPath, err := evaluate.ExpressionString(ps.Dest, task.Inputs)
+	task.Printf("Downloading: %s to %s", srcURL, dstPath)
+	_, err = task.DownloadFile(srcURL, dstPath)
 	return err
 }
 

@@ -5,6 +5,7 @@ import (
 
 	"github.com/bmeg/golib"
 	gripUtil "github.com/bmeg/grip/util"
+	"github.com/bmeg/sifter/evaluate"
 )
 
 type ManifestLoadStep struct {
@@ -15,9 +16,9 @@ type ManifestLoadStep struct {
 var vertexRE *regexp.Regexp = regexp.MustCompile(".Vertex.json")
 var edgeRE *regexp.Regexp = regexp.MustCompile(".Edge.json")
 
-func (ml *ManifestLoadStep) Run(man *Task) error {
-	man.Printf("loading manifest %s", ml.Input)
-	lines, err := golib.ReadFileLines(man.Path(ml.Input))
+func (ml *ManifestLoadStep) Run(task *Task) error {
+	task.Printf("loading manifest %s", ml.Input)
+	lines, err := golib.ReadFileLines(task.Path(ml.Input))
 	if err != nil {
 		return err
 	}
@@ -28,17 +29,19 @@ func (ml *ManifestLoadStep) Run(man *Task) error {
 		}
 	}
 
+	baseURL, err := evaluate.ExpressionString(ml.BaseURL, task.Inputs)
+
 	for _, l := range entries {
 		if vertexRE.Match(l) {
-			url := ml.BaseURL + string(l)
-			man.Printf("Download: %s", url)
-			path, err := man.DownloadFile(url)
+			url := baseURL + string(l)
+			task.Printf("Download: %s", url)
+			path, err := task.DownloadFile(url, "")
 			if err != nil {
-				man.Printf("Download Failure: %s %s", url, err)
+				task.Printf("Download Failure: %s %s", url, err)
 			} else {
-				man.Printf("Loading %s", path)
+				task.Printf("Loading %s", path)
 				for v := range gripUtil.StreamVerticesFromFile(path) {
-					man.EmitVertex(v)
+					task.EmitVertex(v)
 				}
 			}
 		}
@@ -46,15 +49,15 @@ func (ml *ManifestLoadStep) Run(man *Task) error {
 
 	for _, l := range entries {
 		if edgeRE.Match(l) {
-			url := ml.BaseURL + string(l)
-			man.Printf("Download: %s", url)
-			path, err := man.DownloadFile(url)
+			url := baseURL + string(l)
+			task.Printf("Download: %s", url)
+			path, err := task.DownloadFile(url, "")
 			if err != nil {
-				man.Printf("Download Failure: %s %s", url, err)
+				task.Printf("Download Failure: %s %s", url, err)
 			} else {
-				man.Printf("Loading %s", path)
+				task.Printf("Loading %s", path)
 				for v := range gripUtil.StreamEdgesFromFile(path) {
-					man.EmitEdge(v)
+					task.EmitEdge(v)
 				}
 			}
 		}

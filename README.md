@@ -1,34 +1,34 @@
 
-#Sifter
-##ETL server for GRIP
+# Sifter
+## ETL server for GRIP
 
 Sifter is a prototype web service that manages load requests into a GRIP instance.
 
 This is a prototype that is still under development.
 
 
-##Dev notes
+## Dev notes
 Example server setup
 
-###Build website
+### Build website
 ```
 cd interface
 npm i
 npm run build
 ```
 
-###Quick static file server
+### Quick static file server
 ```bash
 go get github.com/m3ng9i/ran
 ./bin/ran -r test-data/ -l
 ```
 
-###Turn on Mongo Server
+### Turn on Mongo Server
 ```bash
 docker run -p 27017:27017 mongo
 ```
 
-###GRIP server
+### GRIP server
 Mongo Config File `grip.yml`
 ```yaml
 Database: mongo
@@ -43,12 +43,12 @@ Start GRIP Server
 ./bin/grip server -c grip.yml
 ```
 
-###Sifter Server
+### Sifter Server
 ```bash
 ./bin/sifter server --playbooks src/github.com/bmeg/sifter/examples/ --web src/github.com/bmeg/sifter/interface/build
 ```
 
-###Post import request
+### Post import request
 
 Manifest file example (saved in `test-data` directory served by ran):
 ```

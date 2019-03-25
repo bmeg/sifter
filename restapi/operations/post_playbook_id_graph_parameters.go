@@ -15,22 +15,27 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 )
 
-// NewPostPlaybookIDParams creates a new PostPlaybookIDParams object
+// NewPostPlaybookIDGraphParams creates a new PostPlaybookIDGraphParams object
 // no default values defined in spec.
-func NewPostPlaybookIDParams() PostPlaybookIDParams {
+func NewPostPlaybookIDGraphParams() PostPlaybookIDGraphParams {
 
-	return PostPlaybookIDParams{}
+	return PostPlaybookIDGraphParams{}
 }
 
-// PostPlaybookIDParams contains all the bound params for the post playbook ID operation
+// PostPlaybookIDGraphParams contains all the bound params for the post playbook ID graph operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters PostPlaybookID
-type PostPlaybookIDParams struct {
+// swagger:parameters PostPlaybookIDGraph
+type PostPlaybookIDGraphParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
+	/*
+	  Required: true
+	  In: path
+	*/
+	Graph string
 	/*
 	  Required: true
 	  In: path
@@ -45,11 +50,16 @@ type PostPlaybookIDParams struct {
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls.
 //
-// To ensure default values, the struct must have been initialized with NewPostPlaybookIDParams() beforehand.
-func (o *PostPlaybookIDParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+// To ensure default values, the struct must have been initialized with NewPostPlaybookIDGraphParams() beforehand.
+func (o *PostPlaybookIDGraphParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
 	o.HTTPRequest = r
+
+	rGraph, rhkGraph, _ := route.Params.GetOK("graph")
+	if err := o.bindGraph(rGraph, rhkGraph, route.Formats); err != nil {
+		res = append(res, err)
+	}
 
 	rID, rhkID, _ := route.Params.GetOK("id")
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
@@ -72,8 +82,23 @@ func (o *PostPlaybookIDParams) BindRequest(r *http.Request, route *middleware.Ma
 	return nil
 }
 
+// bindGraph binds and validates parameter Graph from path.
+func (o *PostPlaybookIDGraphParams) bindGraph(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: true
+	// Parameter is provided by construction from the route
+
+	o.Graph = raw
+
+	return nil
+}
+
 // bindID binds and validates parameter ID from path.
-func (o *PostPlaybookIDParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *PostPlaybookIDGraphParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]

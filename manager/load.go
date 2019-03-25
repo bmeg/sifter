@@ -100,3 +100,8 @@ func ParseDataFile(path string, data *map[string]interface{}) error {
 	}
 	return yaml.Unmarshal(raw, data)
 }
+
+// ParseDataString parses input string
+func ParseDataString(raw string, data *map[string]interface{}) error {
+	return yaml.Unmarshal([]byte(raw), data)
+}

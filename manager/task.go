@@ -9,6 +9,7 @@ import (
 
 type Task struct {
 	Manager *Manager
+	Runtime *Runtime
 	Workdir string
 	Inputs  map[string]interface{}
 }
@@ -27,11 +28,11 @@ func (m *Task) DownloadFile(url string, dest string) (string, error) {
 }
 
 func (m *Task) EmitVertex(v *gripql.Vertex) error {
-	return m.Manager.EmitVertex(v)
+	return m.Runtime.EmitVertex(v)
 }
 
 func (m *Task) EmitEdge(e *gripql.Edge) error {
-	return m.Manager.EmitEdge(e)
+	return m.Runtime.EmitEdge(e)
 }
 
 func (m *Task) Printf(s string, x ...interface{}) {

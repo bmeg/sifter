@@ -80,6 +80,25 @@ var Cmd = &cobra.Command{
 				out := operations.NewGetStatusOK().WithPayload(&body)
 				return out
 			})
+		api.PostPlaybookIDGraphHandler = operations.PostPlaybookIDGraphHandlerFunc(
+			func(params operations.PostPlaybookIDGraphParams) middleware.Responder {
+				inputs := map[string]interface{}{}
+				if err := manager.ParseDataString(params.Params, &inputs); err != nil {
+					log.Printf("Error on input %s : %s", params.Params, err)
+					//TODO: return error here
+					out := operations.NewPostPlaybookIDGraphOK()
+					return out
+				}
+				log.Printf("Starting import playbook: %s %s", params.ID, inputs)
+				if pb, ok := man.GetPlaybook(params.ID); ok {
+					go pb.Execute(man, params.Graph, inputs)
+					out := operations.NewPostPlaybookIDGraphOK()
+					return out
+				}
+				//TODO: return error here
+				out := operations.NewPostPlaybookIDGraphOK()
+				return out
+			})
 		server.ConfigureAPI()
 
 		origHandler := server.GetHandler()

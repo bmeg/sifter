@@ -77,13 +77,23 @@ func init() {
         }
       }
     },
-    "/playbook/{id}": {
+    "/playbook/{id}/{graph}": {
       "post": {
+        "consumes": [
+          "text/plain",
+          "application/x-www-form-urlencoded"
+        ],
         "summary": "Post a run request",
         "parameters": [
           {
             "type": "string",
             "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "graph",
             "in": "path",
             "required": true
           },
@@ -207,13 +217,23 @@ func init() {
         }
       }
     },
-    "/playbook/{id}": {
+    "/playbook/{id}/{graph}": {
       "post": {
+        "consumes": [
+          "text/plain",
+          "application/x-www-form-urlencoded"
+        ],
         "summary": "Post a run request",
         "parameters": [
           {
             "type": "string",
             "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "graph",
             "in": "path",
             "required": true
           },

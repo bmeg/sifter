@@ -12,9 +12,10 @@ import (
 	"strings"
 )
 
-// PostPlaybookIDURL generates an URL for the post playbook ID operation
-type PostPlaybookIDURL struct {
-	ID string
+// PostPlaybookIDGraphURL generates an URL for the post playbook ID graph operation
+type PostPlaybookIDGraphURL struct {
+	Graph string
+	ID    string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -24,7 +25,7 @@ type PostPlaybookIDURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *PostPlaybookIDURL) WithBasePath(bp string) *PostPlaybookIDURL {
+func (o *PostPlaybookIDGraphURL) WithBasePath(bp string) *PostPlaybookIDGraphURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -32,21 +33,28 @@ func (o *PostPlaybookIDURL) WithBasePath(bp string) *PostPlaybookIDURL {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *PostPlaybookIDURL) SetBasePath(bp string) {
+func (o *PostPlaybookIDGraphURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
 // Build a url path and query string
-func (o *PostPlaybookIDURL) Build() (*url.URL, error) {
+func (o *PostPlaybookIDGraphURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/playbook/{id}"
+	var _path = "/playbook/{id}/{graph}"
+
+	graph := o.Graph
+	if graph != "" {
+		_path = strings.Replace(_path, "{graph}", graph, -1)
+	} else {
+		return nil, errors.New("graph is required on PostPlaybookIDGraphURL")
+	}
 
 	id := o.ID
 	if id != "" {
 		_path = strings.Replace(_path, "{id}", id, -1)
 	} else {
-		return nil, errors.New("id is required on PostPlaybookIDURL")
+		return nil, errors.New("id is required on PostPlaybookIDGraphURL")
 	}
 
 	_basePath := o._basePath
@@ -59,7 +67,7 @@ func (o *PostPlaybookIDURL) Build() (*url.URL, error) {
 }
 
 // Must is a helper function to panic when the url builder returns an error
-func (o *PostPlaybookIDURL) Must(u *url.URL, err error) *url.URL {
+func (o *PostPlaybookIDGraphURL) Must(u *url.URL, err error) *url.URL {
 	if err != nil {
 		panic(err)
 	}
@@ -70,17 +78,17 @@ func (o *PostPlaybookIDURL) Must(u *url.URL, err error) *url.URL {
 }
 
 // String returns the string representation of the path with query string
-func (o *PostPlaybookIDURL) String() string {
+func (o *PostPlaybookIDGraphURL) String() string {
 	return o.Must(o.Build()).String()
 }
 
 // BuildFull builds a full url with scheme, host, path and query string
-func (o *PostPlaybookIDURL) BuildFull(scheme, host string) (*url.URL, error) {
+func (o *PostPlaybookIDGraphURL) BuildFull(scheme, host string) (*url.URL, error) {
 	if scheme == "" {
-		return nil, errors.New("scheme is required for a full url on PostPlaybookIDURL")
+		return nil, errors.New("scheme is required for a full url on PostPlaybookIDGraphURL")
 	}
 	if host == "" {
-		return nil, errors.New("host is required for a full url on PostPlaybookIDURL")
+		return nil, errors.New("host is required for a full url on PostPlaybookIDGraphURL")
 	}
 
 	base, err := o.Build()
@@ -94,6 +102,6 @@ func (o *PostPlaybookIDURL) BuildFull(scheme, host string) (*url.URL, error) {
 }
 
 // StringFull returns the string representation of a complete url
-func (o *PostPlaybookIDURL) StringFull(scheme, host string) string {
+func (o *PostPlaybookIDGraphURL) StringFull(scheme, host string) string {
 	return o.Must(o.BuildFull(scheme, host)).String()
 }

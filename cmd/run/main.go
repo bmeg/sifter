@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var graph string = "test-data"
+
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
 	Use:   "run",
@@ -38,11 +40,12 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
-		pb.Execute(man, inputs)
+		pb.Execute(man, graph, inputs)
 		return nil
 	},
 }
 
 func init() {
-
+	flags := Cmd.Flags()
+	flags.StringVar(&graph, "graph", graph, "Destination Graph")
 }

@@ -47,8 +47,8 @@ func NewSifterAPI(spec *loads.Document) *SifterAPI {
 		PostPlaybookHandler: PostPlaybookHandlerFunc(func(params PostPlaybookParams) middleware.Responder {
 			return middleware.NotImplemented("operation PostPlaybook has not yet been implemented")
 		}),
-		PostPlaybookIDHandler: PostPlaybookIDHandlerFunc(func(params PostPlaybookIDParams) middleware.Responder {
-			return middleware.NotImplemented("operation PostPlaybookID has not yet been implemented")
+		PostPlaybookIDGraphHandler: PostPlaybookIDGraphHandlerFunc(func(params PostPlaybookIDGraphParams) middleware.Responder {
+			return middleware.NotImplemented("operation PostPlaybookIDGraph has not yet been implemented")
 		}),
 	}
 }
@@ -89,8 +89,8 @@ type SifterAPI struct {
 	GetStatusHandler GetStatusHandler
 	// PostPlaybookHandler sets the operation handler for the post playbook operation
 	PostPlaybookHandler PostPlaybookHandler
-	// PostPlaybookIDHandler sets the operation handler for the post playbook ID operation
-	PostPlaybookIDHandler PostPlaybookIDHandler
+	// PostPlaybookIDGraphHandler sets the operation handler for the post playbook ID graph operation
+	PostPlaybookIDGraphHandler PostPlaybookIDGraphHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -170,8 +170,8 @@ func (o *SifterAPI) Validate() error {
 		unregistered = append(unregistered, "PostPlaybookHandler")
 	}
 
-	if o.PostPlaybookIDHandler == nil {
-		unregistered = append(unregistered, "PostPlaybookIDHandler")
+	if o.PostPlaybookIDGraphHandler == nil {
+		unregistered = append(unregistered, "PostPlaybookIDGraphHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -293,7 +293,7 @@ func (o *SifterAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/playbook/{id}"] = NewPostPlaybookID(o.context, o.PostPlaybookIDHandler)
+	o.handlers["POST"]["/playbook/{id}/{graph}"] = NewPostPlaybookIDGraph(o.context, o.PostPlaybookIDGraphHandler)
 
 }
 

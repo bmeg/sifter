@@ -38,7 +38,7 @@ paths:
                 name:
                   type: string
                   description: Name of playbook
-  /playbook/{id}:
+  /playbook/{id}/{graph}:
     post:
       summary: Post a run request
       parameters:
@@ -46,11 +46,17 @@ paths:
           name: id
           type: string
           required: True
+        - in: path
+          name: graph
+          type: string
+          required: True
         - in: body
           name: params
           schema:
             type: string
-
+      consumes:
+        - text/plain
+        - application/x-www-form-urlencoded
       responses:
         200:
           description: OK

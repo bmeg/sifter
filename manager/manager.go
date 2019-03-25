@@ -6,13 +6,11 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/bmeg/grip/gripql"
 	"github.com/bmeg/sifter/emitter"
 )
 
 type Manager struct {
 	Playbooks   map[string]Playbook
-	Output      emitter.Emitter
 	Status      string
 	VertexCount int64
 	EdgeCount   int64
@@ -31,15 +29,17 @@ func Init(playbookDirs ...string) (*Manager, error) {
 			}
 		}
 	}
-
-	//s := emitter.StdoutEmitter{}
-	//s, _ := emitter.NewMongoEmitter("localhost:27017", "test")
-	s, err := emitter.NewGripEmitter("localhost:8202", "test")
-	return &Manager{pbMap, s, "Start", 0, 0}, err
+	return &Manager{pbMap, "Start", 0, 0}, nil
 }
 
 func (m *Manager) Close() {
-	m.Output.Close()
+	//TODO: Cleanup the runtimes
+}
+
+func (m *Manager) NewEmitter(graph string) (emitter.Emitter, error) {
+	//s := emitter.StdoutEmitter{}
+	//s, _ := emitter.NewMongoEmitter("localhost:27017", "test")
+	return emitter.NewGripEmitter("localhost:8202", graph)
 }
 
 func (m *Manager) GetPlaybooks() []Playbook {
@@ -50,14 +50,9 @@ func (m *Manager) GetPlaybooks() []Playbook {
 	return out
 }
 
-func (m *Manager) EmitVertex(v *gripql.Vertex) error {
-	m.VertexCount += 1
-	return m.Output.EmitVertex(v)
-}
-
-func (m *Manager) EmitEdge(e *gripql.Edge) error {
-	m.EdgeCount += 1
-	return m.Output.EmitEdge(e)
+func (m *Manager) GetPlaybook(name string) (Playbook, bool) {
+	out, ok := m.Playbooks[name]
+	return out, ok
 }
 
 func (m *Manager) Printf(s string, x ...interface{}) {
@@ -86,10 +81,11 @@ func (m *Manager) GetStepTotal() int64 {
 	return 10
 }
 
-func (m *Manager) NewRuntime() Runtime {
+func (m *Manager) NewRuntime(graph string) (Runtime, error) {
 	dir, err := ioutil.TempDir("./", "sifterwork_")
 	if err != nil {
 		log.Fatal(err)
 	}
-	return Runtime{m, dir}
+	e, err := emitter.NewGripEmitter("localhost:8202", graph)
+	return Runtime{m, e, dir}, err
 }

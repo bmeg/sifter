@@ -55,6 +55,7 @@ func loadFunc(conn gripql.Client, elemChan chan *gripql.GraphElement, done sync.
 	if err := conn.BulkAdd(elemChan); err != nil {
 		log.Printf("bulk add error: %v", err)
 	}
+	log.Printf("Bulk Write done")
 	done.Done()
 }
 

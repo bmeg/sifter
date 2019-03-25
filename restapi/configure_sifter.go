@@ -50,9 +50,9 @@ func configureAPI(api *operations.SifterAPI) http.Handler {
 			return middleware.NotImplemented("operation .PostPlaybook has not yet been implemented")
 		})
 	}
-	if api.PostPlaybookIDHandler == nil {
-		api.PostPlaybookIDHandler = operations.PostPlaybookIDHandlerFunc(func(params operations.PostPlaybookIDParams) middleware.Responder {
-			return middleware.NotImplemented("operation .PostPlaybookID has not yet been implemented")
+	if api.PostPlaybookIDGraphHandler == nil {
+		api.PostPlaybookIDGraphHandler = operations.PostPlaybookIDGraphHandlerFunc(func(params operations.PostPlaybookIDGraphParams) middleware.Responder {
+			return middleware.NotImplemented("operation .PostPlaybookIDGraph has not yet been implemented")
 		})
 	}
 

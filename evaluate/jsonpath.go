@@ -9,7 +9,7 @@ import (
 	"github.com/oliveagle/jsonpath"
 )
 
-var EXP_RE_STRING, _ = regexp.Compile(`$\.(.*)`)
+var EXP_RE_STRING, _ = regexp.Compile(`\$\.(.*)`)
 
 func ExpressionString(expression string, inputs map[string]interface{}) (string, error) {
 
@@ -20,7 +20,7 @@ func ExpressionString(expression string, inputs map[string]interface{}) (string,
 
 	log.Printf("JSON PATH: %s", expression)
 
-	res, err := jsonpath.JsonPathLookup(inputs, expression)
+	res, err := jsonpath.JsonPathLookup(map[string]interface{}{"input":inputs}, expression)
 	if err != nil {
 		return "", err
 	}

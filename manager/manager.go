@@ -10,15 +10,21 @@ import (
 )
 
 type Manager struct {
+	Config      Config
 	Playbooks   map[string]Playbook
 	Status      string
 	VertexCount int64
 	EdgeCount   int64
 }
 
-func Init(playbookDirs ...string) (*Manager, error) {
+type Config struct {
+	GripServer   string
+	PlaybookDirs []string
+}
+
+func Init(config Config) (*Manager, error) {
 	pbMap := map[string]Playbook{}
-	for _, pbDir := range playbookDirs {
+	for _, pbDir := range config.PlaybookDirs {
 		g, _ := filepath.Glob(filepath.Join(pbDir, "*.yaml"))
 		for _, p := range g {
 			pb := Playbook{}
@@ -29,21 +35,23 @@ func Init(playbookDirs ...string) (*Manager, error) {
 			}
 		}
 	}
-	return &Manager{pbMap, "Start", 0, 0}, nil
+	return &Manager{config, pbMap, "Start", 0, 0}, nil
 }
 
 func (m *Manager) Close() {
 	//TODO: Cleanup the runtimes
 }
 
+/*
 func (m *Manager) NewEmitter(graph string) (emitter.Emitter, error) {
 	//s := emitter.StdoutEmitter{}
 	//s, _ := emitter.NewMongoEmitter("localhost:27017", "test")
-	return emitter.NewGripEmitter("localhost:8202", graph)
+	return emitter.NewGripEmitter(m.Config.GripServer, graph)
 }
+*/
 
 func (m *Manager) GraphExists(graph string) bool {
-	o, _ := emitter.GripGraphExists("localhost:8202", graph)
+	o, _ := emitter.GripGraphExists(m.Config.GripServer, graph)
 	return o
 }
 
@@ -91,6 +99,6 @@ func (m *Manager) NewRuntime(graph string) (Runtime, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	e, err := emitter.NewGripEmitter("localhost:8202", graph)
+	e, err := emitter.NewGripEmitter(m.Config.GripServer, graph)
 	return Runtime{m, e, dir}, err
 }

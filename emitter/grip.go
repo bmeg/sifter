@@ -16,24 +16,24 @@ type GripEmitter struct {
 }
 
 func GripGraphExists(host string, graph string) (bool, error) {
-		conn, err := gripql.Connect(rpc.ConfigWithDefaults(host), true)
-		if err != nil {
-			return false, err
-		}
+	conn, err := gripql.Connect(rpc.ConfigWithDefaults(host), true)
+	if err != nil {
+		return false, err
+	}
 
-		resp, err := conn.ListGraphs()
-		if err != nil {
-			return false, err
-		}
+	resp, err := conn.ListGraphs()
+	if err != nil {
+		return false, err
+	}
 
-		found := false
-		for _, g := range resp.Graphs {
-			if graph == g {
-				found = true
-			}
+	found := false
+	for _, g := range resp.Graphs {
+		if graph == g {
+			found = true
 		}
-		conn.Close()
-		return found, nil
+	}
+	conn.Close()
+	return found, nil
 }
 
 // NewGripEmitter
@@ -63,7 +63,7 @@ func NewGripEmitter(host string, graph string) (*GripEmitter, error) {
 		}
 	}
 
-	elemChan := make(chan *gripql.GraphElement)
+	elemChan := make(chan *gripql.GraphElement, 1000)
 	done := sync.WaitGroup{}
 	done.Add(1)
 	go loadFunc(conn, elemChan, &done)

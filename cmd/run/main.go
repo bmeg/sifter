@@ -10,6 +10,7 @@ import (
 
 var graph string = "test-data"
 var runOnce bool = false
+var gripServer string = "localhost:8202"
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
@@ -18,7 +19,7 @@ var Cmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		man, err := manager.Init()
+		man, err := manager.Init(manager.Config{GripServer: gripServer})
 		if err != nil {
 			log.Printf("Error stating load manager: %s", err)
 			return err
@@ -56,4 +57,5 @@ func init() {
 	flags := Cmd.Flags()
 	flags.BoolVar(&runOnce, "run-once", false, "Only Run if database is unintialized")
 	flags.StringVar(&graph, "graph", graph, "Destination Graph")
+	flags.StringVar(&gripServer, "server", gripServer, "GRIP Server")
 }

@@ -5,9 +5,9 @@ name: GraphManifest
 steps:
   - desc: Download Manifest
     download:
-      source: $(input.url)
+      source: $.input.url
       dest: input.manifest
   - desc: Loading Files
     manifestLoad:
       input: input.manifest
-      baseURL: $(input.baseURL)
+      baseURL: $.input.baseURL

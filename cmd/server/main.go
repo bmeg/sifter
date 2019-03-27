@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"strings"
 
 	loads "github.com/go-openapi/loads"
@@ -19,6 +21,7 @@ import (
 var webDir string = "./static"
 var playbookDir string = "./playbooks"
 var port int = 8090
+var proxy string = ""
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
@@ -101,11 +104,23 @@ var Cmd = &cobra.Command{
 			})
 		server.ConfigureAPI()
 
+		var proxyHandler http.Handler = nil
+		if proxy != "" {
+			u, err := url.Parse(proxy)
+			if err != nil {
+				log.Printf("Base Proxy Address")
+				return err
+			}
+			proxyHandler = httputil.NewSingleHostReverseProxy(u)
+		}
+
 		origHandler := server.GetHandler()
 		server.SetHandler(
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if strings.HasPrefix(r.URL.Path, "/api") {
 					origHandler.ServeHTTP(w, r)
+				} else if strings.HasPrefix(r.URL.Path, "/v1") {
+					proxyHandler.ServeHTTP(w, r)
 				} else {
 					http.FileServer(http.Dir(webDir)).ServeHTTP(w, r)
 				}
@@ -118,7 +133,6 @@ var Cmd = &cobra.Command{
 		if err := server.Serve(); err != nil {
 			log.Fatalln(err)
 		}
-
 		return nil
 	},
 }
@@ -127,5 +141,6 @@ func init() {
 	flags := Cmd.Flags()
 	flags.StringVar(&webDir, "web", webDir, "Web Server Content Dir")
 	flags.StringVar(&playbookDir, "playbooks", playbookDir, "Playbook Dir")
+	flags.StringVar(&proxy, "proxy", proxy, "Proxy")
 	flags.IntVar(&port, "port", port, "Server Port")
 }

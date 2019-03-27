@@ -20,7 +20,7 @@ func ExpressionString(expression string, inputs map[string]interface{}) (string,
 
 	log.Printf("JSON PATH: %s", expression)
 
-	res, err := jsonpath.JsonPathLookup(map[string]interface{}{"input":inputs}, expression)
+	res, err := jsonpath.JsonPathLookup(map[string]interface{}{"input": inputs}, expression)
 	if err != nil {
 		return "", err
 	}

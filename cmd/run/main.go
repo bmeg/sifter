@@ -9,6 +9,7 @@ import (
 )
 
 var graph string = "test-data"
+var runOnce bool = false
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
@@ -23,6 +24,12 @@ var Cmd = &cobra.Command{
 			return err
 		}
 		defer man.Close()
+
+		if runOnce {
+			if man.GraphExists(graph) {
+				return nil
+			}
+		}
 
 		playFile := args[0]
 		dataFile := args[1]
@@ -47,5 +54,6 @@ var Cmd = &cobra.Command{
 
 func init() {
 	flags := Cmd.Flags()
+	flags.BoolVar(&runOnce, "run-once", false, "Only Run if database is unintialized")
 	flags.StringVar(&graph, "graph", graph, "Destination Graph")
 }

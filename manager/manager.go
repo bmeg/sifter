@@ -42,6 +42,11 @@ func (m *Manager) NewEmitter(graph string) (emitter.Emitter, error) {
 	return emitter.NewGripEmitter("localhost:8202", graph)
 }
 
+func (m *Manager) GraphExists(graph string) bool {
+	o, _ := emitter.GripGraphExists("localhost:8202", graph)
+	return o
+}
+
 func (m *Manager) GetPlaybooks() []Playbook {
 	out := make([]Playbook, 0, len(m.Playbooks))
 	for _, i := range m.Playbooks {

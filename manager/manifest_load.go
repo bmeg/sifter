@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"os"
 	"regexp"
 
 	"github.com/bmeg/golib"
@@ -43,6 +44,7 @@ func (ml *ManifestLoadStep) Run(task *Task) error {
 				for v := range gripUtil.StreamVerticesFromFile(path) {
 					task.EmitVertex(v)
 				}
+				os.Remove(path)
 			}
 		}
 	}
@@ -59,6 +61,7 @@ func (ml *ManifestLoadStep) Run(task *Task) error {
 				for v := range gripUtil.StreamEdgesFromFile(path) {
 					task.EmitEdge(v)
 				}
+				os.Remove(path)
 			}
 		}
 	}

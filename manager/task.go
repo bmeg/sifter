@@ -39,7 +39,7 @@ func (m *Task) DownloadFile(src string, dest string) (string, error) {
 				return "", err
 			}
 			//"s3::http://127.0.0.1:9000/test-bucket/hello.txt?aws_access_key_id=KEYID&aws_access_key_secret=SECRETKEY&region=us-east-2"
-			src = fmt.Sprintf("s3::%s/%s/%s", s3_endpoint, u.Host, u.Path)
+			src = fmt.Sprintf("s3::%s/%s%s", s3_endpoint, u.Host, u.Path)
 		}
 		if s3_key != "" && s3_secret != "" {
 			src = src + fmt.Sprintf("?aws_access_key_id=%s&aws_access_key_secret=%s", s3_key, s3_secret)

@@ -3,6 +3,7 @@ Database: mongo
 Server:
     WorkDir: /workdir
     HostName: 0.0.0.0
+    ContentDir: /site
 
 MongoDB:
     URL: mongo:27017

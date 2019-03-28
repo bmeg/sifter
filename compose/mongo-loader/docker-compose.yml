@@ -18,9 +18,10 @@ services:
       - mongo
     volumes:
       - "./grip_config.yml:/grip_config.yml"
+      - "./site:/site"
       - "/workdir"
     ports:
-      - "8201"
+      - "80:8201"
       - "8202"
 
   sifter:

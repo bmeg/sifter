@@ -21,6 +21,7 @@ func (ml *ManifestLoadStep) Run(task *Task) error {
 	task.Printf("loading manifest %s", ml.Input)
 	lines, err := golib.ReadFileLines(task.Path(ml.Input))
 	if err != nil {
+		task.Printf("Manifest failed to download")
 		return err
 	}
 	entries := [][]byte{}

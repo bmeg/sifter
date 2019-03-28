@@ -43,7 +43,11 @@ var Cmd = &cobra.Command{
 		}
 
 		task := run.NewTask(map[string]interface{}{})
-		task.DownloadFile(manifestURL, "input.manifest")
+		_, err = task.DownloadFile(manifestURL, "input.manifest")
+		if err != nil {
+			log.Printf("Error downloading manifest %s : %s", manifestURL, err)
+			return err
+		}
 
 		mani := manager.ManifestLoadStep{
 			Input:   "input.manifest",

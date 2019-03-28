@@ -6,20 +6,31 @@ services:
     container_name: mongo
     volumes:
        - ./mongo-data:/data/db
+    ports:
+       - "27017"
 
   grip:
     image: bmeg/grip
     container_name: grip
     # defaults to 8201
-    entrypoint: ["grip", "server"]
+    entrypoint: ["grip", "server", "-c", "/grip_config.yml"]
     depends_on:
       - mongo
+    volumes:
+      - "./grip_config.yml:/grip_config.yml"
+      - "/workdir"
+    ports:
+      - "8201"
+      - "8202"
 
-  etl:
+  sifter:
     image: bmeg/sifter
     container_name: sifter
-    # use env_file to overwrite env values
-    # see SERVICE_ACCOUNT_EMAIL
+    command: ["sifter", "manifest", "--run-once", "--server", "mongodb://mongo:27017", "--workdir", "/sifter", "$SIFTER_MANIFEST", "$SIFTER_BASEURL"]
+    volumes:
+      - "./sifter:/sifter"
+    env_file:
+      - sifter.env
     depends_on:
       - grip
       - mongo

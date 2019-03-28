@@ -8,6 +8,7 @@ RUN cd /go/src/github.com/bmeg/sifter && make hub-build
 
 # final stage
 FROM alpine
+RUN apk add ca-certificates
 WORKDIR /data
 VOLUME /data
 ENV PATH="/app:${PATH}"

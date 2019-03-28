@@ -1,0 +1,9 @@
+Database: mongo
+
+Server:
+    WorkDir: /workdir
+    HostName: 0.0.0.0
+
+MongoDB:
+    URL: mongo:27017
+    UseAggregationPipeline: true

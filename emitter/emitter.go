@@ -2,6 +2,8 @@ package emitter
 
 import (
 	"fmt"
+	"log"
+	"net/url"
 
 	"github.com/bmeg/grip/gripql"
 )
@@ -12,17 +14,26 @@ type Emitter interface {
 	Close()
 }
 
-type StdoutEmitter struct {
+func GraphExists(server string, graph string) (bool, error) {
+	u, _ := url.Parse(server)
+
+	if u.Scheme == "grip" {
+		log.Printf("Checking %s for %s", u.Host, graph)
+		return GripGraphExists(u.Host, graph)
+	}
+	if u.Scheme == "mongodb" {
+		return MongoGraphExists(server, graph)
+	}
+	return false, fmt.Errorf("Unknown driver: %s", u.Scheme)
 }
 
-func (s StdoutEmitter) EmitVertex(v *gripql.Vertex) error {
-	fmt.Printf("%s\n", v)
-	return nil
+func NewEmitter(server string, graph string) (Emitter, error) {
+	u, _ := url.Parse(server)
+	if u.Scheme == "grip" {
+		return NewGripEmitter(u.Host, graph)
+	}
+	if u.Scheme == "mongodb" {
+		return NewMongoEmitter(server, graph)
+	}
+	return nil, fmt.Errorf("Unknown driver: %s", u.Scheme)
 }
-
-func (s StdoutEmitter) EmitEdge(e *gripql.Edge) error {
-	fmt.Printf("%s\n", e)
-	return nil
-}
-
-func (s StdoutEmitter) Close() {}

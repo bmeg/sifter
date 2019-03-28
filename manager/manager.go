@@ -20,6 +20,7 @@ type Manager struct {
 type Config struct {
 	GripServer   string
 	PlaybookDirs []string
+	WorkDir      string
 }
 
 func Init(config Config) (*Manager, error) {
@@ -51,7 +52,10 @@ func (m *Manager) NewEmitter(graph string) (emitter.Emitter, error) {
 */
 
 func (m *Manager) GraphExists(graph string) bool {
-	o, _ := emitter.GripGraphExists(m.Config.GripServer, graph)
+	o, err := emitter.GraphExists(m.Config.GripServer, graph)
+	if err != nil {
+		log.Printf("Failed to load graph driver: %s", err)
+	}
 	return o
 }
 
@@ -95,10 +99,13 @@ func (m *Manager) GetStepTotal() int64 {
 }
 
 func (m *Manager) NewRuntime(graph string) (Runtime, error) {
-	dir, err := ioutil.TempDir("./", "sifterwork_")
+	dir, err := ioutil.TempDir(m.Config.WorkDir, "sifterwork_")
 	if err != nil {
 		log.Fatal(err)
 	}
-	e, err := emitter.NewGripEmitter(m.Config.GripServer, graph)
+	e, err := emitter.NewEmitter(m.Config.GripServer, graph)
+	if err != nil {
+		log.Printf("Emitter init failed: %s", err)
+	}
 	return Runtime{m, e, dir}, err
 }

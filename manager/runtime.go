@@ -18,7 +18,9 @@ func (run *Runtime) NewTask(inputs map[string]interface{}) *Task {
 }
 
 func (run *Runtime) Close() {
-	run.output.Close()
+	if run.output != nil {
+		run.output.Close()
+	}
 }
 
 func (run *Runtime) EmitVertex(v *gripql.Vertex) error {

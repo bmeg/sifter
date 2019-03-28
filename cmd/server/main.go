@@ -22,7 +22,8 @@ var webDir string = "./static"
 var playbookDir string = "./playbooks"
 var port int = 8090
 var proxy string = ""
-var gripServer string = "localhost:8202"
+var workDir string = "./"
+var gripServer string = "grip://localhost:8202"
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
@@ -38,7 +39,7 @@ var Cmd = &cobra.Command{
 
 		log.Printf("Starting server")
 
-		man, err := manager.Init(manager.Config{GripServer: gripServer, PlaybookDirs: []string{playbookDir}})
+		man, err := manager.Init(manager.Config{GripServer: gripServer, WorkDir: workDir, PlaybookDirs: []string{playbookDir}})
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -144,5 +145,6 @@ func init() {
 	flags.StringVar(&playbookDir, "playbooks", playbookDir, "Playbook Dir")
 	flags.StringVar(&proxy, "proxy", proxy, "Proxy")
 	flags.StringVar(&gripServer, "server", gripServer, "GRIP Server")
+	flags.StringVar(&workDir, "workdir", workDir, "Workdir")
 	flags.IntVar(&port, "port", port, "Server Port")
 }

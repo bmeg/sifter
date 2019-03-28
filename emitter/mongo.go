@@ -23,12 +23,38 @@ type MongoEmitter struct {
 }
 
 var batchSize int = 100
+var database string = "gripdb"
+
+func MongoGraphExists(uri string, graph string) (bool, error) {
+
+	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
+	if err != nil {
+		return false, err
+	}
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+
+	err = client.Connect(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	graphs := client.Database(database).Collection("graphs")
+	cur, err := graphs.Find(ctx, bson.M{"_id": graph})
+	if err != nil {
+		log.Printf("Graph find failed: %s", err)
+		return false, err
+	}
+	out := false
+	defer cur.Close(ctx)
+	for cur.Next(ctx) {
+		out = true
+	}
+	return out, nil
+}
 
 // NewMongoEmitter
 // url : "mongodb://localhost:27017"
 func NewMongoEmitter(uri string, graph string) (MongoEmitter, error) {
-
-	var database string = "gripdb"
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
 	if err != nil {

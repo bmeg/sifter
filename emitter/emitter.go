@@ -24,6 +24,10 @@ func GraphExists(server string, graph string) (bool, error) {
 	if u.Scheme == "mongodb" {
 		return MongoGraphExists(server, graph)
 	}
+	if u.Scheme == "stdout" {
+		return false, nil
+	}
+
 	return false, fmt.Errorf("Unknown driver: %s", u.Scheme)
 }
 
@@ -34,6 +38,9 @@ func NewEmitter(server string, graph string) (Emitter, error) {
 	}
 	if u.Scheme == "mongodb" {
 		return NewMongoEmitter(server, graph)
+	}
+	if u.Scheme == "stdout" {
+		return StdoutEmitter{}, nil
 	}
 	return nil, fmt.Errorf("Unknown driver: %s", u.Scheme)
 }

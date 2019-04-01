@@ -23,6 +23,7 @@ steps:
   - desc: Loading Expression Data
     matrixLoad:
       input: data_RNA_Seq_v2_expression_median.txt
+      skipIfMissing: true
       rowLabel: RNASeq
       rowPrefix: "RNA:"
       exclude:
@@ -32,6 +33,7 @@ steps:
   - desc: Connecting Expression Data
     matrixLoad:
       input: data_RNA_Seq_v2_expression_median.txt
+      skipIfMissing: true
       transpose: True
       indexCol: True
       indexCol: 1
@@ -52,6 +54,7 @@ steps:
   - desc: Building Gene List
     matrixLoad:
       input: data_RNA_Seq_v2_expression_median.txt
+      skipIfMissing: true
       columnInclude: Entrez_Gene_Id
       rowLabel: Gene
   - desc: Loading Mutations

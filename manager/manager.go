@@ -103,6 +103,7 @@ func (m *Manager) NewRuntime(graph string) (Runtime, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	dir, _ = filepath.Abs(dir)
 	e, err := emitter.NewEmitter(m.Config.GripServer, graph)
 	if err != nil {
 		log.Printf("Emitter init failed: %s", err)

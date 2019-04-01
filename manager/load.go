@@ -50,6 +50,7 @@ type Step struct {
 	MatrixLoad   *MatrixLoadStep   `json:"matrixLoad"`
 	ManifestLoad *ManifestLoadStep `json:"manifestLoad"`
 	Download     *DownloadStep     `json:"download"`
+	Untar        *UntarStep        `json:"untar"`
 	//CopyFile     *CopyFilePrep     `json:copyFile`
 }
 

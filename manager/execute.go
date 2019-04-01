@@ -15,18 +15,22 @@ func (pb *Playbook) Execute(man *Manager, graph string, inputs map[string]interf
 				man.Printf("Load Error: %s", err)
 				return err
 			}
-		}
-		if step.ManifestLoad != nil {
+		} else if step.ManifestLoad != nil {
 			task := run.NewTask(inputs)
 			if err := step.ManifestLoad.Run(task); err != nil {
 				man.Printf("Load Error: %s", err)
 				return err
 			}
-		}
-		if step.Download != nil {
+		} else if step.Download != nil {
 			task := run.NewTask(inputs)
 			if err := step.Download.Run(task); err != nil {
 				man.Printf("Load Error: %s", err)
+				return err
+			}
+		} else if step.Untar != nil {
+			task := run.NewTask(inputs)
+			if err := step.Untar.Run(task); err != nil {
+				man.Printf("Untar Error: %s", err)
 				return err
 			}
 		}

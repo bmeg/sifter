@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/bmeg/grip/gripql"
@@ -18,15 +19,30 @@ type Task struct {
 	Inputs  map[string]interface{}
 }
 
-func (m *Task) Path(p string) string {
-	return path.Join(m.Workdir, p)
+func (m *Task) Path(p string) (string, error) {
+	a, err := filepath.Abs(path.Join(m.Workdir, p))
+	if err != nil {
+		return "", err
+	}
+	if !strings.HasPrefix(a, m.Workdir) {
+		return "", fmt.Errorf("Input file not inside working directory")
+	}
+	return a, nil
 }
 
 func (m *Task) DownloadFile(src string, dest string) (string, error) {
 	if dest == "" {
-		dest = m.Path(path.Base(src))
+		var err error
+		dest, err = m.Path(path.Base(src))
+		if err != nil {
+			return "", err
+		}
 	} else {
-		dest = m.Path(dest)
+		var err error
+		dest, err = m.Path(dest)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	if strings.HasPrefix(src, "s3:") {

@@ -19,7 +19,11 @@ var edgeRE *regexp.Regexp = regexp.MustCompile(".Edge.json")
 
 func (ml *ManifestLoadStep) Run(task *Task) error {
 	task.Printf("loading manifest %s", ml.Input)
-	lines, err := golib.ReadFileLines(task.Path(ml.Input))
+	path, err := task.Path(ml.Input)
+	if err != nil {
+		return err
+	}
+	lines, err := golib.ReadFileLines(path)
 	if err != nil {
 		task.Printf("Manifest failed to load: %s", err)
 		return err

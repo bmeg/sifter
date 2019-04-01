@@ -2,32 +2,36 @@
 class: PlayBook
 name: CBioPortal
 
-prep:
-  - download: http://download.cbioportal.org/gbm_tcga_pub2013.tar.gz
-  - cmd: tar xvzf gbm_tcga_pub2013.tar.gz
-  - chdir: gbm_tcga_pub2013
 
 steps:
-  - input: data_clinical_patient.txt
-    desc: Loading Patient List
+  - desc: Download
+    name: tarDownload
+    download:
+      source: $.input.url
+      dest: data.tar.gz
+  - desc: Untar
+    untar:
+      input: data.tar.gz
+  - desc: Loading Patient List
     matrixLoad:
       rowLabel: Case
-  - input: data_clinical_sample.txt
-    desc: Loading Patient List
+      input: data_clinical_patient.txt
+  - desc: Loading Patient List
     matrixLoad:
+      input: data_clinical_sample.txt
       rowLabel: Sample
-  - input: data_RNA_Seq_v2_expression_median.txt
-    desc: Loading Expression Data
+  - desc: Loading Expression Data
     matrixLoad:
+      input: data_RNA_Seq_v2_expression_median.txt
       rowLabel: RNASeq
       rowPrefix: "RNA:"
       exclude:
         - "RNA:Hugo_Symbol"
       transpose: True
       indexCol: 1
-  - input: data_RNA_Seq_v2_expression_median.txt
-    desc: Connecting Expression Data
+  - desc: Connecting Expression Data
     matrixLoad:
+      input: data_RNA_Seq_v2_expression_median.txt
       transpose: True
       indexCol: True
       indexCol: 1
@@ -35,9 +39,9 @@ steps:
       edge:
         - to: 'RNA:{_gid}'
           label: rna
-  - input: data_clinical_sample.txt
-    desc: Creating Subtypes and connecting samples
+  - desc: Creating Subtypes and connecting samples
     matrixLoad:
+      input: data_clinical_sample.txt
       noVertex: True
       edge:
         - to: "{EXPRESSION_SUBTYPE}"
@@ -45,14 +49,14 @@ steps:
       destVertex:
         - gid: "{EXPRESSION_SUBTYPE}"
           label: Subtype
-  - input: data_RNA_Seq_v2_expression_median.txt
-    desc: Building Gene List
+  - desc: Building Gene List
     matrixLoad:
+      input: data_RNA_Seq_v2_expression_median.txt
       columnInclude: Entrez_Gene_Id
       rowLabel: Gene
-  - input: data_mutations_extended.txt
-    desc: Loading Mutations
+  - desc: Loading Mutations
     matrixLoad:
+      input: data_mutations_extended.txt
       rowSkip: 1
       indexCol: -1
       columnReplace:

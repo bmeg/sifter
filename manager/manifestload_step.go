@@ -45,7 +45,7 @@ func (ml *ManifestLoadStep) Run(task *Task) error {
 			if err != nil {
 				task.Printf("Download Failure: %s %s", url, err)
 			} else {
-				task.Printf("Loading %s", path)
+				task.Printf("Loading vertex file %s", path)
 				for v := range gripUtil.StreamVerticesFromFile(path) {
 					task.EmitVertex(v)
 				}
@@ -62,7 +62,7 @@ func (ml *ManifestLoadStep) Run(task *Task) error {
 			if err != nil {
 				task.Printf("Download Failure: %s %s", url, err)
 			} else {
-				task.Printf("Loading %s", path)
+				task.Printf("Loading edge file %s", path)
 				for v := range gripUtil.StreamEdgesFromFile(path) {
 					task.EmitEdge(v)
 				}

@@ -12,7 +12,7 @@ import (
 var graph string = "test-data"
 var runOnce bool = false
 var workDir string = "./"
-var server string = ""
+var server int = 0
 var dbServer string = "grip://localhost:8202"
 
 // Cmd is the declaration of the command line
@@ -51,31 +51,18 @@ var Cmd = &cobra.Command{
 			log.Printf("%s", err)
 			return err
 		}
-		if server != "" {
+		if server != 0 {
 			go pb.Execute(man, graph, inputs)
 			conf := webserver.WebServerHandler{
 				PostPlaybookHandler : nil,
 				GetPlaybookHandler : nil,
-				GetStatusHandler : operations.GetStatusHandlerFunc(
-					func(params operations.GetStatusParams) middleware.Responder {
-						log.Printf("Status requested")
-						body := operations.GetStatusOKBody{
-							Current:     man.GetCurrent(),
-							EdgeCount:   man.GetEdgeCount(),
-							StepNum:     man.GetStepNum(),
-							StepTotal:   man.GetStepTotal(),
-							VertexCount: man.GetVertexCount(),
-						}
-						out := operations.NewGetStatusOK().WithPayload(&body)
-						return out
-				}),
+				GetStatusHandler : manager.NewManagerStatusHandler(man),
 				PostPlaybookIDGraphHandler : nil,
 			}
-			webserver.RunServer()
+			webserver.RunServer(conf, server, "")
 		} else {
 			pb.Execute(man, graph, inputs)
 		}
-
 		return nil
 	},
 }
@@ -85,6 +72,6 @@ func init() {
 	flags.BoolVar(&runOnce, "run-once", false, "Only Run if database is unintialized")
 	flags.StringVar(&graph, "graph", graph, "Destination Graph")
 	flags.StringVar(&workDir, "workdir", workDir, "Workdir")
-	flags.StringVar(&server, "server", workDir, "ServerPort")
+	flags.IntVar(&server, "server", server, "ServerPort")
 	flags.StringVar(&dbServer, "db", dbServer, "Destination Server")
 }

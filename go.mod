@@ -1,6 +1,7 @@
 module github.com/bmeg/sifter
 
 require (
+	github.com/abbot/go-http-auth v0.4.0 // indirect
 	github.com/bmeg/golib v0.0.0-20170626075926-82a1e1d7a0b2
 	github.com/bmeg/grip v0.0.0-20190327203551-6f9abc18d4da
 	github.com/ghodss/yaml v1.0.0
@@ -23,7 +24,10 @@ require (
 	github.com/hashicorp/go-getter v1.2.0
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/kniren/gota v0.9.0 // indirect
+	github.com/m3ng9i/go-utils v0.0.0-20160811013010-f9b7dc669fde // indirect
+	github.com/m3ng9i/ran v0.1.3 // indirect
 	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
+	github.com/oxtoacart/bpool v0.0.0-20190227141107-8c4636f812cc // indirect
 	github.com/segmentio/ksuid v1.0.2 // indirect
 	github.com/sirupsen/logrus v1.4.1 // indirect
 	github.com/spf13/cobra v0.0.3

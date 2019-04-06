@@ -17,10 +17,11 @@ import (
 
 
 type WebServerHandler struct {
-  PostPlaybookHander operations.PostPlaybookHandlerFunc
+  PostPlaybookHandler operations.PostPlaybookHandlerFunc
   GetPlaybookHandler operations.GetPlaybookHandlerFunc
   GetStatusHandler operations.GetStatusHandlerFunc
-  PostPlaybookIDGraphHandler operations.PostPlaybookIDGraphHandler
+  PostPlaybookIDGraphHandler operations.PostPlaybookIDGraphHandlerFunc
+  FileHandler http.Handler
 }
 
 
@@ -37,7 +38,7 @@ func RunServer(handler WebServerHandler, port int, proxy string) (error){
   // set the port this service will be run on
   server.Port = port
 
-  api.PostPlaybookHandler = handler.PostPlaybookHander
+  api.PostPlaybookHandler = handler.PostPlaybookHandler
   api.GetPlaybookHandler = handler.GetPlaybookHandler
   api.GetStatusHandler = handler.GetStatusHandler
   api.PostPlaybookIDGraphHandler = handler.PostPlaybookIDGraphHandler
@@ -59,12 +60,17 @@ func RunServer(handler WebServerHandler, port int, proxy string) (error){
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if strings.HasPrefix(r.URL.Path, "/api") {
 				origHandler.ServeHTTP(w, r)
-			} else if strings.HasPrefix(r.URL.Path, "/v1") {
+			} else if (proxyHandler != nil && strings.HasPrefix(r.URL.Path, "/v1")) {
 				proxyHandler.ServeHTTP(w, r)
-			} else {
-				http.FileServer(http.Dir(webDir)).ServeHTTP(w, r)
+			} else if (handler.FileHandler != nil) {
+				handler.FileHandler.ServeHTTP(w, r)
 			}
 		}),
 	)
+  // serve API
+  defer server.Shutdown()
+  if err := server.Serve(); err != nil {
+    log.Fatalln(err)
+  }
   return nil
 }

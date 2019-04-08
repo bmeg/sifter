@@ -75,20 +75,25 @@ paths:
         '200':
           description: Status Data
           schema:
-            type: object
-            properties:
-              current:
-                type: string
-                description: Current element being loaded
-              stepNum:
-                type: integer
-                description: Current Step being loaded
-              stepTotal:
-                type: integer
-                description: Total number of steps
-              vertexCount:
-                type: integer
-                description: Number of vertices loaded so far
-              edgeCount:
-                type: integer
-                description: Number of edges loaded so far
+            type: array
+            items:
+              type: object
+              properties:
+                playbook:
+                  type: string
+                  description: Playbook name
+                current:
+                  type: string
+                  description: Current element being loaded
+                stepNum:
+                  type: integer
+                  description: Current Step being loaded
+                stepTotal:
+                  type: integer
+                  description: Total number of steps
+                vertexCount:
+                  type: integer
+                  description: Number of vertices loaded so far
+                edgeCount:
+                  type: integer
+                  description: Number of edges loaded so far

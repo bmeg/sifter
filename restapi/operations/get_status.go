@@ -59,15 +59,18 @@ func (o *GetStatus) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 }
 
-// GetStatusOKBody get status o k body
-// swagger:model GetStatusOKBody
-type GetStatusOKBody struct {
+// GetStatusOKBodyItems0 get status o k body items0
+// swagger:model GetStatusOKBodyItems0
+type GetStatusOKBodyItems0 struct {
 
 	// Current element being loaded
 	Current string `json:"current,omitempty"`
 
 	// Number of edges loaded so far
 	EdgeCount int64 `json:"edgeCount,omitempty"`
+
+	// Playbook name
+	Playbook string `json:"playbook,omitempty"`
 
 	// Current Step being loaded
 	StepNum int64 `json:"stepNum,omitempty"`
@@ -79,13 +82,13 @@ type GetStatusOKBody struct {
 	VertexCount int64 `json:"vertexCount,omitempty"`
 }
 
-// Validate validates this get status o k body
-func (o *GetStatusOKBody) Validate(formats strfmt.Registry) error {
+// Validate validates this get status o k body items0
+func (o *GetStatusOKBodyItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (o *GetStatusOKBody) MarshalBinary() ([]byte, error) {
+func (o *GetStatusOKBodyItems0) MarshalBinary() ([]byte, error) {
 	if o == nil {
 		return nil, nil
 	}
@@ -93,8 +96,8 @@ func (o *GetStatusOKBody) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (o *GetStatusOKBody) UnmarshalBinary(b []byte) error {
-	var res GetStatusOKBody
+func (o *GetStatusOKBodyItems0) UnmarshalBinary(b []byte) error {
+	var res GetStatusOKBodyItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -10,7 +10,7 @@ hub-build:
 # ---------------------
 # Automatially update code formatting
 tidy:
-	@for f in $$(find . -path ./vendor -prune -o -name "*.go" -print | egrep -v "\.pb\.go|\.gw\.go|\.dgw\.go|underscore\.go|restapi"); do \
+	@for f in $$(find . -path ./vendor -prune -o -name "*.go" -print | egrep -v "\.\/go\/|\.pb\.go|\.gw\.go|\.dgw\.go|underscore\.go|restapi"); do \
 		gofmt -w -s $$f ;\
 		goimports -w $$f ;\
 	done;

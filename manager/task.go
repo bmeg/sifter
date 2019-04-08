@@ -77,5 +77,5 @@ func (m *Task) EmitEdge(e *gripql.Edge) error {
 }
 
 func (m *Task) Printf(s string, x ...interface{}) {
-	m.Manager.Printf(s, x...)
+	m.Runtime.Printf(s, x...)
 }

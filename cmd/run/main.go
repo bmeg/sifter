@@ -54,10 +54,10 @@ var Cmd = &cobra.Command{
 		if server != 0 {
 			go pb.Execute(man, graph, inputs)
 			conf := webserver.WebServerHandler{
-				PostPlaybookHandler : nil,
-				GetPlaybookHandler : nil,
-				GetStatusHandler : manager.NewManagerStatusHandler(man),
-				PostPlaybookIDGraphHandler : nil,
+				PostPlaybookHandler:        nil,
+				GetPlaybookHandler:         nil,
+				GetStatusHandler:           manager.NewManagerStatusHandler(man),
+				PostPlaybookIDGraphHandler: nil,
 			}
 			webserver.RunServer(conf, server, "")
 		} else {

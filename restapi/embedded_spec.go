@@ -127,27 +127,34 @@ func init() {
           "200": {
             "description": "Status Data",
             "schema": {
-              "type": "object",
-              "properties": {
-                "current": {
-                  "description": "Current element being loaded",
-                  "type": "string"
-                },
-                "edgeCount": {
-                  "description": "Number of edges loaded so far",
-                  "type": "integer"
-                },
-                "stepNum": {
-                  "description": "Current Step being loaded",
-                  "type": "integer"
-                },
-                "stepTotal": {
-                  "description": "Total number of steps",
-                  "type": "integer"
-                },
-                "vertexCount": {
-                  "description": "Number of vertices loaded so far",
-                  "type": "integer"
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "current": {
+                    "description": "Current element being loaded",
+                    "type": "string"
+                  },
+                  "edgeCount": {
+                    "description": "Number of edges loaded so far",
+                    "type": "integer"
+                  },
+                  "playbook": {
+                    "description": "Playbook name",
+                    "type": "string"
+                  },
+                  "stepNum": {
+                    "description": "Current Step being loaded",
+                    "type": "integer"
+                  },
+                  "stepTotal": {
+                    "description": "Total number of steps",
+                    "type": "integer"
+                  },
+                  "vertexCount": {
+                    "description": "Number of vertices loaded so far",
+                    "type": "integer"
+                  }
                 }
               }
             }
@@ -267,27 +274,34 @@ func init() {
           "200": {
             "description": "Status Data",
             "schema": {
-              "type": "object",
-              "properties": {
-                "current": {
-                  "description": "Current element being loaded",
-                  "type": "string"
-                },
-                "edgeCount": {
-                  "description": "Number of edges loaded so far",
-                  "type": "integer"
-                },
-                "stepNum": {
-                  "description": "Current Step being loaded",
-                  "type": "integer"
-                },
-                "stepTotal": {
-                  "description": "Total number of steps",
-                  "type": "integer"
-                },
-                "vertexCount": {
-                  "description": "Number of vertices loaded so far",
-                  "type": "integer"
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "current": {
+                    "description": "Current element being loaded",
+                    "type": "string"
+                  },
+                  "edgeCount": {
+                    "description": "Number of edges loaded so far",
+                    "type": "integer"
+                  },
+                  "playbook": {
+                    "description": "Playbook name",
+                    "type": "string"
+                  },
+                  "stepNum": {
+                    "description": "Current Step being loaded",
+                    "type": "integer"
+                  },
+                  "stepTotal": {
+                    "description": "Total number of steps",
+                    "type": "integer"
+                  },
+                  "vertexCount": {
+                    "description": "Number of vertices loaded so far",
+                    "type": "integer"
+                  }
                 }
               }
             }

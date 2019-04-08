@@ -77,7 +77,7 @@ func (m *Manager) NewRuntime(graph string) (*Runtime, error) {
 		log.Printf("Emitter init failed: %s", err)
 	}
 	name := filepath.Base(dir)
-	r := &Runtime{m, e, dir, name, "Starting", 0, 0}
+	r := &Runtime{m, e, dir, name, "Starting", 0, 0, 0, 0}
 	m.Runtimes.Store(name, r)
 	return r, err
 }

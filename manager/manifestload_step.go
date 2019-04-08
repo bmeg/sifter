@@ -37,6 +37,7 @@ func (ml *ManifestLoadStep) Run(task *Task) error {
 
 	baseURL, err := evaluate.ExpressionString(ml.BaseURL, task.Inputs)
 
+	task.Runtime.SetStepCountTotal(int64(len(entries)))
 	for _, l := range entries {
 		if vertexRE.Match(l) {
 			url := baseURL + string(l)
@@ -51,6 +52,7 @@ func (ml *ManifestLoadStep) Run(task *Task) error {
 				}
 				os.Remove(path)
 			}
+			task.Runtime.AddStepCount(1)
 		}
 	}
 
@@ -68,6 +70,7 @@ func (ml *ManifestLoadStep) Run(task *Task) error {
 				}
 				os.Remove(path)
 			}
+			task.Runtime.AddStepCount(1)
 		}
 	}
 

@@ -17,6 +17,8 @@ type Runtime struct {
 	Status      string
 	VertexCount int64
 	EdgeCount   int64
+	StepCount   int64
+	StepTotal   int64
 }
 
 func (run *Runtime) NewTask(inputs map[string]interface{}) *Task {
@@ -59,9 +61,17 @@ func (m *Runtime) GetEdgeCount() int64 {
 }
 
 func (m *Runtime) GetStepNum() int64 {
-	return 1
+	return m.StepCount
 }
 
 func (m *Runtime) GetStepTotal() int64 {
-	return 10
+	return m.StepTotal
+}
+
+func (m *Runtime) SetStepCountTotal(i int64) {
+	m.StepTotal = i
+}
+
+func (m *Runtime) AddStepCount(i int64) {
+	atomic.AddInt64(&m.StepCount, i)
 }

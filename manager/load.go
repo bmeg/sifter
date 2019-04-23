@@ -51,6 +51,7 @@ type Step struct {
 	ManifestLoad *ManifestLoadStep `json:"manifestLoad"`
 	Download     *DownloadStep     `json:"download"`
 	Untar        *UntarStep        `json:"untar"`
+	VCFLoad      *VCFStep          `json:"vcfLoad"`
 	//CopyFile     *CopyFilePrep     `json:copyFile`
 }
 

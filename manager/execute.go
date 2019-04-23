@@ -34,6 +34,12 @@ func (pb *Playbook) Execute(man *Manager, graph string, inputs map[string]interf
 				run.Printf("Untar Error: %s", err)
 				return err
 			}
+		} else if step.VCFLoad != nil {
+			task := run.NewTask(inputs)
+			if err := step.VCFLoad.Run(task); err != nil {
+				run.Printf("VCF Load Error: %s", err)
+				return err
+			}
 		}
 	}
 	return nil

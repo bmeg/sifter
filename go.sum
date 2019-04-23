@@ -33,6 +33,10 @@ github.com/bmeg/golib v0.0.0-20170626075926-82a1e1d7a0b2/go.mod h1:UYeNUXxiubPvU
 github.com/bmeg/grip v0.0.0-20190327203551-6f9abc18d4da h1:wv5B8IxzeebomDweWEOvgf425gc3Qx+SkVqMOBcEu/k=
 github.com/bmeg/grip v0.0.0-20190327203551-6f9abc18d4da/go.mod h1:JsCC/vfLlAMfrLO0dHGfORlNsy0368mlCnCiISmx9KA=
 github.com/bradfitz/go-smtpd v0.0.0-20170404230938-deb6d6237625/go.mod h1:HYsPBTaaSFSlLx/70C2HPIMNZpVV8+vt/A+FMnYP11g=
+github.com/brentp/irelate v0.0.0-20180801151701-1bf7c8f95c75 h1:ZnidWX9Gu3wXtinRi+wQNVcb534P+yGEE0kjWP4LPog=
+github.com/brentp/irelate v0.0.0-20180801151701-1bf7c8f95c75/go.mod h1:Ct+JzyZC+JSi9WUkw3IGWc/j0yYEt4235wKCfLOKN54=
+github.com/brentp/vcfgo v0.0.0-20190315012323-bdb8e831fc71 h1:eUYHlGYbrEQqyZb5KFZHwwD0K18DFtJ/z3rrO00NEjU=
+github.com/brentp/vcfgo v0.0.0-20190315012323-bdb8e831fc71/go.mod h1:nN0Qx/D3CzwA4yLg2N7jbtSfJ7AUFU2I3J7gq/CmNfc=
 github.com/cheggaaa/pb v1.0.27/go.mod h1:pQciLPpbU0oxA0h+VJYYLxO+XeDQb5pZijXscXHm81s=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=

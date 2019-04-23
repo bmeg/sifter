@@ -1,0 +1,12 @@
+
+class: Playbook
+name: VCFLoad
+
+steps:
+  - desc: Download Manifest
+    download:
+      source: $.input.vcf
+      dest: test.vcf.gz
+  - desc: Loading VCF
+    vcfLoad:
+      input: test.vcf.gz

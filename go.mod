@@ -6,6 +6,8 @@ require (
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/bmeg/golib v0.0.0-20170626075926-82a1e1d7a0b2
 	github.com/bmeg/grip v0.0.0-20190327203551-6f9abc18d4da
+	github.com/brentp/irelate v0.0.0-20180801151701-1bf7c8f95c75 // indirect
+	github.com/brentp/vcfgo v0.0.0-20190315012323-bdb8e831fc71
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-gota/gota v0.7.1-0.20190402185630-1058f871be31
 	github.com/go-openapi/errors v0.19.0

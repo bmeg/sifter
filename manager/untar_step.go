@@ -26,19 +26,21 @@ func (us *UntarStep) Run(task *Task) error {
 	if err != nil {
 		return err
 	}
-	var hd io.Reader
-	hd, err = os.Open(filePath)
+	fhd, err := os.Open(filePath)
 	if err != nil {
 		return err
 	}
+	defer fhd.Close()
 
+	var hd io.Reader
 	if strings.HasSuffix(input, ".gz") || strings.HasSuffix(input, ".tgz") {
-		hd, err = gzip.NewReader(hd)
+		hd, err = gzip.NewReader(fhd)
 		if err != nil {
 			return err
 		}
+	} else {
+		hd = fhd
 	}
-	//defer hd.Close()
 
 	tr := tar.NewReader(hd)
 

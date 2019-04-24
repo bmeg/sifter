@@ -2,7 +2,6 @@
 package manager
 
 import (
-  "fmt"
   "log"
   "os"
   "io"

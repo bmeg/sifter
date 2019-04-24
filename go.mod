@@ -19,6 +19,7 @@ require (
 	github.com/go-openapi/swag v0.19.0
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/go-swagger/go-swagger v0.19.0 // indirect
+	github.com/golang/protobuf v1.2.0
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/gonum/blas v0.0.0-20181208220705-f22b278b28ac // indirect
 	github.com/gonum/floats v0.0.0-20181209220543-c233463c7e82 // indirect

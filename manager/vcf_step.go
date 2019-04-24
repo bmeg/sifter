@@ -61,6 +61,7 @@ func (us *VCFStep) Run(task *Task) error {
           End: variant.Pos + uint64(len(variant.Reference)),
           ReferenceBases: variant.Reference,
           AlternateBases: variant.Alternate[0],
+          DBSNP_RS: variant.Id_,
         }
         ov, oe := a.Render()
         for _, v := range ov {

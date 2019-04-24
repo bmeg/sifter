@@ -7,7 +7,8 @@ steps:
     download:
       source: $.input.url
       dest: input.manifest
+      output: manifest
   - desc: Loading Files
     manifestLoad:
-      input: input.manifest
+      input: $.input.manifest
       baseURL: $.input.baseURL

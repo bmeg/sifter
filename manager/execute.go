@@ -9,6 +9,11 @@ func (pb *Playbook) Execute(man *Manager, graph string, inputs map[string]interf
 		return err
 	}
 
+	run.OutputCallback = func(name, value string) error {
+		inputs[name] = value
+		return nil
+	}
+
 	for _, step := range pb.Steps {
 		if step.MatrixLoad != nil {
 			task := run.NewTask(inputs)

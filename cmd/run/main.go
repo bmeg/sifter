@@ -29,6 +29,8 @@ var Cmd = &cobra.Command{
 		}
 		defer man.Close()
 
+		man.AllowLocalFiles = true
+
 		if runOnce {
 			if man.GraphExists(graph) {
 				log.Printf("Graph found, exiting")

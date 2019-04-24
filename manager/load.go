@@ -16,18 +16,6 @@ type Loader interface {
 	Load() chan gripql.GraphElement
 }
 
-/*
-type CopyFilePrep struct {
-	Source string `json:"source"`
-	Dest   string `json:"dest"`
-}
-*/
-
-type DownloadStep struct {
-	Source string `json:"source"`
-	Dest   string `json:"dest"`
-}
-
 type EdgeCreationStep struct {
 	To    string `json:"to"`
 	From  string `json:"from"`

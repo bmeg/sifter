@@ -12,6 +12,7 @@ type Manager struct {
 	Config    Config
 	Playbooks map[string]Playbook
 	Runtimes  sync.Map
+	AllowLocalFiles bool
 }
 
 type Config struct {
@@ -33,7 +34,7 @@ func Init(config Config) (*Manager, error) {
 			}
 		}
 	}
-	return &Manager{config, pbMap, sync.Map{}}, nil
+	return &Manager{config, pbMap, sync.Map{}, false}, nil
 }
 
 func (m *Manager) Close() {
@@ -77,7 +78,7 @@ func (m *Manager) NewRuntime(graph string) (*Runtime, error) {
 		log.Printf("Emitter init failed: %s", err)
 	}
 	name := filepath.Base(dir)
-	r := &Runtime{m, e, dir, name, "Starting", 0, 0, 0, 0}
+	r := &Runtime{m, e, dir, name, "Starting", 0, 0, 0, 0, nil}
 	m.Runtimes.Store(name, r)
 	return r, err
 }

@@ -18,8 +18,15 @@ var vertexRE *regexp.Regexp = regexp.MustCompile(".Vertex.json")
 var edgeRE *regexp.Regexp = regexp.MustCompile(".Edge.json")
 
 func (ml *ManifestLoadStep) Run(task *Task) error {
-	task.Printf("loading manifest %s", ml.Input)
-	path, err := task.Path(ml.Input)
+
+	mlInput, err := evaluate.ExpressionString(ml.Input, task.Inputs)
+	if err != nil {
+		task.Printf("Expression failed: %s", err)
+		return err
+	}
+
+	task.Printf("loading manifest %s", mlInput)
+	path, err := task.Path(mlInput)
 	if err != nil {
 		return err
 	}

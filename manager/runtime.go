@@ -19,6 +19,7 @@ type Runtime struct {
 	EdgeCount   int64
 	StepCount   int64
 	StepTotal   int64
+	OutputCallback func(string, string) error
 }
 
 func (run *Runtime) NewTask(inputs map[string]interface{}) *Task {

@@ -20,12 +20,14 @@ type Task struct {
 }
 
 func (m *Task) Path(p string) (string, error) {
-	a, err := filepath.Abs(path.Join(m.Workdir, p))
+	a, err := filepath.Abs(p)
 	if err != nil {
 		return "", err
 	}
-	if !strings.HasPrefix(a, m.Workdir) {
-		return "", fmt.Errorf("Input file not inside working directory")
+	if !m.Manager.AllowLocalFiles {
+		if !strings.HasPrefix(a, m.Workdir) {
+			return "", fmt.Errorf("Input file not inside working directory")
+		}
 	}
 	return a, nil
 }
@@ -74,6 +76,13 @@ func (m *Task) EmitVertex(v *gripql.Vertex) error {
 
 func (m *Task) EmitEdge(e *gripql.Edge) error {
 	return m.Runtime.EmitEdge(e)
+}
+
+func (m *Task) Output(name string, value string) error {
+	if m.Runtime.OutputCallback != nil {
+		return m.Runtime.OutputCallback(name, value)
+	}
+	return fmt.Errorf("Output Callback not set")
 }
 
 func (m *Task) Printf(s string, x ...interface{}) {

@@ -26,23 +26,39 @@ type Allele struct {
 
 
 func (al *Allele) Render() ([]*gripql.Vertex, []*gripql.Edge) {
-  id := fmt.Sprintf("%s:%s:%d:%d:%s:%s", al.Genome, al.Chromosome,
-                                 al.Start, al.End,
-                                 al.ReferenceBases,
-                                 al.AlternateBases)
-  a := gripql.Vertex{Gid:fmt.Sprintf("%x", sha1.Sum([]byte(id))), Label:"Allele", Data:protoutil.AsStruct(map[string]interface{}{
+  data := map[string]interface{}{
       "genome" : al.Genome,
       "chromosome" : al.Chromosome,
       "start" : al.Start,
       "end" : al.End,
-      "string" : al.Strand,
       "reference_bases" : al.ReferenceBases,
       "alternate_bases" : al.AlternateBases,
-      "hugo_symbol" : al.HugoSymbol,
-      "ensembl_transcript" : al.EnsemblTranscript,
-      "type" : al.Type,
-      "effect" : al.Effect,
-      "dbSNP_RS" : al.DBSNP_RS,
-  })}
+  }
+
+  if len(al.HugoSymbol) > 0 {
+    data["hugo_symbol"] = al.HugoSymbol
+  }
+  if len(al.EnsemblTranscript) > 0 {
+    data["ensembl_transcript"] = al.EnsemblTranscript
+  }
+  if len(al.Type) > 0 {
+    data["type"] = al.Type
+  }
+  if len(al.Effect) > 0 {
+    data["effect"] = al.Effect
+  }
+  if len(al.DBSNP_RS) > 0 {
+    data["dbSNP_RS"] = al.DBSNP_RS
+  }
+
+  a := gripql.Vertex{Gid:al.ID(), Label:"Allele", Data:protoutil.AsStruct(data)}
   return []*gripql.Vertex{&a}, []*gripql.Edge{}
+}
+
+func (al *Allele) ID() string {
+  id := fmt.Sprintf("%s:%s:%d:%d:%s:%s", al.Genome, al.Chromosome,
+                                 al.Start, al.End,
+                                 al.ReferenceBases,
+                                 al.AlternateBases)
+  return fmt.Sprintf("%x", sha1.Sum([]byte(id)))
 }

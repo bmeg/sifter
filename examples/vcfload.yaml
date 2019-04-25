@@ -3,7 +3,13 @@ class: Playbook
 name: VCFLoad
 
 steps:
+  #- desc: Loading VCF
+  #  vcfLoad:
+  #    emitAllele: true
+  #    input: $.input.vcf
   - desc: Loading VCF
     vcfLoad:
-      emitAllele: true
       input: $.input.vcf
+      label: Annotation
+      infoMap:
+        CLNDN: disease

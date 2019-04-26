@@ -17,7 +17,7 @@ type UntarStep struct {
 }
 
 func (us *UntarStep) Run(task *Task) error {
-	input, err := evaluate.ExpressionString(us.Input, task.Inputs)
+	input, err := evaluate.ExpressionString(us.Input, task.Inputs, nil)
 	if err != nil {
 		return err
 	}

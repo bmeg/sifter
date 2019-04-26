@@ -16,13 +16,15 @@ import (
 type VCFStep struct {
   Input string `json:"input"`
   EmitAllele bool `json:"emitAllele"`
+  IDTemplate     string `json:"idTemplate"`
   Label     string `json:"label"`
+  EdgeLabel   string `json:"edgeLabel"`
   InfoMap   map[string]string `json:"infoMap"`
 }
 
 
 func (us *VCFStep) Run(task *Task) error {
-	input, err := evaluate.ExpressionString(us.Input, task.Inputs)
+	input, err := evaluate.ExpressionString(us.Input, task.Inputs, nil)
 	if err != nil {
 		return err
 	}
@@ -81,13 +83,15 @@ func (us *VCFStep) Run(task *Task) error {
             data[m] = v
           }
         }
-        a := schema.AlleleAnnotation{Allele:a, Label:us.Label, Data:data}
-        ov, oe := a.Render()
-        for _, v := range ov {
-          task.EmitVertex(v)
-        }
-        for _, e := range oe {
-          task.EmitEdge(e)
+        if gid, err := evaluate.ExpressionString(us.IDTemplate, task.Inputs, map[string]interface{}{"ID":variant.Id_, "INFO":data}); err == nil {
+          a := schema.AlleleAnnotation{ID: gid, Label:us.Label, EdgeLabel:us.EdgeLabel, Allele:a, Data:data}
+          ov, oe := a.Render()
+          for _, v := range ov {
+            task.EmitVertex(v)
+          }
+          for _, e := range oe {
+            task.EmitEdge(e)
+          }
         }
       }
   }

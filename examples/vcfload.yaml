@@ -9,7 +9,9 @@ steps:
   #    input: $.input.vcf
   - desc: Loading VCF
     vcfLoad:
-      input: $.input.vcf
+      input: "{{input.vcf}}"
       label: Annotation
+      edgeLabel: inAllele
+      idTemplate: "Clinvar:{{row.ID}}"
       infoMap:
         CLNDN: disease

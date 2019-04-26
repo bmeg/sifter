@@ -19,7 +19,7 @@ var edgeRE *regexp.Regexp = regexp.MustCompile(".Edge.json")
 
 func (ml *ManifestLoadStep) Run(task *Task) error {
 
-	mlInput, err := evaluate.ExpressionString(ml.Input, task.Inputs)
+	mlInput, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
 	if err != nil {
 		task.Printf("Expression failed: %s", err)
 		return err
@@ -42,7 +42,7 @@ func (ml *ManifestLoadStep) Run(task *Task) error {
 		}
 	}
 
-	baseURL, err := evaluate.ExpressionString(ml.BaseURL, task.Inputs)
+	baseURL, err := evaluate.ExpressionString(ml.BaseURL, task.Inputs, nil)
 
 	task.Runtime.SetStepCountTotal(int64(len(entries)))
 	for _, l := range entries {

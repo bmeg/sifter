@@ -4,6 +4,7 @@ require (
 	github.com/abbot/go-http-auth v0.4.0 // indirect
 	github.com/alecthomas/gometalinter v3.0.0+incompatible // indirect
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
+	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/bmeg/golib v0.0.0-20170626075926-82a1e1d7a0b2
 	github.com/bmeg/grip v0.0.0-20190327203551-6f9abc18d4da
 	github.com/brentp/irelate v0.0.0-20180801151701-1bf7c8f95c75 // indirect

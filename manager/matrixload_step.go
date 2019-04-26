@@ -40,7 +40,7 @@ func contains(s []string, q string) bool {
 
 func (ml *MatrixLoadStep) Run(task *Task) error {
 
-	input, err := evaluate.ExpressionString(ml.Input, task.Inputs)
+	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
 	inputPath, err := task.Path(input)
 
 	if _, err := os.Stat(inputPath); os.IsNotExist(err) {

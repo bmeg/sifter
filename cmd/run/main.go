@@ -14,12 +14,13 @@ var runOnce bool = false
 var workDir string = "./"
 var server int = 0
 var dbServer string = "grip://localhost:8202"
+var cmdInputs map[string]string
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run importer",
-	Args:  cobra.MinimumNArgs(2),
+	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		man, err := manager.Init(manager.Config{GripServer: dbServer, WorkDir: workDir})
@@ -38,13 +39,20 @@ var Cmd = &cobra.Command{
 			}
 		}
 
-		playFile := args[0]
-		dataFile := args[1]
-
 		inputs := map[string]interface{}{}
-		if err := manager.ParseDataFile(dataFile, &inputs); err != nil {
-			log.Printf("%s", err)
-			return err
+
+		playFile := args[0]
+
+		if len(args) > 1 {
+			dataFile := args[1]
+			if err := manager.ParseDataFile(dataFile, &inputs); err != nil {
+				log.Printf("%s", err)
+				return err
+			}
+		}
+
+		for k, v := range cmdInputs {
+			inputs[k] = v
 		}
 
 		fmt.Printf("Starting: %s\n", playFile)
@@ -76,4 +84,5 @@ func init() {
 	flags.StringVar(&workDir, "workdir", workDir, "Workdir")
 	flags.IntVar(&server, "server", server, "ServerPort")
 	flags.StringVar(&dbServer, "db", dbServer, "Destination Server")
+	flags.StringToStringVarP(&cmdInputs, "inputs", "i", cmdInputs, "Input variables")
 }

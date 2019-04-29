@@ -27,7 +27,9 @@ func GraphExists(server string, graph string) (bool, error) {
 	if u.Scheme == "stdout" {
 		return false, nil
 	}
-
+	if u.Scheme == "dir" {
+		return false, nil
+	}
 	return false, fmt.Errorf("Unknown driver: %s", u.Scheme)
 }
 
@@ -41,6 +43,9 @@ func NewEmitter(server string, graph string) (Emitter, error) {
 	}
 	if u.Scheme == "stdout" {
 		return StdoutEmitter{}, nil
+	}
+	if u.Scheme == "dir" {
+		return NewDirEmitter( u.Host + u.Path ), nil
 	}
 	return nil, fmt.Errorf("Unknown driver: %s", u.Scheme)
 }

@@ -28,7 +28,19 @@ steps:
               label: case
               include: []
   -
-    dest: Transpose RNA file
+    desc: Transpose RNA file
     transposeFile:
         input: data_RNA_Seq_v2_expression_median.txt
         output: data_RNA_Seq_v2_expression_median_transpose.txt
+  -
+    desc: Loading RNA File
+    tableLoad:
+      input: data_RNA_Seq_v2_expression_median_transpose.txt
+      rowSkip: 1
+      transform:
+        -
+          - vertexCreate:
+              gid: "{{row.Entrez_Gene_Id}}"
+              label: GeneExpression
+              exclude:
+                - Entrez_Gene_Id

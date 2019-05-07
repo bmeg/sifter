@@ -354,6 +354,7 @@ func (ml *TableLoadStep) Run(task *Task) error {
     trans.Start(i, task, wg)
     procChan = append(procChan, i)
   }
+  rowSkip := ml.RowSkip
 
   for {
 		record, err := r.Read()
@@ -364,16 +365,20 @@ func (ml *TableLoadStep) Run(task *Task) error {
       log.Printf("Error %s", err)
 			break
 		}
-    if columns == nil {
-      columns = record
+    if rowSkip > 0 {
+      rowSkip--
     } else {
-      o := map[string]interface{}{}
-      for i, n := range columns {
-        o[n] = record[i]
-      }
-      //fmt.Printf("Proc: %s\n", o)
-      for _, c := range procChan {
-        c <- o
+      if columns == nil {
+        columns = record
+      } else {
+        o := map[string]interface{}{}
+        for i, n := range columns {
+          o[n] = record[i]
+        }
+        //fmt.Printf("Proc: %s\n", o)
+        for _, c := range procChan {
+          c <- o
+        }
       }
     }
 	}

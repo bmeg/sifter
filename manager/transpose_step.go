@@ -63,6 +63,6 @@ func (ml *TransposeFileStep) Run(task *Task) error {
     }
     w.Write(o)
   }
-
+  w.Flush()
   return nil
 }

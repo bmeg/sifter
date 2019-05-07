@@ -20,6 +20,9 @@ type Task struct {
 }
 
 func (m *Task) Path(p string) (string, error) {
+	if !strings.HasPrefix(p, "/") {
+		p = filepath.Join(m.Workdir, p)
+	}
 	a, err := filepath.Abs(p)
 	if err != nil {
 		return "", err

@@ -18,17 +18,23 @@ type Loader interface {
 
 type Step struct {
 	Desc         string            `json:"desc"`
-	MatrixLoad   *MatrixLoadStep   `json:"matrixLoad"`
 	ManifestLoad *ManifestLoadStep `json:"manifestLoad"`
 	Download     *DownloadStep     `json:"download"`
 	Untar        *UntarStep        `json:"untar"`
 	VCFLoad      *VCFStep          `json:"vcfLoad"`
 	TableLoad    *TableLoadStep    `json:"tableLoad"`
-	//CopyFile     *CopyFilePrep     `json:copyFile`
+	TransposeFile *TransposeFileStep `json:"transposeFile"`
 }
+
+type Input struct {
+	Type string `json:"type"`
+}
+
+type Inputs map[string]Input
 
 type Playbook struct {
 	Name  string `json:"name"`
+	Inputs Inputs `json:"inputs"`
 	Class string `json:"class"`
 	Steps []Step `json:steps`
 }

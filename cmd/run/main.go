@@ -3,6 +3,7 @@ package run
 import (
 	"fmt"
 	"log"
+	"path/filepath"
 
 	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/webserver"
@@ -42,25 +43,42 @@ var Cmd = &cobra.Command{
 		inputs := map[string]interface{}{}
 
 		playFile := args[0]
-
-		if len(args) > 1 {
-			dataFile := args[1]
-			if err := manager.ParseDataFile(dataFile, &inputs); err != nil {
-				log.Printf("%s", err)
-				return err
-			}
-		}
-
-		for k, v := range cmdInputs {
-			inputs[k] = v
-		}
-
-		fmt.Printf("Starting: %s\n", playFile)
 		pb := manager.Playbook{}
 		if err := manager.ParseFile(playFile, &pb); err != nil {
 			log.Printf("%s", err)
 			return err
 		}
+
+		if len(args) > 1 {
+			dataFile := args[1]
+			fileInputs := map[string]interface{}{}
+			if err := manager.ParseDataFile(dataFile, &fileInputs); err != nil {
+				log.Printf("%s", err)
+				return err
+			}
+			for k, v := range fileInputs {
+				if i, ok := pb.Inputs[k]; ok {
+					if i.Type == "File" {
+						inputs[k], _ = filepath.Abs(v.(string))
+					} else {
+						inputs[k] = v
+					}
+				}
+			}
+		}
+
+		for k, v := range cmdInputs {
+			if i, ok := pb.Inputs[k]; ok {
+				if i.Type == "File" {
+					inputs[k], _ = filepath.Abs(v)
+				} else {
+					inputs[k] = v
+				}
+			}
+		}
+
+		fmt.Printf("Starting: %s\n", playFile)
+
 		if server != 0 {
 			go pb.Execute(man, graph, inputs)
 			conf := webserver.WebServerHandler{

@@ -2,6 +2,11 @@
 class: Playbook
 name: RefGenome
 
+inputs:
+  gtf:
+    type: File
+    default: ftp://ftp.ensembl.org/pub/grch37/release-96/gff3/homo_sapiens/Homo_sapiens.GRCh37.87.gff3.gz
+
 steps:
   - desc: GTF Seq
     tableLoad:
@@ -43,18 +48,7 @@ steps:
                     from: "{{row.attributes.exon_id}}"
                     to: "{{row.parent_transcript}}"
                     label: parentTranscript
-                    exclude:
-                      - attributes
-                      - start
-                      - end
-                      - strand
-                      - end
-                      - parent_transcript
-                      - phase
-                      - score
-                      - seqid
-                      - source
-                      - type
+                    include: []
           - filter:
               col: "{{row.type}}"
               match: gene
@@ -78,15 +72,4 @@ steps:
                     from: "{{row.attributes.transcript_id}}"
                     to: "{{row.parent_gene}}"
                     label: parentGene
-                    exclude:
-                      - attributes
-                      - start
-                      - end
-                      - strand
-                      - end
-                      - parent_gene
-                      - phase
-                      - score
-                      - seqid
-                      - source
-                      - type
+                    include: []

@@ -25,12 +25,14 @@ type EdgeCreateStep struct {
 	From  string `json:"from"`
 	Label string `json:"label"`
   Exclude []string `json:"exclude"`
+  Include []string `json:"include"`
 }
 
 type VertexCreateStep struct {
 	Gid   string `json:"gid"`
 	Label string `json:"label"`
   Exclude []string `json:"exclude"`
+  Include []string `json:"include"`
 }
 
 type ColumnReplaceStep struct {
@@ -122,6 +124,14 @@ func (fs FieldTypeStep) Run(i map[string]interface{}, task *Task) map[string]int
   return o
 }
 
+func contains(s []string, q string) bool {
+	for _, i := range s {
+		if i == q {
+			return true
+		}
+	}
+	return false
+}
 
 func (ts VertexCreateStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
   v := gripql.Vertex{}
@@ -142,6 +152,14 @@ func (ts VertexCreateStep) Run(i map[string]interface{}, task *Task) map[string]
         }
       }
       v.Data = protoutil.AsStruct(t)
+  } else if ts.Include != nil {
+    t := map[string]interface{}{}
+    for x,y := range i {
+      if contains(ts.Exclude, x) {
+        t[x] = y
+      }
+    }
+    v.Data = protoutil.AsStruct(t)
   } else {
     v.Data = protoutil.AsStruct(i)
   }
@@ -173,6 +191,14 @@ func (ts EdgeCreateStep) Run(i map[string]interface{}, task *Task) map[string]in
         }
       }
       e.Data = protoutil.AsStruct(t)
+  } else if ts.Include != nil {
+    t := map[string]interface{}{}
+    for x,y := range i {
+      if contains(ts.Exclude, x) {
+        t[x] = y
+      }
+    }
+    e.Data = protoutil.AsStruct(t)
   } else {
     e.Data = protoutil.AsStruct(i)
   }

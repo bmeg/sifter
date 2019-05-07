@@ -18,13 +18,17 @@ steps:
           - vertexCreate:
               gid: "Case:{{row.PATIENT_ID}}"
               label: Case
+  - desc: Loading Sample List
+    tableLoad:
+      input: data_clinical_sample.txt
+      transform:
+        -
           - vertexCreate:
-              gid: "Sample:{{row.PATIENT_ID}}"
+              gid: "Sample:{{row.SAMPLE_ID}}"
               label: Sample
-              include: []
           - edgeCreate:
               to: "Case:{{row.PATIENT_ID}}"
-              from: "Sample:{{row.PATIENT_ID}}"
+              from: "Sample:{{row.SAMPLE_ID}}"
               label: case
               include: []
   -
@@ -40,7 +44,44 @@ steps:
       transform:
         -
           - vertexCreate:
-              gid: "{{row.Entrez_Gene_Id}}"
+              gid: "GeneExpression:{{row.Entrez_Gene_Id}}"
               label: GeneExpression
               exclude:
                 - Entrez_Gene_Id
+          - edgeCreate:
+              #need some method to rename column names,
+              #its a bit weird after the transpose
+              from: "Sample:{{row.Entrez_Gene_Id}}"
+              to: "GeneExpression:{{row.Entrez_Gene_Id}}"
+              label: geneExpression
+              include: []
+  -
+    desc: Loading Mutations
+    tableLoad:
+      input: data_mutations_extended.txt
+      transform:
+        -
+          - alleleID:
+              dst: allele_id
+              prefix: "Allele:"
+              genome: GRCh37
+              chromosome: "{{row.Chromosome}}"
+              start: "{{row.Start_Position}}"
+              end: "{{row.End_Position}}"
+              reference_bases: "{{row.Reference_Allele}}"
+              alternate_bases: "{{row.Tumor_Seq_Allele1}}"
+          - edgeCreate:
+              from: 'Callset:{{row.Matched_Norm_Sample_Barcode}}'
+              to: '{{row.allele_id}}'
+              label: variantIn
+              exclude:
+                - ma_func.impact
+                - ma_fi.score
+                - MA_FI.score
+                - MA_Func.Impact
+                - MA:link.MSA
+                - MA:FImpact
+                - MA:protein.change
+                - MA:link.var
+                - MA:FIS
+                - MA:link.PDB

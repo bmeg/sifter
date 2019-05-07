@@ -11,6 +11,8 @@ import (
   "sync"
   "regexp"
   "strconv"
+
+  "crypto/sha1"
   "compress/gzip"
 
   "encoding/csv"
@@ -66,6 +68,18 @@ type RegexReplaceStep struct {
   reg     *regexp.Regexp
 }
 
+
+type AlleleIDStep struct {
+  Prefix   string      `json:prefix`
+  Genome   string      `json:"genome"`
+  Chromosome string    `json:"chromosome"`
+  Start    string      `json:"start"`
+  End      string      `json:"end"`
+  ReferenceBases string `json:"reference_bases"`
+  AlternateBases string `json:"alternate_bases"`
+  Dest     string       `json:"dst"`
+}
+
 type DebugStep struct {}
 
 type TransformStep struct {
@@ -76,6 +90,7 @@ type TransformStep struct {
   Filter        *FilterStep            `json:"filter"`
   Debug         *DebugStep             `json:"debug"`
   RegexReplace  *RegexReplaceStep      `json:"regexReplace"`
+  AlleleID      *AlleleIDStep          `json:"alleleID"`
 }
 
 type TransformPipe []TransformStep
@@ -232,6 +247,24 @@ func (re RegexReplaceStep) Run(i map[string]interface{}, task *Task) map[string]
   return z
 }
 
+func (al AlleleIDStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
+  id := fmt.Sprintf("%s:%s:%d:%d:%s:%s",
+              al.Genome, al.Chromosome,
+              al.Start, al.End,
+              al.ReferenceBases,
+              al.AlternateBases)
+  idSha1 := fmt.Sprintf("%x", sha1.Sum([]byte(id)))
+  if al.Prefix != "" {
+    idSha1 = al.Prefix + idSha1
+  }
+  o := map[string]interface{}{}
+  for k, v := range i {
+    o[k] = v
+  }
+  o[al.Dest] = idSha1
+  return o
+}
+
 
 func (db DebugStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
   log.Printf("Data: %s", i)
@@ -283,6 +316,10 @@ func (ts TransformStep) Start(in chan map[string]interface{},
     } else if ts.RegexReplace != nil {
       for i := range in {
         out <- ts.RegexReplace.Run(i, task)
+      }
+    } else if ts.AlleleID != nil {
+      for i := range in {
+        out <- ts.AlleleID.Run(i, task)
       }
     } else {
       log.Printf("Unknown field step")

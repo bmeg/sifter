@@ -16,23 +16,6 @@ type Loader interface {
 	Load() chan gripql.GraphElement
 }
 
-type EdgeCreationStep struct {
-	To    string `json:"to"`
-	From  string `json:"from"`
-	Label string `json:"label"`
-}
-
-type DestVertexCreateStep struct {
-	Gid   string `json:"gid"`
-	Label string `json:"label"`
-}
-
-type ColumnReplaceStep struct {
-	Column  string `json:"col"`
-	Pattern string `json:"pattern"`
-	Replace string `json:"replace"`
-}
-
 type Step struct {
 	Desc         string            `json:"desc"`
 	MatrixLoad   *MatrixLoadStep   `json:"matrixLoad"`
@@ -40,6 +23,7 @@ type Step struct {
 	Download     *DownloadStep     `json:"download"`
 	Untar        *UntarStep        `json:"untar"`
 	VCFLoad      *VCFStep          `json:"vcfLoad"`
+	TableLoad    *TableLoadStep    `json:"tableLoad"`
 	//CopyFile     *CopyFilePrep     `json:copyFile`
 }
 

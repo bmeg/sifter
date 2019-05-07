@@ -2,7 +2,6 @@ package evaluate
 
 import (
 	//"fmt"
-	//"log"
 	//"regexp"
 	"github.com/aymerick/raymond"
 )

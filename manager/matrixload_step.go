@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"io"
+	"strings"
+	"compress/gzip"
 
 	"github.com/bmeg/grip/gripql"
 	"github.com/bmeg/grip/protoutil"
@@ -23,8 +26,8 @@ type MatrixLoadStep struct {
 	Transpose     bool                   `json:"transpose"`
 	IndexCol      int                    `json:"transpose"`
 	NoVertex      bool                   `json:"noVertex"`
-	Edge          []EdgeCreationStep     `json:"edge"`
-	DestVertex    []DestVertexCreateStep `json:"destVertex"`
+	Edge          []EdgeCreateStep       `json:"edge"`
+	DestVertex    []VertexCreateStep     `json:"destVertex"`
 	ColumnReplace []ColumnReplaceStep    `json:"columnReplace"`
 	ColumnExclude []string               `json:"columnExclude"`
 }
@@ -50,10 +53,21 @@ func (ml *MatrixLoadStep) Run(task *Task) error {
 		return fmt.Errorf("File Not Found: %s", input)
 	}
 	log.Printf("Loading: %s", inputPath)
-	hd, err := os.Open(inputPath)
+	fhd, err := os.Open(inputPath)
 	if err != nil {
 		return err
 	}
+	defer fhd.Close()
+
+	var hd io.Reader
+	if strings.HasSuffix(input, ".gz") || strings.HasSuffix(input, ".tgz") {
+		hd, err = gzip.NewReader(fhd)
+		if err != nil {
+			return err
+		}
+	} else {
+    hd = fhd
+  }
 
 	df := dataframe.ReadCSV(hd, dataframe.WithDelimiter('\t'), dataframe.HasHeader(true), dataframe.WithComments('#'))
 	cols := df.Names()

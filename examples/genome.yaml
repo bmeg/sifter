@@ -1,0 +1,92 @@
+
+class: Playbook
+name: RefGenome
+
+steps:
+  - desc: GTF Seq
+    tableLoad:
+      input: "{{input.gtf}}"
+      columns:
+        - seqid
+        - source
+        - type
+        - start
+        - end
+        - score
+        - strand
+        - phase
+        - attributes
+      transform:
+        -
+          - fieldMap:
+              col: attributes
+              sep: ";"
+          - fieldType:
+              col: start
+              type: int
+          - fieldType:
+              col: end
+              type: int
+          - filter:
+              col: "{{row.type}}"
+              match: exon
+              steps:
+                - vertexCreate:
+                    gid: "{{row.attributes.exon_id}}"
+                    label: Exon
+                - regexReplace:
+                    col: "{{row.attributes.Parent}}"
+                    regex: "^transcript:"
+                    replace: ""
+                    dst: parent_transcript
+                - edgeCreate:
+                    from: "{{row.attributes.exon_id}}"
+                    to: "{{row.parent_transcript}}"
+                    label: parentTranscript
+                    exclude:
+                      - attributes
+                      - start
+                      - end
+                      - strand
+                      - end
+                      - parent_transcript
+                      - phase
+                      - score
+                      - seqid
+                      - source
+                      - type
+          - filter:
+              col: "{{row.type}}"
+              match: gene
+              steps:
+                - vertexCreate:
+                    gid: "{{row.attributes.gene_id}}"
+                    label: Gene
+          - filter:
+              col: "{{row.type}}"
+              match: mRNA
+              steps:
+                - vertexCreate:
+                    gid: "{{row.attributes.transcript_id}}"
+                    label: Transcript
+                - regexReplace:
+                    col: "{{row.attributes.Parent}}"
+                    regex: "^gene:"
+                    replace: ""
+                    dst: parent_gene
+                - edgeCreate:
+                    from: "{{row.attributes.transcript_id}}"
+                    to: "{{row.parent_gene}}"
+                    label: parentGene
+                    exclude:
+                      - attributes
+                      - start
+                      - end
+                      - strand
+                      - end
+                      - parent_gene
+                      - phase
+                      - score
+                      - seqid
+                      - source
+                      - type

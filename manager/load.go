@@ -28,6 +28,7 @@ type Step struct {
 
 type Input struct {
 	Type string `json:"type"`
+	Default string `json:"default"`
 }
 
 type Inputs map[string]Input
@@ -35,8 +36,9 @@ type Inputs map[string]Input
 type Playbook struct {
 	Name  string `json:"name"`
 	Inputs Inputs `json:"inputs"`
+	Schema string `json:"schema"`
 	Class string `json:"class"`
-	Steps []Step `json:steps`
+	Steps []Step `json:"steps"`
 }
 
 // Parse parses a YAML doc into the given Config instance.

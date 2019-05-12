@@ -5,6 +5,7 @@ import (
   "io"
   "path"
   "log"
+  "sync"
   "compress/gzip"
 	//"fmt"
 	"github.com/golang/protobuf/jsonpb"
@@ -14,13 +15,14 @@ import (
 type DirEmitter struct {
 	jm jsonpb.Marshaler
   dir string
+  mux sync.Mutex
   vout map[string]io.WriteCloser
   eout map[string]io.WriteCloser
 }
 
-func NewDirEmitter(dir string) DirEmitter {
+func NewDirEmitter(dir string) *DirEmitter {
   log.Printf("Emitting to %s", dir)
-  return DirEmitter{
+  return &DirEmitter{
     jm: jsonpb.Marshaler{},
     dir: dir,
     vout: map[string]io.WriteCloser{},
@@ -28,7 +30,9 @@ func NewDirEmitter(dir string) DirEmitter {
   }
 }
 
-func (s DirEmitter) EmitVertex(v *gripql.Vertex) error {
+func (s *DirEmitter) EmitVertex(v *gripql.Vertex) error {
+  s.mux.Lock()
+  defer s.mux.Unlock()
   f, ok := s.vout[v.Label]
   if !ok {
     j, err := os.Create(path.Join(s.dir, v.Label + ".Vertex.json.gz" ))
@@ -45,7 +49,9 @@ func (s DirEmitter) EmitVertex(v *gripql.Vertex) error {
   return nil
 }
 
-func (s DirEmitter) EmitEdge(e *gripql.Edge) error {
+func (s *DirEmitter) EmitEdge(e *gripql.Edge) error {
+  s.mux.Lock()
+  defer s.mux.Unlock()
   f, ok := s.eout[e.Label]
   if !ok {
     j, err := os.Create(path.Join(s.dir, e.Label + ".Edge.json.gz" ))
@@ -55,13 +61,18 @@ func (s DirEmitter) EmitEdge(e *gripql.Edge) error {
     f = gzip.NewWriter(j)
     s.eout[e.Label] = f
   }
-  o, _ := s.jm.MarshalToString(e)
+  o, err := s.jm.MarshalToString(e)
+  if err != nil {
+    log.Printf("Error: %s", err)
+    return err
+  }
   f.Write([]byte(o))
   f.Write([]byte("\n"))
   return nil
 }
 
-func (s DirEmitter) Close() {
+func (s *DirEmitter) Close() {
+  log.Printf("Closing emitter")
   for _, v := range s.vout {
     v.Close()
   }

@@ -37,6 +37,10 @@ type VertexCreateStep struct {
   Include []string `json:"include"`
 }
 
+type ObjectCreateStep struct {
+  Class  string `json:"class"`
+}
+
 type ColumnReplaceStep struct {
 	Column  string `json:"col"`
 	Pattern string `json:"pattern"`
@@ -80,6 +84,10 @@ type AlleleIDStep struct {
   Dest     string       `json:"dst"`
 }
 
+type ProjectStep struct {
+  Mapping map[string]string `json:"mapping"`
+}
+
 type DebugStep struct {}
 
 type TransformStep struct {
@@ -87,10 +95,12 @@ type TransformStep struct {
   FieldType     *FieldTypeStep         `json:"fieldType"`
   EdgeCreate    *EdgeCreateStep        `json:"edgeCreate"`
   VertexCreate  *VertexCreateStep      `json:"vertexCreate"`
+  ObjectCreate  *ObjectCreateStep      `json:"objectCreate"`
   Filter        *FilterStep            `json:"filter"`
   Debug         *DebugStep             `json:"debug"`
   RegexReplace  *RegexReplaceStep      `json:"regexReplace"`
   AlleleID      *AlleleIDStep          `json:"alleleID"`
+  Project       *ProjectStep           `json:"project"`
 }
 
 type TransformPipe []TransformStep
@@ -217,8 +227,28 @@ func (ts EdgeCreateStep) Run(i map[string]interface{}, task *Task) map[string]in
   } else {
     e.Data = protoutil.AsStruct(i)
   }
-
   task.EmitEdge( &e )
+  return i
+}
+
+func (ts ObjectCreateStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
+  //log.Printf("Create Object: %s", ts.Class)
+  if task.Runtime.Schemas == nil {
+    log.Printf("Schema not loaded")
+    return i
+  }
+  if o, err := task.Runtime.Schemas.Generate(ts.Class, i); err == nil {
+    for _, j := range o {
+      if j.Vertex != nil {
+        task.EmitVertex(j.Vertex)
+      } else if j.Edge != nil {
+        //log.Printf("Emitting: %s", j.Edge)
+        task.EmitEdge(j.Edge)
+      }
+    }
+  } else {
+    log.Printf("Error: %s : %s", err, i)
+  }
   return i
 }
 
@@ -265,6 +295,18 @@ func (al AlleleIDStep) Run(i map[string]interface{}, task *Task) map[string]inte
   return o
 }
 
+func (pr ProjectStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
+
+  o := map[string]interface{}{}
+  for k, v := range i {
+    o[k] = v
+  }
+
+  for k, v := range pr.Mapping {
+    o[k], _ = evaluate.ExpressionString(v, task.Inputs, i)
+  }
+  return o
+}
 
 func (db DebugStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
   log.Printf("Data: %s", i)
@@ -321,6 +363,14 @@ func (ts TransformStep) Start(in chan map[string]interface{},
       for i := range in {
         out <- ts.AlleleID.Run(i, task)
       }
+    } else if ts.Project != nil {
+      for i := range in {
+        out <- ts.Project.Run(i, task)
+      }
+    } else if ts.ObjectCreate != nil {
+      for i := range in {
+        out <- ts.ObjectCreate.Run(i, task)
+      }
     } else {
       log.Printf("Unknown field step")
     }
@@ -348,7 +398,7 @@ func (tp TransformPipe) Start( in chan map[string]interface{},
 
 
 func (ml *TableLoadStep) Run(task *Task) error {
-
+  log.Printf("Starting Table Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
 	inputPath, err := task.Path(input)
 

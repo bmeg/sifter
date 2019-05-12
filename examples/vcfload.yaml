@@ -2,6 +2,14 @@
 class: Playbook
 name: VCFLoad
 
+inputs:
+  clinvar_vcf:
+    type: File
+    default: ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar_20190422.vcf.gz
+  dbsnp_vcf:
+    type: File
+    default: ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/
+
 steps:
   - desc: Loading VCF
     vcfLoad:

@@ -11,11 +11,12 @@ import (
 )
 
 type Link struct {
-  Name       string   `json:"name"`
-  Backref    string   `json:"backref"`
-  Label      string   `json:"label"`
-  TargetType string   `json:"target_type"`
-  Required   bool     `json:"required"`
+  Name         string   `json:"name"`
+  Backref      string   `json:"backref"`
+  Label        string   `json:"label"`
+  TargetType   string   `json:"target_type"`
+  Multiplicity string   `json:multiplicity`
+  Required     bool     `json:"required"`
 }
 
 type Value struct {
@@ -46,7 +47,6 @@ type Property struct {
   Format      string    `json:"format"`
 }
 
-
 type PropertyElement struct {
   Element     Property
   Value       string
@@ -73,7 +73,7 @@ type Schema struct {
   Title  string  `json:"title"`
   Type   string  `json:"type"`
   Required []string `json:"required"`
-  UniqueKeys [][]string `json:"required"`
+  UniqueKeys [][]string `json:"uniqueKeys"`
   Links      []Link     `json:"links"`
   Props      Properties `json:"properties"`
 }

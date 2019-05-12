@@ -7,6 +7,8 @@ import (
 
 	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/webserver"
+	"github.com/bmeg/sifter/evaluate"
+
 	"github.com/spf13/cobra"
 )
 
@@ -75,6 +77,21 @@ var Cmd = &cobra.Command{
 					inputs[k] = v
 				}
 			}
+		}
+
+		for k, v := range pb.Inputs {
+			if _, ok := inputs[k]; !ok {
+				if v.Default != "" {
+					defaultPath := filepath.Join(filepath.Dir(playFile), v.Default)
+					inputs[k], _ = filepath.Abs(defaultPath)
+				}
+			}
+		}
+
+		if pb.Schema != "" {
+			schema, _ := evaluate.ExpressionString(pb.Schema, inputs, nil)
+			pb.Schema = schema
+			log.Printf("Schema: %s", schema)
 		}
 
 		fmt.Printf("Starting: %s\n", playFile)

@@ -13,6 +13,8 @@ func (pb *Playbook) Execute(man *Manager, graph string, inputs map[string]interf
 		return err
 	}
 
+	run.LoadSchema(pb.Schema)
+
 	run.OutputCallback = func(name, value string) error {
 		inputs[name] = value
 		return nil

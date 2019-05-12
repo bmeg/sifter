@@ -7,6 +7,12 @@ inputs:
     type: File
     default: ftp://ftp.ensembl.org/pub/grch37/release-96/gff3/homo_sapiens/Homo_sapiens.GRCh37.87.gff3.gz
 
+  schema:
+    type: Directory
+    default: schemas
+
+schema: "{{input.schema}}"
+
 steps:
   - desc: GTF Seq
     tableLoad:
@@ -36,40 +42,36 @@ steps:
               col: "{{row.type}}"
               match: exon
               steps:
-                - vertexCreate:
-                    gid: "{{row.attributes.exon_id}}"
-                    label: Exon
                 - regexReplace:
                     col: "{{row.attributes.Parent}}"
                     regex: "^transcript:"
                     replace: ""
                     dst: parent_transcript
-                - edgeCreate:
-                    from: "{{row.attributes.exon_id}}"
-                    to: "{{row.parent_transcript}}"
-                    label: parentTranscript
-                    include: []
+                - project:
+                    mapping:
+                      exon_id : "{{row.attributes.exon_id}}"
+                - objectCreate:
+                    class: exon
           - filter:
               col: "{{row.type}}"
               match: gene
               steps:
-                - vertexCreate:
-                    gid: "{{row.attributes.gene_id}}"
-                    label: Gene
+                - project:
+                    mapping:
+                      gene_id : "{{row.attributes.gene_id}}"
+                - objectCreate:
+                    class: gene
           - filter:
               col: "{{row.type}}"
               match: mRNA
               steps:
-                - vertexCreate:
-                    gid: "{{row.attributes.transcript_id}}"
-                    label: Transcript
                 - regexReplace:
                     col: "{{row.attributes.Parent}}"
                     regex: "^gene:"
                     replace: ""
                     dst: parent_gene
-                - edgeCreate:
-                    from: "{{row.attributes.transcript_id}}"
-                    to: "{{row.parent_gene}}"
-                    label: parentGene
-                    include: []
+                - project:
+                    mapping:
+                      transcript_id : "{{row.attributes.transcript_id}}"
+                - objectCreate:
+                    class: transcript

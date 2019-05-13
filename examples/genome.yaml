@@ -46,7 +46,7 @@ steps:
                     col: "{{row.attributes.Parent}}"
                     regex: "^transcript:"
                     replace: ""
-                    dst: parent_transcript
+                    dst: transcript_id
                 - project:
                     mapping:
                       exon_id : "{{row.attributes.exon_id}}"
@@ -69,7 +69,7 @@ steps:
                     col: "{{row.attributes.Parent}}"
                     regex: "^gene:"
                     replace: ""
-                    dst: parent_gene
+                    dst: gene_id
                 - project:
                     mapping:
                       transcript_id : "{{row.attributes.transcript_id}}"

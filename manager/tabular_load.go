@@ -102,6 +102,7 @@ type TransformStep struct {
   AlleleID      *AlleleIDStep          `json:"alleleID"`
   Project       *ProjectStep           `json:"project"`
   Map           *MapStep               `json:"map"`
+  Reduce        *ReduceStep            `json:"reduce"`
 }
 
 type TransformPipe []TransformStep
@@ -317,24 +318,9 @@ func (db DebugStep) Run(i map[string]interface{}, task *Task) map[string]interfa
 func (ts TransformStep) Start(in chan map[string]interface{},
   task *Task, wg *sync.WaitGroup) chan map[string]interface{} {
 
-  if ts.Filter != nil {
-    ts.Filter.inChan = make(chan map[string]interface{}, 100)
-    ts.Filter.Steps.Start(ts.Filter.inChan, task, wg)
-  }
-  if ts.Map != nil {
-    ts.Map.Start(task, wg)
-  }
-  if ts.RegexReplace != nil {
-    re, _ := evaluate.ExpressionString(ts.RegexReplace.Regex, task.Inputs, nil)
-    ts.RegexReplace.reg, _ = regexp.Compile(re)
-  }
-
   out := make(chan map[string]interface{}, 100)
   go func() {
     defer close(out)
-    if ts.Filter != nil {
-      defer close(ts.Filter.inChan)
-    }
     if ts.FieldMap != nil {
       for i := range in {
         out <- ts.FieldMap.Run(i, task)
@@ -352,6 +338,9 @@ func (ts TransformStep) Start(in chan map[string]interface{},
         out <- ts.EdgeCreate.Run(i, task)
       }
     } else if ts.Filter != nil {
+      ts.Filter.inChan = make(chan map[string]interface{}, 100)
+      ts.Filter.Steps.Start(ts.Filter.inChan, task, wg)
+      defer close(ts.Filter.inChan)
       for i := range in {
         out <- ts.Filter.Run(i, task)
       }
@@ -360,6 +349,8 @@ func (ts TransformStep) Start(in chan map[string]interface{},
         out <- ts.Debug.Run(i, task)
       }
     } else if ts.RegexReplace != nil {
+      re, _ := evaluate.ExpressionString(ts.RegexReplace.Regex, task.Inputs, nil)
+      ts.RegexReplace.reg, _ = regexp.Compile(re)
       for i := range in {
         out <- ts.RegexReplace.Run(i, task)
       }
@@ -372,8 +363,17 @@ func (ts TransformStep) Start(in chan map[string]interface{},
         out <- ts.Project.Run(i, task)
       }
     } else if ts.Map != nil {
+      ts.Map.Start(task, wg)
       for i := range in {
         out <- ts.Map.Run(i, task)
+      }
+    } else if ts.Reduce != nil {
+      ts.Reduce.Start(task, wg)      
+      for i := range in {
+        ts.Reduce.Add(i, task)
+      }
+      for o := range ts.Reduce.Run() {
+        out <- o
       }
     } else if ts.ObjectCreate != nil {
       for i := range in {

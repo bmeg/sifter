@@ -87,10 +87,14 @@ func PyCompile(codeStr string) (*PyCode, error){
     return &PyCode{module:module}, nil
 }
 
-func (p *PyCode) Evaluate(method string, row map[string]interface{}) map[string]interface{} {
+func (p *PyCode) Evaluate(method string, inputs... map[string]interface{}) map[string]interface{} {
   fun := p.module.Globals[method]
-  data := PyObject(row)
-  out, err := py.Call(fun, py.Tuple{data}, nil)
+  in := py.Tuple{}
+  for _, i := range inputs {
+    data := PyObject(i)
+    in = append(in, data)
+  }
+  out, err := py.Call(fun, in, nil)
   if err != nil {
 		py.TracebackDump(err)
 		log.Printf("Map Error: %s", err)

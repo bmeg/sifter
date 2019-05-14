@@ -2,6 +2,7 @@ package manager
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/url"
 	"os"
 	"path"
@@ -33,6 +34,11 @@ func (m *Task) Path(p string) (string, error) {
 		}
 	}
 	return a, nil
+}
+
+func (m *Task) TempDir() string {
+	name, _ := ioutil.TempDir(m.Workdir, "tmp")
+	return name
 }
 
 func (m *Task) DownloadFile(src string, dest string) (string, error) {

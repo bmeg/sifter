@@ -50,6 +50,19 @@ steps:
                 - project:
                     mapping:
                       exon_id : "{{row.attributes.exon_id}}"
+                - map:
+                    method: mapList
+                    python: >
+                      def mapList(x):
+                        x['transcript_id'] = [x['transcript_id']]
+                        return x
+                - reduce:
+                    field: "{{row.exon_id}}"
+                    method: merge
+                    python: >
+                      def merge(x,y):
+                        x['transcript_id'] = x['transcript_id'] + y['transcript_id']
+                        return x
                 - objectCreate:
                     class: exon
           - filter:

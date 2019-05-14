@@ -1,6 +1,7 @@
 module github.com/bmeg/sifter
 
 require (
+	github.com/AndreasBriese/bbloom v0.0.0-20190306092124-e2d15f34fcf9 // indirect
 	github.com/abbot/go-http-auth v0.4.0 // indirect
 	github.com/alecthomas/gometalinter v3.0.0+incompatible // indirect
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
@@ -9,6 +10,8 @@ require (
 	github.com/bmeg/grip v0.0.0-20190327203551-6f9abc18d4da
 	github.com/brentp/irelate v0.0.0-20180801151701-1bf7c8f95c75 // indirect
 	github.com/brentp/vcfgo v0.0.0-20190315012323-bdb8e831fc71
+	github.com/dgraph-io/badger v2.0.0-rc.2+incompatible
+	github.com/dgryski/go-farm v0.0.0-20190423205320-6a90982ecee2 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-gota/gota v0.7.1-0.20190402185630-1058f871be31
 	github.com/go-openapi/errors v0.19.0
@@ -40,6 +43,7 @@ require (
 	github.com/nicksnyder/go-i18n v1.10.0 // indirect
 	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
 	github.com/oxtoacart/bpool v0.0.0-20190227141107-8c4636f812cc // indirect
+	github.com/pkg/errors v0.8.1 // indirect
 	github.com/segmentio/ksuid v1.0.2 // indirect
 	github.com/sirupsen/logrus v1.4.1 // indirect
 	github.com/spf13/cobra v0.0.3

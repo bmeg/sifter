@@ -101,6 +101,7 @@ type TransformStep struct {
   RegexReplace  *RegexReplaceStep      `json:"regexReplace"`
   AlleleID      *AlleleIDStep          `json:"alleleID"`
   Project       *ProjectStep           `json:"project"`
+  Map           *MapStep               `json:"map"`
 }
 
 type TransformPipe []TransformStep
@@ -320,6 +321,9 @@ func (ts TransformStep) Start(in chan map[string]interface{},
     ts.Filter.inChan = make(chan map[string]interface{}, 100)
     ts.Filter.Steps.Start(ts.Filter.inChan, task, wg)
   }
+  if ts.Map != nil {
+    ts.Map.Start(task, wg)
+  }
   if ts.RegexReplace != nil {
     re, _ := evaluate.ExpressionString(ts.RegexReplace.Regex, task.Inputs, nil)
     ts.RegexReplace.reg, _ = regexp.Compile(re)
@@ -366,6 +370,10 @@ func (ts TransformStep) Start(in chan map[string]interface{},
     } else if ts.Project != nil {
       for i := range in {
         out <- ts.Project.Run(i, task)
+      }
+    } else if ts.Map != nil {
+      for i := range in {
+        out <- ts.Map.Run(i, task)
       }
     } else if ts.ObjectCreate != nil {
       for i := range in {

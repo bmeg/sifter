@@ -72,7 +72,6 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
 
   for _, l := range s.Links {
     dst := []string{}
-    log.Printf("%s", s.Props[l.Name].Element.Type.Type)
     if s.Props[l.Name].Element.Type.Type == "string" {
       if x, ok := data[l.Name].(string); ok {
         dst = []string{ x }
@@ -82,8 +81,14 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
     } else if s.Props[l.Name].Element.Type.Type == "array" {
       if x, ok := data[l.Name].([]string); ok {
         dst = x
+      } else if x, ok := data[l.Name].([]interface{}); ok {
+        for _, a := range x {
+          if aStr, ok := a.(string); ok {
+            dst = append(dst, aStr)
+          }
+        }
       } else {
-        log.Printf("Wrong: %s %s %s", data[l.Name], l.Name, data)
+        log.Printf("Unknown type: %s %s %s", data[l.Name], l.Name, data)
       }
     }
     for _, d := range dst {

@@ -4,6 +4,7 @@ package schema
 import (
   "log"
   "fmt"
+  "strings"
   "io/ioutil"
   "path/filepath"
   "encoding/json"
@@ -118,6 +119,34 @@ func LoadSchema(path string) (Schema, error) {
     s := Schema{}
     if err := yaml.Unmarshal(raw, &s); err != nil {
       return Schema{}, fmt.Errorf("failed to read data at path %s: \n%v", path, err)
+    }
+    if ref, ok := s.Props["$ref"]; ok {
+      //log.Printf("refpath: %s", ref.Value)
+      vs := strings.Split(ref.Value, "#")
+      dir := filepath.Dir(path)
+      pPath := filepath.Join(dir, vs[0])
+      //log.Printf("ref file: %s", pPath)
+
+      raw, err := ioutil.ReadFile(pPath)
+      if err != nil {
+    		return Schema{}, fmt.Errorf("failed to read data at path %s: \n%v", pPath, err)
+    	}
+      pProps := map[string]interface{}{}
+      if err := yaml.Unmarshal(raw, &pProps); err != nil {
+        return Schema{}, fmt.Errorf("failed to file reference at path %s: \n%v", pPath, err)
+      }
+      fPath := vs[1]
+      fName := fPath[1:len(fPath)]
+      if fData, ok := pProps[fName]; ok {
+        sData, _ := yaml.Marshal(fData)
+        np := map[string]PropertyElement{}
+        if err := yaml.Unmarshal(sData, &np); err != nil {
+            return s, err
+        }
+        for k, v := range np {
+          s.Props[k] = v
+        }
+      }
     }
     return s, nil
 }

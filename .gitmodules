@@ -1,0 +1,3 @@
+[submodule "examples/bmeg-dictionary"]
+	path = examples/bmeg-dictionary
+	url = https://github.com/bmeg/bmeg-dictionary.git

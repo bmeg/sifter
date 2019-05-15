@@ -12,6 +12,8 @@ import (
   "regexp"
   "strconv"
 
+  "encoding/json"
+
   "crypto/sha1"
   "compress/gzip"
 
@@ -88,6 +90,12 @@ type ProjectStep struct {
   Mapping map[string]string `json:"mapping"`
 }
 
+type FieldProcessStep struct {
+  Column string                        `json:"col"`
+  Steps   TransformPipe                `json:"steps"`
+  inChan  chan map[string]interface{}
+}
+
 type DebugStep struct {}
 
 type TransformStep struct {
@@ -103,6 +111,7 @@ type TransformStep struct {
   Project       *ProjectStep           `json:"project"`
   Map           *MapStep               `json:"map"`
   Reduce        *ReduceStep            `json:"reduce"`
+  FieldProcess  *FieldProcessStep      `json:"fieldProcess"`
 }
 
 type TransformPipe []TransformStep
@@ -249,11 +258,17 @@ func (ts ObjectCreateStep) Run(i map[string]interface{}, task *Task) map[string]
       }
     }
   } else {
-    log.Printf("Error: %s : %s", err, i)
+    s, _ := json.Marshal(i)
+    log.Printf("Error: %s on data %s", err, s)
   }
   return i
 }
 
+
+func (fs *FilterStep) Start(task *Task, wg *sync.WaitGroup) {
+  fs.inChan = make(chan map[string]interface{}, 100)
+  fs.Steps.Start(fs.inChan, task, wg)
+}
 
 func (fs FilterStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
   col, _ := evaluate.ExpressionString(fs.Column, task.Inputs, i)
@@ -264,6 +279,33 @@ func (fs FilterStep) Run(i map[string]interface{}, task *Task) map[string]interf
   return i
 }
 
+func (fs FilterStep) Close() {
+  close(fs.inChan)
+}
+
+
+func (fs *FieldProcessStep) Start(task *Task, wg *sync.WaitGroup) {
+  fs.inChan = make(chan map[string]interface{}, 100)
+  fs.Steps.Start(fs.inChan, task, wg)
+}
+
+
+func (fs FieldProcessStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
+  if v, ok := i[fs.Column]; ok {
+      if vList, ok := v.([]interface{}); ok {
+        for _, l := range vList {
+          if m, ok := l.(map[string]interface{}); ok {
+            fs.inChan <- m
+          }
+        }
+      }
+  }
+  return i
+}
+
+func (fs FieldProcessStep) Close() {
+  close(fs.inChan)
+}
 
 func (re RegexReplaceStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
   col, _ := evaluate.ExpressionString(re.Column, task.Inputs, i)
@@ -311,7 +353,8 @@ func (pr ProjectStep) Run(i map[string]interface{}, task *Task) map[string]inter
 }
 
 func (db DebugStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
-  log.Printf("DebugData: %s", i)
+  s, _ := json.Marshal(i)
+  log.Printf("DebugData: %s", s)
   return i
 }
 
@@ -338,12 +381,17 @@ func (ts TransformStep) Start(in chan map[string]interface{},
         out <- ts.EdgeCreate.Run(i, task)
       }
     } else if ts.Filter != nil {
-      ts.Filter.inChan = make(chan map[string]interface{}, 100)
-      ts.Filter.Steps.Start(ts.Filter.inChan, task, wg)
-      defer close(ts.Filter.inChan)
+      ts.Filter.Start(task, wg)
       for i := range in {
         out <- ts.Filter.Run(i, task)
       }
+      ts.Filter.Close()
+    } else if ts.FieldProcess != nil {
+      ts.FieldProcess.Start(task, wg)
+      for i := range in {
+        out <- ts.FieldProcess.Run(i, task)
+      }
+      ts.FieldProcess.Close()
     } else if ts.Debug != nil {
       for i := range in {
         out <- ts.Debug.Run(i, task)

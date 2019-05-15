@@ -311,7 +311,7 @@ func (pr ProjectStep) Run(i map[string]interface{}, task *Task) map[string]inter
 }
 
 func (db DebugStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
-  log.Printf("Data: %s", i)
+  log.Printf("DebugData: %s", i)
   return i
 }
 
@@ -368,7 +368,7 @@ func (ts TransformStep) Start(in chan map[string]interface{},
         out <- ts.Map.Run(i, task)
       }
     } else if ts.Reduce != nil {
-      ts.Reduce.Start(task, wg)      
+      ts.Reduce.Start(task, wg)
       for i := range in {
         ts.Reduce.Add(i, task)
       }

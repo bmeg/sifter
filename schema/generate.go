@@ -24,7 +24,7 @@ func (s Schemas) Generate(classID string, data map[string]interface{}) ([]GraphE
     //log.Printf("%s", out)
     return out, err
   }
-  return nil, fmt.Errorf("Class %s not found", classID )
+  return nil, fmt.Errorf("Class '%s' not found", classID )
 }
 
 
@@ -39,7 +39,7 @@ func (s Schema) Validate(data map[string]interface{}) (map[string]interface{}, e
 
   for _, r := range s.Required {
     if _, ok := out[r]; !ok {
-      return nil, fmt.Errorf("Required %s not found", r)
+      return nil, fmt.Errorf("Required field '%s' in '%s' not found", r, s.Id)
     }
   }
 

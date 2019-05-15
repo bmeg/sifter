@@ -57,6 +57,12 @@ func (pb *Playbook) Execute(man *Manager, graph string, inputs map[string]interf
 				run.Printf("Table Load Error: %s", err)
 				return err
 			}
+		} else if step.JSONLoad != nil {
+			task := run.NewTask(inputs)
+			if err := step.JSONLoad.Run(task); err != nil {
+				run.Printf("JSON Load Error: %s", err)
+				return err
+			}
 		} else {
 			log.Printf("Unknown Step")
 		}

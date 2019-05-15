@@ -23,6 +23,7 @@ type Step struct {
 	Untar        *UntarStep        `json:"untar"`
 	VCFLoad      *VCFStep          `json:"vcfLoad"`
 	TableLoad    *TableLoadStep    `json:"tableLoad"`
+	JSONLoad     *JSONLoadStep     `json:"jsonLoad"`
 	TransposeFile *TransposeFileStep `json:"transposeFile"`
 }
 

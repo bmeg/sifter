@@ -93,6 +93,7 @@ type ProjectStep struct {
 type FieldProcessStep struct {
   Column string                        `json:"col"`
   Steps   TransformPipe                `json:"steps"`
+  Mapping map[string]string            `json:"mapping"`
   inChan  chan map[string]interface{}
 }
 
@@ -295,7 +296,15 @@ func (fs FieldProcessStep) Run(i map[string]interface{}, task *Task) map[string]
       if vList, ok := v.([]interface{}); ok {
         for _, l := range vList {
           if m, ok := l.(map[string]interface{}); ok {
-            fs.inChan <- m
+            r := map[string]interface{}{}
+            for k, v := range m {
+              r[k] = v
+            }
+            for k, v := range fs.Mapping {
+              val, _ := evaluate.ExpressionString(v, task.Inputs, i)
+              r[k] = val
+            }
+            fs.inChan <- r
           }
         }
       }

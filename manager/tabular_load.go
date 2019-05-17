@@ -113,6 +113,7 @@ type TransformStep struct {
   Map           *MapStep               `json:"map"`
   Reduce        *ReduceStep            `json:"reduce"`
   FieldProcess  *FieldProcessStep      `json:"fieldProcess"`
+  TableWrite    *TableWriteStep        `json:"tableWrite"`
 }
 
 type TransformPipe []TransformStep
@@ -123,6 +124,13 @@ type TableLoadStep struct {
   SkipIfMissing bool                   `json:"skipIfMissing"`
   Columns       []string               `json:"columns"`
   Transform     []TransformPipe        `json:"transform"`
+}
+
+type TableWriteStep struct {
+  Output       string   `json:"output"`
+  Columns      []string `json:"columns"`
+  out          *os.File
+  writer       *csv.Writer
 }
 
 func (fm FieldMapStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
@@ -265,6 +273,32 @@ func (ts ObjectCreateStep) Run(i map[string]interface{}, task *Task) map[string]
   return i
 }
 
+
+func (tw *TableWriteStep) Start(task *Task, wg *sync.WaitGroup) {
+  path, _ := task.Path(tw.Output)
+  tw.out, _ = os.Create(path)
+  tw.writer = csv.NewWriter(tw.out)
+  tw.writer.Comma = '\t'
+  tw.writer.Write(tw.Columns)
+}
+
+func (tw *TableWriteStep)  Run(i map[string]interface{}, task *Task) map[string]interface{} {
+  o := make([]string, len(tw.Columns))
+  for j, k := range tw.Columns {
+    if v, ok := i[k]; ok {
+      if vStr, ok := v.(string); ok {
+        o[j] = vStr        
+      }
+    }
+  }
+  tw.writer.Write(o)
+  return i
+}
+
+func (tw *TableWriteStep) Close() {
+  tw.writer.Flush()
+  tw.out.Close()
+}
 
 func (fs *FilterStep) Start(task *Task, wg *sync.WaitGroup) {
   fs.inChan = make(chan map[string]interface{}, 100)
@@ -436,6 +470,12 @@ func (ts TransformStep) Start(in chan map[string]interface{},
       for i := range in {
         out <- ts.ObjectCreate.Run(i, task)
       }
+    } else if ts.TableWrite != nil {
+      ts.TableWrite.Start(task, wg)
+      for i := range in {
+        out <- ts.TableWrite.Run(i, task)
+      }
+      ts.TableWrite.Close()
     } else {
       log.Printf("Unknown field step")
     }

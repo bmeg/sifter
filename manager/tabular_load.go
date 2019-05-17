@@ -260,7 +260,7 @@ func (ts ObjectCreateStep) Run(i map[string]interface{}, task *Task) map[string]
     }
   } else {
     s, _ := json.Marshal(i)
-    log.Printf("Error: %s on data %s", err, s)
+    log.Printf("Object Create Error: '%s' using '%s'", err, s)
   }
   return i
 }

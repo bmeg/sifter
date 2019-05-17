@@ -205,11 +205,16 @@ func LoadSchema(path string) (Schema, error) {
     }
     for k := range s.Props {
       if s.Props[k].Element.Ref != "" {
-        log.Printf("External Load: %s %s %s", path, k, s.Props[k].Element.Ref)
+        //log.Printf("External Load: %s %s %s", path, k, s.Props[k].Element.Ref)
         elm := Property{}
         err := LoadRef(path, s.Props[k].Element.Ref, &elm)
         if err != nil {
           log.Printf("Error: %s", err)
+        }
+        //We're overwritting the current record with the contents pointed to with
+        //$ref, but we're leaving some fields, if they've been defined...
+        if s.Props[k].Element.SystemAlias != "" {
+          elm.SystemAlias = s.Props[k].Element.SystemAlias
         }
         s.Props[k] = PropertyElement{Element:elm}
         //s.Props[k].Element.Ref = ""

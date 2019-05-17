@@ -59,12 +59,17 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
         if ks, ok := dv.(string); ok {
           gid = ks
         }
+      } else {
+        log.Printf("node_id field '%s' not in %s data", k, s.Id)
       }
     } else {
       if x, ok := data[k]; ok {
         outData[k] = x
       }
     }
+  }
+  if gid == "" {
+    log.Printf("GID not found for %s", s.Id)
   }
   ds := protoutil.AsStruct(outData)
   v := gripql.Vertex{Gid: gid, Label: s.Title, Data:ds}
@@ -73,6 +78,20 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
 
   for _, l := range s.Links {
     dst := []string{}
+    if v, ok := outData[l.Name]; ok {
+      if vString, ok := v.(string); ok {
+        dst = []string{vString}
+      } else if vStringArray, ok := v.([]string); ok {
+        dst = vStringArray
+      } else {
+        log.Printf("Class %s field %s Unknown property type", s.Id, l.Name)
+      }
+    }
+    /*
+    //TODO: This code tries to get the link values using the types found in the schema definition
+    //which is technically correct, but much harder. This code currently breaks on cases where schema uses
+    //`anyOf` definitions. So, for now using the previously mentioned version that doesnt check the schema,
+    //and assumes a string or list of strings
     if s.Props[l.Name].Element.Type.Type == "string" {
       if x, ok := data[l.Name].(string); ok {
         dst = []string{ x }
@@ -94,6 +113,7 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
     } else {
       log.Printf("Class %s field %s Unknown property type: %s", s.Id, l.Name, s.Props[l.Name].Element.Type.Type)
     }
+    */
     for _, d := range dst {
       e := gripql.Edge{From:gid, To: d, Label:l.Label}
       out = append(out, GraphElement{Edge:&e})

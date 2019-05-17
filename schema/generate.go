@@ -83,6 +83,12 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
         dst = []string{vString}
       } else if vStringArray, ok := v.([]string); ok {
         dst = vStringArray
+      } else if vObjectArray, ok := v.([]interface{}); ok {
+        for _, x := range vObjectArray {
+          if y, ok := x.(string); ok {
+            dst = append(dst, y)
+          }
+        }
       } else {
         log.Printf("Class %s field %s Unknown property type", s.Id, l.Name)
       }

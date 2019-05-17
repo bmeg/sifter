@@ -369,11 +369,20 @@ func (re RegexReplaceStep) Run(i map[string]interface{}, task *Task) map[string]
 }
 
 func (al AlleleIDStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
-  id := fmt.Sprintf("%s:%s:%d:%d:%s:%s",
-              al.Genome, al.Chromosome,
-              al.Start, al.End,
-              al.ReferenceBases,
-              al.AlternateBases)
+
+  genome, _ := evaluate.ExpressionString(al.Genome, task.Inputs, i)
+  chromosome, _ := evaluate.ExpressionString(al.Chromosome, task.Inputs, i)
+  start, _ := evaluate.ExpressionString(al.Start, task.Inputs, i)
+  end, _ := evaluate.ExpressionString(al.End, task.Inputs, i)
+  ref, _ := evaluate.ExpressionString(al.ReferenceBases, task.Inputs, i)
+  alt, _ := evaluate.ExpressionString(al.AlternateBases, task.Inputs, i)
+
+  id := fmt.Sprintf("%s:%s:%s:%s:%s:%s",
+              genome, chromosome,
+              start, end,
+              ref,
+              alt)
+  //log.Printf("AlleleStr: %s", id)
   idSha1 := fmt.Sprintf("%x", sha1.Sum([]byte(id)))
   if al.Prefix != "" {
     idSha1 = al.Prefix + idSha1

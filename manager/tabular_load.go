@@ -144,7 +144,11 @@ func (fm FieldMapStep) Run(i map[string]interface{}, task *Task) map[string]inte
       t := map[string]interface{}{}
       for _, s := range a {
         kv := strings.Split(s, "=")
-        t[kv[0]] = kv[1]
+        if len(kv) > 1 {
+          t[kv[0]] = kv[1]
+        } else {
+          t[kv[0]] = true
+        }
       }
       o[fm.Column] = t
     }
@@ -287,7 +291,7 @@ func (tw *TableWriteStep)  Run(i map[string]interface{}, task *Task) map[string]
   for j, k := range tw.Columns {
     if v, ok := i[k]; ok {
       if vStr, ok := v.(string); ok {
-        o[j] = vStr        
+        o[j] = vStr
       }
     }
   }

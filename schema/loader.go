@@ -67,6 +67,14 @@ func (w *PropertyElement) UnmarshalJSON(data []byte) error {
   return fmt.Errorf("Property not element or string: %s", data)
 }
 
+func (w PropertyElement) MarshalJSON() ([]byte, error) {
+  if w.Value != "" {
+    return json.Marshal(w.Value)
+  }
+  return json.Marshal(w.Element)
+}
+
+
 type Properties map[string]PropertyElement
 
 type Schema struct {
@@ -110,6 +118,39 @@ func Load(path string) Schemas {
   return out
 }
 
+func RefPath(basePath string, ref string) (string, string) {
+  vs := strings.Split(ref, "#")
+  var pPath string
+  if len(vs[0]) > 0 {
+    dir := filepath.Dir(basePath)
+    pPath = filepath.Join(dir, vs[0])
+  } else {
+    pPath = basePath
+  }
+  return pPath, vs[1]
+}
+
+func LoadRef(basePath string, ref string, cls interface{}) error {
+
+  pPath, pElem := RefPath(basePath, ref)
+
+  raw, err := ioutil.ReadFile(pPath)
+  if err != nil {
+    return fmt.Errorf("failed to read data at path %s: \n%v", pPath, err)
+  }
+  pProps := map[string]interface{}{}
+  if err := yaml.Unmarshal(raw, &pProps); err != nil {
+    return fmt.Errorf("failed to file reference at path %s: \n%v", pPath, err)
+  }
+  fName := pElem[1:len(pElem)]
+  if fData, ok := pProps[fName]; ok {
+    sData, _ := yaml.Marshal(fData)
+    if err := yaml.Unmarshal(sData, cls); err != nil {
+        return err
+    }
+  }
+  return nil
+}
 
 func LoadSchema(path string) (Schema, error) {
   	raw, err := ioutil.ReadFile(path)
@@ -121,31 +162,32 @@ func LoadSchema(path string) (Schema, error) {
       return Schema{}, fmt.Errorf("failed to read data at path %s: \n%v", path, err)
     }
     if ref, ok := s.Props["$ref"]; ok {
-      //log.Printf("refpath: %s", ref.Value)
-      vs := strings.Split(ref.Value, "#")
-      dir := filepath.Dir(path)
-      pPath := filepath.Join(dir, vs[0])
-      //log.Printf("ref file: %s", pPath)
-
-      raw, err := ioutil.ReadFile(pPath)
-      if err != nil {
-    		return Schema{}, fmt.Errorf("failed to read data at path %s: \n%v", pPath, err)
-    	}
-      pProps := map[string]interface{}{}
-      if err := yaml.Unmarshal(raw, &pProps); err != nil {
-        return Schema{}, fmt.Errorf("failed to file reference at path %s: \n%v", pPath, err)
-      }
-      fPath := vs[1]
-      fName := fPath[1:len(fPath)]
-      if fData, ok := pProps[fName]; ok {
-        sData, _ := yaml.Marshal(fData)
-        np := map[string]PropertyElement{}
-        if err := yaml.Unmarshal(sData, &np); err != nil {
-            return s, err
-        }
+      np := map[string]PropertyElement{}
+      if err := LoadRef(path, ref.Value, &np); err == nil {
+        refFile, _ := RefPath(path, ref.Value)
         for k, v := range np {
+          if v.Element.Ref != "" {
+            err := LoadRef(refFile, v.Element.Ref, &v.Element)
+            if err != nil {
+              log.Printf("Error: %s", err)
+            }
+            v.Element.Ref = ""
+          }
           s.Props[k] = v
         }
+      } else {
+        log.Printf("Error: %s", err)
+        return Schema{}, err
+      }
+    }
+    for k, v := range s.Props {
+      if v.Element.Ref != "" {
+        log.Printf("External Load: %s %s %s", path, k, v.Element.Ref)
+        err := LoadRef(path, v.Element.Ref, &v.Element)
+        if err != nil {
+          log.Printf("Error: %s", err)
+        }
+        log.Printf("Element: %s", v.Element)
       }
     }
     return s, nil

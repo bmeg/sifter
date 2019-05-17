@@ -91,6 +91,8 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
       } else {
         log.Printf("Unknown type: %s %s %s", data[l.Name], l.Name, data)
       }
+    } else {
+      log.Printf("Unknown property type: %s", s.Props[l.Name].Element.Type.Type)
     }
     for _, d := range dst {
       e := gripql.Edge{From:gid, To: d, Label:l.Label}

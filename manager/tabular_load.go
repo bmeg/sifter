@@ -21,6 +21,7 @@ import (
   "github.com/bmeg/sifter/evaluate"
   "github.com/bmeg/grip/gripql"
   "github.com/bmeg/grip/protoutil"
+  "github.com/bmeg/golib"
 )
 
 type EdgeCreateStep struct {
@@ -114,6 +115,7 @@ type TransformStep struct {
   Reduce        *ReduceStep            `json:"reduce"`
   FieldProcess  *FieldProcessStep      `json:"fieldProcess"`
   TableWrite    *TableWriteStep        `json:"tableWrite"`
+  TableReplace  *TableReplaceStep      `json:"tableReplace"`
 }
 
 type TransformPipe []TransformStep
@@ -131,6 +133,12 @@ type TableWriteStep struct {
   Columns      []string `json:"columns"`
   out          *os.File
   writer       *csv.Writer
+}
+
+type TableReplaceStep struct {
+  Input        string   `json:"input"`
+  Field        string   `json:"field"`
+  table        map[string]string
 }
 
 func (fm FieldMapStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
@@ -302,6 +310,68 @@ func (tw *TableWriteStep)  Run(i map[string]interface{}, task *Task) map[string]
 func (tw *TableWriteStep) Close() {
   tw.writer.Flush()
   tw.out.Close()
+}
+
+func (tr *TableReplaceStep) Start(task *Task, wg *sync.WaitGroup) error {
+  input, err := evaluate.ExpressionString(tr.Input, task.Inputs, nil)
+  inputPath, err := task.Path(input)
+  if err != nil {
+    return err
+  }
+
+  if _, err := os.Stat(inputPath); os.IsNotExist(err) {
+    return fmt.Errorf("File Not Found: %s", input)
+  }
+  log.Printf("Loading: %s", inputPath)
+
+  inputStream, err := golib.ReadFileLines(inputPath)
+  if err != nil {
+    return err
+  }
+  tr.table = map[string]string{}
+  for line := range inputStream {
+    if len(line) > 0 {
+      row := strings.Split(string(line), "\t")
+      tr.table[row[0]] = row[1]
+    }
+  }
+  return nil
+}
+
+func (tw *TableReplaceStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
+
+  if _, ok := i[tw.Field]; ok {
+    out := map[string]interface{}{}
+    for k, v := range i {
+      if k == tw.Field {
+        if x, ok := v.(string); ok {
+          if n, ok := tw.table[x]; ok {
+            out[k] = n
+          } else {
+            out[k] = x
+          }
+        } else if x, ok := v.([]interface{}); ok {
+          o := []interface{}{}
+          for _, y := range x {
+            if z, ok := y.(string); ok {
+              if n, ok := tw.table[z]; ok {
+                o = append(o, n)
+              } else {
+                o = append(o, z)
+              }
+            }
+          }
+          out[k] = o
+        } else {
+          out[k] = v
+        }
+      } else {
+        out[k] = v
+      }
+    }
+    return out
+  }
+  return i
 }
 
 func (fs *FilterStep) Start(task *Task, wg *sync.WaitGroup) {
@@ -489,6 +559,14 @@ func (ts TransformStep) Start(in chan map[string]interface{},
         out <- ts.TableWrite.Run(i, task)
       }
       ts.TableWrite.Close()
+    } else if ts.TableReplace != nil {
+      err := ts.TableReplace.Start(task, wg)
+      if err != nil {
+        log.Printf("TableReplace err: %s", err)
+      }
+      for i := range in {
+        out <- ts.TableReplace.Run(i, task)
+      }
     } else {
       log.Printf("Unknown field step")
     }

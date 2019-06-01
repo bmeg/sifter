@@ -1,6 +1,6 @@
 module github.com/bmeg/sifter
 
-replace github.com/go-python/gpython => github.com/bmeg/gpython v0.0.3-0.20190517230906-099308a5c382
+replace github.com/go-python/gpython => github.com/bmeg/gpython v0.0.3-0.20190601230132-c92b4531dc6f
 
 require (
 	github.com/AndreasBriese/bbloom v0.0.0-20190306092124-e2d15f34fcf9 // indirect

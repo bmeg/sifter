@@ -56,13 +56,14 @@ func NewGripEmitter(host string, graph string) (*GripEmitter, error) {
 		}
 	}
 	if !found {
-		log.Printf("creating graph")
+		log.Printf("creating graph: %s", graph)
 		err := conn.AddGraph(graph)
 		if err != nil {
 			return nil, err
 		}
 	}
 
+	log.Printf("loading graph: %s", graph)
 	elemChan := make(chan *gripql.GraphElement, 1000)
 	done := sync.WaitGroup{}
 	done.Add(1)

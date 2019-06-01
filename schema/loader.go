@@ -97,6 +97,11 @@ func (w PropertyElement) MarshalJSON() ([]byte, error) {
   return json.Marshal(w.Element)
 }
 
+type Edge struct {
+  Label  string `json:"label"`
+  To     string `json:"to"`
+  From   string `json:"from"`
+}
 
 type Properties map[string]PropertyElement
 
@@ -107,6 +112,7 @@ type Schema struct {
   Required []string `json:"required"`
   UniqueKeys [][]string `json:"uniqueKeys"`
   Links      []Link     `json:"links"`
+  Edge       *Edge       `json:"edge"`
   Props      Properties `json:"properties"`
 }
 

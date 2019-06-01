@@ -6,6 +6,8 @@ inputs:
   tar:
     type: File
 
+schema: examples/bmeg-dictionary/gdcdictionary/schemas
+
 steps:
   - desc: Untar
     untar:
@@ -15,48 +17,68 @@ steps:
       input: data_clinical_patient.txt
       transform:
         -
-          - vertexCreate:
-              gid: "Case:{{row.PATIENT_ID}}"
-              label: Case
+          - project:
+              mapping:
+                id : "{{row.PATIENT_ID}}"
+                submitter_id : "{{row.PATIENT_ID}}"
+                type: "patient"
+                experiments: "TCGA"
+          - objectCreate:
+              class: case
   - desc: Loading Sample List
     tableLoad:
       input: data_clinical_sample.txt
       transform:
         -
-          - vertexCreate:
-              gid: "Sample:{{row.SAMPLE_ID}}"
-              label: Sample
-          - edgeCreate:
-              to: "Case:{{row.PATIENT_ID}}"
-              from: "Sample:{{row.SAMPLE_ID}}"
-              label: case
-              include: []
-  -
-    desc: Transpose RNA file
+          - project:
+              mapping:
+                id : "{{row.SAMPLE_ID}}"
+                submitter_id : "{{row.SAMPLE_ID}}"
+                cases: "{{row.PATIENT_ID}}"
+                type: "sample"
+          - objectCreate:
+              class: sample
+        -
+          - project:
+              mapping:
+                id : "{{row.SAMPLE_ID}}-0000"
+                submitter_id : "{{row.SAMPLE_ID}}-0000"
+                samples: "{{row.SAMPLE_ID}}"
+                type: "aliquot"
+          - objectCreate:
+              class: aliquot
+  - desc: Transpose RNA file
     transposeFile:
-        input: data_RNA_Seq_v2_expression_median.txt
-        output: data_RNA_Seq_v2_expression_median_transpose.txt
+        input: data_RNA_Seq_expression_median.txt
+        output: data_RNA_Seq_expression_median_transpose.txt
   -
     desc: Loading RNA File
     tableLoad:
-      input: data_RNA_Seq_v2_expression_median_transpose.txt
+      input: data_RNA_Seq_expression_median_transpose.txt
       rowSkip: 1
       transform:
         -
-          - vertexCreate:
-              gid: "GeneExpression:{{row.Entrez_Gene_Id}}"
-              label: GeneExpression
-              exclude:
-                - Entrez_Gene_Id
-          - edgeCreate:
-              #need some method to rename column names,
-              #its a bit weird after the transpose
-              from: "Sample:{{row.Entrez_Gene_Id}}"
-              to: "GeneExpression:{{row.Entrez_Gene_Id}}"
-              label: geneExpression
-              include: []
-  -
-    desc: Loading Mutations
+          - project:
+              mapping:
+                id: "gexp:{{row.Entrez_Gene_Id}}" #after the transpose, the index column header is `Entrez_Gene_Id`
+                aliquot_id: "{{row.Entrez_Gene_Id}}"
+          - map:
+              method: nodeMap
+              python: >
+                def nodeMap(x):
+                  values = {}
+                  for k, v in x.items():
+                    if k != "id" and k != "aliquot_id":
+                      values[k] = v
+                  return {
+                    "id" : x["id"],
+                    "aliquot_id" : x["aliquot_id"],
+                    "metric" : "OTHER",
+                    "values": values
+                  }
+          - objectCreate:
+              class: gene_expression
+  - desc: Loading Mutations
     tableLoad:
       input: data_mutations_extended.txt
       transform:
@@ -70,18 +92,24 @@ steps:
               end: "{{row.End_Position}}"
               reference_bases: "{{row.Reference_Allele}}"
               alternate_bases: "{{row.Tumor_Seq_Allele1}}"
-          - edgeCreate:
-              from: 'Callset:{{row.Matched_Norm_Sample_Barcode}}'
-              to: '{{row.allele_id}}'
-              label: variantIn
-              exclude:
-                - ma_func.impact
-                - ma_fi.score
-                - MA_FI.score
-                - MA_Func.Impact
-                - MA:link.MSA
-                - MA:FImpact
-                - MA:protein.change
-                - MA:link.var
-                - MA:FIS
-                - MA:link.PDB
+          - project:
+              mapping:
+                aliquot: "{{row.Tumor_Sample_Barcode}}"
+                ref: "{{row.Reference_Allele}}"
+                alt: "{{row.Tumor_Seq_Allele1}}"
+                ensembl_transcript: "{{row.Transcript_ID}}"
+          - objectCreate:
+              class: somatic_variant
+          - project:
+              mapping:
+                genome: "{{row.NCBI_Build}}"
+                chromosome: "{{row.Chromosome}}"
+                start: "{{row.Start_Position}}"
+                end: "{{row.End_Position}}"
+                strand: "{{row.Strand}}"
+                reference_bases: "{{row.Reference_Allele}}"
+                alternate_bases: "{{row.Tumor_Seq_Allele1}}"
+                hugo_symbol: "{{row.Hugo_Symbol}}"
+                effect: "{{row.Variant_Classification}}"
+          - objectCreate:
+              class: allele

@@ -49,7 +49,7 @@ steps:
               class: aliquot
   - desc: Transpose RNA file
     transposeFile:
-        input: data_RNA_Seq_expression_median.txt
+        input: data_RNA_Seq_v2_expression_median.txt
         output: data_RNA_Seq_expression_median_transpose.txt
   -
     desc: Loading RNA File
@@ -61,7 +61,7 @@ steps:
           - project:
               mapping:
                 id: "gexp:{{row.Entrez_Gene_Id}}" #after the transpose, the index column header is `Entrez_Gene_Id`
-                aliquot_id: "{{row.Entrez_Gene_Id}}"
+                aliquot_id: "{{row.Entrez_Gene_Id}}-0000"
           - map:
               method: nodeMap
               python: >
@@ -94,7 +94,7 @@ steps:
               alternate_bases: "{{row.Tumor_Seq_Allele1}}"
           - project:
               mapping:
-                aliquot: "{{row.Tumor_Sample_Barcode}}"
+                aliquot: "{{row.Tumor_Sample_Barcode}}-0000"
                 ref: "{{row.Reference_Allele}}"
                 alt: "{{row.Tumor_Seq_Allele1}}"
                 ensembl_transcript: "{{row.Transcript_ID}}"

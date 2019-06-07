@@ -112,8 +112,14 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
               dst = append(dst, y)
             }
           }
+        } else if vObject, ok := v.(map[string]interface{}); ok {
+          if d, ok := vObject["submitter_id"]; ok { //BUG: this is hard coded to expect Gen3 behavior
+            if dStr, ok := d.(string); ok {
+              dst = append(dst, dStr)
+            }
+          }
         } else {
-          log.Printf("Class %s field %s Unknown property type", s.Id, l.Name)
+          log.Printf("Class %s link field %s Unknown property type: %#v", s.Id, l.Name, v)
         }
       }
       /*

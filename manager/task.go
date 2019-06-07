@@ -87,6 +87,10 @@ func (m *Task) EmitEdge(e *gripql.Edge) error {
 	return m.Runtime.EmitEdge(e)
 }
 
+func (m *Task) EmitObject(c string, e map[string]interface{}) error {
+	return m.Runtime.EmitObject(c, e)
+}
+
 func (m *Task) Output(name string, value string) error {
 	if m.Runtime.OutputCallback != nil {
 		return m.Runtime.OutputCallback(name, value)

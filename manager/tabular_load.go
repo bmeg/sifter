@@ -265,22 +265,28 @@ func (ts EdgeCreateStep) Run(i map[string]interface{}, task *Task) map[string]in
 
 func (ts ObjectCreateStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
   //log.Printf("Create Object: %s", ts.Class)
-  if task.Runtime.Schemas == nil {
-    log.Printf("Schema not loaded")
-    return i
-  }
-  if o, err := task.Runtime.Schemas.Generate(ts.Class, i); err == nil {
-    for _, j := range o {
-      if j.Vertex != nil {
-        task.EmitVertex(j.Vertex)
-      } else if j.Edge != nil {
-        //log.Printf("Emitting: %s", j.Edge)
-        task.EmitEdge(j.Edge)
-      }
+  if task.Manager.Config.ObjectOutput {
+    if o, err := task.Runtime.Schemas.Validate(ts.Class, i); err == nil {
+      task.EmitObject(ts.Class, o)
     }
   } else {
-    s, _ := json.Marshal(i)
-    log.Printf("Object Create Error: '%s' using '%s'", err, s)
+    if task.Runtime.Schemas == nil {
+      log.Printf("Schema not loaded")
+      return i
+    }
+    if o, err := task.Runtime.Schemas.Generate(ts.Class, i); err == nil {
+      for _, j := range o {
+        if j.Vertex != nil {
+          task.EmitVertex(j.Vertex)
+        } else if j.Edge != nil {
+          //log.Printf("Emitting: %s", j.Edge)
+          task.EmitEdge(j.Edge)
+        }
+      }
+    } else {
+      s, _ := json.Marshal(i)
+      log.Printf("Object Create Error: '%s' using '%s'", err, s)
+    }
   }
   return i
 }

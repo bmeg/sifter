@@ -27,6 +27,12 @@ func (s Schemas) Generate(classID string, data map[string]interface{}) ([]GraphE
   return nil, fmt.Errorf("Class '%s' not found", classID )
 }
 
+func (s Schemas) Validate(classID string, data map[string]interface{}) (map[string]interface{}, error) {
+  if class, ok := s.Classes[classID]; ok {
+    return class.Validate(data)
+  }
+  return nil, fmt.Errorf("Class '%s' not found", classID )
+}
 
 func (s Schema) Validate(data map[string]interface{}) (map[string]interface{}, error) {
   out := map[string]interface{}{}

@@ -49,7 +49,7 @@ steps:
               class: aliquot
   - desc: Transpose RNA file
     transposeFile:
-        input: data_RNA_Seq_v2_expression_median.txt
+        input: data_RNA_Seq_expression_median.txt
         output: data_RNA_Seq_expression_median_transpose.txt
   -
     desc: Loading RNA File

@@ -14,6 +14,7 @@ import (
 
 var graph string = "test-data"
 var runOnce bool = false
+var objOutput bool = false
 var workDir string = "./"
 var server int = 0
 var dbServer string = "grip://localhost:8202"
@@ -26,7 +27,7 @@ var Cmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		man, err := manager.Init(manager.Config{GripServer: dbServer, WorkDir: workDir})
+		man, err := manager.Init(manager.Config{GripServer: dbServer, WorkDir: workDir, ObjectOutput:objOutput})
 		if err != nil {
 			log.Printf("Error stating load manager: %s", err)
 			return err
@@ -118,6 +119,7 @@ func init() {
 	flags.StringVar(&graph, "graph", graph, "Destination Graph")
 	flags.StringVar(&workDir, "workdir", workDir, "Workdir")
 	flags.IntVar(&server, "server", server, "ServerPort")
+	flags.BoolVar(&objOutput, "obj", objOutput, "ObjectOutput")
 	flags.StringVar(&dbServer, "db", dbServer, "Destination Server")
 	flags.StringToStringVarP(&cmdInputs, "inputs", "i", cmdInputs, "Input variables")
 }

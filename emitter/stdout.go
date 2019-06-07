@@ -2,6 +2,7 @@ package emitter
 
 import (
 	"fmt"
+	"encoding/json"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/bmeg/grip/gripql"
 )
@@ -21,5 +22,12 @@ func (s StdoutEmitter) EmitEdge(e *gripql.Edge) error {
 	fmt.Printf("%s\n", o)
 	return nil
 }
+
+func (s StdoutEmitter) EmitObject(objClass string, i map[string]interface{}) error {
+	o, _ := json.Marshal(i)
+	fmt.Printf("%s : %s\n", objClass, o)
+	return nil
+}
+
 
 func (s StdoutEmitter) Close() {}

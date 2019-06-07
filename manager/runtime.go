@@ -51,6 +51,11 @@ func (run *Runtime) EmitEdge(e *gripql.Edge) error {
 	return run.output.EmitEdge(e)
 }
 
+
+func (run *Runtime) EmitObject(c string, o map[string]interface{}) error {
+	return run.output.EmitObject(c,o)
+}
+
 func (m *Runtime) Printf(s string, x ...interface{}) {
 	c := fmt.Sprintf(s, x...)
 	log.Printf(c)

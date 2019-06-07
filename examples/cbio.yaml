@@ -21,8 +21,9 @@ steps:
               mapping:
                 id : "{{row.PATIENT_ID}}"
                 submitter_id : "{{row.PATIENT_ID}}"
-                type: "patient"
-                experiments: "TCGA"
+                type: "case"
+                experiments:
+                    submitter_id: "TCGA"
           - objectCreate:
               class: case
   - desc: Loading Sample List
@@ -34,7 +35,8 @@ steps:
               mapping:
                 id : "{{row.SAMPLE_ID}}"
                 submitter_id : "{{row.SAMPLE_ID}}"
-                cases: "{{row.PATIENT_ID}}"
+                cases:
+                  submitter_id: "{{row.PATIENT_ID}}"
                 type: "sample"
           - objectCreate:
               class: sample
@@ -43,7 +45,8 @@ steps:
               mapping:
                 id : "{{row.SAMPLE_ID}}-0000"
                 submitter_id : "{{row.SAMPLE_ID}}-0000"
-                samples: "{{row.SAMPLE_ID}}"
+                samples:
+                  submitter_id: "{{row.SAMPLE_ID}}"
                 type: "aliquot"
           - objectCreate:
               class: aliquot

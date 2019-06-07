@@ -88,7 +88,7 @@ type AlleleIDStep struct {
 }
 
 type ProjectStep struct {
-  Mapping map[string]string `json:"mapping"`
+  Mapping map[string]interface{} `json:"mapping"`
 }
 
 type FieldProcessStep struct {
@@ -471,6 +471,33 @@ func (al AlleleIDStep) Run(i map[string]interface{}, task *Task) map[string]inte
   return o
 }
 
+func valueRender(v interface{}, task *Task, row map[string]interface{}) (interface{}, error) {
+  if vStr, ok := v.(string); ok {
+    return evaluate.ExpressionString(vStr, task.Inputs, row)
+  } else if vMap, ok := v.(map[string]interface{}); ok {
+    o := map[string]interface{}{}
+    for key, val := range vMap {
+      o[key], _ = valueRender(val, task, row)
+    }
+    return o, nil
+  } else if vArray, ok := v.([]interface{}); ok {
+    o := []interface{}{}
+    for _, val := range vArray {
+      j, _ := valueRender(val, task, row)
+      o = append(o, j)
+    }
+    return o, nil
+  } else if vArray, ok := v.([]string); ok {
+    o := []string{}
+    for _, vStr := range vArray {
+      j, _ := evaluate.ExpressionString(vStr, task.Inputs, row)
+      o = append(o, j)
+    }
+    return o, nil
+  }
+  return v, nil
+}
+
 func (pr ProjectStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
 
   o := map[string]interface{}{}
@@ -479,7 +506,7 @@ func (pr ProjectStep) Run(i map[string]interface{}, task *Task) map[string]inter
   }
 
   for k, v := range pr.Mapping {
-    o[k], _ = evaluate.ExpressionString(v, task.Inputs, i)
+    o[k], _ = valueRender(v, task, i)
   }
   return o
 }

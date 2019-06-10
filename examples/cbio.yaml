@@ -52,39 +52,44 @@ steps:
                 type: "aliquot"
           - objectCreate:
               class: aliquot
-  - desc: Transpose RNA file
-    transposeFile:
-        input: data_RNA_Seq_V2_expression_median.txt
-        output: data_RNA_Seq_expression_median_transpose.txt
-  -
-    desc: Loading RNA File
-    tableLoad:
-      input: data_RNA_Seq_expression_median_transpose.txt
-      rowSkip: 1
-      transform:
+  - fileGlob:
+      files: [ data_RNA_Seq_expression_median.txt, data_RNA_Seq_V2_expression_median.txt ]
+      limit: 1
+      inputName: rnaFile
+      steps:
+        - desc: Transpose RNA file
+          transposeFile:
+              input: "{{input.rnaFile}}"
+              output: data_RNA_Seq_expression_median_transpose.txt
         -
-          - project:
-              mapping:
-                id: "gexp:{{row.Entrez_Gene_Id}}" #after the transpose, the index column header is `Entrez_Gene_Id`
-                aliquot_id: "{{row.Entrez_Gene_Id}}-0000"
-          - tableProject:
-              input: "{{input.geneTable}}"
-          - map:
-              method: nodeMap
-              python: >
-                def nodeMap(x):
-                  values = {}
-                  for k, v in x.items():
-                    if k != "id" and k != "aliquot_id" and k != "Entrez_Gene_Id":
-                      values[k] = v
-                  return {
-                    "id" : x["id"],
-                    "aliquot_id" : x["aliquot_id"],
-                    "metric" : "OTHER",
-                    "values": values
-                  }
-          - objectCreate:
-              class: gene_expression
+          desc: Loading RNA File
+          tableLoad:
+            input: data_RNA_Seq_expression_median_transpose.txt
+            rowSkip: 1
+            transform:
+              -
+                - project:
+                    mapping:
+                      id: "gexp:{{row.Entrez_Gene_Id}}" #after the transpose, the index column header is `Entrez_Gene_Id`
+                      aliquot_id: "{{row.Entrez_Gene_Id}}-0000"
+                - tableProject:
+                    input: "{{input.geneTable}}"
+                - map:
+                    method: nodeMap
+                    python: >
+                      def nodeMap(x):
+                        values = {}
+                        for k, v in x.items():
+                          if k != "id" and k != "aliquot_id" and k != "Entrez_Gene_Id":
+                            values[k] = v
+                        return {
+                          "id" : x["id"],
+                          "aliquot_id" : x["aliquot_id"],
+                          "metric" : "OTHER",
+                          "values": values
+                        }
+                - objectCreate:
+                    class: gene_expression
   - desc: Loading Mutations
     tableLoad:
       input: data_mutations_extended.txt

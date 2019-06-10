@@ -16,48 +16,29 @@ type Loader interface {
 	Load() chan gripql.GraphElement
 }
 
-/*
-type CopyFilePrep struct {
-	Source string `json:"source"`
-	Dest   string `json:"dest"`
-}
-*/
-
-type DownloadStep struct {
-	Source string `json:"source"`
-	Dest   string `json:"dest"`
-}
-
-type EdgeCreationStep struct {
-	To    string `json:"to"`
-	From  string `json:"from"`
-	Label string `json:"label"`
-}
-
-type DestVertexCreateStep struct {
-	Gid   string `json:"gid"`
-	Label string `json:"label"`
-}
-
-type ColumnReplaceStep struct {
-	Column  string `json:"col"`
-	Pattern string `json:"pattern"`
-	Replace string `json:"replace"`
-}
-
 type Step struct {
 	Desc         string            `json:"desc"`
-	MatrixLoad   *MatrixLoadStep   `json:"matrixLoad"`
 	ManifestLoad *ManifestLoadStep `json:"manifestLoad"`
 	Download     *DownloadStep     `json:"download"`
 	Untar        *UntarStep        `json:"untar"`
-	//CopyFile     *CopyFilePrep     `json:copyFile`
+	VCFLoad      *VCFStep          `json:"vcfLoad"`
+	TableLoad    *TableLoadStep    `json:"tableLoad"`
+	TransposeFile *TransposeFileStep `json:"transposeFile"`
 }
+
+type Input struct {
+	Type string `json:"type"`
+	Default string `json:"default"`
+}
+
+type Inputs map[string]Input
 
 type Playbook struct {
 	Name  string `json:"name"`
+	Inputs Inputs `json:"inputs"`
+	Schema string `json:"schema"`
 	Class string `json:"class"`
-	Steps []Step `json:steps`
+	Steps []Step `json:"steps"`
 }
 
 // Parse parses a YAML doc into the given Config instance.

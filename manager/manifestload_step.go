@@ -18,8 +18,15 @@ var vertexRE *regexp.Regexp = regexp.MustCompile(".Vertex.json")
 var edgeRE *regexp.Regexp = regexp.MustCompile(".Edge.json")
 
 func (ml *ManifestLoadStep) Run(task *Task) error {
-	task.Printf("loading manifest %s", ml.Input)
-	path, err := task.Path(ml.Input)
+
+	mlInput, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
+	if err != nil {
+		task.Printf("Expression failed: %s", err)
+		return err
+	}
+
+	task.Printf("loading manifest %s", mlInput)
+	path, err := task.Path(mlInput)
 	if err != nil {
 		return err
 	}
@@ -35,8 +42,9 @@ func (ml *ManifestLoadStep) Run(task *Task) error {
 		}
 	}
 
-	baseURL, err := evaluate.ExpressionString(ml.BaseURL, task.Inputs)
+	baseURL, err := evaluate.ExpressionString(ml.BaseURL, task.Inputs, nil)
 
+	task.Runtime.SetStepCountTotal(int64(len(entries)))
 	for _, l := range entries {
 		if vertexRE.Match(l) {
 			url := baseURL + string(l)
@@ -45,12 +53,13 @@ func (ml *ManifestLoadStep) Run(task *Task) error {
 			if err != nil {
 				task.Printf("Download Failure: %s %s", url, err)
 			} else {
-				task.Printf("Loading %s", path)
+				task.Printf("Loading vertex file %s", path)
 				for v := range gripUtil.StreamVerticesFromFile(path) {
 					task.EmitVertex(v)
 				}
 				os.Remove(path)
 			}
+			task.Runtime.AddStepCount(1)
 		}
 	}
 
@@ -62,12 +71,13 @@ func (ml *ManifestLoadStep) Run(task *Task) error {
 			if err != nil {
 				task.Printf("Download Failure: %s %s", url, err)
 			} else {
-				task.Printf("Loading %s", path)
+				task.Printf("Loading edge file %s", path)
 				for v := range gripUtil.StreamEdgesFromFile(path) {
 					task.EmitEdge(v)
 				}
 				os.Remove(path)
 			}
+			task.Runtime.AddStepCount(1)
 		}
 	}
 

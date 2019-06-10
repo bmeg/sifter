@@ -2,20 +2,23 @@ package emitter
 
 import (
 	"fmt"
-
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/bmeg/grip/gripql"
 )
 
 type StdoutEmitter struct {
+	jm jsonpb.Marshaler
 }
 
 func (s StdoutEmitter) EmitVertex(v *gripql.Vertex) error {
-	fmt.Printf("%s\n", v)
+	o, _ := s.jm.MarshalToString(v)
+	fmt.Printf("%s\n", o)
 	return nil
 }
 
 func (s StdoutEmitter) EmitEdge(e *gripql.Edge) error {
-	fmt.Printf("%s\n", e)
+	o, _ := s.jm.MarshalToString(e)
+	fmt.Printf("%s\n", o)
 	return nil
 }
 

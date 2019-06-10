@@ -23,7 +23,7 @@ type GetStatusOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *GetStatusOKBody `json:"body,omitempty"`
+	Payload []*GetStatusOKBodyItems0 `json:"body,omitempty"`
 }
 
 // NewGetStatusOK creates GetStatusOK with default headers values
@@ -33,13 +33,13 @@ func NewGetStatusOK() *GetStatusOK {
 }
 
 // WithPayload adds the payload to the get status o k response
-func (o *GetStatusOK) WithPayload(payload *GetStatusOKBody) *GetStatusOK {
+func (o *GetStatusOK) WithPayload(payload []*GetStatusOKBodyItems0) *GetStatusOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get status o k response
-func (o *GetStatusOK) SetPayload(payload *GetStatusOKBody) {
+func (o *GetStatusOK) SetPayload(payload []*GetStatusOKBodyItems0) {
 	o.Payload = payload
 }
 
@@ -47,10 +47,13 @@ func (o *GetStatusOK) SetPayload(payload *GetStatusOKBody) {
 func (o *GetStatusOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
+	payload := o.Payload
+	if payload == nil {
+		// return empty array
+		payload = make([]*GetStatusOKBodyItems0, 0, 50)
+	}
+
+	if err := producer.Produce(rw, payload); err != nil {
+		panic(err) // let the recovery middleware deal with this
 	}
 }

@@ -2,84 +2,86 @@
 class: PlayBook
 name: CBioPortal
 
+inputs:
+  tar:
+    type: File
 
 steps:
-  - desc: Download
-    name: tarDownload
-    download:
-      source: $.input.url
-      dest: data.tar.gz
   - desc: Untar
     untar:
-      input: data.tar.gz
+      input: "{{input.tar}}"
   - desc: Loading Patient List
-    matrixLoad:
-      rowLabel: Case
+    tableLoad:
       input: data_clinical_patient.txt
-  - desc: Loading Patient List
-    matrixLoad:
+      transform:
+        -
+          - vertexCreate:
+              gid: "Case:{{row.PATIENT_ID}}"
+              label: Case
+  - desc: Loading Sample List
+    tableLoad:
       input: data_clinical_sample.txt
-      rowLabel: Sample
-  - desc: Loading Expression Data
-    matrixLoad:
-      input: data_RNA_Seq_v2_expression_median.txt
-      skipIfMissing: true
-      rowLabel: RNASeq
-      rowPrefix: "RNA:"
-      exclude:
-        - "RNA:Hugo_Symbol"
-      transpose: True
-      indexCol: 1
-  - desc: Connecting Expression Data
-    matrixLoad:
-      input: data_RNA_Seq_v2_expression_median.txt
-      skipIfMissing: true
-      transpose: True
-      indexCol: True
-      indexCol: 1
-      noVertex: True
-      edge:
-        - to: 'RNA:{_gid}'
-          label: rna
-  - desc: Creating Subtypes and connecting samples
-    matrixLoad:
-      input: data_clinical_sample.txt
-      noVertex: True
-      edge:
-        - to: "{EXPRESSION_SUBTYPE}"
-          label: subtype
-      destVertex:
-        - gid: "{EXPRESSION_SUBTYPE}"
-          label: Subtype
-  - desc: Building Gene List
-    matrixLoad:
-      input: data_RNA_Seq_v2_expression_median.txt
-      skipIfMissing: true
-      columnInclude: Entrez_Gene_Id
-      rowLabel: Gene
-  - desc: Loading Mutations
-    matrixLoad:
-      input: data_mutations_extended.txt
+      transform:
+        -
+          - vertexCreate:
+              gid: "Sample:{{row.SAMPLE_ID}}"
+              label: Sample
+          - edgeCreate:
+              to: "Case:{{row.PATIENT_ID}}"
+              from: "Sample:{{row.SAMPLE_ID}}"
+              label: case
+              include: []
+  -
+    desc: Transpose RNA file
+    transposeFile:
+        input: data_RNA_Seq_v2_expression_median.txt
+        output: data_RNA_Seq_v2_expression_median_transpose.txt
+  -
+    desc: Loading RNA File
+    tableLoad:
+      input: data_RNA_Seq_v2_expression_median_transpose.txt
       rowSkip: 1
-      indexCol: -1
-      columnReplace:
-        - col: Matched_Norm_Sample_Barcode
-          pattern: '\-\d\d$'
-          replace: ''
-      edge:
-        - to: '{Matched_Norm_Sample_Barcode}'
-          label: variantIn
-        - to: '{Hugo_Symbol}'
-          label: effectsGene
-      columnExclude:
-        - ma_func.impact
-        - ma_fi.score
-        - MA_FI.score
-        - MA_Func.Impact
-        - MA:link.MSA
-        - MA:FImpact
-        - MA:protein.change
-        - MA:link.var
-        - MA:FIS
-        - MA:link.PDB
-      rowLabel: Variant
+      transform:
+        -
+          - vertexCreate:
+              gid: "GeneExpression:{{row.Entrez_Gene_Id}}"
+              label: GeneExpression
+              exclude:
+                - Entrez_Gene_Id
+          - edgeCreate:
+              #need some method to rename column names,
+              #its a bit weird after the transpose
+              from: "Sample:{{row.Entrez_Gene_Id}}"
+              to: "GeneExpression:{{row.Entrez_Gene_Id}}"
+              label: geneExpression
+              include: []
+  -
+    desc: Loading Mutations
+    tableLoad:
+      input: data_mutations_extended.txt
+      transform:
+        -
+          - alleleID:
+              dst: allele_id
+              prefix: "Allele:"
+              genome: GRCh37
+              chromosome: "{{row.Chromosome}}"
+              start: "{{row.Start_Position}}"
+              end: "{{row.End_Position}}"
+              reference_bases: "{{row.Reference_Allele}}"
+              alternate_bases: "{{row.Tumor_Seq_Allele1}}"
+          - edgeCreate:
+              from: 'Callset:{{row.Matched_Norm_Sample_Barcode}}'
+              to: '{{row.allele_id}}'
+              label: variantIn
+              exclude:
+                - ma_func.impact
+                - ma_fi.score
+                - MA_FI.score
+                - MA_Func.Impact
+                - MA:link.MSA
+                - MA:FImpact
+                - MA:protein.change
+                - MA:link.var
+                - MA:FIS
+                - MA:link.PDB

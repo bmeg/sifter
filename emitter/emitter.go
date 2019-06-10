@@ -11,6 +11,7 @@ import (
 type Emitter interface {
 	EmitVertex(v *gripql.Vertex) error
 	EmitEdge(e *gripql.Edge) error
+	EmitObject(objClass string, e map[string]interface{}) error
 	Close()
 }
 

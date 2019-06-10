@@ -7,6 +7,7 @@ import (
   "log"
   "sync"
   "compress/gzip"
+  "encoding/json"
 	//"fmt"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/bmeg/grip/gripql"
@@ -18,6 +19,7 @@ type DirEmitter struct {
   mux sync.Mutex
   vout map[string]io.WriteCloser
   eout map[string]io.WriteCloser
+  oout map[string]io.WriteCloser
 }
 
 func NewDirEmitter(dir string) *DirEmitter {
@@ -27,6 +29,7 @@ func NewDirEmitter(dir string) *DirEmitter {
     dir: dir,
     vout: map[string]io.WriteCloser{},
     eout: map[string]io.WriteCloser{},
+    oout: map[string]io.WriteCloser{},
   }
 }
 
@@ -71,12 +74,33 @@ func (s *DirEmitter) EmitEdge(e *gripql.Edge) error {
   return nil
 }
 
+func (s *DirEmitter) EmitObject(objClass string, i map[string]interface{}) error {
+  s.mux.Lock()
+  defer s.mux.Unlock()
+  f, ok := s.oout[objClass]
+  if !ok {
+    j, err := os.Create(path.Join(s.dir, objClass + ".json.gz" ))
+    if err != nil {
+      return err
+    }
+    f = gzip.NewWriter(j)
+    s.oout[objClass] = f
+  }
+  o, _ := json.Marshal(i)
+  f.Write([]byte(o))
+  f.Write([]byte("\n"))
+  return nil
+}
+
 func (s *DirEmitter) Close() {
   log.Printf("Closing emitter")
   for _, v := range s.vout {
     v.Close()
   }
   for _, v := range s.eout {
+    v.Close()
+  }
+  for _, v := range s.oout {
     v.Close()
   }
 }

@@ -12,15 +12,16 @@ import (
   "regexp"
   "strconv"
 
+  "encoding/json"
+
   "crypto/sha1"
   "compress/gzip"
 
   "encoding/csv"
-  "encoding/json"
-
   "github.com/bmeg/sifter/evaluate"
   "github.com/bmeg/grip/gripql"
   "github.com/bmeg/grip/protoutil"
+  "github.com/bmeg/golib"
 )
 
 type EdgeCreateStep struct {
@@ -87,7 +88,14 @@ type AlleleIDStep struct {
 }
 
 type ProjectStep struct {
-  Mapping map[string]string `json:"mapping"`
+  Mapping map[string]interface{} `json:"mapping"`
+}
+
+type FieldProcessStep struct {
+  Column string                        `json:"col"`
+  Steps   TransformPipe                `json:"steps"`
+  Mapping map[string]string            `json:"mapping"`
+  inChan  chan map[string]interface{}
 }
 
 type DebugStep struct {}
@@ -105,6 +113,10 @@ type TransformStep struct {
   Project       *ProjectStep           `json:"project"`
   Map           *MapStep               `json:"map"`
   Reduce        *ReduceStep            `json:"reduce"`
+  FieldProcess  *FieldProcessStep      `json:"fieldProcess"`
+  TableWrite    *TableWriteStep        `json:"tableWrite"`
+  TableReplace  *TableReplaceStep      `json:"tableReplace"`
+  TableProject  *TableProjectStep      `json:"tableProject"`
 }
 
 type TransformPipe []TransformStep
@@ -115,6 +127,24 @@ type TableLoadStep struct {
   SkipIfMissing bool                   `json:"skipIfMissing"`
   Columns       []string               `json:"columns"`
   Transform     []TransformPipe        `json:"transform"`
+}
+
+type TableWriteStep struct {
+  Output       string   `json:"output"`
+  Columns      []string `json:"columns"`
+  out          *os.File
+  writer       *csv.Writer
+}
+
+type TableReplaceStep struct {
+  Input        string   `json:"input"`
+  Field        string   `json:"field"`
+  table        map[string]string
+}
+
+type TableProjectStep struct {
+  Input        string   `json:"input"`
+  table        map[string]string
 }
 
 func (fm FieldMapStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
@@ -241,25 +271,165 @@ func (ts EdgeCreateStep) Run(i map[string]interface{}, task *Task) map[string]in
 
 func (ts ObjectCreateStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
   //log.Printf("Create Object: %s", ts.Class)
-  if task.Runtime.Schemas == nil {
-    log.Printf("Schema not loaded")
-    return i
-  }
-  if o, err := task.Runtime.Schemas.Generate(ts.Class, i); err == nil {
-    for _, j := range o {
-      if j.Vertex != nil {
-        task.EmitVertex(j.Vertex)
-      } else if j.Edge != nil {
-        //log.Printf("Emitting: %s", j.Edge)
-        task.EmitEdge(j.Edge)
-      }
+  if task.Manager.Config.ObjectOutput {
+    if o, err := task.Runtime.Schemas.Validate(ts.Class, i); err == nil {
+      task.EmitObject(ts.Class, o)
     }
   } else {
-    log.Printf("Error: %s : %s", err, i)
+    if task.Runtime.Schemas == nil {
+      log.Printf("Schema not loaded")
+      return i
+    }
+    if o, err := task.Runtime.Schemas.Generate(ts.Class, i); err == nil {
+      for _, j := range o {
+        if j.Vertex != nil {
+          task.EmitVertex(j.Vertex)
+        } else if j.Edge != nil {
+          //log.Printf("Emitting: %s", j.Edge)
+          task.EmitEdge(j.Edge)
+        }
+      }
+    } else {
+      s, _ := json.Marshal(i)
+      log.Printf("Object Create Error: '%s' using '%s'", err, s)
+    }
   }
   return i
 }
 
+
+func (tw *TableWriteStep) Start(task *Task, wg *sync.WaitGroup) {
+  path, _ := task.Path(tw.Output)
+  tw.out, _ = os.Create(path)
+  tw.writer = csv.NewWriter(tw.out)
+  tw.writer.Comma = '\t'
+  tw.writer.Write(tw.Columns)
+}
+
+func (tw *TableWriteStep)  Run(i map[string]interface{}, task *Task) map[string]interface{} {
+  o := make([]string, len(tw.Columns))
+  for j, k := range tw.Columns {
+    if v, ok := i[k]; ok {
+      if vStr, ok := v.(string); ok {
+        o[j] = vStr
+      }
+    }
+  }
+  tw.writer.Write(o)
+  return i
+}
+
+func (tw *TableWriteStep) Close() {
+  tw.writer.Flush()
+  tw.out.Close()
+}
+
+func (tr *TableReplaceStep) Start(task *Task, wg *sync.WaitGroup) error {
+  input, err := evaluate.ExpressionString(tr.Input, task.Inputs, nil)
+  inputPath, err := task.Path(input)
+  if err != nil {
+    return err
+  }
+
+  if _, err := os.Stat(inputPath); os.IsNotExist(err) {
+    return fmt.Errorf("File Not Found: %s", input)
+  }
+  log.Printf("Loading: %s", inputPath)
+
+  inputStream, err := golib.ReadFileLines(inputPath)
+  if err != nil {
+    return err
+  }
+  tr.table = map[string]string{}
+  for line := range inputStream {
+    if len(line) > 0 {
+      row := strings.Split(string(line), "\t")
+      tr.table[row[0]] = row[1]
+    }
+  }
+  return nil
+}
+
+func (tw *TableReplaceStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
+
+  if _, ok := i[tw.Field]; ok {
+    out := map[string]interface{}{}
+    for k, v := range i {
+      if k == tw.Field {
+        if x, ok := v.(string); ok {
+          if n, ok := tw.table[x]; ok {
+            out[k] = n
+          } else {
+            out[k] = x
+          }
+        } else if x, ok := v.([]interface{}); ok {
+          o := []interface{}{}
+          for _, y := range x {
+            if z, ok := y.(string); ok {
+              if n, ok := tw.table[z]; ok {
+                o = append(o, n)
+              } else {
+                o = append(o, z)
+              }
+            }
+          }
+          out[k] = o
+        } else {
+          out[k] = v
+        }
+      } else {
+        out[k] = v
+      }
+    }
+    return out
+  }
+  return i
+}
+
+func (tr *TableProjectStep) Start(task *Task, wg *sync.WaitGroup) error {
+  input, err := evaluate.ExpressionString(tr.Input, task.Inputs, nil)
+  inputPath, err := task.Path(input)
+  if err != nil {
+    return err
+  }
+
+  if _, err := os.Stat(inputPath); os.IsNotExist(err) {
+    return fmt.Errorf("File Not Found: %s", input)
+  }
+  log.Printf("Loading Translation file: %s", inputPath)
+
+  inputStream, err := golib.ReadFileLines(inputPath)
+  if err != nil {
+    return err
+  }
+  tr.table = map[string]string{}
+  for line := range inputStream {
+    if len(line) > 0 {
+      row := strings.Split(string(line), "\t")
+      tr.table[row[0]] = row[1]
+    }
+  }
+  return nil
+}
+
+func (tw *TableProjectStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
+
+  out := map[string]interface{}{}
+  for k, v := range i {
+    if n, ok := tw.table[k]; ok {
+      out[n] = v
+    } else {
+      out[k] = v
+    }
+  }
+  return out
+}
+
+
+func (fs *FilterStep) Start(task *Task, wg *sync.WaitGroup) {
+  fs.inChan = make(chan map[string]interface{}, 100)
+  fs.Steps.Start(fs.inChan, task, wg)
+}
 
 func (fs FilterStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
   col, _ := evaluate.ExpressionString(fs.Column, task.Inputs, i)
@@ -270,6 +440,41 @@ func (fs FilterStep) Run(i map[string]interface{}, task *Task) map[string]interf
   return i
 }
 
+func (fs FilterStep) Close() {
+  close(fs.inChan)
+}
+
+
+func (fs *FieldProcessStep) Start(task *Task, wg *sync.WaitGroup) {
+  fs.inChan = make(chan map[string]interface{}, 100)
+  fs.Steps.Start(fs.inChan, task, wg)
+}
+
+
+func (fs FieldProcessStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
+  if v, ok := i[fs.Column]; ok {
+      if vList, ok := v.([]interface{}); ok {
+        for _, l := range vList {
+          if m, ok := l.(map[string]interface{}); ok {
+            r := map[string]interface{}{}
+            for k, v := range m {
+              r[k] = v
+            }
+            for k, v := range fs.Mapping {
+              val, _ := evaluate.ExpressionString(v, task.Inputs, i)
+              r[k] = val
+            }
+            fs.inChan <- r
+          }
+        }
+      }
+  }
+  return i
+}
+
+func (fs FieldProcessStep) Close() {
+  close(fs.inChan)
+}
 
 func (re RegexReplaceStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
   col, _ := evaluate.ExpressionString(re.Column, task.Inputs, i)
@@ -312,6 +517,33 @@ func (al AlleleIDStep) Run(i map[string]interface{}, task *Task) map[string]inte
   return o
 }
 
+func valueRender(v interface{}, task *Task, row map[string]interface{}) (interface{}, error) {
+  if vStr, ok := v.(string); ok {
+    return evaluate.ExpressionString(vStr, task.Inputs, row)
+  } else if vMap, ok := v.(map[string]interface{}); ok {
+    o := map[string]interface{}{}
+    for key, val := range vMap {
+      o[key], _ = valueRender(val, task, row)
+    }
+    return o, nil
+  } else if vArray, ok := v.([]interface{}); ok {
+    o := []interface{}{}
+    for _, val := range vArray {
+      j, _ := valueRender(val, task, row)
+      o = append(o, j)
+    }
+    return o, nil
+  } else if vArray, ok := v.([]string); ok {
+    o := []string{}
+    for _, vStr := range vArray {
+      j, _ := evaluate.ExpressionString(vStr, task.Inputs, row)
+      o = append(o, j)
+    }
+    return o, nil
+  }
+  return v, nil
+}
+
 func (pr ProjectStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
 
   o := map[string]interface{}{}
@@ -320,14 +552,14 @@ func (pr ProjectStep) Run(i map[string]interface{}, task *Task) map[string]inter
   }
 
   for k, v := range pr.Mapping {
-    o[k], _ = evaluate.ExpressionString(v, task.Inputs, i)
+    o[k], _ = valueRender(v, task, i)
   }
   return o
 }
 
 func (db DebugStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
-  d, _ := json.Marshal(i)
-  log.Printf("Data: %s", d)
+  s, _ := json.Marshal(i)
+  log.Printf("DebugData: %s", s)
   return i
 }
 
@@ -354,12 +586,17 @@ func (ts TransformStep) Start(in chan map[string]interface{},
         out <- ts.EdgeCreate.Run(i, task)
       }
     } else if ts.Filter != nil {
-      ts.Filter.inChan = make(chan map[string]interface{}, 100)
-      ts.Filter.Steps.Start(ts.Filter.inChan, task, wg)
-      defer close(ts.Filter.inChan)
+      ts.Filter.Start(task, wg)
       for i := range in {
         out <- ts.Filter.Run(i, task)
       }
+      ts.Filter.Close()
+    } else if ts.FieldProcess != nil {
+      ts.FieldProcess.Start(task, wg)
+      for i := range in {
+        out <- ts.FieldProcess.Run(i, task)
+      }
+      ts.FieldProcess.Close()
     } else if ts.Debug != nil {
       for i := range in {
         out <- ts.Debug.Run(i, task)
@@ -394,6 +631,28 @@ func (ts TransformStep) Start(in chan map[string]interface{},
     } else if ts.ObjectCreate != nil {
       for i := range in {
         out <- ts.ObjectCreate.Run(i, task)
+      }
+    } else if ts.TableWrite != nil {
+      ts.TableWrite.Start(task, wg)
+      for i := range in {
+        out <- ts.TableWrite.Run(i, task)
+      }
+      ts.TableWrite.Close()
+    } else if ts.TableReplace != nil {
+      err := ts.TableReplace.Start(task, wg)
+      if err != nil {
+        log.Printf("TableReplace err: %s", err)
+      }
+      for i := range in {
+        out <- ts.TableReplace.Run(i, task)
+      }
+    } else if ts.TableProject != nil {
+      err := ts.TableProject.Start(task, wg)
+      if err != nil {
+        log.Printf("TableProject err: %s", err)
+      }
+      for i := range in {
+        out <- ts.TableProject.Run(i, task)
       }
     } else {
       log.Printf("Unknown field step")

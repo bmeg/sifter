@@ -19,6 +19,7 @@ type Config struct {
 	GripServer   string
 	PlaybookDirs []string
 	WorkDir      string
+	ObjectOutput bool
 }
 
 func Init(config Config) (*Manager, error) {

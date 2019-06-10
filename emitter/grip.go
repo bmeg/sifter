@@ -2,6 +2,7 @@ package emitter
 
 import (
 	"log"
+	"fmt"
 	"sync"
 
 	"github.com/bmeg/grip/gripql"
@@ -56,13 +57,14 @@ func NewGripEmitter(host string, graph string) (*GripEmitter, error) {
 		}
 	}
 	if !found {
-		log.Printf("creating graph")
+		log.Printf("creating graph: %s", graph)
 		err := conn.AddGraph(graph)
 		if err != nil {
 			return nil, err
 		}
 	}
 
+	log.Printf("loading graph: %s", graph)
 	elemChan := make(chan *gripql.GraphElement, 1000)
 	done := sync.WaitGroup{}
 	done.Add(1)
@@ -89,6 +91,11 @@ func (s *GripEmitter) EmitEdge(e *gripql.Edge) error {
 	s.elemChan <- &gripql.GraphElement{Graph: s.graph, Edge: e}
 	return nil
 }
+
+func (s *GripEmitter) EmitObject(string, map[string]interface{}) error {
+	return fmt.Errorf("GRIP unable to emit objects")
+}
+
 
 func (s *GripEmitter) Close() {
 	log.Printf("Closing GRIP connection")

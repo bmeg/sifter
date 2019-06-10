@@ -31,6 +31,10 @@ github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d h1:xDfNPAt8lFiC1U
 github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d/go.mod h1:6QX/PXZ00z/TKoufEY6K/a0k6AhaJrQKdFe6OfVXsa4=
 github.com/bmeg/golib v0.0.0-20170626075926-82a1e1d7a0b2 h1:pR4J0Eq9bLu2kRq3Xh3iGDaiOHELIKJLPBhB5K8yTJg=
 github.com/bmeg/golib v0.0.0-20170626075926-82a1e1d7a0b2/go.mod h1:UYeNUXxiubPvUu5x/Sm/lIIbdhtkFOAdR0P0NTIQrPc=
+github.com/bmeg/gpython v0.0.3-0.20190517230906-099308a5c382 h1:lXXNdF6KNYFsOU9l8q4rmGHo7LHDqGzzQ1mI5OyJEYQ=
+github.com/bmeg/gpython v0.0.3-0.20190517230906-099308a5c382/go.mod h1:bmk0l57W/7Cs67MMnz4U28SoYyvz5NTMYyJvUqytJhs=
+github.com/bmeg/gpython v0.0.3-0.20190601230132-c92b4531dc6f h1:cr4toVskIykSxUCWCZFoOwApIi2eXJaGHaV7kUEGHA0=
+github.com/bmeg/gpython v0.0.3-0.20190601230132-c92b4531dc6f/go.mod h1:bmk0l57W/7Cs67MMnz4U28SoYyvz5NTMYyJvUqytJhs=
 github.com/bmeg/grip v0.0.0-20190327203551-6f9abc18d4da h1:wv5B8IxzeebomDweWEOvgf425gc3Qx+SkVqMOBcEu/k=
 github.com/bmeg/grip v0.0.0-20190327203551-6f9abc18d4da/go.mod h1:JsCC/vfLlAMfrLO0dHGfORlNsy0368mlCnCiISmx9KA=
 github.com/bradfitz/go-smtpd v0.0.0-20170404230938-deb6d6237625/go.mod h1:HYsPBTaaSFSlLx/70C2HPIMNZpVV8+vt/A+FMnYP11g=

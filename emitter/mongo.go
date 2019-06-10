@@ -193,6 +193,12 @@ func (s MongoEmitter) EmitEdge(e *gripql.Edge) error {
 	return nil
 }
 
+func (s MongoEmitter) EmitObject(objClass string, i map[string]interface{}) error {
+	return fmt.Errorf("Mongo object emit core needs to be written")
+}
+
+
+
 func (s MongoEmitter) Close() {
 	close(s.vertexChan)
 	close(s.edgeChan)

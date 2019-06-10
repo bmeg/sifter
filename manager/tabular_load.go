@@ -116,6 +116,7 @@ type TransformStep struct {
   FieldProcess  *FieldProcessStep      `json:"fieldProcess"`
   TableWrite    *TableWriteStep        `json:"tableWrite"`
   TableReplace  *TableReplaceStep      `json:"tableReplace"`
+  TableProject  *TableProjectStep      `json:"tableProject"`
 }
 
 type TransformPipe []TransformStep
@@ -138,6 +139,11 @@ type TableWriteStep struct {
 type TableReplaceStep struct {
   Input        string   `json:"input"`
   Field        string   `json:"field"`
+  table        map[string]string
+}
+
+type TableProjectStep struct {
+  Input        string   `json:"input"`
   table        map[string]string
 }
 
@@ -380,6 +386,46 @@ func (tw *TableReplaceStep) Run(i map[string]interface{}, task *Task) map[string
   return i
 }
 
+func (tr *TableProjectStep) Start(task *Task, wg *sync.WaitGroup) error {
+  input, err := evaluate.ExpressionString(tr.Input, task.Inputs, nil)
+  inputPath, err := task.Path(input)
+  if err != nil {
+    return err
+  }
+
+  if _, err := os.Stat(inputPath); os.IsNotExist(err) {
+    return fmt.Errorf("File Not Found: %s", input)
+  }
+  log.Printf("Loading Translation file: %s", inputPath)
+
+  inputStream, err := golib.ReadFileLines(inputPath)
+  if err != nil {
+    return err
+  }
+  tr.table = map[string]string{}
+  for line := range inputStream {
+    if len(line) > 0 {
+      row := strings.Split(string(line), "\t")
+      tr.table[row[0]] = row[1]
+    }
+  }
+  return nil
+}
+
+func (tw *TableProjectStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
+
+  out := map[string]interface{}{}
+  for k, v := range i {
+    if n, ok := tw.table[k]; ok {
+      out[n] = v
+    } else {
+      out[k] = v
+    }
+  }
+  return out
+}
+
+
 func (fs *FilterStep) Start(task *Task, wg *sync.WaitGroup) {
   fs.inChan = make(chan map[string]interface{}, 100)
   fs.Steps.Start(fs.inChan, task, wg)
@@ -599,6 +645,14 @@ func (ts TransformStep) Start(in chan map[string]interface{},
       }
       for i := range in {
         out <- ts.TableReplace.Run(i, task)
+      }
+    } else if ts.TableProject != nil {
+      err := ts.TableProject.Start(task, wg)
+      if err != nil {
+        log.Printf("TableProject err: %s", err)
+      }
+      for i := range in {
+        out <- ts.TableProject.Run(i, task)
       }
     } else {
       log.Printf("Unknown field step")

@@ -5,6 +5,8 @@ name: CBioPortal
 inputs:
   tar:
     type: File
+  geneTable:
+    type: File
 
 schema: examples/bmeg-dictionary/gdcdictionary/schemas
 
@@ -52,7 +54,7 @@ steps:
               class: aliquot
   - desc: Transpose RNA file
     transposeFile:
-        input: data_RNA_Seq_expression_median.txt
+        input: data_RNA_Seq_V2_expression_median.txt
         output: data_RNA_Seq_expression_median_transpose.txt
   -
     desc: Loading RNA File
@@ -65,13 +67,15 @@ steps:
               mapping:
                 id: "gexp:{{row.Entrez_Gene_Id}}" #after the transpose, the index column header is `Entrez_Gene_Id`
                 aliquot_id: "{{row.Entrez_Gene_Id}}-0000"
+          - tableProject:
+              input: "{{input.geneTable}}"
           - map:
               method: nodeMap
               python: >
                 def nodeMap(x):
                   values = {}
                   for k, v in x.items():
-                    if k != "id" and k != "aliquot_id":
+                    if k != "id" and k != "aliquot_id" and k != "Entrez_Gene_Id":
                       values[k] = v
                   return {
                     "id" : x["id"],

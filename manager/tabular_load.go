@@ -117,6 +117,7 @@ type TransformStep struct {
   TableWrite    *TableWriteStep        `json:"tableWrite"`
   TableReplace  *TableReplaceStep      `json:"tableReplace"`
   TableProject  *TableProjectStep      `json:"tableProject"`
+  Fork          *ForkStep              `json:"fork"`
 }
 
 type TransformPipe []TransformStep
@@ -145,6 +146,10 @@ type TableReplaceStep struct {
 type TableProjectStep struct {
   Input        string   `json:"input"`
   table        map[string]string
+}
+
+type ForkStep struct {
+  Steps        []TransformPipe          `json:"steps"`
 }
 
 func (fm FieldMapStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
@@ -563,6 +568,20 @@ func (db DebugStep) Run(i map[string]interface{}, task *Task) map[string]interfa
   return i
 }
 
+func (fs *ForkStep) Start(task *Task, wg *sync.WaitGroup) error {
+  return nil
+}
+
+func (fs *ForkStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
+  return i
+}
+
+
+func (fs *ForkStep) Close() {
+
+}
+
+
 func (ts TransformStep) Start(in chan map[string]interface{},
   task *Task, wg *sync.WaitGroup) chan map[string]interface{} {
 
@@ -654,6 +673,15 @@ func (ts TransformStep) Start(in chan map[string]interface{},
       for i := range in {
         out <- ts.TableProject.Run(i, task)
       }
+    } else if ts.Fork != nil {
+      err := ts.Fork.Start(task, wg)
+      if err != nil {
+        log.Printf("Fork err: %s", err)
+      }
+      for i := range in {
+        out <- ts.Fork.Run(i, task)
+      }
+      ts.Fork.Close()
     } else {
       log.Printf("Unknown field step")
     }

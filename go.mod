@@ -1,7 +1,5 @@
 module github.com/bmeg/sifter
 
-replace github.com/go-python/gpython => github.com/bmeg/gpython v0.0.3-0.20190601230132-c92b4531dc6f
-
 require (
 	github.com/AndreasBriese/bbloom v0.0.0-20190306092124-e2d15f34fcf9 // indirect
 	github.com/abbot/go-http-auth v0.4.0 // indirect
@@ -23,7 +21,7 @@ require (
 	github.com/go-openapi/spec v0.19.0
 	github.com/go-openapi/strfmt v0.19.0
 	github.com/go-openapi/swag v0.19.0
-	github.com/go-python/gpython v0.0.3
+	github.com/go-python/gpython master
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/go-swagger/go-swagger v0.19.0 // indirect
 	github.com/golang/protobuf v1.2.0

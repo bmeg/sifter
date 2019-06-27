@@ -61,7 +61,7 @@ var Cmd = &cobra.Command{
 			}
 			for k, v := range fileInputs {
 				if i, ok := pb.Inputs[k]; ok {
-					if i.Type == "File" {
+					if i.Type == "File" || i.Type == "Directory" {
 						inputs[k], _ = filepath.Abs(v.(string))
 					} else {
 						inputs[k] = v
@@ -72,7 +72,7 @@ var Cmd = &cobra.Command{
 
 		for k, v := range cmdInputs {
 			if i, ok := pb.Inputs[k]; ok {
-				if i.Type == "File" {
+				if i.Type == "File" || i.Type == "Directory" {
 					inputs[k], _ = filepath.Abs(v)
 				} else {
 					inputs[k] = v

@@ -35,6 +35,12 @@ github.com/bmeg/gpython v0.0.3-0.20190517230906-099308a5c382 h1:lXXNdF6KNYFsOU9l
 github.com/bmeg/gpython v0.0.3-0.20190517230906-099308a5c382/go.mod h1:bmk0l57W/7Cs67MMnz4U28SoYyvz5NTMYyJvUqytJhs=
 github.com/bmeg/gpython v0.0.3-0.20190601230132-c92b4531dc6f h1:cr4toVskIykSxUCWCZFoOwApIi2eXJaGHaV7kUEGHA0=
 github.com/bmeg/gpython v0.0.3-0.20190601230132-c92b4531dc6f/go.mod h1:bmk0l57W/7Cs67MMnz4U28SoYyvz5NTMYyJvUqytJhs=
+github.com/bmeg/gpython v0.0.3-0.20190621174604-df338e331624 h1:pHurP9CTrfgB3mifAnQkzbW4q+ie1eV3WLBn4O2TzHQ=
+github.com/bmeg/gpython v0.0.3-0.20190621174604-df338e331624/go.mod h1:bmk0l57W/7Cs67MMnz4U28SoYyvz5NTMYyJvUqytJhs=
+github.com/bmeg/gpython v0.0.3-0.20190621175013-87b2ebd49122 h1:OYjw2N7Zm7079umb80fwDpZ9IH8Mf/LN+5IagII/lB0=
+github.com/bmeg/gpython v0.0.3-0.20190621175013-87b2ebd49122/go.mod h1:bmk0l57W/7Cs67MMnz4U28SoYyvz5NTMYyJvUqytJhs=
+github.com/bmeg/gpython v0.0.3-0.20190621190137-22c64260815c h1:j0OSjPwXiTrC5d4x8q2/mxAv8saMGWvHrAN0vDhrYIg=
+github.com/bmeg/gpython v0.0.3-0.20190621190137-22c64260815c/go.mod h1:bmk0l57W/7Cs67MMnz4U28SoYyvz5NTMYyJvUqytJhs=
 github.com/bmeg/grip v0.0.0-20190327203551-6f9abc18d4da h1:wv5B8IxzeebomDweWEOvgf425gc3Qx+SkVqMOBcEu/k=
 github.com/bmeg/grip v0.0.0-20190327203551-6f9abc18d4da/go.mod h1:JsCC/vfLlAMfrLO0dHGfORlNsy0368mlCnCiISmx9KA=
 github.com/bradfitz/go-smtpd v0.0.0-20170404230938-deb6d6237625/go.mod h1:HYsPBTaaSFSlLx/70C2HPIMNZpVV8+vt/A+FMnYP11g=
@@ -106,6 +112,8 @@ github.com/go-openapi/swag v0.19.0 h1:Kg7Wl7LkTPlmc393QZQ/5rQadPhi7pBVEMZxyTi0Ii
 github.com/go-openapi/swag v0.19.0/go.mod h1:AByQ+nYG6gQg71GINrmuDXCPWdL640yX49/kXLo40Tg=
 github.com/go-openapi/validate v0.18.0 h1:PVXYcP1GkTl+XIAJnyJxOmK6CSG5Q1UcvoCvNO++5Kg=
 github.com/go-openapi/validate v0.18.0/go.mod h1:Uh4HdOzKt19xGIGm1qHf/ofbX1YQ4Y+MYsct2VUrAJ4=
+github.com/go-python/gpython v0.0.3-0.20190603163921-7f6244eb3f6e h1:IJ+cj2E2SpzUCnaeQnzvnf18evZC4AC3Lpv/eDrqgHM=
+github.com/go-python/gpython v0.0.3-0.20190603163921-7f6244eb3f6e/go.mod h1:bmk0l57W/7Cs67MMnz4U28SoYyvz5NTMYyJvUqytJhs=
 github.com/go-python/gpython v0.0.3 h1:QNFZ0h540Lajx7Pi/os06XzzdYUQG+2sV7IvPo/Mvmg=
 github.com/go-python/gpython v0.0.3/go.mod h1:bmk0l57W/7Cs67MMnz4U28SoYyvz5NTMYyJvUqytJhs=
 github.com/go-stack/stack v1.8.0 h1:5SgMzNM5HxrEjV0ww2lTmX6E2Izsfxas4+YHWRs3Lsk=

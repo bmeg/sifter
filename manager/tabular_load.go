@@ -149,7 +149,8 @@ type TableProjectStep struct {
 }
 
 type ForkStep struct {
-  Steps        []TransformPipe          `json:"steps"`
+  Transform        []TransformPipe          `json:"transform"`
+  pipes            []chan map[string]interface{}
 }
 
 func (fm FieldMapStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
@@ -470,9 +471,15 @@ func (fs FieldProcessStep) Run(i map[string]interface{}, task *Task) map[string]
               r[k] = val
             }
             fs.inChan <- r
+          } else {
+            log.Printf("Incorrect Field Type: %s", l)
           }
         }
+      } else {
+        log.Printf("Field list incorrect type: %s", v)
       }
+  } else {
+    log.Printf("Field %s missing", fs.Column)
   }
   return i
 }
@@ -569,16 +576,26 @@ func (db DebugStep) Run(i map[string]interface{}, task *Task) map[string]interfa
 }
 
 func (fs *ForkStep) Start(task *Task, wg *sync.WaitGroup) error {
+  fs.pipes = []chan map[string]interface{}{}
+  for _, t := range fs.Transform {
+    p := make(chan map[string]interface{}, 100)
+    t.Start(p, task, wg)
+    fs.pipes = append(fs.pipes, p)
+  }
   return nil
 }
 
 func (fs *ForkStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
+  for _, p := range fs.pipes {
+    p <- i
+  }
   return i
 }
 
-
 func (fs *ForkStep) Close() {
-
+  for _, p := range fs.pipes {
+    close(p)
+  }
 }
 
 

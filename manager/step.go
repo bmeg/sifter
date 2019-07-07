@@ -55,6 +55,12 @@ func (step *Step) Run(run *Runtime, inputs map[string]interface{}) error {
       run.Printf("FileGlob Error: %s", err)
       return err
     }
+  } else if step.Script != nil {
+    task := run.NewTask(inputs)
+    if err := step.Script.Run(task); err != nil {
+      run.Printf("Script Error: %s", err)
+      return err
+    }
   } else {
     log.Printf("Unknown Step")
   }

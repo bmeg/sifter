@@ -26,6 +26,7 @@ type Step struct {
 	JSONLoad     *JSONLoadStep     `json:"jsonLoad"`
 	TransposeFile *TransposeFileStep `json:"transposeFile"`
 	FileGlob      *FileGlobStep      `json:"fileGlob"`
+	Script        *ScriptStep        `json:"script"`
 }
 
 type Input struct {

@@ -62,8 +62,7 @@ func (ms *ReduceStep) Start(task *Task, wg *sync.WaitGroup) {
     log.Printf("%s", err)
   }
 
-  opts := badger.DefaultOptions
-  opts.Dir = filepath.Join(tdir, "badger")
+  opts := badger.DefaultOptions(filepath.Join(tdir, "badger"))
   opts.ValueDir = filepath.Join(tdir, "badger")
   ms.db, err = badger.Open(opts)
   if err != nil {
@@ -86,7 +85,7 @@ func (ms *ReduceStep) Add(i map[string]interface{}, task *Task) {
   binary.BigEndian.PutUint64(bSize, dSize)
 
   key := bytes.Join( [][]byte{ []byte(dKey), bPos }, []byte{} )
-  ms.batch.Set(key, bSize, 0)
+  ms.batch.Set(key, bSize)
   ms.dump.Write(d)
   ms.dump.Write([]byte("\n"))
 }

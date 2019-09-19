@@ -1,6 +1,6 @@
 module github.com/bmeg/sifter
 
-replace github.com/go-python/gpython => github.com/bmeg/gpython v0.0.3-0.20190621190137-22c64260815c
+replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999
 
 require (
 	github.com/abbot/go-http-auth v0.4.0 // indirect

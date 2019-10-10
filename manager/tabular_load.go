@@ -128,6 +128,7 @@ type TableLoadStep struct {
   SkipIfMissing bool                   `json:"skipIfMissing"`
   Columns       []string               `json:"columns"`
   Transform     []TransformPipe        `json:"transform"`
+  Sep           string                 `json:"sep"`
 }
 
 type TableWriteStep struct {
@@ -754,7 +755,11 @@ func (ml *TableLoadStep) Run(task *Task) error {
   }
 
   r := csv.NewReader(hd)
-  r.Comma = '\t'
+  if ml.Sep == "" {
+    r.Comma = '\t'
+  } else {
+    r.Comma = []rune(ml.Sep)[0]
+  }
   r.Comment = '#'
 
   var columns []string

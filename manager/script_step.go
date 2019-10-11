@@ -13,6 +13,7 @@ import (
 type ScriptStep struct {
 	DockerImage string   `json:"dockerImage"`
 	Command     []string `json:"command"`
+  Stdout      string   `json:stdout`
 }
 
 func (ss *ScriptStep) Run(task *Task) error {
@@ -38,7 +39,14 @@ func (ss *ScriptStep) Run(task *Task) error {
 
 	cmd := exec.Command("docker", command...)
   cmd.Stderr = os.Stderr
-  cmd.Stdout = os.Stdout
-	err = cmd.Run()
+  if ss.Stdout != "" {
+    p, _ := task.Path(ss.Stdout)
+    outfile, _ := os.Create(p)
+    cmd.Stdout = outfile
+    defer outfile.Close()
+  } else {
+    cmd.Stdout = os.Stdout
+  }
+  err = cmd.Run()
 	return err
 }

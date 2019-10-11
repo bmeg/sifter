@@ -8,7 +8,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/bmeg/golib v0.0.0-20170626075926-82a1e1d7a0b2
-	github.com/bmeg/grip v0.0.0-20190718182528-bf2c05f631ba
+	github.com/bmeg/grip v0.0.0-20191011185106-63f9631f1142
 	github.com/brentp/irelate v0.0.0-20180801151701-1bf7c8f95c75 // indirect
 	github.com/brentp/vcfgo v0.0.0-20190315012323-bdb8e831fc71
 	github.com/dgraph-io/badger v2.0.0-rc2+incompatible
@@ -41,12 +41,11 @@ require (
 	github.com/nicksnyder/go-i18n v1.10.0 // indirect
 	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
 	github.com/oxtoacart/bpool v0.0.0-20190227141107-8c4636f812cc // indirect
-	github.com/pkg/errors v0.8.1 // indirect
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/viper v1.3.2 // indirect
 	github.com/toqueteos/webbrowser v1.1.0 // indirect
 	go.mongodb.org/mongo-driver v1.0.0
-	golang.org/x/net v0.0.0-20190424112056-4829fb13d2c6
+	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
 	google.golang.org/appengine v1.4.0 // indirect
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 )

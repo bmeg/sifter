@@ -38,6 +38,12 @@ github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d h1:xDfNPAt8lFiC1U
 github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d/go.mod h1:6QX/PXZ00z/TKoufEY6K/a0k6AhaJrQKdFe6OfVXsa4=
 github.com/bmeg/golib v0.0.0-20170626075926-82a1e1d7a0b2 h1:pR4J0Eq9bLu2kRq3Xh3iGDaiOHELIKJLPBhB5K8yTJg=
 github.com/bmeg/golib v0.0.0-20170626075926-82a1e1d7a0b2/go.mod h1:UYeNUXxiubPvUu5x/Sm/lIIbdhtkFOAdR0P0NTIQrPc=
+github.com/bmeg/golib v0.0.0-20191012165744-d3312f230e95 h1:Lpyuf2XcEU5aJToEripTilqXbS2eY+MQbl4JvxxdwXs=
+github.com/bmeg/golib v0.0.0-20191012165744-d3312f230e95/go.mod h1:hoSeuZtqe58ANXHuWpeODx4bDHGV36QXlCs1yrUvK6M=
+github.com/bmeg/golib v0.0.0-20191012171645-27f0e5b93d66 h1:i8XYLG2tmCXP6igPnDDYyQ0qTU/+BlRoweEi+EoQZ68=
+github.com/bmeg/golib v0.0.0-20191012171645-27f0e5b93d66/go.mod h1:hoSeuZtqe58ANXHuWpeODx4bDHGV36QXlCs1yrUvK6M=
+github.com/bmeg/golib v0.0.0-20191012173545-4e32f1cffdff h1:O27jffcIvaDPPT2V0erTcDHsgJ/ZbGUxp1WtLXmZ4Pg=
+github.com/bmeg/golib v0.0.0-20191012173545-4e32f1cffdff/go.mod h1:hoSeuZtqe58ANXHuWpeODx4bDHGV36QXlCs1yrUvK6M=
 github.com/bmeg/gpython v0.0.3-0.20190517230906-099308a5c382 h1:lXXNdF6KNYFsOU9l8q4rmGHo7LHDqGzzQ1mI5OyJEYQ=
 github.com/bmeg/gpython v0.0.3-0.20190517230906-099308a5c382/go.mod h1:bmk0l57W/7Cs67MMnz4U28SoYyvz5NTMYyJvUqytJhs=
 github.com/bmeg/gpython v0.0.3-0.20190601230132-c92b4531dc6f h1:cr4toVskIykSxUCWCZFoOwApIi2eXJaGHaV7kUEGHA0=
@@ -177,6 +183,8 @@ github.com/golang/protobuf v1.2.0 h1:P3YflyNX/ehuJFLhxviNdFxQPkGK5cDcApsge1SqnvM
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.3.1 h1:YF8+flBXS5eO826T4nzqPrxfhQThhXl0YzfuUPu4SBg=
 github.com/golang/protobuf v1.3.1/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
+github.com/golang/protobuf v1.3.2 h1:6nsPYzhq5kReh6QImI3k5qWzO4PEbvbIW2cwSfR/6xs=
+github.com/golang/protobuf v1.3.2/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
 github.com/golang/snappy v0.0.1 h1:Qgr9rKW7uDUkrbSmQeiDsGa8SjGyCOGtuasMWwvp2P4=
 github.com/golang/snappy v0.0.1/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=

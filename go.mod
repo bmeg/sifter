@@ -7,7 +7,7 @@ require (
 	github.com/alecthomas/gometalinter v3.0.0+incompatible // indirect
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/aymerick/raymond v2.0.2+incompatible
-	github.com/bmeg/golib v0.0.0-20170626075926-82a1e1d7a0b2
+	github.com/bmeg/golib v0.0.0-20191012173545-4e32f1cffdff
 	github.com/bmeg/grip v0.0.0-20191011185106-63f9631f1142
 	github.com/brentp/irelate v0.0.0-20180801151701-1bf7c8f95c75 // indirect
 	github.com/brentp/vcfgo v0.0.0-20190315012323-bdb8e831fc71
@@ -24,7 +24,7 @@ require (
 	github.com/go-python/gpython v0.0.3-0.20190725101355-c5b8c68a094a
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/go-swagger/go-swagger v0.19.0 // indirect
-	github.com/golang/protobuf v1.3.1
+	github.com/golang/protobuf v1.3.2
 	github.com/gonum/blas v0.0.0-20181208220705-f22b278b28ac // indirect
 	github.com/gonum/floats v0.0.0-20181209220543-c233463c7e82 // indirect
 	github.com/gonum/internal v0.0.0-20181124074243-f884aa714029 // indirect

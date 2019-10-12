@@ -754,13 +754,14 @@ func (ml *TableLoadStep) Run(task *Task) error {
     hd = fhd
   }
 
-  r := csv.NewReader(hd)
+
+  r := golib.CSVReader{}
   if ml.Sep == "" {
-    r.Comma = '\t'
+    r.Comma = "\t"
   } else {
-    r.Comma = []rune(ml.Sep)[0]
+    r.Comma = ml.Sep
   }
-  r.Comment = '#'
+  r.Comment = "#"
 
   var columns []string
   if ml.Columns != nil {
@@ -776,15 +777,13 @@ func (ml *TableLoadStep) Run(task *Task) error {
   }
   rowSkip := ml.RowSkip
 
-  for {
-		record, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-      log.Printf("Error %s", err)
-			break
-		}
+  inputStream, err := golib.ReadLines(hd)
+  if err != nil {
+    log.Printf("Error %s", err)
+    return err
+  }
+
+  for record := range r.Read(inputStream) {
     if rowSkip > 0 {
       rowSkip--
     } else {
@@ -792,12 +791,13 @@ func (ml *TableLoadStep) Run(task *Task) error {
         columns = record
       } else {
         o := map[string]interface{}{}
-        for i, n := range columns {
-          o[n] = record[i]
-        }
-        //fmt.Printf("Proc: %s\n", o)
-        for _, c := range procChan {
-          c <- o
+        if len(record) >= len(columns) {
+          for i, n := range columns {
+            o[n] = record[i]
+          }
+          for _, c := range procChan {
+            c <- o
+          }
         }
       }
     }

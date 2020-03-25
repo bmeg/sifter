@@ -6,6 +6,10 @@ import (
   "os"
   "io"
   "log"
+  "strings"
+
+  "compress/gzip"
+
   "encoding/csv"
   "github.com/bmeg/sifter/evaluate"
   "github.com/bmeg/sifter/pipeline"
@@ -13,8 +17,9 @@ import (
 
 
 type TransposeFileStep struct {
-  Input   string `json:"input"`
-  Output  string `json:"output"`
+  Input   string  `json:"input"`
+  Output  string  `json:"output"`
+  LineSkip int    `json:"lineSkip"`
 }
 
 
@@ -28,25 +33,42 @@ func (ml *TransposeFileStep) Run(task *pipeline.Task) error {
 
   matrix := [][]string{}
 
-  hd, err := os.Open(inputPath)
+  fhd, err := os.Open(inputPath)
   if err != nil {
     return err
   }
-  defer hd.Close()
+  defer fhd.Close()
+
+  var hd io.Reader
+  if strings.HasSuffix(input, ".gz") {
+    hd, err = gzip.NewReader(fhd)
+    if err != nil {
+      return err
+    }
+  } else {
+    hd = fhd
+  }
+
+  lineSkip := ml.LineSkip
 
   r := csv.NewReader(hd)
   r.Comma = '\t'
+  r.FieldsPerRecord = -1
 
   for {
 		record, err := r.Read()
 		if err == io.EOF {
 			break
 		}
-		if err != nil {
-      log.Printf("Error %s", err)
-			break
-		}
-    matrix = append(matrix, record)
+    if lineSkip > 0 {
+      lineSkip--
+    } else {
+  		if err != nil {
+        log.Printf("Error %s", err)
+  			break
+  		}
+      matrix = append(matrix, record)
+    }
 	}
 
   log.Printf("Writing %s", outputPath)

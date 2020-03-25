@@ -70,13 +70,11 @@ func (ml *TableLoadStep) Run(task *pipeline.Task) error {
     columns = ml.Columns
   }
 
-  procChan := []chan map[string]interface{}{}
+  procChan := make(chan map[string]interface{}, 100)
   wg := &sync.WaitGroup{}
-  for _, trans := range ml.Transform {
-    i := make(chan map[string]interface{}, 100)
-    trans.Start(i, task, wg)
-    procChan = append(procChan, i)
-  }
+
+  ml.Transform.Start( procChan, task, wg )
+
   rowSkip := ml.RowSkip
 
   inputStream, err := golib.ReadLines(hd)
@@ -97,18 +95,14 @@ func (ml *TableLoadStep) Run(task *pipeline.Task) error {
           for i, n := range columns {
             o[n] = record[i]
           }
-          for _, c := range procChan {
-            c <- o
-          }
+          procChan <- o
         }
       }
     }
 	}
 
   log.Printf("Done Loading")
-  for _, c := range procChan {
-    close(c)
-  }
+  close(procChan)
   wg.Wait()
 
 	return nil

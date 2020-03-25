@@ -3,7 +3,6 @@ package manager
 import (
 	"github.com/bmeg/sifter/emitter"
 	"github.com/bmeg/sifter/pipeline"
-	"io/ioutil"
 	"log"
 	"path/filepath"
 	"sync"
@@ -69,11 +68,7 @@ func (m *Manager) GetPlaybook(name string) (Playbook, bool) {
 	return out, ok
 }
 
-func (m *Manager) NewRuntime(graph string) (*pipeline.Runtime, error) {
-	dir, err := ioutil.TempDir(m.Config.WorkDir, "sifterwork_")
-	if err != nil {
-		log.Fatal(err)
-	}
+func (m *Manager) NewRuntime(graph string, dir string) (*pipeline.Runtime, error) {
 	dir, _ = filepath.Abs(dir)
 	e, err := emitter.NewEmitter(m.Config.GripServer, graph)
 	if err != nil {

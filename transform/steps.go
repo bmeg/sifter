@@ -114,7 +114,9 @@ type TableProjectStep struct {
 }
 
 
-type DebugStep struct {}
+type DebugStep struct {
+  Label        string                 `json:"label"`
+}
 
 type TransformStep struct {
   FieldMap      *FieldMapStep          `json:"fieldMap"`
@@ -565,7 +567,7 @@ func (pr ProjectStep) Run(i map[string]interface{}, task *pipeline.Task) map[str
 
 func (db DebugStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
   s, _ := json.Marshal(i)
-  log.Printf("DebugData: %s", s)
+  log.Printf("DebugData %s: %s", db.Label, s)
   return i
 }
 
@@ -650,7 +652,8 @@ func (ts TransformStep) Start(in chan map[string]interface{},
     } else if ts.Map != nil {
       ts.Map.Start(task, wg)
       for i := range in {
-        out <- ts.Map.Run(i, task)
+        o := ts.Map.Run(i, task)
+        out <- o
       }
     } else if ts.Reduce != nil {
       ts.Reduce.Start(task, wg)
@@ -706,6 +709,7 @@ func (tp TransformPipe) Start( in chan map[string]interface{},
   task *pipeline.Task,
   wg *sync.WaitGroup) {
 
+    log.Printf("Starting TransformPipe")
     wg.Add(1)
     //connect the input stream to the processing chain
     cur := in

@@ -2,6 +2,7 @@ package manifest
 
 import (
 	"log"
+	"io/ioutil"
 
 	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/steps"
@@ -37,7 +38,13 @@ var Cmd = &cobra.Command{
 		manifestURL := args[0]
 		baseURL := args[1]
 
-		run, err := man.NewRuntime(graph)
+		dir, err := ioutil.TempDir(workDir, "sifterwork_")
+		if err != nil {
+			log.Printf("%s", err)
+			return err
+		}
+
+		run, err := man.NewRuntime(graph, dir)
 		if err != nil {
 			log.Printf("Error stating load runtime: %s", err)
 			return err

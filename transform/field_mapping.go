@@ -25,7 +25,7 @@ func (ms *MapStep) Start(task *pipeline.Task, wg *sync.WaitGroup) {
   log.Printf("Starting Map: %s", ms.Python)
   c, err := evaluate.PyCompile(ms.Python)
   if err != nil {
-    log.Printf("%s", err)
+    log.Printf("Compile Error: %s", err)
   }
   ms.pyCode = c
 }

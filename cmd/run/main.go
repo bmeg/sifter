@@ -3,6 +3,7 @@ package run
 import (
 	"fmt"
 	"log"
+	"io/ioutil"
 	"path/filepath"
 
 	"github.com/bmeg/sifter/manager"
@@ -16,6 +17,7 @@ var graph string = "test-data"
 var runOnce bool = false
 var objOutput bool = false
 var workDir string = "./"
+var resume  string = ""
 var server int = 0
 var dbServer string = "grip://localhost:8202"
 var cmdInputs map[string]string
@@ -97,8 +99,18 @@ var Cmd = &cobra.Command{
 
 		fmt.Printf("Starting: %s\n", playFile)
 
+		dir := resume
+		if dir == "" {
+			d, err := ioutil.TempDir(workDir, "sifterwork_")
+			if err != nil {
+				log.Fatal(err)
+				return err
+			}
+			dir = d
+		}
+
 		if server != 0 {
-			go pb.Execute(man, graph, inputs)
+			go pb.Execute(man, graph, inputs, dir)
 			conf := webserver.WebServerHandler{
 				PostPlaybookHandler:        nil,
 				GetPlaybookHandler:         nil,
@@ -107,7 +119,7 @@ var Cmd = &cobra.Command{
 			}
 			webserver.RunServer(conf, server, "")
 		} else {
-			pb.Execute(man, graph, inputs)
+			pb.Execute(man, graph, inputs, dir)
 		}
 		return nil
 	},
@@ -121,5 +133,6 @@ func init() {
 	flags.IntVar(&server, "server", server, "ServerPort")
 	flags.BoolVar(&objOutput, "obj", objOutput, "ObjectOutput")
 	flags.StringVar(&dbServer, "db", dbServer, "Destination Server")
+	flags.StringVar(&resume, "r", resume, "Resume Directory")
 	flags.StringToStringVarP(&cmdInputs, "inputs", "i", cmdInputs, "Input variables")
 }

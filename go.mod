@@ -25,5 +25,6 @@ require (
 	github.com/spf13/cobra v0.0.3
 	go.mongodb.org/mongo-driver v1.0.0
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
-	google.golang.org/appengine v1.4.0 // indirect
 )
+
+go 1.13

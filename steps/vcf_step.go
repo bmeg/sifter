@@ -1,5 +1,5 @@
 
-package manager
+package steps
 
 import (
   "log"
@@ -11,6 +11,7 @@ import (
   "github.com/bmeg/sifter/evaluate"
   "github.com/brentp/vcfgo"
   "github.com/bmeg/sifter/schema"
+  "github.com/bmeg/sifter/pipeline"
 )
 
 type VCFStep struct {
@@ -23,7 +24,7 @@ type VCFStep struct {
 }
 
 
-func (us *VCFStep) Run(task *Task) error {
+func (us *VCFStep) Run(task *pipeline.Task) error {
 	input, err := evaluate.ExpressionString(us.Input, task.Inputs, nil)
 	if err != nil {
 		return err

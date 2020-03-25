@@ -1,11 +1,27 @@
 
-package manager
+package steps
 
 import (
   "log"
+  "github.com/bmeg/sifter/pipeline"
 )
 
-func (step *Step) Run(run *Runtime, inputs map[string]interface{}) error {
+
+type Step struct {
+	Desc         string            `json:"desc"`
+	ManifestLoad *ManifestLoadStep `json:"manifestLoad"`
+	Download     *DownloadStep     `json:"download"`
+	Untar        *UntarStep        `json:"untar"`
+	VCFLoad      *VCFStep          `json:"vcfLoad"`
+	TableLoad    *TableLoadStep    `json:"tableLoad"`
+	JSONLoad     *JSONLoadStep     `json:"jsonLoad"`
+	TransposeFile *TransposeFileStep `json:"transposeFile"`
+	FileGlob      *FileGlobStep      `json:"fileGlob"`
+	Script        *ScriptStep        `json:"script"`
+}
+
+
+func (step *Step) Run(run *pipeline.Runtime, inputs map[string]interface{}) error {
 
   if step.TransposeFile != nil {
     task := run.NewTask(inputs)

@@ -1,4 +1,4 @@
-package manager
+package steps
 
 import (
 	"archive/tar"
@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/pipeline"
 )
 
 type UntarStep struct {
@@ -16,7 +17,7 @@ type UntarStep struct {
 	Strip int    `json:strip`
 }
 
-func (us *UntarStep) Run(task *Task) error {
+func (us *UntarStep) Run(task *pipeline.Task) error {
 	input, err := evaluate.ExpressionString(us.Input, task.Inputs, nil)
 	if err != nil {
 		return err

@@ -1,4 +1,4 @@
-package manager
+package pipeline
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 )
 
 type Runtime struct {
-	man         *Manager
+	//man         *Manager
 	output      emitter.Emitter
 	dir         string
 	name        string
@@ -24,15 +24,19 @@ type Runtime struct {
 	Schemas     *schema.Schemas
 }
 
+func NewRuntime(output emitter.Emitter, dir string, name string) *Runtime {
+	return &Runtime{output:output, dir:dir, name:name, Status:"Starting"}
+}
+
 func (run *Runtime) NewTask(inputs map[string]interface{}) *Task {
-	return &Task{Manager:run.man, Runtime:run, Workdir:run.dir, Inputs:inputs}
+	return &Task{Runtime:run, Workdir:run.dir, Inputs:inputs}
 }
 
 func (run *Runtime) Close() {
 	if run.output != nil {
 		run.output.Close()
 	}
-	run.man.DropRuntime(run.name)
+	//run.man.DropRuntime(run.name)
 }
 
 

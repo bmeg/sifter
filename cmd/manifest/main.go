@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/steps"
 	"github.com/spf13/cobra"
 )
 
@@ -49,7 +50,7 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
-		mani := manager.ManifestLoadStep{
+		mani := steps.ManifestLoadStep{
 			Input:   "input.manifest",
 			BaseURL: baseURL,
 		}

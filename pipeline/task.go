@@ -1,4 +1,4 @@
-package manager
+package pipeline
 
 import (
 	"fmt"
@@ -11,13 +11,14 @@ import (
 
 	"github.com/bmeg/grip/gripql"
 	"github.com/hashicorp/go-getter"
+
 )
 
 type Task struct {
-	Manager *Manager
 	Runtime *Runtime
 	Workdir string
 	Inputs  map[string]interface{}
+	AllowLocalFiles bool
 }
 
 func (m *Task) Path(p string) (string, error) {
@@ -28,7 +29,7 @@ func (m *Task) Path(p string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if !m.Manager.AllowLocalFiles {
+	if !m.AllowLocalFiles {
 		if !strings.HasPrefix(a, m.Workdir) {
 			return "", fmt.Errorf("Input file not inside working directory")
 		}

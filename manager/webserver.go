@@ -4,6 +4,7 @@ import (
 	"github.com/bmeg/sifter/restapi/operations"
 	"github.com/go-openapi/runtime/middleware"
 	"log"
+	"github.com/bmeg/sifter/pipeline"
 )
 
 func NewManagerStatusHandler(man *Manager) operations.GetStatusHandlerFunc {
@@ -12,7 +13,7 @@ func NewManagerStatusHandler(man *Manager) operations.GetStatusHandlerFunc {
 			log.Printf("Status requested")
 			body := []*operations.GetStatusOKBodyItems0{}
 			man.Runtimes.Range(func(key, value interface{}) bool {
-				v := value.(*Runtime)
+				v := value.(*pipeline.Runtime)
 				item := &operations.GetStatusOKBodyItems0{
 					Current:     v.GetCurrent(),
 					EdgeCount:   v.GetEdgeCount(),

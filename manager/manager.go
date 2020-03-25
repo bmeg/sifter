@@ -2,6 +2,7 @@ package manager
 
 import (
 	"github.com/bmeg/sifter/emitter"
+	"github.com/bmeg/sifter/pipeline"
 	"io/ioutil"
 	"log"
 	"path/filepath"
@@ -68,7 +69,7 @@ func (m *Manager) GetPlaybook(name string) (Playbook, bool) {
 	return out, ok
 }
 
-func (m *Manager) NewRuntime(graph string) (*Runtime, error) {
+func (m *Manager) NewRuntime(graph string) (*pipeline.Runtime, error) {
 	dir, err := ioutil.TempDir(m.Config.WorkDir, "sifterwork_")
 	if err != nil {
 		log.Fatal(err)
@@ -79,9 +80,7 @@ func (m *Manager) NewRuntime(graph string) (*Runtime, error) {
 		log.Printf("Emitter init failed: %s", err)
 	}
 	name := filepath.Base(dir)
-	r := &Runtime{man:m,
-		output:e, dir:dir, name:name,
-		Status:"Starting"}
+	r := pipeline.NewRuntime(e, dir, name)
 	m.Runtimes.Store(name, r)
 	return r, err
 }

@@ -1,4 +1,4 @@
-package manager
+package transform
 
 
 import (
@@ -10,7 +10,7 @@ import (
   "sync"
   "log"
   "github.com/bmeg/sifter/evaluate"
-
+  "github.com/bmeg/sifter/pipeline"
   "github.com/dgraph-io/badger"
 )
 
@@ -21,7 +21,7 @@ type MapStep struct {
 }
 
 
-func (ms *MapStep) Start(task *Task, wg *sync.WaitGroup) {
+func (ms *MapStep) Start(task *pipeline.Task, wg *sync.WaitGroup) {
   log.Printf("Starting Map: %s", ms.Python)
   c, err := evaluate.PyCompile(ms.Python)
   if err != nil {
@@ -30,7 +30,7 @@ func (ms *MapStep) Start(task *Task, wg *sync.WaitGroup) {
   ms.pyCode = c
 }
 
-func (ms *MapStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
+func (ms *MapStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
   out := ms.pyCode.Evaluate(ms.Method, i)
   return out
 }
@@ -47,7 +47,7 @@ type ReduceStep struct {
 }
 
 
-func (ms *ReduceStep) Start(task *Task, wg *sync.WaitGroup) {
+func (ms *ReduceStep) Start(task *pipeline.Task, wg *sync.WaitGroup) {
   log.Printf("Starting Reduce: %s", ms.Python)
   c, err := evaluate.PyCompile(ms.Python)
   if err != nil {
@@ -71,7 +71,7 @@ func (ms *ReduceStep) Start(task *Task, wg *sync.WaitGroup) {
   ms.batch = ms.db.NewWriteBatch()
 }
 
-func (ms *ReduceStep) Add(i map[string]interface{}, task *Task) {
+func (ms *ReduceStep) Add(i map[string]interface{}, task *pipeline.Task) {
   d, _ := json.Marshal(i)
 
   dKey, _ := evaluate.ExpressionString(ms.Field, task.Inputs, i)

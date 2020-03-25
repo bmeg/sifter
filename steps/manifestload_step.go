@@ -1,4 +1,4 @@
-package manager
+package steps
 
 import (
 	"os"
@@ -7,6 +7,7 @@ import (
 	"github.com/bmeg/golib"
 	gripUtil "github.com/bmeg/grip/util"
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/pipeline"
 )
 
 type ManifestLoadStep struct {
@@ -17,7 +18,7 @@ type ManifestLoadStep struct {
 var vertexRE *regexp.Regexp = regexp.MustCompile(".Vertex.json")
 var edgeRE *regexp.Regexp = regexp.MustCompile(".Edge.json")
 
-func (ml *ManifestLoadStep) Run(task *Task) error {
+func (ml *ManifestLoadStep) Run(task *pipeline.Task) error {
 
 	mlInput, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
 	if err != nil {

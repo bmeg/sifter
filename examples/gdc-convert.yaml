@@ -20,65 +20,66 @@ steps:
     jsonLoad:
       input: out.projects.json
       transform:
-        -
-          - project:
-              mapping:
-                code: "{{row.project_id}}"
-                programs: "{{row.program.name}}"
-          - objectCreate:
-              class: project
-        -
-          - project:
-              mapping:
-                code: "{{row.project_id}}"
-                programs: "{{row.program.name}}"
-                submitter_id: "{{row.program.name}}"
-                projects: "{{row.project_id}}"
-                type: experiment
-          - objectCreate:
-              class: experiment
+        - fork:
+            transform:
+              -
+                - project:
+                    mapping:
+                      code: "{{row.project_id}}"
+                      programs: "{{row.program.name}}"
+                - objectCreate:
+                    class: project
+              -
+                - project:
+                    mapping:
+                      code: "{{row.project_id}}"
+                      programs: "{{row.program.name}}"
+                      submitter_id: "{{row.program.name}}"
+                      projects: "{{row.project_id}}"
+                      type: experiment
+                - objectCreate:
+                    class: experiment
   - desc: Loading CaseData
     jsonLoad:
       input: out.case.json
       transform:
-        -
-          - project:
-              mapping:
-                studies: "{{row.project.project_id}}"
-                experiments: "exp:{{row.project.project_id}}"
-                type: case
-          - objectCreate:
-              class: case
-          - fieldProcess:
-              col: samples
-              mapping:
-                cases: "{{row.id}}"
-              steps:
-                #- debug: {}
-                - project:
-                    mapping:
-                      type: sample
-                      id: "{{row.sample_id}}"
-                - objectCreate:
-                    class: sample
-                - fieldProcess:
-                    col: portions
-                    mapping:
-                      samples: "{{row.id}}"
-                    steps:
-                      - fieldProcess:
-                          col: analytes
-                          mapping:
-                            samples: "{{row.samples}}"
-                          steps:
-                            - fieldProcess:
-                                col: aliquots
-                                mapping:
-                                  samples: "{{row.samples}}"
-                                steps:
-                                  - project:
-                                      mapping:
-                                        type: aliquot
-                                        id: "{{row.aliquot_id}}"
-                                  - objectCreate:
-                                      class: aliquot
+        - project:
+            mapping:
+              studies: "{{row.project.project_id}}"
+              experiments: "exp:{{row.project.project_id}}"
+              type: case
+        - objectCreate:
+            class: case
+        - fieldProcess:
+            col: samples
+            mapping:
+              cases: "{{row.id}}"
+            steps:
+              #- debug: {}
+              - project:
+                  mapping:
+                    type: sample
+                    id: "{{row.sample_id}}"
+              - objectCreate:
+                  class: sample
+              - fieldProcess:
+                  col: portions
+                  mapping:
+                    samples: "{{row.id}}"
+                  steps:
+                    - fieldProcess:
+                        col: analytes
+                        mapping:
+                          samples: "{{row.samples}}"
+                        steps:
+                          - fieldProcess:
+                              col: aliquots
+                              mapping:
+                                samples: "{{row.samples}}"
+                              steps:
+                                - project:
+                                    mapping:
+                                      type: aliquot
+                                      id: "{{row.aliquot_id}}"
+                                - objectCreate:
+                                    class: aliquot

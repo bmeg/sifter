@@ -1,5 +1,5 @@
 
-package manager
+package steps
 
 
 import (
@@ -8,6 +8,7 @@ import (
   "log"
   "encoding/csv"
   "github.com/bmeg/sifter/evaluate"
+  "github.com/bmeg/sifter/pipeline"
 )
 
 
@@ -17,7 +18,7 @@ type TransposeFileStep struct {
 }
 
 
-func (ml *TransposeFileStep) Run(task *Task) error {
+func (ml *TransposeFileStep) Run(task *pipeline.Task) error {
 
 	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
   output, err := evaluate.ExpressionString(ml.Output, task.Inputs, nil)

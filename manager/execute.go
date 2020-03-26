@@ -6,10 +6,22 @@ import (
 	"strings"
 	"log"
 	"path"
+
+	"github.com/bmeg/sifter/schema"
 )
 
 func (pb *Playbook) Execute(man *Manager, graph string, inputs map[string]interface{}, dir string) error {
-	run, err := man.NewRuntime(graph, dir)
+	var sc *schema.Schemas
+	if pb.Schema != "" {
+		log.Printf("Loading Schema: %s", pb.Schema)
+		t, err := schema.Load(pb.Schema)
+		if err != nil {
+			log.Printf("Error: %s", err)
+			return err
+		}
+		sc = &t
+	}
+	run, err := man.NewRuntime(graph, dir, sc)
 	run.Printf("Starting Playbook")
 	defer run.Close()
 	defer run.Printf("Playbook done")
@@ -17,7 +29,7 @@ func (pb *Playbook) Execute(man *Manager, graph string, inputs map[string]interf
 		return err
 	}
 
-	run.LoadSchema(pb.Schema)
+	//run.LoadSchema(pb.Schema)
 
 	run.OutputCallback = func(name, value string) error {
 		inputs[name] = value

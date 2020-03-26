@@ -61,6 +61,9 @@ func ParseFile(relpath string, conf *Playbook) error {
 	if err != nil {
 		return fmt.Errorf("failed to parse config at path %s: \n%v", path, err)
 	}
+
+	conf.Schema = filepath.Join(filepath.Dir(path), conf.Schema)
+
 	return nil
 }
 

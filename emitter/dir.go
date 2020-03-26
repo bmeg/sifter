@@ -11,22 +11,26 @@ import (
 	//"fmt"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/bmeg/grip/gripql"
+  "github.com/bmeg/sifter/schema"
 )
 
 type DirEmitter struct {
 	jm jsonpb.Marshaler
   dir string
   mux sync.Mutex
+  storeObjects bool
+  schemas *schema.Schemas
   vout map[string]io.WriteCloser
   eout map[string]io.WriteCloser
   oout map[string]io.WriteCloser
 }
 
-func NewDirEmitter(dir string) *DirEmitter {
+func NewDirEmitter(dir string, storeObjects bool, schemas *schema.Schemas) *DirEmitter {
   log.Printf("Emitting to %s", dir)
   return &DirEmitter{
     jm: jsonpb.Marshaler{},
     dir: dir,
+    schemas:schemas,
     vout: map[string]io.WriteCloser{},
     eout: map[string]io.WriteCloser{},
     oout: map[string]io.WriteCloser{},
@@ -75,21 +79,25 @@ func (s *DirEmitter) EmitEdge(e *gripql.Edge) error {
 }
 
 func (s *DirEmitter) EmitObject(objClass string, i map[string]interface{}) error {
-  s.mux.Lock()
-  defer s.mux.Unlock()
-  f, ok := s.oout[objClass]
-  if !ok {
-    j, err := os.Create(path.Join(s.dir, objClass + ".json.gz" ))
-    if err != nil {
-      return err
+  if s.storeObjects {
+    s.mux.Lock()
+    defer s.mux.Unlock()
+    f, ok := s.oout[objClass]
+    if !ok {
+      j, err := os.Create(path.Join(s.dir, objClass + ".json.gz" ))
+      if err != nil {
+        return err
+      }
+      f = gzip.NewWriter(j)
+      s.oout[objClass] = f
     }
-    f = gzip.NewWriter(j)
-    s.oout[objClass] = f
+    o, _ := json.Marshal(i)
+    f.Write([]byte(o))
+    f.Write([]byte("\n"))
+    return nil
+  } else {
+    return GenerateGraph(*s.schemas, objClass, i, s)
   }
-  o, _ := json.Marshal(i)
-  f.Write([]byte(o))
-  f.Write([]byte("\n"))
-  return nil
 }
 
 func (s *DirEmitter) Close() {

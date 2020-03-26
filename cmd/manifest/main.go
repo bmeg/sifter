@@ -44,7 +44,7 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
-		run, err := man.NewRuntime(graph, dir)
+		run, err := man.NewRuntime(graph, dir, nil)
 		if err != nil {
 			log.Printf("Error stating load runtime: %s", err)
 			return err

@@ -6,6 +6,7 @@ import (
 	"net/url"
 
 	"github.com/bmeg/grip/gripql"
+	"github.com/bmeg/sifter/schema"
 )
 
 type Emitter interface {
@@ -34,7 +35,7 @@ func GraphExists(server string, graph string) (bool, error) {
 	return false, fmt.Errorf("Unknown driver: %s", u.Scheme)
 }
 
-func NewEmitter(server string, graph string) (Emitter, error) {
+func NewEmitter(server string, graph string, storeObjects bool, sc *schema.Schemas) (Emitter, error) {
 	u, _ := url.Parse(server)
 	if u.Scheme == "grip" {
 		return NewGripEmitter(u.Host, graph)
@@ -43,10 +44,10 @@ func NewEmitter(server string, graph string) (Emitter, error) {
 		return NewMongoEmitter(server, graph)
 	}
 	if u.Scheme == "stdout" {
-		return StdoutEmitter{}, nil
+		return StdoutEmitter{storeObjects:storeObjects}, nil
 	}
 	if u.Scheme == "dir" {
-		return NewDirEmitter( u.Host + u.Path ), nil
+		return NewDirEmitter( u.Host + u.Path, storeObjects, sc ), nil
 	}
 	return nil, fmt.Errorf("Unknown driver: %s", u.Scheme)
 }

@@ -7,7 +7,6 @@ import (
 
 	"github.com/bmeg/grip/gripql"
 	"github.com/bmeg/sifter/emitter"
-	"github.com/bmeg/sifter/schema"
 )
 
 type Runtime struct {
@@ -21,7 +20,6 @@ type Runtime struct {
 	StepCount   int64
 	StepTotal   int64
 	OutputCallback func(string, string) error
-	Schemas     *schema.Schemas
 }
 
 func NewRuntime(output emitter.Emitter, dir string, name string) *Runtime {
@@ -37,12 +35,6 @@ func (run *Runtime) Close() {
 		run.output.Close()
 	}
 	//run.man.DropRuntime(run.name)
-}
-
-
-func (run *Runtime) LoadSchema(path string) {
-	a := schema.Load(path)
-	run.Schemas = &a
 }
 
 func (run *Runtime) EmitVertex(v *gripql.Vertex) error {

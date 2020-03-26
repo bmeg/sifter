@@ -134,8 +134,11 @@ type Schemas struct {
   Classes  map[string]Schema
 }
 
-func Load(path string) Schemas {
+func Load(path string) (Schemas, error) {
   files, _ := filepath.Glob(filepath.Join(path, "*.yaml"))
+  if len(files) == 0 {
+    return Schemas{}, fmt.Errorf("No schema files found")
+  }
   out := Schemas{Classes:map[string]Schema{}}
   for _, f := range files {
     if s, err := LoadSchema(f); err == nil {
@@ -144,7 +147,7 @@ func Load(path string) Schemas {
       log.Printf("Error loading: %s", err)
     }
   }
-  return out
+  return out, nil
 }
 
 func RefPath(basePath string, ref string) (string, string) {

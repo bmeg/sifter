@@ -3,6 +3,7 @@ package manager
 import (
 	"github.com/bmeg/sifter/emitter"
 	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/schema"
 	"log"
 	"path/filepath"
 	"sync"
@@ -68,9 +69,9 @@ func (m *Manager) GetPlaybook(name string) (Playbook, bool) {
 	return out, ok
 }
 
-func (m *Manager) NewRuntime(graph string, dir string) (*pipeline.Runtime, error) {
+func (m *Manager) NewRuntime(graph string, dir string, sc *schema.Schemas) (*pipeline.Runtime, error) {
 	dir, _ = filepath.Abs(dir)
-	e, err := emitter.NewEmitter(m.Config.GripServer, graph)
+	e, err := emitter.NewEmitter(m.Config.GripServer, graph, m.Config.ObjectOutput, sc)
 	if err != nil {
 		log.Printf("Emitter init failed: %s", err)
 	}

@@ -17,10 +17,9 @@ type Manager struct {
 }
 
 type Config struct {
-	GripServer   string
+	Driver       string
 	PlaybookDirs []string
 	WorkDir      string
-	ObjectOutput bool
 }
 
 func Init(config Config) (*Manager, error) {
@@ -48,6 +47,7 @@ func (m *Manager) DropRuntime(name string) error {
 	return nil
 }
 
+/*
 func (m *Manager) GraphExists(graph string) bool {
 	o, err := emitter.GraphExists(m.Config.GripServer, graph)
 	if err != nil {
@@ -55,6 +55,7 @@ func (m *Manager) GraphExists(graph string) bool {
 	}
 	return o
 }
+*/
 
 func (m *Manager) GetPlaybooks() []Playbook {
 	out := make([]Playbook, 0, len(m.Playbooks))
@@ -69,9 +70,9 @@ func (m *Manager) GetPlaybook(name string) (Playbook, bool) {
 	return out, ok
 }
 
-func (m *Manager) NewRuntime(graph string, dir string, sc *schema.Schemas) (*pipeline.Runtime, error) {
+func (m *Manager) NewRuntime(dir string, sc *schema.Schemas) (*pipeline.Runtime, error) {
 	dir, _ = filepath.Abs(dir)
-	e, err := emitter.NewEmitter(m.Config.GripServer, graph, m.Config.ObjectOutput, sc)
+	e, err := emitter.NewEmitter(m.Config.Driver, sc)
 	if err != nil {
 		log.Printf("Emitter init failed: %s", err)
 	}

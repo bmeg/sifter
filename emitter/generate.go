@@ -4,7 +4,7 @@ import (
   "github.com/bmeg/sifter/schema"
 )
 
-func GenerateGraph(sc schema.Schemas, class string, data map[string]interface{}, emitter Emitter) error {
+func GenerateGraph(sc *schema.Schemas, class string, data map[string]interface{}, emitter GraphEmitter) error {
 	if o, err := sc.Generate(class, data); err == nil {
 		for _, j := range o {
 			if j.Vertex != nil {

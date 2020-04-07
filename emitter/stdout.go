@@ -2,6 +2,7 @@ package emitter
 
 import (
 	"fmt"
+	"log"
 	"encoding/json"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/bmeg/grip/gripql"
@@ -10,8 +11,7 @@ import (
 
 type StdoutEmitter struct {
 	jm jsonpb.Marshaler
-	storeObjects bool
-	schemas schema.Schemas
+	schemas *schema.Schemas
 }
 
 func (s StdoutEmitter) EmitVertex(v *gripql.Vertex) error {
@@ -27,12 +27,13 @@ func (s StdoutEmitter) EmitEdge(e *gripql.Edge) error {
 }
 
 func (s StdoutEmitter) EmitObject(objClass string, i map[string]interface{}) error {
-	if s.storeObjects {
-		o, _ := json.Marshal(i)
-		fmt.Printf("%s : %s\n", objClass, o)
-	} else {
-		return GenerateGraph(s.schemas, objClass, i, s)
+	v, err := s.schemas.Validate(objClass, i)
+	if err != nil {
+		log.Printf("Object Error: %s", err)
+		return err
 	}
+	o, _ := json.Marshal(v)
+	fmt.Printf("%s : %s\n", objClass, o)
 	return nil
 }
 

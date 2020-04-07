@@ -5,7 +5,7 @@ import (
 	"log"
 	"sync/atomic"
 
-	"github.com/bmeg/grip/gripql"
+	//"github.com/bmeg/grip/gripql"
 	"github.com/bmeg/sifter/emitter"
 )
 
@@ -37,6 +37,7 @@ func (run *Runtime) Close() {
 	//run.man.DropRuntime(run.name)
 }
 
+/*
 func (run *Runtime) EmitVertex(v *gripql.Vertex) error {
 	atomic.AddInt64(&run.VertexCount, 1)
 	return run.output.EmitVertex(v)
@@ -46,7 +47,7 @@ func (run *Runtime) EmitEdge(e *gripql.Edge) error {
 	atomic.AddInt64(&run.EdgeCount, 1)
 	return run.output.EmitEdge(e)
 }
-
+*/
 
 func (run *Runtime) EmitObject(c string, o map[string]interface{}) error {
 	return run.output.EmitObject(c,o)

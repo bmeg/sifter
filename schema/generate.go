@@ -31,7 +31,7 @@ func (s Schemas) Validate(classID string, data map[string]interface{}) (map[stri
   if class, ok := s.Classes[classID]; ok {
     return class.Validate(data)
   }
-  return nil, fmt.Errorf("Class '%s' not found", classID )
+  return nil, fmt.Errorf("Class '%s' not found in %s", classID, s.GetClasses() )
 }
 
 func (s Schema) Validate(data map[string]interface{}) (map[string]interface{}, error) {

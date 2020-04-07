@@ -2,10 +2,10 @@ package manifest
 
 import (
 	"log"
-	"io/ioutil"
+	//"io/ioutil"
 
-	"github.com/bmeg/sifter/manager"
-	"github.com/bmeg/sifter/steps"
+	//"github.com/bmeg/sifter/manager"
+	//"github.com/bmeg/sifter/steps"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +20,8 @@ var Cmd = &cobra.Command{
 	Short: "Import manifest file <manifest URL> <download base URL>",
 	Args:  cobra.MinimumNArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-
+		log.Printf("Need to reimplement this")
+		/*
 		man, err := manager.Init(manager.Config{GripServer: gripServer, WorkDir: workDir})
 		if err != nil {
 			log.Printf("Error stating load manager: %s", err)
@@ -62,6 +63,7 @@ var Cmd = &cobra.Command{
 			BaseURL: baseURL,
 		}
 		mani.Run(task)
+		*/
 		return nil
 	},
 }

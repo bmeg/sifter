@@ -134,6 +134,14 @@ type Schemas struct {
   Classes  map[string]Schema
 }
 
+func (s Schemas) GetClasses() []string {
+  out := []string{}
+  for k := range s.Classes {
+    out = append(out, k)
+  }
+  return out
+}
+
 func Load(path string) (Schemas, error) {
   files, _ := filepath.Glob(filepath.Join(path, "*.yaml"))
   if len(files) == 0 {

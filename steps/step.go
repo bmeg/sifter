@@ -9,10 +9,10 @@ import (
 
 type Step struct {
 	Desc         string            `json:"desc"`
-	ManifestLoad *ManifestLoadStep `json:"manifestLoad"`
+	//ManifestLoad *ManifestLoadStep `json:"manifestLoad"`
 	Download     *DownloadStep     `json:"download"`
 	Untar        *UntarStep        `json:"untar"`
-	VCFLoad      *VCFStep          `json:"vcfLoad"`
+	//VCFLoad      *VCFStep          `json:"vcfLoad"`
 	TableLoad    *TableLoadStep    `json:"tableLoad"`
 	JSONLoad     *JSONLoadStep     `json:"jsonLoad"`
 	TransposeFile *TransposeFileStep `json:"transposeFile"`
@@ -29,14 +29,14 @@ func (step *Step) Run(run *pipeline.Runtime, inputs map[string]interface{}) erro
     if err := step.TransposeFile.Run(task); err != nil {
       run.Printf("Tranpose Step Error: %s", err)
       return err
-    }
+    } /*
   } else if step.ManifestLoad != nil {
     task := run.NewTask(inputs)
     log.Printf("Running ManifestLoad")
     if err := step.ManifestLoad.Run(task); err != nil {
       run.Printf("ManifestLoad Error: %s", err)
       return err
-    }
+    } */
   } else if step.Download != nil {
     task := run.NewTask(inputs)
     log.Printf("Running Download")
@@ -50,14 +50,14 @@ func (step *Step) Run(run *pipeline.Runtime, inputs map[string]interface{}) erro
     if err := step.Untar.Run(task); err != nil {
       run.Printf("Untar Error: %s", err)
       return err
-    }
+    } /*
   } else if step.VCFLoad != nil {
     task := run.NewTask(inputs)
     log.Printf("Running VCFLoad")
     if err := step.VCFLoad.Run(task); err != nil {
       run.Printf("VCF Load Error: %s", err)
       return err
-    }
+    } */
   } else if step.TableLoad != nil {
     task := run.NewTask(inputs)
     log.Printf("Running TableLoad")

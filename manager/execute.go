@@ -10,7 +10,7 @@ import (
 	"github.com/bmeg/sifter/schema"
 )
 
-func (pb *Playbook) Execute(man *Manager, graph string, inputs map[string]interface{}, dir string) error {
+func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir string) error {
 	var sc *schema.Schemas
 	if pb.Schema != "" {
 		log.Printf("Loading Schema: %s", pb.Schema)
@@ -19,9 +19,10 @@ func (pb *Playbook) Execute(man *Manager, graph string, inputs map[string]interf
 			log.Printf("Error: %s", err)
 			return err
 		}
+		log.Printf("Loaded Schema: %s", t.GetClasses())
 		sc = &t
 	}
-	run, err := man.NewRuntime(graph, dir, sc)
+	run, err := man.NewRuntime(dir, sc)
 	run.Printf("Starting Playbook")
 	defer run.Close()
 	defer run.Printf("Playbook done")

@@ -10,13 +10,17 @@ import (
 )
 
 type Emitter interface {
-	EmitVertex(v *gripql.Vertex) error
-	EmitEdge(e *gripql.Edge) error
 	EmitObject(objClass string, e map[string]interface{}) error
 	Close()
 }
 
-func GraphExists(server string, graph string) (bool, error) {
+type GraphEmitter interface {
+	EmitVertex(v *gripql.Vertex) error
+	EmitEdge(e *gripql.Edge) error
+	Close()
+}
+
+func GraphExists(server string, graph string, args string) (bool, error) {
 	u, _ := url.Parse(server)
 
 	if u.Scheme == "grip" {
@@ -35,19 +39,21 @@ func GraphExists(server string, graph string) (bool, error) {
 	return false, fmt.Errorf("Unknown driver: %s", u.Scheme)
 }
 
-func NewEmitter(server string, graph string, storeObjects bool, sc *schema.Schemas) (Emitter, error) {
-	u, _ := url.Parse(server)
+func NewEmitter(driver string, sc *schema.Schemas) (Emitter, error) {
+	u, _ := url.Parse(driver)
+	/*
 	if u.Scheme == "grip" {
 		return NewGripEmitter(u.Host, graph)
 	}
 	if u.Scheme == "mongodb" {
 		return NewMongoEmitter(server, graph)
 	}
+	*/
 	if u.Scheme == "stdout" {
-		return StdoutEmitter{storeObjects:storeObjects}, nil
+		return StdoutEmitter{schemas:sc}, nil
 	}
 	if u.Scheme == "dir" {
-		return NewDirEmitter( u.Host + u.Path, storeObjects, sc ), nil
+		return NewDirEmitter( u.Host + u.Path, sc ), nil
 	}
 	return nil, fmt.Errorf("Unknown driver: %s", u.Scheme)
 }

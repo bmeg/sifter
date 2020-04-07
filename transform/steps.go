@@ -17,10 +17,11 @@ import (
   "github.com/bmeg/golib"
   "github.com/bmeg/sifter/pipeline"
 
-  "github.com/bmeg/grip/gripql"
-  "github.com/bmeg/grip/protoutil"
+  //"github.com/bmeg/grip/gripql"
+  //"github.com/bmeg/grip/protoutil"
 )
 
+/*
 type EdgeCreateStep struct {
   Gid   string `json:"gid"`
 	To    string `json:"to"`
@@ -36,6 +37,7 @@ type VertexCreateStep struct {
   Exclude []string `json:"exclude"`
   Include []string `json:"include"`
 }
+*/
 
 type ObjectCreateStep struct {
   Class  string `json:"class"`
@@ -121,8 +123,8 @@ type DebugStep struct {
 type TransformStep struct {
   FieldMap      *FieldMapStep          `json:"fieldMap"`
   FieldType     *FieldTypeStep         `json:"fieldType"`
-  EdgeCreate    *EdgeCreateStep        `json:"edgeCreate"`
-  VertexCreate  *VertexCreateStep      `json:"vertexCreate"`
+  //EdgeCreate    *EdgeCreateStep        `json:"edgeCreate"`
+  //VertexCreate  *VertexCreateStep      `json:"vertexCreate"`
   ObjectCreate  *ObjectCreateStep      `json:"objectCreate"`
   Filter        *FilterStep            `json:"filter"`
   Debug         *DebugStep             `json:"debug"`
@@ -196,6 +198,7 @@ func contains(s []string, q string) bool {
 	return false
 }
 
+/*
 func (ts VertexCreateStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
   v := gripql.Vertex{}
 
@@ -268,6 +271,7 @@ func (ts EdgeCreateStep) Run(i map[string]interface{}, task *pipeline.Task) map[
   task.EmitEdge( &e )
   return i
 }
+*/
 
 func (ts ObjectCreateStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
   //log.Printf("Create Object: %s", ts.Class)
@@ -611,6 +615,7 @@ func (ts TransformStep) Start(in chan map[string]interface{},
       for i := range in {
         out <- ts.FieldType.Run(i, task)
       }
+      /*
     } else if ts.VertexCreate != nil {
       for i := range in {
         out <- ts.VertexCreate.Run(i, task)
@@ -618,7 +623,7 @@ func (ts TransformStep) Start(in chan map[string]interface{},
     } else if ts.EdgeCreate != nil {
       for i := range in {
         out <- ts.EdgeCreate.Run(i, task)
-      }
+      } */
     } else if ts.Filter != nil {
       ts.Filter.Start(task, wg)
       for i := range in {

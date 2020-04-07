@@ -18,14 +18,13 @@ type DirEmitter struct {
 	jm jsonpb.Marshaler
   dir string
   mux sync.Mutex
-  storeObjects bool
   schemas *schema.Schemas
   vout map[string]io.WriteCloser
   eout map[string]io.WriteCloser
   oout map[string]io.WriteCloser
 }
 
-func NewDirEmitter(dir string, storeObjects bool, schemas *schema.Schemas) *DirEmitter {
+func NewDirEmitter(dir string, schemas *schema.Schemas) *DirEmitter {
   log.Printf("Emitting to %s", dir)
   return &DirEmitter{
     jm: jsonpb.Marshaler{},
@@ -79,25 +78,26 @@ func (s *DirEmitter) EmitEdge(e *gripql.Edge) error {
 }
 
 func (s *DirEmitter) EmitObject(objClass string, i map[string]interface{}) error {
-  if s.storeObjects {
-    s.mux.Lock()
-    defer s.mux.Unlock()
-    f, ok := s.oout[objClass]
-    if !ok {
-      j, err := os.Create(path.Join(s.dir, objClass + ".json.gz" ))
-      if err != nil {
-        return err
-      }
-      f = gzip.NewWriter(j)
-      s.oout[objClass] = f
+  s.mux.Lock()
+  defer s.mux.Unlock()
+  f, ok := s.oout[objClass]
+  if !ok {
+    j, err := os.Create(path.Join(s.dir, objClass + ".json.gz" ))
+    if err != nil {
+      return err
     }
-    o, _ := json.Marshal(i)
-    f.Write([]byte(o))
-    f.Write([]byte("\n"))
-    return nil
-  } else {
-    return GenerateGraph(*s.schemas, objClass, i, s)
+    f = gzip.NewWriter(j)
+    s.oout[objClass] = f
   }
+  v, err := s.schemas.Validate(objClass, i)
+  if err != nil {
+    log.Printf("Object Error: %s", err)
+    return err
+  }
+  o, _ := json.Marshal(v)
+  f.Write([]byte(o))
+  f.Write([]byte("\n"))
+  return nil
 }
 
 func (s *DirEmitter) Close() {

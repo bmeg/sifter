@@ -2,6 +2,8 @@ package graph
 
 import (
 	"log"
+	"fmt"
+	"strings"
 	"path/filepath"
 	"github.com/spf13/cobra"
 	"encoding/json"
@@ -30,7 +32,9 @@ var Cmd = &cobra.Command{
       return err
     }
 
-		builder,err := graph.NewBuilder(schemas)
+		driver := fmt.Sprintf("dir://%s", outDir)
+
+		builder,err := graph.NewBuilder(driver, schemas)
     if err != nil {
       return err
     }
@@ -53,7 +57,10 @@ var Cmd = &cobra.Command{
 						}
 					}
 				}()
-				builder.Process( "test", "test", objChan )
+				tmp := strings.Split(n, ".")
+				prefix := tmp[0]
+				class := tmp[1]
+				builder.Process( prefix, class, objChan )
 			}
 		}
 		return nil

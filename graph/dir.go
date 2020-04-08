@@ -9,25 +9,22 @@ import (
   "compress/gzip"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/bmeg/grip/gripql"
-  "github.com/bmeg/sifter/schema"
 )
 
 type DirEmitter struct {
 	jm jsonpb.Marshaler
   dir string
   mux sync.Mutex
-  schemas *schema.Schemas
   vout map[string]io.WriteCloser
   eout map[string]io.WriteCloser
   oout map[string]io.WriteCloser
 }
 
-func NewDirEmitter(dir string, schemas *schema.Schemas) *DirEmitter {
+func NewDirEmitter(dir string) *DirEmitter {
   log.Printf("Emitting to %s", dir)
   return &DirEmitter{
     jm: jsonpb.Marshaler{},
     dir: dir,
-    schemas:schemas,
     vout: map[string]io.WriteCloser{},
     eout: map[string]io.WriteCloser{},
     oout: map[string]io.WriteCloser{},

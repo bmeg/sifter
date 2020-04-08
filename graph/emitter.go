@@ -6,7 +6,6 @@ import (
 	"net/url"
 
 	"github.com/bmeg/grip/gripql"
-	"github.com/bmeg/sifter/schema"
 )
 
 type GraphEmitter interface {
@@ -34,7 +33,7 @@ func GraphExists(server string, graph string, args string) (bool, error) {
 	return false, fmt.Errorf("Unknown driver: %s", u.Scheme)
 }
 
-func NewGraphEmitter(driver string, sc *schema.Schemas) (GraphEmitter, error) {
+func NewGraphEmitter(driver string) (GraphEmitter, error) {
 	u, _ := url.Parse(driver)
 	if u.Scheme == "grip" {
 		return NewGripEmitter(u.Host, u.Path)
@@ -46,7 +45,7 @@ func NewGraphEmitter(driver string, sc *schema.Schemas) (GraphEmitter, error) {
 		return StdoutEmitter{}, nil
 	}
 	if u.Scheme == "dir" {
-		return NewDirEmitter( u.Host + u.Path, sc ), nil
+		return NewDirEmitter( u.Host + u.Path ), nil
 	}
 	return nil, fmt.Errorf("Unknown driver: %s", u.Scheme)
 }

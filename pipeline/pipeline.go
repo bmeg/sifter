@@ -15,8 +15,6 @@ type Runtime struct {
 	dir         string
 	name        string
 	Status      string
-	VertexCount int64
-	EdgeCount   int64
 	StepCount   int64
 	StepTotal   int64
 	OutputCallback func(string, string) error
@@ -37,20 +35,11 @@ func (run *Runtime) Close() {
 	//run.man.DropRuntime(run.name)
 }
 
-/*
-func (run *Runtime) EmitVertex(v *gripql.Vertex) error {
-	atomic.AddInt64(&run.VertexCount, 1)
-	return run.output.EmitVertex(v)
-}
-
-func (run *Runtime) EmitEdge(e *gripql.Edge) error {
-	atomic.AddInt64(&run.EdgeCount, 1)
-	return run.output.EmitEdge(e)
-}
-*/
-
-func (run *Runtime) EmitObject(c string, o map[string]interface{}) error {
-	return run.output.EmitObject(c,o)
+func (run *Runtime) EmitObject(prefix string, c string, o map[string]interface{}) error {
+	if prefix == "" {
+		return run.output.EmitObject(run.name, c,o)
+	}
+	return run.output.EmitObject(prefix, c,o)
 }
 
 func (m *Runtime) Printf(s string, x ...interface{}) {
@@ -63,6 +52,7 @@ func (m *Runtime) GetCurrent() string {
 	return m.Status
 }
 
+/*
 func (m *Runtime) GetVertexCount() int64 {
 	return m.VertexCount
 }
@@ -70,6 +60,7 @@ func (m *Runtime) GetVertexCount() int64 {
 func (m *Runtime) GetEdgeCount() int64 {
 	return m.EdgeCount
 }
+*/
 
 func (m *Runtime) GetStepNum() int64 {
 	return m.StepCount

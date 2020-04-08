@@ -22,7 +22,7 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 		log.Printf("Loaded Schema: %s", t.GetClasses())
 		sc = &t
 	}
-	run, err := man.NewRuntime(dir, sc)
+	run, err := man.NewRuntime(pb.Name, dir, sc)
 	run.Printf("Starting Playbook")
 	defer run.Close()
 	defer run.Printf("Playbook done")

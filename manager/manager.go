@@ -47,16 +47,6 @@ func (m *Manager) DropRuntime(name string) error {
 	return nil
 }
 
-/*
-func (m *Manager) GraphExists(graph string) bool {
-	o, err := emitter.GraphExists(m.Config.GripServer, graph)
-	if err != nil {
-		log.Printf("Failed to load graph driver: %s", err)
-	}
-	return o
-}
-*/
-
 func (m *Manager) GetPlaybooks() []Playbook {
 	out := make([]Playbook, 0, len(m.Playbooks))
 	for _, i := range m.Playbooks {
@@ -70,13 +60,15 @@ func (m *Manager) GetPlaybook(name string) (Playbook, bool) {
 	return out, ok
 }
 
-func (m *Manager) NewRuntime(dir string, sc *schema.Schemas) (*pipeline.Runtime, error) {
+func (m *Manager) NewRuntime(name string, dir string, sc *schema.Schemas) (*pipeline.Runtime, error) {
 	dir, _ = filepath.Abs(dir)
 	e, err := emitter.NewEmitter(m.Config.Driver, sc)
 	if err != nil {
 		log.Printf("Emitter init failed: %s", err)
 	}
-	name := filepath.Base(dir)
+	if name == "" {
+		name = "default"
+	}
 	r := pipeline.NewRuntime(e, dir, name)
 	m.Runtimes.Store(name, r)
 	return r, err

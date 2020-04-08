@@ -16,10 +16,8 @@ func NewManagerStatusHandler(man *Manager) operations.GetStatusHandlerFunc {
 				v := value.(*pipeline.Runtime)
 				item := &operations.GetStatusOKBodyItems0{
 					Current:     v.GetCurrent(),
-					EdgeCount:   v.GetEdgeCount(),
 					StepNum:     v.GetStepNum(),
 					StepTotal:   v.GetStepTotal(),
-					VertexCount: v.GetVertexCount(),
 				}
 				body = append(body, item)
 				return true

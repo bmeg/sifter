@@ -80,18 +80,8 @@ func (m *Task) DownloadFile(src string, dest string) (string, error) {
 	return dest, getter.GetFile(dest, src)
 }
 
-/*
-func (m *Task) EmitVertex(v *gripql.Vertex) error {
-	return m.Runtime.EmitVertex(v)
-}
-
-func (m *Task) EmitEdge(e *gripql.Edge) error {
-	return m.Runtime.EmitEdge(e)
-}
-*/
-
-func (m *Task) EmitObject(c string, e map[string]interface{}) error {
-	return m.Runtime.EmitObject(c, e)
+func (m *Task) EmitObject(prefix string, c string, e map[string]interface{}) error {
+	return m.Runtime.EmitObject(prefix, c, e)
 }
 
 func (m *Task) Output(name string, value string) error {

@@ -5,17 +5,15 @@ import (
   "io"
   "path"
   "log"
+  "fmt"
   "sync"
   "compress/gzip"
   "encoding/json"
-	//"fmt"
-	"github.com/golang/protobuf/jsonpb"
-	"github.com/bmeg/grip/gripql"
+
   "github.com/bmeg/sifter/schema"
 )
 
 type DirEmitter struct {
-	jm jsonpb.Marshaler
   dir string
   mux sync.Mutex
   schemas *schema.Schemas
@@ -27,7 +25,6 @@ type DirEmitter struct {
 func NewDirEmitter(dir string, schemas *schema.Schemas) *DirEmitter {
   log.Printf("Emitting to %s", dir)
   return &DirEmitter{
-    jm: jsonpb.Marshaler{},
     dir: dir,
     schemas:schemas,
     vout: map[string]io.WriteCloser{},
@@ -36,58 +33,19 @@ func NewDirEmitter(dir string, schemas *schema.Schemas) *DirEmitter {
   }
 }
 
-func (s *DirEmitter) EmitVertex(v *gripql.Vertex) error {
-  s.mux.Lock()
-  defer s.mux.Unlock()
-  f, ok := s.vout[v.Label]
-  if !ok {
-    j, err := os.Create(path.Join(s.dir, v.Label + ".Vertex.json.gz" ))
-    if err != nil {
-      log.Printf("Error: %s", err)
-      return err
-    }
-    f = gzip.NewWriter(j)
-    s.vout[v.Label] = f
-  }
-  o, _ := s.jm.MarshalToString(v)
-  f.Write([]byte(o))
-  f.Write([]byte("\n"))
-  return nil
-}
 
-func (s *DirEmitter) EmitEdge(e *gripql.Edge) error {
+func (s *DirEmitter) EmitObject(prefix string, objClass string, i map[string]interface{}) error {
   s.mux.Lock()
   defer s.mux.Unlock()
-  f, ok := s.eout[e.Label]
+  name := fmt.Sprintf("%s.%s", prefix, objClass)
+  f, ok := s.oout[name]
   if !ok {
-    j, err := os.Create(path.Join(s.dir, e.Label + ".Edge.json.gz" ))
+    j, err := os.Create(path.Join(s.dir, name + ".json.gz" ))
     if err != nil {
       return err
     }
     f = gzip.NewWriter(j)
-    s.eout[e.Label] = f
-  }
-  o, err := s.jm.MarshalToString(e)
-  if err != nil {
-    log.Printf("Error: %s", err)
-    return err
-  }
-  f.Write([]byte(o))
-  f.Write([]byte("\n"))
-  return nil
-}
-
-func (s *DirEmitter) EmitObject(objClass string, i map[string]interface{}) error {
-  s.mux.Lock()
-  defer s.mux.Unlock()
-  f, ok := s.oout[objClass]
-  if !ok {
-    j, err := os.Create(path.Join(s.dir, objClass + ".json.gz" ))
-    if err != nil {
-      return err
-    }
-    f = gzip.NewWriter(j)
-    s.oout[objClass] = f
+    s.oout[name] = f
   }
   v, err := s.schemas.Validate(objClass, i)
   if err != nil {

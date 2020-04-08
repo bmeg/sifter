@@ -17,30 +17,11 @@ import (
   "github.com/bmeg/golib"
   "github.com/bmeg/sifter/pipeline"
 
-  //"github.com/bmeg/grip/gripql"
-  //"github.com/bmeg/grip/protoutil"
 )
-
-/*
-type EdgeCreateStep struct {
-  Gid   string `json:"gid"`
-	To    string `json:"to"`
-	From  string `json:"from"`
-	Label string `json:"label"`
-  Exclude []string `json:"exclude"`
-  Include []string `json:"include"`
-}
-
-type VertexCreateStep struct {
-	Gid   string `json:"gid"`
-	Label string `json:"label"`
-  Exclude []string `json:"exclude"`
-  Include []string `json:"include"`
-}
-*/
 
 type ObjectCreateStep struct {
   Class  string `json:"class"`
+  Name   string `json:"name"`
 }
 
 type ColumnReplaceStep struct {
@@ -198,108 +179,8 @@ func contains(s []string, q string) bool {
 	return false
 }
 
-/*
-func (ts VertexCreateStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-  v := gripql.Vertex{}
-
-  gid, err := evaluate.ExpressionString(ts.Gid, task.Inputs, i)
-  if err != nil {
-    log.Printf("Error: %s", err)
-  }
-  label, _ := evaluate.ExpressionString(ts.Label, task.Inputs, i)
-
-  v.Gid = gid
-  v.Label = label
-  if ts.Exclude != nil && len(ts.Exclude) > 0 {
-      t := map[string]interface{}{}
-      for x,y := range i {
-        if !contains(ts.Exclude, x) {
-          t[x] = y
-        }
-      }
-      v.Data = protoutil.AsStruct(t)
-  } else if ts.Include != nil {
-    t := map[string]interface{}{}
-    for x,y := range i {
-      if contains(ts.Exclude, x) {
-        t[x] = y
-      }
-    }
-    v.Data = protoutil.AsStruct(t)
-  } else {
-    v.Data = protoutil.AsStruct(i)
-  }
-  task.EmitVertex( &v )
-  return i
-}
-
-
-func (ts EdgeCreateStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-  e := gripql.Edge{}
-
-  if ts.Gid != "" {
-    gid, _ := evaluate.ExpressionString(ts.Gid, task.Inputs, i)
-    e.Gid = gid
-  }
-  label, _ := evaluate.ExpressionString(ts.Label, task.Inputs, i)
-  to, _ := evaluate.ExpressionString(ts.To, task.Inputs, i)
-  from, _ := evaluate.ExpressionString(ts.From, task.Inputs, i)
-
-  e.Label = label
-  e.To = to
-  e.From = from
-
-  if ts.Exclude != nil && len(ts.Exclude) > 0 {
-      t := map[string]interface{}{}
-      for x,y := range i {
-        if !contains(ts.Exclude, x) {
-          t[x] = y
-        }
-      }
-      e.Data = protoutil.AsStruct(t)
-  } else if ts.Include != nil {
-    t := map[string]interface{}{}
-    for x,y := range i {
-      if contains(ts.Exclude, x) {
-        t[x] = y
-      }
-    }
-    e.Data = protoutil.AsStruct(t)
-  } else {
-    e.Data = protoutil.AsStruct(i)
-  }
-  task.EmitEdge( &e )
-  return i
-}
-*/
-
 func (ts ObjectCreateStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-  //log.Printf("Create Object: %s", ts.Class)
-  /*
-  if task.Manager.Config.ObjectOutput {
-    if o, err := task.Runtime.Schemas.Validate(ts.Class, i); err == nil {
-      task.EmitObject(ts.Class, o)
-    }
-  } else {
-    if task.Runtime.Schemas == nil {
-      log.Printf("Schema not loaded")
-      return i
-    }
-    if o, err := task.Runtime.Schemas.Generate(ts.Class, i); err == nil {
-      for _, j := range o {
-        if j.Vertex != nil {
-          task.EmitVertex(j.Vertex)
-        } else if j.Edge != nil {
-          //log.Printf("Emitting: %s", j.Edge)
-          task.EmitEdge(j.Edge)
-        }
-      }
-    } else {
-      s, _ := json.Marshal(i)
-      log.Printf("Object Create Error: '%s' using '%s'", err, s)
-    }
-  }*/
-  task.Runtime.EmitObject(ts.Class, i)
+  task.Runtime.EmitObject(ts.Name, ts.Class, i)
   return i
 }
 

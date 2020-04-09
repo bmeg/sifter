@@ -1,6 +1,7 @@
 module github.com/bmeg/sifter
 
 require (
+	github.com/akrylysov/pogreb v0.9.1
 	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/bmeg/golib v0.0.0-20191012173545-4e32f1cffdff
 	github.com/bmeg/grip v0.0.0-20191011185106-63f9631f1142

@@ -3,6 +3,7 @@ package graph
 import (
 	"log"
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"path/filepath"
 	"github.com/spf13/cobra"
@@ -16,6 +17,7 @@ import (
 
 var outDir  string = "./out-graph"
 var mappingFile string
+var workDir string = "./"
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
@@ -27,15 +29,18 @@ var Cmd = &cobra.Command{
 		schemaDir := args[0]
 		inDir := args[1]
 
-
 		schemas, err := schema.Load(schemaDir)
 		if err != nil {
       return err
     }
 
-		driver := fmt.Sprintf("dir://%s", outDir)
+		tmpDir, err := ioutil.TempDir(workDir, "siftergraph_")
+		if err != nil {
+			return err
+		}
 
-		builder,err := graph.NewBuilder(driver, schemas)
+		driver := fmt.Sprintf("dir://%s", outDir)
+		builder,err := graph.NewBuilder(driver, schemas, tmpDir)
     if err != nil {
       return err
     }
@@ -73,6 +78,8 @@ var Cmd = &cobra.Command{
 				builder.Process( prefix, class, objChan )
 			}
 		}
+
+		builder.Report()
 		return nil
 	},
 }

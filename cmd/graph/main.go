@@ -15,6 +15,7 @@ import (
 )
 
 var outDir  string = "./out-graph"
+var mappingFile string
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
@@ -38,6 +39,15 @@ var Cmd = &cobra.Command{
     if err != nil {
       return err
     }
+
+		if mappingFile != "" {
+			m, err := graph.LoadMapping(mappingFile)
+			if err != nil {
+	      return err
+	    }
+			log.Printf("Loaded Mapping: %s", mappingFile)
+			builder.AddMapping(m)
+		}
 
 		paths, _ := filepath.Glob(filepath.Join(inDir, "*.json.gz"))
 		for _, path := range paths {
@@ -70,4 +80,5 @@ var Cmd = &cobra.Command{
 func init() {
 	flags := Cmd.Flags()
 	flags.StringVar(&outDir, "o", outDir, "Output Dir")
+	flags.StringVar(&mappingFile, "m", mappingFile, "Mapping File")
 }

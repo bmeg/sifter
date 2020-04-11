@@ -114,6 +114,8 @@ github.com/go-openapi/validate v0.18.0 h1:PVXYcP1GkTl+XIAJnyJxOmK6CSG5Q1UcvoCvNO
 github.com/go-openapi/validate v0.18.0/go.mod h1:Uh4HdOzKt19xGIGm1qHf/ofbX1YQ4Y+MYsct2VUrAJ4=
 github.com/go-python/gpython v0.0.3-0.20190725101355-c5b8c68a094a h1:0r/0vH22t+gN7UpbF350hpLa5WkX3IMHR5yf/d1C/Ag=
 github.com/go-python/gpython v0.0.3-0.20190725101355-c5b8c68a094a/go.mod h1:bmk0l57W/7Cs67MMnz4U28SoYyvz5NTMYyJvUqytJhs=
+github.com/go-python/gpython v0.0.3-0.20191118123038-4c28217f7422 h1:llC8zawyAb6scWlUNArFK4bSQCJalzPhhFZ/vNFPONs=
+github.com/go-python/gpython v0.0.3-0.20191118123038-4c28217f7422/go.mod h1:l1KK1aCMAUQJC4RTrgTiTIPCFw0UhQ3osEtsu3tBSrc=
 github.com/go-sourcemap/sourcemap v2.1.2+incompatible/go.mod h1:F8jJfvm2KbVjc5NqelyYJmf/v5J0dwNLS2mL4sNA1Jg=
 github.com/go-sql-driver/mysql v1.4.0/go.mod h1:zAC/RDZ24gD3HViQzih4MyKcchzm+sOG5ZlKdlhCg5w=
 github.com/go-sql-driver/mysql v1.4.1/go.mod h1:zAC/RDZ24gD3HViQzih4MyKcchzm+sOG5ZlKdlhCg5w=

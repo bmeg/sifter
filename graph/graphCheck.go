@@ -30,8 +30,8 @@ func (gc *GraphCheck) AddVertex(g string) {
 }
 
 func (gc *GraphCheck) AddEdge(from, to string) {
-	gc.edgeDB.Put([]byte(from), []byte{})
-	gc.edgeDB.Put([]byte(to), []byte{})
+	gc.edgeDB.Put([]byte(from), []byte(to))
+	gc.edgeDB.Put([]byte(to), []byte(from))
 }
 
 func (gc *GraphCheck) GetEdgeVertices() chan string {
@@ -60,4 +60,12 @@ func (gc *GraphCheck) HasVertex(s string) bool {
 		return false
 	}
 	return true
+}
+
+func (gc *GraphCheck) GetEdgeSource(s string) string {
+  val, err := gc.edgeDB.Get([]byte(s))
+	if val == nil || err != nil {
+		return ""
+	}
+	return string(val)
 }

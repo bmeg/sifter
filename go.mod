@@ -17,7 +17,7 @@ require (
 	github.com/go-openapi/spec v0.19.0
 	github.com/go-openapi/strfmt v0.19.0
 	github.com/go-openapi/swag v0.19.0
-	github.com/go-python/gpython v0.0.3-0.20190725101355-c5b8c68a094a
+	github.com/go-python/gpython v0.0.3-0.20191118123038-4c28217f7422
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/protobuf v1.3.2
 	github.com/hashicorp/go-getter v1.2.0

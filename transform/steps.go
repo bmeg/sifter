@@ -43,8 +43,12 @@ type FieldTypeStep struct {
 type FilterStep struct {
   Column  string `json:"col"`
   Match   string `json:"match"`
+  Exists  bool   `json:"exists"`
+  Method string  `json:"method"`
+  Python string  `json:"python"`
   Steps   TransformPipe `json:"steps"`
   inChan  chan map[string]interface{}
+  pyCode *evaluate.PyCode
 }
 
 type RegexReplaceStep struct {
@@ -104,8 +108,6 @@ type DebugStep struct {
 type TransformStep struct {
   FieldMap      *FieldMapStep          `json:"fieldMap"`
   FieldType     *FieldTypeStep         `json:"fieldType"`
-  //EdgeCreate    *EdgeCreateStep        `json:"edgeCreate"`
-  //VertexCreate  *VertexCreateStep      `json:"vertexCreate"`
   ObjectCreate  *ObjectCreateStep      `json:"objectCreate"`
   Filter        *FilterStep            `json:"filter"`
   Debug         *DebugStep             `json:"debug"`
@@ -314,12 +316,34 @@ func (tw *TableProjectStep) Run(i map[string]interface{}, task *pipeline.Task) m
 
 
 func (fs *FilterStep) Start(task *pipeline.Task, wg *sync.WaitGroup) {
+  if fs.Python != "" && fs.Method != "" {
+    log.Printf("Starting Map: %s", fs.Python)
+    c, err := evaluate.PyCompile(fs.Python)
+    if err != nil {
+      log.Printf("Compile Error: %s", err)
+    }
+    fs.pyCode = c
+  }
   fs.inChan = make(chan map[string]interface{}, 100)
   fs.Steps.Start(fs.inChan, task, wg)
 }
 
 func (fs FilterStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-  col, _ := evaluate.ExpressionString(fs.Column, task.Inputs, i)
+  if fs.Python != "" && fs.Method != "" {
+    out := fs.pyCode.EvaluateBool(fs.Method, i)
+    if out {
+      fs.inChan <- i
+    } else {
+      log.Printf("Filtering, %s", i)
+    }
+    return i
+  }
+  col, err := evaluate.ExpressionString(fs.Column, task.Inputs, i)
+  if fs.Exists {
+    if err != nil {
+      return i
+    }
+  }
   match, _ := evaluate.ExpressionString(fs.Match, task.Inputs, i)
   if col == match {
     fs.inChan <- i

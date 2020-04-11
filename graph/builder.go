@@ -12,6 +12,7 @@ import (
 type DomainClassInfo struct {
   emitter GraphEmitter
   gc      *GraphCheck
+  om      *ObjectMap
   vertCount int64
   edgeCount int64
 }
@@ -19,6 +20,7 @@ type DomainClassInfo struct {
 type DomainInfo struct {
   emitter GraphEmitter
   gc      *GraphCheck
+  dm      DomainMap
   classes map[string]*DomainClassInfo
 }
 
@@ -52,6 +54,9 @@ func (b *Builder) GetDomain(prefix string) *DomainInfo {
     return x
   }
   o := DomainInfo{emitter:b.emitter, classes:map[string]*DomainClassInfo{}, gc:b.gc}
+  if x, ok := b.gm.Domains[prefix]; ok {
+    o.dm = x
+  }
   b.domains[prefix] = &o
   return &o
 }
@@ -91,7 +96,7 @@ func (b *Builder) Report() {
   fmt.Printf("Missing:\n")
   for v := range b.gc.GetEdgeVertices() {
       if ! b.gc.HasVertex(v) {
-        fmt.Printf(" - %s\n", v)
+        fmt.Printf(" - %s (from %s)\n", v, b.gc.GetEdgeSource(v))
       }
   }
 }
@@ -101,6 +106,9 @@ func (d *DomainInfo) GetClass(cls string) *DomainClassInfo {
     return x
   }
   o := DomainClassInfo{emitter:d.emitter, gc:d.gc}
+  if x, ok := d.dm[cls]; ok {
+    o.om = &x
+  }
   d.classes[cls] = &o
   return &o
 }
@@ -113,6 +121,9 @@ func (dc *DomainClassInfo) Close() {
 
 func (dc *DomainClassInfo) EmitVertex(v *gripql.Vertex) error {
   dc.vertCount += 1
+  if dc.om != nil && dc.om.Label != "" {
+    v.Label = dc.om.Label
+  }
   dc.gc.AddVertex(v.Gid)
   return dc.emitter.EmitVertex(v)
 }

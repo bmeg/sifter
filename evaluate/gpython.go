@@ -97,6 +97,7 @@ func (p *PyCode) Evaluate(method string, inputs... map[string]interface{}) map[s
   out, err := py.Call(fun, in, nil)
   if err != nil {
 		py.TracebackDump(err)
+    log.Printf("Inputs: %#v", inputs)
 		log.Printf("Map Error: %s", err)
     return nil
 	}
@@ -106,4 +107,26 @@ func (p *PyCode) Evaluate(method string, inputs... map[string]interface{}) map[s
   }
   log.Printf("Incorrect return type: %s", out)
   return nil
+}
+
+
+func (p *PyCode) EvaluateBool(method string, inputs... map[string]interface{}) bool {
+  fun := p.module.Globals[method]
+  in := py.Tuple{}
+  for _, i := range inputs {
+    data := PyObject(i)
+    in = append(in, data)
+  }
+  out, err := py.Call(fun, in, nil)
+  if err != nil {
+		py.TracebackDump(err)
+		log.Printf("Map Error: %s", err)
+    return false
+	}
+  o := FromPyObject(out)
+  if out, ok := o.(bool); ok {
+    return out
+  }
+  log.Printf("Incorrect return type: %s", out)
+  return false
 }

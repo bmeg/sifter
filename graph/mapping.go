@@ -16,6 +16,7 @@ type DomainMap map[string]ObjectMap
 
 type ObjectMap struct {
 	IdTemplate string `json:"idTemplate"`
+	Label      string `json:"label"`
 }
 
 func LoadMapping(path string) (*GraphMapping, error) {

@@ -42,6 +42,11 @@ func (run *Runtime) EmitObject(prefix string, c string, o map[string]interface{}
 	return run.output.EmitObject(prefix, c,o)
 }
 
+
+func (run *Runtime) EmitTable(prefix string, columns []string) emitter.TableEmitter {
+	return run.output.EmitTable(prefix, columns)
+}
+
 func (m *Runtime) Printf(s string, x ...interface{}) {
 	c := fmt.Sprintf(s, x...)
 	log.Printf(c)
@@ -51,16 +56,6 @@ func (m *Runtime) Printf(s string, x ...interface{}) {
 func (m *Runtime) GetCurrent() string {
 	return m.Status
 }
-
-/*
-func (m *Runtime) GetVertexCount() int64 {
-	return m.VertexCount
-}
-
-func (m *Runtime) GetEdgeCount() int64 {
-	return m.EdgeCount
-}
-*/
 
 func (m *Runtime) GetStepNum() int64 {
 	return m.StepCount

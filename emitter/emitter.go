@@ -6,8 +6,14 @@ import (
 	"github.com/bmeg/sifter/schema"
 )
 
+type TableEmitter interface {
+	EmitRow(values map[string]interface{}) error
+	Close()
+}
+
 type Emitter interface {
 	EmitObject(prefix string, objClass string, e map[string]interface{}) error
+	EmitTable(prefix string, columns []string) TableEmitter
 	Close()
 }
 

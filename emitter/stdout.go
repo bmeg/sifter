@@ -24,3 +24,29 @@ func (s StdoutEmitter) EmitObject(prefix string, objClass string, i map[string]i
 
 
 func (s StdoutEmitter) Close() {}
+
+
+type stdTableEmitter struct {
+  columns      []string
+}
+
+func (s *stdTableEmitter) EmitRow(i map[string]interface{}) error {
+  o := make([]string, len(s.columns))
+  for j, k := range s.columns {
+    if v, ok := i[k]; ok {
+      if vStr, ok := v.(string); ok {
+        o[j] = vStr
+      }
+    }
+  }
+  fmt.Printf("%#v\n", o)
+	return nil
+}
+
+func (s *stdTableEmitter) Close() {}
+
+func (s StdoutEmitter) EmitTable( prefix string, columns []string ) TableEmitter {
+ 	te := stdTableEmitter{columns}
+	fmt.Printf("%s\n", columns)
+  return &te
+}

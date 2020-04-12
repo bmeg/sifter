@@ -9,6 +9,8 @@ import (
   "sync"
   "compress/gzip"
   "encoding/json"
+  "encoding/csv"
+  "path/filepath"
 
   "github.com/bmeg/sifter/schema"
 )
@@ -69,4 +71,41 @@ func (s *DirEmitter) Close() {
   for _, v := range s.oout {
     v.Close()
   }
+}
+
+
+type dirTableEmitter struct {
+  columns      []string
+  out          io.WriteCloser
+  writer       *csv.Writer
+}
+
+func (s *dirTableEmitter) EmitRow(i map[string]interface{}) error {
+  o := make([]string, len(s.columns))
+  for j, k := range s.columns {
+    if v, ok := i[k]; ok {
+      if vStr, ok := v.(string); ok {
+        o[j] = vStr
+      }
+    }
+  }
+  return s.writer.Write(o)
+}
+
+
+func (s *dirTableEmitter) Close() {
+  s.out.Close()
+}
+
+
+func (s *DirEmitter) EmitTable( prefix string, columns []string ) TableEmitter {
+  path := filepath.Join(s.dir, fmt.Sprintf("%s.table.gz", prefix))
+  te := dirTableEmitter{}
+  j, _ := os.Create(path)
+  te.out = gzip.NewWriter(j)
+  te.writer = csv.NewWriter(te.out)
+  te.writer.Comma = '\t'
+  te.columns = columns
+  te.writer.Write(te.columns)
+  return &te
 }

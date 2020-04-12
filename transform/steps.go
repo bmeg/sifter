@@ -10,10 +10,11 @@ import (
   "sync"
 
   "github.com/bmeg/sifter/evaluate"
+  "github.com/bmeg/sifter/emitter"
+
   "encoding/json"
 
   "crypto/sha1"
-  "encoding/csv"
   "github.com/bmeg/golib"
   "github.com/bmeg/sifter/pipeline"
 
@@ -85,8 +86,7 @@ type FieldProcessStep struct {
 type TableWriteStep struct {
   Output       string   `json:"output"`
   Columns      []string `json:"columns"`
-  out          *os.File
-  writer       *csv.Writer
+  emit         emitter.TableEmitter
 }
 
 type TableReplaceStep struct {
@@ -188,29 +188,16 @@ func (ts ObjectCreateStep) Run(i map[string]interface{}, task *pipeline.Task) ma
 
 
 func (tw *TableWriteStep) Start(task *pipeline.Task, wg *sync.WaitGroup) {
-  path, _ := task.Path(tw.Output)
-  tw.out, _ = os.Create(path)
-  tw.writer = csv.NewWriter(tw.out)
-  tw.writer.Comma = '\t'
-  tw.writer.Write(tw.Columns)
+  tw.emit = task.Runtime.EmitTable(tw.Output, tw.Columns)
 }
 
 func (tw *TableWriteStep)  Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-  o := make([]string, len(tw.Columns))
-  for j, k := range tw.Columns {
-    if v, ok := i[k]; ok {
-      if vStr, ok := v.(string); ok {
-        o[j] = vStr
-      }
-    }
-  }
-  tw.writer.Write(o)
+  tw.emit.EmitRow(i)
   return i
 }
 
 func (tw *TableWriteStep) Close() {
-  tw.writer.Flush()
-  tw.out.Close()
+  tw.emit.Close()
 }
 
 func (tr *TableReplaceStep) Start(task *pipeline.Task, wg *sync.WaitGroup) error {

@@ -78,6 +78,7 @@ var Cmd = &cobra.Command{
 				builder.Process( prefix, class, objChan )
 			}
 		}
+		builder.Close()
 
 		builder.Report()
 		return nil

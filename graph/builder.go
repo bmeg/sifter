@@ -44,6 +44,10 @@ func NewBuilder(driver string, sc schema.Schemas, workdir string) (*Builder, err
 	return &Builder{sc: sc, emitter: emitter, domains:map[string]*DomainInfo{}, gc:gc}, nil
 }
 
+func (b *Builder) Close() {
+  b.emitter.Close()
+}
+
 func (b *Builder) AddMapping(m *GraphMapping) {
 	b.gm = m
 }

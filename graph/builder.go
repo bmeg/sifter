@@ -1,9 +1,10 @@
 package graph
 
 import (
+  "os"
   "log"
   "fmt"
-
+  "path/filepath"
 	"github.com/bmeg/sifter/schema"
   "github.com/bmeg/grip/gripql"
 
@@ -20,7 +21,7 @@ type DomainClassInfo struct {
 type DomainInfo struct {
   emitter GraphEmitter
   gc      *GraphCheck
-  dm      DomainMap
+  dm      *DomainMap
   classes map[string]*DomainClassInfo
 }
 
@@ -69,9 +70,9 @@ func (b *Builder) Process(prefix string, class string, in chan map[string]interf
 	var m *ObjectMap
 	if b.gm != nil {
 		if x, ok := b.gm.Domains[prefix]; ok {
-			if y, ok := x[class]; ok {
+			if y, ok := (*x)[class]; ok {
 				log.Printf("Using mapping: %s %s", prefix, class)
-				m = &y
+				m = y
 			}
 		}
 	}
@@ -90,17 +91,26 @@ func (b *Builder) Process(prefix string, class string, in chan map[string]interf
 	}
 }
 
-func (b *Builder) Report() {
+func (b *Builder) Report(outdir string) {
+  rout, err := os.Create(filepath.Join(outdir, "report.txt"))
+  if err != nil {
+    return
+  }
+  defer rout.Close()
   for d, i := range b.domains {
-    fmt.Printf("Domain: %s\n", d)
+    fmt.Fprintf(rout, "Domain: %s\n", d)
     for c, j := range i.classes {
-      fmt.Printf("\t%s\t%d\t%d\n", c, j.vertCount, j.edgeCount)
+      fmt.Fprintf(rout, "\t%s\t%d\t%d\n", c, j.vertCount, j.edgeCount)
     }
   }
-  fmt.Printf("Missing:\n")
+  mout, err := os.Create(filepath.Join(outdir, "missing.txt"))
+  if err != nil {
+    return
+  }
+  defer mout.Close()
   for v := range b.gc.GetEdgeVertices() {
       if ! b.gc.HasVertex(v) {
-        fmt.Printf(" - %s (from %s)\n", v, b.gc.GetEdgeSource(v))
+        fmt.Fprintf(mout, "%s (from %s)\n", v, b.gc.GetEdgeSource(v))
       }
   }
 }
@@ -110,8 +120,8 @@ func (d *DomainInfo) GetClass(cls string) *DomainClassInfo {
     return x
   }
   o := DomainClassInfo{emitter:d.emitter, gc:d.gc}
-  if x, ok := d.dm[cls]; ok {
-    o.om = &x
+  if x, ok := (*d.dm)[cls]; ok {
+    o.om = x
   }
   d.classes[cls] = &o
   return &o
@@ -125,8 +135,10 @@ func (dc *DomainClassInfo) Close() {
 
 func (dc *DomainClassInfo) EmitVertex(v *gripql.Vertex) error {
   dc.vertCount += 1
-  if dc.om != nil && dc.om.Label != "" {
-    v.Label = dc.om.Label
+  if dc.om != nil {
+    if l, ok := dc.om.Fields["_label"]; ok {
+      v.Label = l.Template
+    }
   }
   dc.gc.AddVertex(v.Gid)
   return dc.emitter.EmitVertex(v)

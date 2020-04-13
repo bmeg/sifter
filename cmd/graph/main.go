@@ -46,7 +46,7 @@ var Cmd = &cobra.Command{
     }
 
 		if mappingFile != "" {
-			m, err := graph.LoadMapping(mappingFile)
+			m, err := graph.LoadMapping(mappingFile, inDir)
 			if err != nil {
 	      return err
 	    }
@@ -80,7 +80,7 @@ var Cmd = &cobra.Command{
 		}
 		builder.Close()
 
-		builder.Report()
+		builder.Report(outDir)
 		return nil
 	},
 }

@@ -77,6 +77,7 @@ func (s *DirEmitter) Close() {
 type dirTableEmitter struct {
   columns      []string
   out          io.WriteCloser
+  handle       io.WriteCloser
   writer       *csv.Writer
 }
 
@@ -94,15 +95,18 @@ func (s *dirTableEmitter) EmitRow(i map[string]interface{}) error {
 
 
 func (s *dirTableEmitter) Close() {
+  log.Printf("Closing Table Writer")
+  s.writer.Flush()
   s.out.Close()
+  s.handle.Close()
 }
 
 
 func (s *DirEmitter) EmitTable( prefix string, columns []string ) TableEmitter {
   path := filepath.Join(s.dir, fmt.Sprintf("%s.table.gz", prefix))
   te := dirTableEmitter{}
-  j, _ := os.Create(path)
-  te.out = gzip.NewWriter(j)
+  te.handle, _ = os.Create(path)
+  te.out = gzip.NewWriter(te.handle)
   te.writer = csv.NewWriter(te.out)
   te.writer.Comma = '\t'
   te.columns = columns

@@ -191,8 +191,10 @@ func (tw *TableWriteStep) Start(task *pipeline.Task, wg *sync.WaitGroup) {
   tw.emit = task.Runtime.EmitTable(tw.Output, tw.Columns)
 }
 
-func (tw *TableWriteStep)  Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-  tw.emit.EmitRow(i)
+func (tw *TableWriteStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+  if err := tw.emit.EmitRow(i); err != nil {
+    log.Printf("Row Error: %s", err)
+  }
   return i
 }
 
@@ -321,7 +323,7 @@ func (fs FilterStep) Run(i map[string]interface{}, task *pipeline.Task) map[stri
     if out {
       fs.inChan <- i
     } else {
-      log.Printf("Filtering, %s", i)
+      //log.Printf("Filtering, %s", i)
     }
     return i
   }

@@ -7,6 +7,7 @@ require (
 	github.com/bmeg/grip v0.0.0-20191011185106-63f9631f1142
 	github.com/brentp/irelate v0.0.0-20180801151701-1bf7c8f95c75 // indirect
 	github.com/brentp/vcfgo v0.0.0-20190315012323-bdb8e831fc71
+	github.com/ckaznocha/protoc-gen-lint v0.2.1 // indirect
 	github.com/dgraph-io/badger v2.0.0-rc2+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-gota/gota v0.7.1-0.20190402185630-1058f871be31
@@ -27,6 +28,7 @@ require (
 	github.com/spf13/cobra v0.0.3
 	go.mongodb.org/mongo-driver v1.0.0
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
+	google.golang.org/grpc v1.20.1
 )
 
 go 1.13

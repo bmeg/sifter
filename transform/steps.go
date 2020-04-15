@@ -20,6 +20,8 @@ import (
 
 )
 
+var DEFAULT_ENGINE = "python"
+
 type ObjectCreateStep struct {
   Class  string `json:"class"`
   Name   string `json:"name"`
@@ -49,7 +51,7 @@ type FilterStep struct {
   Python string  `json:"python"`
   Steps   TransformPipe `json:"steps"`
   inChan  chan map[string]interface{}
-  pyCode *evaluate.PyCode
+  proc    evaluate.Processor
 }
 
 type RegexReplaceStep struct {
@@ -307,11 +309,12 @@ func (tw *TableProjectStep) Run(i map[string]interface{}, task *pipeline.Task) m
 func (fs *FilterStep) Start(task *pipeline.Task, wg *sync.WaitGroup) {
   if fs.Python != "" && fs.Method != "" {
     log.Printf("Starting Map: %s", fs.Python)
-    c, err := evaluate.PyCompile(fs.Python)
+    e := evaluate.GetEngine(DEFAULT_ENGINE)
+    c, err := e.Compile(fs.Python, fs.Method)
     if err != nil {
       log.Printf("Compile Error: %s", err)
     }
-    fs.pyCode = c
+    fs.proc = c
   }
   fs.inChan = make(chan map[string]interface{}, 100)
   fs.Steps.Start(fs.inChan, task, wg)
@@ -319,7 +322,10 @@ func (fs *FilterStep) Start(task *pipeline.Task, wg *sync.WaitGroup) {
 
 func (fs FilterStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
   if fs.Python != "" && fs.Method != "" {
-    out := fs.pyCode.EvaluateBool(fs.Method, i)
+    out, err := fs.proc.EvaluateBool(i)
+    if err != nil {
+      log.Printf("Filter Error: %s", err)
+    }
     if out {
       fs.inChan <- i
     } else {
@@ -342,6 +348,7 @@ func (fs FilterStep) Run(i map[string]interface{}, task *pipeline.Task) map[stri
 
 func (fs FilterStep) Close() {
   close(fs.inChan)
+  fs.proc.Close()
 }
 
 
@@ -554,6 +561,7 @@ func (ts TransformStep) Start(in chan map[string]interface{},
         o := ts.Map.Run(i, task)
         out <- o
       }
+      ts.Map.Close()
     } else if ts.Reduce != nil {
       ts.Reduce.Start(task, wg)
       for i := range in {

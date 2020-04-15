@@ -2,6 +2,7 @@
 package evaluate
 
 import (
+  "fmt"
   "log"
   _ "github.com/go-python/gpython/builtin"
   "github.com/go-python/gpython/py"
@@ -9,6 +10,35 @@ import (
   "github.com/go-python/gpython/compile"
 )
 
+
+type GPythonEngine struct {}
+
+type GPythonProcessor struct {
+  code *PyCode
+  method string
+}
+
+func (g GPythonEngine) Compile(code string, method string) (Processor, error) {
+  out := GPythonProcessor{}
+  o, err := PyCompile(code)
+  if err != nil {
+      return out, err
+  }
+  out.code = o
+  out.method = method
+  return out, nil
+}
+
+func (g GPythonProcessor) Close() {}
+
+
+func (d GPythonProcessor) Evaluate(inputs... map[string]interface{}) (map[string]interface{}, error) {
+  return d.code.Evaluate(d.method, inputs...)
+}
+
+func (d GPythonProcessor) EvaluateBool(inputs... map[string]interface{}) (bool, error) {
+  return d.code.EvaluateBool(d.method, inputs...)
+}
 
 func PyObject(i interface{}) py.Object {
   if xMap, ok := i.(map[string]interface{}); ok {
@@ -87,7 +117,7 @@ func PyCompile(codeStr string) (*PyCode, error){
     return &PyCode{module:module}, nil
 }
 
-func (p *PyCode) Evaluate(method string, inputs... map[string]interface{}) map[string]interface{} {
+func (p *PyCode) Evaluate(method string, inputs... map[string]interface{}) (map[string]interface{}, error) {
   fun := p.module.Globals[method]
   in := py.Tuple{}
   for _, i := range inputs {
@@ -99,18 +129,17 @@ func (p *PyCode) Evaluate(method string, inputs... map[string]interface{}) map[s
 		py.TracebackDump(err)
     log.Printf("Inputs: %#v", inputs)
 		log.Printf("Map Error: %s", err)
-    return nil
+    return nil, err
 	}
   o := FromPyObject(out)
   if out, ok := o.(map[string]interface{}); ok {
-    return out
+    return out, nil
   }
-  log.Printf("Incorrect return type: %s", out)
-  return nil
+  return nil, fmt.Errorf("Incorrect return type: %s", out)
 }
 
 
-func (p *PyCode) EvaluateBool(method string, inputs... map[string]interface{}) bool {
+func (p *PyCode) EvaluateBool(method string, inputs... map[string]interface{}) (bool, error) {
   fun := p.module.Globals[method]
   in := py.Tuple{}
   for _, i := range inputs {
@@ -121,12 +150,11 @@ func (p *PyCode) EvaluateBool(method string, inputs... map[string]interface{}) b
   if err != nil {
 		py.TracebackDump(err)
 		log.Printf("Map Error: %s", err)
-    return false
+    return false, err
 	}
   o := FromPyObject(out)
   if out, ok := o.(bool); ok {
-    return out
+    return out, nil
   }
-  log.Printf("Incorrect return type: %s", out)
-  return false
+  return false, fmt.Errorf("Incorrect return type: %s", out)
 }

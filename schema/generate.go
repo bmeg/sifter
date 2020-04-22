@@ -7,6 +7,7 @@ import (
   "github.com/bmeg/grip/gripql"
   "github.com/bmeg/grip/protoutil"
 
+  multierror "github.com/hashicorp/go-multierror"
 )
 
 type GraphElement struct {
@@ -31,7 +32,7 @@ func (s Schemas) Validate(classID string, data map[string]interface{}) (map[stri
   if class, ok := s.Classes[classID]; ok {
     return class.Validate(data)
   }
-  return nil, fmt.Errorf("Class '%s' not found", classID )
+  return nil, fmt.Errorf("Class '%s' not found in %s", classID, s.GetClasses() )
 }
 
 func (s Schema) Validate(data map[string]interface{}) (map[string]interface{}, error) {
@@ -57,6 +58,7 @@ func (s Schema) Validate(data map[string]interface{}) (map[string]interface{}, e
 func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
   out := make([]GraphElement, 0, 1+len(s.Links)*2)
   outData := map[string]interface{}{}
+  var result error
 
   gid := ""
   for k, v := range s.Props {
@@ -66,7 +68,9 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
           gid = ks
         }
       } else {
+        err := fmt.Errorf("node_id field '%s' not in %s data", k, s.Id)
         log.Printf("node_id field '%s' not in %s data", k, s.Id)
+        result = multierror.Append(result, err)
       }
     } else {
       if x, ok := data[k]; ok {
@@ -85,6 +89,8 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
           }
         } else {
           log.Printf("Edge from field '%s' missing", s.Edge.From)
+          err := fmt.Errorf("Edge from field '%s' missing", s.Edge.From)
+          result = multierror.Append(result, err)
         }
       }
     } else {
@@ -159,5 +165,5 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
       }
     }
   }
-  return out, nil
+  return out, result
 }

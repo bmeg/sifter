@@ -1,8 +1,8 @@
-package manager
+package steps
 
 import (
 	"log"
-
+	"github.com/bmeg/sifter/pipeline"
 	"github.com/bmeg/sifter/evaluate"
 )
 
@@ -12,7 +12,7 @@ type DownloadStep struct {
 	Output string `json:"output"`
 }
 
-func (ps *DownloadStep) Run(task *Task) error {
+func (ps *DownloadStep) Run(task *pipeline.Task) error {
 	srcURL, err := evaluate.ExpressionString(ps.Source, task.Inputs, nil)
 	if err != nil {
 		log.Printf("Expression failed: %s", err)

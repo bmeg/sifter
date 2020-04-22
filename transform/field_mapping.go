@@ -1,4 +1,4 @@
-package manager
+package transform
 
 
 import (
@@ -10,29 +10,37 @@ import (
   "sync"
   "log"
   "github.com/bmeg/sifter/evaluate"
-
+  "github.com/bmeg/sifter/pipeline"
   "github.com/dgraph-io/badger"
 )
 
 type MapStep struct {
   Method string `json:"method"`
   Python string `json:"python"`
-  pyCode *evaluate.PyCode
+  proc evaluate.Processor
 }
 
 
-func (ms *MapStep) Start(task *Task, wg *sync.WaitGroup) {
+func (ms *MapStep) Start(task *pipeline.Task, wg *sync.WaitGroup) {
   log.Printf("Starting Map: %s", ms.Python)
-  c, err := evaluate.PyCompile(ms.Python)
+  e := evaluate.GetEngine(DEFAULT_ENGINE)
+  c, err := e.Compile(ms.Python, ms.Method)
   if err != nil {
-    log.Printf("%s", err)
+    log.Printf("Compile Error: %s", err)
   }
-  ms.pyCode = c
+  ms.proc = c
 }
 
-func (ms *MapStep) Run(i map[string]interface{}, task *Task) map[string]interface{} {
-  out := ms.pyCode.Evaluate(ms.Method, i)
+func (ms *MapStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+  out, err := ms.proc.Evaluate(i)
+  if err != nil {
+    log.Printf("Map Step error: %s", err)
+  }
   return out
+}
+
+func (ms *MapStep) Close() {
+  ms.proc.Close()
 }
 
 
@@ -40,20 +48,21 @@ type ReduceStep struct {
   Field  string `json:"field"`
   Method string `json:"method"`
   Python string `json:"python"`
-  pyCode *evaluate.PyCode
+  proc   evaluate.Processor
   dump   *os.File
   db     *badger.DB
   batch  *badger.WriteBatch
 }
 
 
-func (ms *ReduceStep) Start(task *Task, wg *sync.WaitGroup) {
+func (ms *ReduceStep) Start(task *pipeline.Task, wg *sync.WaitGroup) {
   log.Printf("Starting Reduce: %s", ms.Python)
-  c, err := evaluate.PyCompile(ms.Python)
+  e := evaluate.GetEngine(DEFAULT_ENGINE)
+  c, err := e.Compile(ms.Python, ms.Method)
   if err != nil {
     log.Printf("%s", err)
   }
-  ms.pyCode = c
+  ms.proc = c
   tdir := task.TempDir()
   tfile := filepath.Join(tdir, "dump.data")
   log.Printf("Reduce file: %s", tfile)
@@ -71,7 +80,7 @@ func (ms *ReduceStep) Start(task *Task, wg *sync.WaitGroup) {
   ms.batch = ms.db.NewWriteBatch()
 }
 
-func (ms *ReduceStep) Add(i map[string]interface{}, task *Task) {
+func (ms *ReduceStep) Add(i map[string]interface{}, task *pipeline.Task) {
   d, _ := json.Marshal(i)
 
   dKey, _ := evaluate.ExpressionString(ms.Field, task.Inputs, i)
@@ -142,6 +151,7 @@ func (ms *ReduceStep) Run() chan map[string]interface{} {
 
   out := make(chan map[string]interface{}, 100)
   go func() {
+    defer close(out)
     key := ""
     var last map[string]interface{}
     for d := range dataChan {
@@ -152,14 +162,14 @@ func (ms *ReduceStep) Run() chan map[string]interface{} {
         key = d.key
         last = d.data
       } else {
-        out := ms.pyCode.Evaluate(ms.Method, last, d.data)
+        out, _ := ms.proc.Evaluate(last, d.data)
         last = out
       }
     }
     if key != "" {
       out <- last
     }
-    defer close(out)
+    ms.proc.Close()
   }()
   return out
 }

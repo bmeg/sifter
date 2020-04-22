@@ -2,7 +2,8 @@ package manager
 
 import (
 	"github.com/bmeg/sifter/emitter"
-	"io/ioutil"
+	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/schema"
 	"log"
 	"path/filepath"
 	"sync"
@@ -16,10 +17,9 @@ type Manager struct {
 }
 
 type Config struct {
-	GripServer   string
+	Driver       string
 	PlaybookDirs []string
 	WorkDir      string
-	ObjectOutput bool
 }
 
 func Init(config Config) (*Manager, error) {
@@ -47,14 +47,6 @@ func (m *Manager) DropRuntime(name string) error {
 	return nil
 }
 
-func (m *Manager) GraphExists(graph string) bool {
-	o, err := emitter.GraphExists(m.Config.GripServer, graph)
-	if err != nil {
-		log.Printf("Failed to load graph driver: %s", err)
-	}
-	return o
-}
-
 func (m *Manager) GetPlaybooks() []Playbook {
 	out := make([]Playbook, 0, len(m.Playbooks))
 	for _, i := range m.Playbooks {
@@ -68,20 +60,16 @@ func (m *Manager) GetPlaybook(name string) (Playbook, bool) {
 	return out, ok
 }
 
-func (m *Manager) NewRuntime(graph string) (*Runtime, error) {
-	dir, err := ioutil.TempDir(m.Config.WorkDir, "sifterwork_")
-	if err != nil {
-		log.Fatal(err)
-	}
+func (m *Manager) NewRuntime(name string, dir string, sc *schema.Schemas) (*pipeline.Runtime, error) {
 	dir, _ = filepath.Abs(dir)
-	e, err := emitter.NewEmitter(m.Config.GripServer, graph)
+	e, err := emitter.NewEmitter(m.Config.Driver, sc)
 	if err != nil {
 		log.Printf("Emitter init failed: %s", err)
 	}
-	name := filepath.Base(dir)
-	r := &Runtime{man:m,
-		output:e, dir:dir, name:name,
-		Status:"Starting"}
+	if name == "" {
+		name = "default"
+	}
+	r := pipeline.NewRuntime(e, dir, name)
 	m.Runtimes.Store(name, r)
 	return r, err
 }

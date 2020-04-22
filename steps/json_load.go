@@ -1,5 +1,5 @@
 
-package manager
+package steps
 
 import (
   "os"
@@ -9,16 +9,18 @@ import (
   "strings"
   "encoding/json"
   "github.com/bmeg/sifter/evaluate"
+  "github.com/bmeg/sifter/transform"
+  "github.com/bmeg/sifter/pipeline"
   "github.com/bmeg/golib"
 )
 
 type JSONLoadStep struct {
-  Input         string                 `json:"input"`
-  Transform     []TransformPipe        `json:"transform"`
-  SkipIfMissing bool                   `json:"skipIfMissing"`
+  Input         string                    `json:"input"`
+  Transform     transform.TransformPipe   `json:"transform"`
+  SkipIfMissing bool                      `json:"skipIfMissing"`
 }
 
-func (ml *JSONLoadStep) Run(task *Task) error {
+func (ml *JSONLoadStep) Run(task *pipeline.Task) error {
   log.Printf("Starting JSON Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
 	inputPath, err := task.Path(input)
@@ -40,29 +42,21 @@ func (ml *JSONLoadStep) Run(task *Task) error {
   if err != nil {
     return err
   }
-  procChan := []chan map[string]interface{}{}
+  procChan := make(chan map[string]interface{}, 100)
   wg := &sync.WaitGroup{}
-  for _, trans := range ml.Transform {
-    i := make(chan map[string]interface{}, 100)
-    trans.Start(i, task, wg)
-    procChan = append(procChan, i)
-  }
 
+  ml.Transform.Start( procChan, task, wg )
 
   for line := range reader {
     o := map[string]interface{}{}
     if len(line) > 0 {
       json.Unmarshal(line, &o)
-      for _, c := range procChan {
-        c <- o
-      }
+      procChan <- o
     }
   }
 
   log.Printf("Done Loading")
-  for _, c := range procChan {
-    close(c)
-  }
+  close(procChan)
   wg.Wait()
 
 	return nil

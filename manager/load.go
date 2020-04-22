@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/bmeg/grip/gripql"
+	"github.com/bmeg/sifter/steps"
 	"github.com/ghodss/yaml"
 )
 
@@ -14,19 +15,6 @@ type StepConfig interface{}
 
 type Loader interface {
 	Load() chan gripql.GraphElement
-}
-
-type Step struct {
-	Desc         string            `json:"desc"`
-	ManifestLoad *ManifestLoadStep `json:"manifestLoad"`
-	Download     *DownloadStep     `json:"download"`
-	Untar        *UntarStep        `json:"untar"`
-	VCFLoad      *VCFStep          `json:"vcfLoad"`
-	TableLoad    *TableLoadStep    `json:"tableLoad"`
-	JSONLoad     *JSONLoadStep     `json:"jsonLoad"`
-	TransposeFile *TransposeFileStep `json:"transposeFile"`
-	FileGlob      *FileGlobStep      `json:"fileGlob"`
-	Script        *ScriptStep        `json:"script"`
 }
 
 type Input struct {
@@ -41,7 +29,7 @@ type Playbook struct {
 	Inputs Inputs `json:"inputs"`
 	Schema string `json:"schema"`
 	Class string `json:"class"`
-	Steps []Step `json:"steps"`
+	Steps []steps.Step `json:"steps"`
 }
 
 // Parse parses a YAML doc into the given Config instance.
@@ -73,6 +61,9 @@ func ParseFile(relpath string, conf *Playbook) error {
 	if err != nil {
 		return fmt.Errorf("failed to parse config at path %s: \n%v", path, err)
 	}
+
+	conf.Schema = filepath.Join(filepath.Dir(path), conf.Schema)
+
 	return nil
 }
 

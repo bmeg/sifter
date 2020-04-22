@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"log"
 
+	"io/ioutil"
+
 	"github.com/bmeg/sifter/webserver"
 
 	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/restapi/operations"
 	"github.com/spf13/cobra"
+	//"github.com/go-openapi/errors"
 
 	"github.com/go-openapi/runtime/middleware"
 )
@@ -68,7 +71,15 @@ var Cmd = &cobra.Command{
 				}
 				log.Printf("Starting import playbook: %s %s", params.ID, inputs)
 				if pb, ok := man.GetPlaybook(params.ID); ok {
-					go pb.Execute(man, params.Graph, inputs)
+					dir, err := ioutil.TempDir(workDir, "sifterwork_")
+					if err != nil {
+						log.Printf("%s", err)
+						//out := errors.New(500, "Unable to create working directory")
+						//TODO: return error here
+						out := operations.NewPostPlaybookIDGraphOK()
+						return out
+					}
+					go pb.Execute(man, params.Graph, inputs, dir)
 					out := operations.NewPostPlaybookIDGraphOK()
 					return out
 				}

@@ -1,4 +1,4 @@
-package manager
+package pipeline
 
 import (
 	"fmt"
@@ -9,15 +9,17 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bmeg/grip/gripql"
+	//"github.com/bmeg/grip/gripql"
+	"github.com/bmeg/sifter/emitter"
 	"github.com/hashicorp/go-getter"
+
 )
 
 type Task struct {
-	Manager *Manager
 	Runtime *Runtime
 	Workdir string
 	Inputs  map[string]interface{}
+	AllowLocalFiles bool
 }
 
 func (m *Task) Path(p string) (string, error) {
@@ -28,7 +30,7 @@ func (m *Task) Path(p string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if !m.Manager.AllowLocalFiles {
+	if !m.AllowLocalFiles {
 		if !strings.HasPrefix(a, m.Workdir) {
 			return "", fmt.Errorf("Input file not inside working directory")
 		}
@@ -79,16 +81,12 @@ func (m *Task) DownloadFile(src string, dest string) (string, error) {
 	return dest, getter.GetFile(dest, src)
 }
 
-func (m *Task) EmitVertex(v *gripql.Vertex) error {
-	return m.Runtime.EmitVertex(v)
+func (m *Task) EmitObject(prefix string, c string, e map[string]interface{}) error {
+	return m.Runtime.EmitObject(prefix, c, e)
 }
 
-func (m *Task) EmitEdge(e *gripql.Edge) error {
-	return m.Runtime.EmitEdge(e)
-}
-
-func (m *Task) EmitObject(c string, e map[string]interface{}) error {
-	return m.Runtime.EmitObject(c, e)
+func (m *Task) EmitTable(prefix string, columns []string) emitter.TableEmitter {
+	return m.Runtime.EmitTable(prefix, columns)
 }
 
 func (m *Task) Output(name string, value string) error {

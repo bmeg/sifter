@@ -1,4 +1,4 @@
-package manager
+package steps
 
 import (
   "fmt"
@@ -8,6 +8,7 @@ import (
   "os/user"
 
 	"github.com/bmeg/sifter/evaluate"
+  "github.com/bmeg/sifter/pipeline"
 )
 
 type ScriptStep struct {
@@ -16,7 +17,7 @@ type ScriptStep struct {
   Stdout      string   `json:stdout`
 }
 
-func (ss *ScriptStep) Run(task *Task) error {
+func (ss *ScriptStep) Run(task *pipeline.Task) error {
   u, err := user.Current()
   if err != nil {
     return err

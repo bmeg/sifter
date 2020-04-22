@@ -1,9 +1,10 @@
-package manager
+package steps
 
 import (
   "log"
   "path/filepath"
   "github.com/bmeg/sifter/evaluate"
+  "github.com/bmeg/sifter/pipeline"
 )
 type FileGlobStep struct {
 	Files     []string `json:"files"`
@@ -12,7 +13,7 @@ type FileGlobStep struct {
 	Steps     []Step   `json:"steps"`
 }
 
-func (fs *FileGlobStep) Run(task *Task) error {
+func (fs *FileGlobStep) Run(task *pipeline.Task) error {
 
   log.Printf("FileGlob")
 	for _, input := range fs.Files {

@@ -3,21 +3,20 @@ package run
 import (
 	"fmt"
 	"log"
+	"io/ioutil"
 	"path/filepath"
 
 	"github.com/bmeg/sifter/manager"
-	"github.com/bmeg/sifter/webserver"
+	//"github.com/bmeg/sifter/webserver"
 	"github.com/bmeg/sifter/evaluate"
 
 	"github.com/spf13/cobra"
 )
 
-var graph string = "test-data"
-var runOnce bool = false
-var objOutput bool = false
 var workDir string = "./"
-var server int = 0
-var dbServer string = "grip://localhost:8202"
+var outDir  string = "./out"
+var resume  string = ""
+var toStdout bool
 var cmdInputs map[string]string
 
 // Cmd is the declaration of the command line
@@ -27,7 +26,12 @@ var Cmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		man, err := manager.Init(manager.Config{GripServer: dbServer, WorkDir: workDir, ObjectOutput:objOutput})
+		driver := fmt.Sprintf("dir://%s", outDir)
+		if toStdout {
+			driver = "stdout://"
+		}
+
+		man, err := manager.Init(manager.Config{Driver: driver, WorkDir: workDir})
 		if err != nil {
 			log.Printf("Error stating load manager: %s", err)
 			return err
@@ -35,13 +39,6 @@ var Cmd = &cobra.Command{
 		defer man.Close()
 
 		man.AllowLocalFiles = true
-
-		if runOnce {
-			if man.GraphExists(graph) {
-				log.Printf("Graph found, exiting")
-				return nil
-			}
-		}
 
 		inputs := map[string]interface{}{}
 
@@ -83,8 +80,12 @@ var Cmd = &cobra.Command{
 		for k, v := range pb.Inputs {
 			if _, ok := inputs[k]; !ok {
 				if v.Default != "" {
-					defaultPath := filepath.Join(filepath.Dir(playFile), v.Default)
-					inputs[k], _ = filepath.Abs(defaultPath)
+					if v.Type == "File" || v.Type == "Directory" {
+						defaultPath := filepath.Join(filepath.Dir(playFile), v.Default)
+						inputs[k], _ = filepath.Abs(defaultPath)
+					} else {
+						inputs[k] = v.Default
+					}
 				}
 			}
 		}
@@ -97,8 +98,19 @@ var Cmd = &cobra.Command{
 
 		fmt.Printf("Starting: %s\n", playFile)
 
+		dir := resume
+		if dir == "" {
+			d, err := ioutil.TempDir(workDir, "sifterwork_")
+			if err != nil {
+				log.Fatal(err)
+				return err
+			}
+			dir = d
+		}
+
+		/*
 		if server != 0 {
-			go pb.Execute(man, graph, inputs)
+			go pb.Execute(man, graph, inputs, dir)
 			conf := webserver.WebServerHandler{
 				PostPlaybookHandler:        nil,
 				GetPlaybookHandler:         nil,
@@ -107,19 +119,18 @@ var Cmd = &cobra.Command{
 			}
 			webserver.RunServer(conf, server, "")
 		} else {
-			pb.Execute(man, graph, inputs)
-		}
+			*/
+			pb.Execute(man, inputs, dir)
+		//}
 		return nil
 	},
 }
 
 func init() {
 	flags := Cmd.Flags()
-	flags.BoolVar(&runOnce, "run-once", false, "Only Run if database is unintialized")
-	flags.StringVar(&graph, "graph", graph, "Destination Graph")
 	flags.StringVar(&workDir, "workdir", workDir, "Workdir")
-	flags.IntVar(&server, "server", server, "ServerPort")
-	flags.BoolVar(&objOutput, "obj", objOutput, "ObjectOutput")
-	flags.StringVar(&dbServer, "db", dbServer, "Destination Server")
+	flags.BoolVar(&toStdout, "s", toStdout, "To STDOUT")
+	flags.StringVar(&outDir, "o", outDir, "Output Dir")
+	flags.StringVar(&resume, "r", resume, "Resume Directory")
 	flags.StringToStringVarP(&cmdInputs, "inputs", "i", cmdInputs, "Input variables")
 }

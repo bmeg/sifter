@@ -15,6 +15,7 @@ type Step struct {
 	//VCFLoad      *VCFStep          `json:"vcfLoad"`
 	TableLoad    *TableLoadStep    `json:"tableLoad"`
 	JSONLoad     *JSONLoadStep     `json:"jsonLoad"`
+  SQLDumpLoad   *SQLDumpStep     `json:"sqldumpLoad"`
 	TransposeFile *TransposeFileStep `json:"transposeFile"`
 	FileGlob      *FileGlobStep      `json:"fileGlob"`
 	Script        *ScriptStep        `json:"script"`
@@ -70,6 +71,13 @@ func (step *Step) Run(run *pipeline.Runtime, inputs map[string]interface{}) erro
     log.Printf("Running JSONLoad")
     if err := step.JSONLoad.Run(task); err != nil {
       run.Printf("JSON Load Error: %s", err)
+      return err
+    }
+  } else if step.SQLDumpLoad != nil {
+    task := run.NewTask(inputs)
+    log.Printf("Running SQLDumpLoad")
+    if err := step.SQLDumpLoad.Run(task); err != nil {
+      run.Printf("SQLDumpLoad Error: %s", err)
       return err
     }
   } else if step.FileGlob != nil {

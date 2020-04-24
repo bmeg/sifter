@@ -348,7 +348,9 @@ func (fs FilterStep) Run(i map[string]interface{}, task *pipeline.Task) map[stri
 
 func (fs FilterStep) Close() {
   close(fs.inChan)
-  fs.proc.Close()
+  if fs.proc != nil {
+    fs.proc.Close()
+  }
 }
 
 

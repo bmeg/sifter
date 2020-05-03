@@ -1,0 +1,19 @@
+builds:
+  - binary: sifter
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+
+dist: build/release
+
+release:
+  draft: true
+
+env_files:
+  github_token: .github_token
+
+archives:
+  - format: tar.gz
+    name_template: "{{.ProjectName}}-{{.Os}}-{{.Arch}}-{{.Version}}"

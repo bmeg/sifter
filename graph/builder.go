@@ -61,6 +61,9 @@ func (b *Builder) GetDomain(prefix string) *DomainInfo {
   o := DomainInfo{emitter:b.emitter, classes:map[string]*DomainClassInfo{}, gc:b.gc}
   if x, ok := b.gm.Domains[prefix]; ok {
     o.dm = x
+  } else {
+    log.Printf("Domain info for %s not found", prefix)
+    return nil
   }
   b.domains[prefix] = &o
   return &o
@@ -78,8 +81,14 @@ func (b *Builder) Process(prefix string, class string, in chan map[string]interf
 	}
 
   d := b.GetDomain(prefix)
+  if d == nil {
+    return
+  }
   c := d.GetClass(class)
-
+  if c == nil {
+    return
+  }
+  
 	for obj := range in {
 		if m != nil {
 			obj = m.MapObject(obj)

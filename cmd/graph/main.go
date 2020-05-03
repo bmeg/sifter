@@ -3,6 +3,7 @@ package graph
 import (
 	"log"
 	"fmt"
+	"os"
 	"io/ioutil"
 	"strings"
 	"path/filepath"
@@ -81,6 +82,7 @@ var Cmd = &cobra.Command{
 		builder.Close()
 
 		builder.Report(outDir)
+		os.RemoveAll(tmpDir)
 		return nil
 	},
 }

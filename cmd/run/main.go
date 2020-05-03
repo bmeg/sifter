@@ -3,6 +3,7 @@ package run
 import (
 	"fmt"
 	"log"
+	"os"
 	"io/ioutil"
 	"path/filepath"
 
@@ -17,6 +18,7 @@ var workDir string = "./"
 var outDir  string = "./out"
 var resume  string = ""
 var toStdout bool
+var keep bool
 var cmdInputs map[string]string
 
 // Cmd is the declaration of the command line
@@ -121,6 +123,9 @@ var Cmd = &cobra.Command{
 		} else {
 			*/
 			pb.Execute(man, inputs, dir)
+			if !keep {
+				os.RemoveAll(dir)
+			}
 		//}
 		return nil
 	},
@@ -130,7 +135,9 @@ func init() {
 	flags := Cmd.Flags()
 	flags.StringVar(&workDir, "workdir", workDir, "Workdir")
 	flags.BoolVar(&toStdout, "s", toStdout, "To STDOUT")
+	flags.BoolVar(&keep, "k", keep, "Keep Working Directory")
 	flags.StringVar(&outDir, "o", outDir, "Output Dir")
 	flags.StringVar(&resume, "r", resume, "Resume Directory")
+
 	flags.StringToStringVarP(&cmdInputs, "inputs", "i", cmdInputs, "Input variables")
 }

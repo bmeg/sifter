@@ -13,7 +13,7 @@ inputs:
 
 steps:
   - tableLoad:
-      input: "{{input.geneTSV}}"
+      input: "{{inputs.geneTSV}}"
       columns:
         - tax_id
         - GeneID

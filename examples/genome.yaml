@@ -11,12 +11,12 @@ inputs:
     type: Directory
     default: schemas
 
-schema: "{{input.schema}}"
+schema: "{{inputs.schema}}"
 
 steps:
   - desc: GTF Seq
     tableLoad:
-      input: "{{input.gtf}}"
+      input: "{{inputs.gtf}}"
       columns:
         - seqid
         - source

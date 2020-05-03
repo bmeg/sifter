@@ -13,7 +13,7 @@ schema: examples/bmeg-dictionary/gdcdictionary/schemas
 steps:
   - desc: Untar
     untar:
-      input: "{{input.tar}}"
+      input: "{{inputs.tar}}"
   - desc: Loading Patient List
     tableLoad:
       input: data_clinical_patient.txt
@@ -59,7 +59,7 @@ steps:
       steps:
         - desc: Transpose RNA file
           transposeFile:
-              input: "{{input.rnaFile}}"
+              input: "{{inputs.rnaFile}}"
               output: data_RNA_Seq_expression_median_transpose.txt
         -
           desc: Loading RNA File
@@ -73,7 +73,7 @@ steps:
                       id: "gexp:{{row.Entrez_Gene_Id}}" #after the transpose, the index column header is `Entrez_Gene_Id`
                       aliquot_id: "{{row.Entrez_Gene_Id}}-0000"
                 - tableProject:
-                    input: "{{input.geneTable}}"
+                    input: "{{inputs.geneTable}}"
                 - map:
                     method: nodeMap
                     python: >

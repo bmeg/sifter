@@ -5,10 +5,10 @@ name: GraphManifest
 steps:
   - desc: Download Manifest
     download:
-      source: "{{input.url}}"
+      source: "{{inputs.url}}"
       dest: input.manifest
       output: manifest
   - desc: Loading Files
     manifestLoad:
-      input: "{{input.manifest}}"
-      baseURL: "{{input.baseURL}}"
+      input: "{{inputs.manifest}}"
+      baseURL: "{{inputs.baseURL}}"

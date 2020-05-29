@@ -19,6 +19,7 @@ type Step struct {
 	TransposeFile *TransposeFileStep `json:"transposeFile"`
 	FileGlob      *FileGlobStep      `json:"fileGlob"`
 	Script        *ScriptStep        `json:"script"`
+  DigLoad       *DigLoadStep       `json;"digLoad"`
 }
 
 
@@ -64,6 +65,13 @@ func (step *Step) Run(run *pipeline.Runtime, inputs map[string]interface{}) erro
     log.Printf("Running TableLoad")
     if err := step.TableLoad.Run(task); err != nil {
       run.Printf("Table Load Error: %s", err)
+      return err
+    }
+  } else if step.DigLoad != nil {
+    task := run.NewTask(inputs)
+    log.Printf("Running DigLoad")
+    if err := step.DigLoad.Run(task); err != nil {
+      run.Printf("Dig Load Error: %s", err)
       return err
     }
   } else if step.JSONLoad != nil {

@@ -26,10 +26,10 @@ type Inputs map[string]Input
 
 type Playbook struct {
 	Name  string `json:"name"`
-	Inputs Inputs `json:"inputs"`
+	Inputs Inputs `json:"inputs,omitempty"`
 	Schema string `json:"schema"`
 	Class string `json:"class"`
-	Steps []steps.Step `json:"steps"`
+	Steps []steps.Step `json:"steps" jsonschema_description:"Steps of the transformation"`
 }
 
 // Parse parses a YAML doc into the given Config instance.

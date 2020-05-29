@@ -11,7 +11,7 @@ import (
   "log"
   "github.com/bmeg/sifter/evaluate"
   "github.com/bmeg/sifter/pipeline"
-  "github.com/dgraph-io/badger"
+  "github.com/dgraph-io/badger/v2"
 )
 
 type MapStep struct {

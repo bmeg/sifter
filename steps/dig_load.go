@@ -36,7 +36,16 @@ func (ml *DigLoadStep) Run(task *pipeline.Task) error {
   procChan := make(chan map[string]interface{}, 100)
   wg := &sync.WaitGroup{}
 
-  ml.Transform.Start( procChan, task, wg )
+  ml.Transform.Init(task)
+  out, err := ml.Transform.Start( procChan, task, wg )
+  if err != nil {
+    return err
+  }
+  go func() {
+    //we don't do anything with the transform output. So just read it and
+    //toss it
+    for range out {}
+  }()
 
   req := dig.Collection{Name: ml.Collection}
   log.Printf("Loading: '%s'", ml.Collection)
@@ -58,6 +67,7 @@ func (ml *DigLoadStep) Run(task *pipeline.Task) error {
   log.Printf("Done Loading")
   close(procChan)
   wg.Wait()
+  ml.Transform.Close()
 
 	return nil
 }

@@ -16,10 +16,16 @@ import (
 )
 
 type Task struct {
+	Name    string
 	Runtime *Runtime
 	Workdir string
 	Inputs  map[string]interface{}
 	AllowLocalFiles bool
+}
+
+func (m *Task) Child(name string) *Task {
+	cname := fmt.Sprintf("%s.%s", m.Name, name)
+	return &Task{Name:cname, Runtime:m.Runtime, Workdir:m.Workdir, Inputs:m.Inputs, AllowLocalFiles:m.AllowLocalFiles}
 }
 
 func (m *Task) Path(p string) (string, error) {

@@ -25,7 +25,7 @@ func NewRuntime(output emitter.Emitter, dir string, name string) *Runtime {
 }
 
 func (run *Runtime) NewTask(inputs map[string]interface{}) *Task {
-	return &Task{Runtime:run, Workdir:run.dir, Inputs:inputs, AllowLocalFiles:true}
+	return &Task{Name: run.name, Runtime:run, Workdir:run.dir, Inputs:inputs, AllowLocalFiles:true}
 }
 
 func (run *Runtime) Close() {

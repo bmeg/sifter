@@ -10,6 +10,7 @@ require (
 	github.com/brentp/irelate v0.0.0-20180801151701-1bf7c8f95c75 // indirect
 	github.com/brentp/vcfgo v0.0.0-20190315012323-bdb8e831fc71
 	github.com/ckaznocha/protoc-gen-lint v0.2.1 // indirect
+	github.com/cnf/structhash v0.0.0-20180104161610-62a607eb0224
 	github.com/dgraph-io/badger/v2 v2.0.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-gota/gota v0.7.1-0.20190402185630-1058f871be31

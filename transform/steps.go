@@ -18,6 +18,7 @@ import (
   "github.com/bmeg/golib"
   "github.com/bmeg/sifter/pipeline"
 
+  "github.com/cnf/structhash"
 )
 
 var DEFAULT_ENGINE = "python"
@@ -107,6 +108,11 @@ type DebugStep struct {
   Label        string                 `json:"label"`
 }
 
+type CacheStep struct {
+  Transform    TransformPipe          `json:"transform"`
+  pipe         chan map[string]interface{}
+}
+
 type TransformStep struct {
   FieldMap      *FieldMapStep          `json:"fieldMap"`
   FieldType     *FieldTypeStep         `json:"fieldType"`
@@ -123,6 +129,7 @@ type TransformStep struct {
   TableReplace  *TableReplaceStep      `json:"tableReplace"`
   TableProject  *TableProjectStep      `json:"tableProject"`
   Fork          *ForkStep              `json:"fork"`
+  Cache         *CacheStep             `json:"cache"`
 }
 
 type TransformPipe []TransformStep
@@ -189,7 +196,7 @@ func (ts ObjectCreateStep) Run(i map[string]interface{}, task *pipeline.Task) ma
 }
 
 
-func (tw *TableWriteStep) Start(task *pipeline.Task, wg *sync.WaitGroup) {
+func (tw *TableWriteStep) Init(task *pipeline.Task) {
   tw.emit = task.Runtime.EmitTable(tw.Output, tw.Columns)
 }
 
@@ -204,7 +211,7 @@ func (tw *TableWriteStep) Close() {
   tw.emit.Close()
 }
 
-func (tr *TableReplaceStep) Start(task *pipeline.Task, wg *sync.WaitGroup) error {
+func (tr *TableReplaceStep) Init(task *pipeline.Task) error {
   input, err := evaluate.ExpressionString(tr.Input, task.Inputs, nil)
   inputPath, err := task.Path(input)
   if err != nil {
@@ -266,7 +273,7 @@ func (tw *TableReplaceStep) Run(i map[string]interface{}, task *pipeline.Task) m
   return i
 }
 
-func (tr *TableProjectStep) Start(task *pipeline.Task, wg *sync.WaitGroup) error {
+func (tr *TableProjectStep) Init(task *pipeline.Task) error {
   input, err := evaluate.ExpressionString(tr.Input, task.Inputs, nil)
   inputPath, err := task.Path(input)
   if err != nil {
@@ -306,7 +313,7 @@ func (tw *TableProjectStep) Run(i map[string]interface{}, task *pipeline.Task) m
 }
 
 
-func (fs *FilterStep) Start(task *pipeline.Task, wg *sync.WaitGroup) {
+func (fs *FilterStep) Init(task *pipeline.Task) {
   if fs.Python != "" && fs.Method != "" {
     log.Printf("Starting Map: %s", fs.Python)
     e := evaluate.GetEngine(DEFAULT_ENGINE)
@@ -317,10 +324,29 @@ func (fs *FilterStep) Start(task *pipeline.Task, wg *sync.WaitGroup) {
     fs.proc = c
   }
   fs.inChan = make(chan map[string]interface{}, 100)
-  fs.Steps.Start(fs.inChan, task, wg)
+  fs.Steps.Init(task)
 }
 
-func (fs FilterStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+func (fs FilterStep) Start(in chan map[string]interface{}, task *pipeline.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
+  out := make(chan map[string]interface{}, 10)
+  tout, _ := fs.Steps.Start(in,task,wg)
+  go func() {
+    //Filter does not emit the output of its sub pipeline, but it has to digest it
+    for range tout {}
+  } ()
+
+  go func() {
+    //Filter emits a copy of its input, without changing it
+    defer close(out)
+    for i := range in {
+      fs.run(i, task)
+      out <- i
+    }
+  }()
+  return out, nil
+}
+
+func (fs FilterStep) run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
   if fs.Python != "" && fs.Method != "" {
     out, err := fs.proc.EvaluateBool(i)
     if err != nil {
@@ -354,9 +380,9 @@ func (fs FilterStep) Close() {
 }
 
 
-func (fs *FieldProcessStep) Start(task *pipeline.Task, wg *sync.WaitGroup) {
+func (fs *FieldProcessStep) Init(task *pipeline.Task) {
   fs.inChan = make(chan map[string]interface{}, 100)
-  fs.Steps.Start(fs.inChan, task, wg)
+  //fs.Steps.Start(fs.inChan, task, wg)
 }
 
 
@@ -478,13 +504,47 @@ func (db DebugStep) Run(i map[string]interface{}, task *pipeline.Task) map[strin
   return i
 }
 
-func (fs *ForkStep) Start(task *pipeline.Task, wg *sync.WaitGroup) error {
-  fs.pipes = []chan map[string]interface{}{}
-  for _, t := range fs.Transform {
-    p := make(chan map[string]interface{}, 100)
-    t.Start(p, task, wg)
-    fs.pipes = append(fs.pipes, p)
+func (cs *CacheStep) Init(task *pipeline.Task) error {
+  return cs.Transform.Init(task)
+}
+
+func (cs *CacheStep) Start(in chan map[string]interface{}, task *pipeline.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
+  log.Printf("Starting Cache: %s", task.Name)
+  cin := make(chan map[string]interface{}, 10)
+  out, err := cs.Transform.Start(cin, task, wg)
+  if err != nil {
+    return out, err
   }
+  cs.pipe = out
+
+  go func() {
+    for i := range in {
+      //key, err := evaluate.ExpressionString(cs.Key, task.Inputs, i)
+      hash, err := structhash.Hash(i, 1)
+      if err == nil {
+        log.Printf("Cache Key: %s %s", task.Name, hash)
+      }
+      cin <- i
+    }
+    close(cin)
+  }()
+
+  return out, nil
+}
+
+
+func (cs *CacheStep) Close() {
+  close(cs.pipe)
+}
+
+
+func (fs *ForkStep) Init(task *pipeline.Task) error {
+  fs.pipes = []chan map[string]interface{}{}
+  //for _, t := range fs.Transform {
+  //  p := make(chan map[string]interface{}, 100)
+    //t.Start(p, task, wg)
+  //  fs.pipes = append(fs.pipes, p)
+  //}
   return nil
 }
 
@@ -502,6 +562,62 @@ func (fs *ForkStep) Close() {
 }
 
 
+func (ts TransformStep) Init(task *pipeline.Task) error {
+  log.Printf("Doing Step Init")
+  if ts.Filter != nil {
+    ts.Filter.Init(task)
+  } else if ts.FieldProcess != nil {
+    ts.FieldProcess.Init(task)
+  } else if ts.RegexReplace != nil {
+    re, _ := evaluate.ExpressionString(ts.RegexReplace.Regex, task.Inputs, nil)
+    ts.RegexReplace.reg, _ = regexp.Compile(re)
+  } else if ts.Map != nil {
+    log.Printf("About to init map")
+    ts.Map.Init(task)
+  } else if ts.Reduce != nil {
+    ts.Reduce.Init(task)
+  } else if ts.TableWrite != nil {
+    ts.TableWrite.Init(task)
+  } else if ts.TableReplace != nil {
+    err := ts.TableReplace.Init(task)
+    if err != nil {
+      log.Printf("TableReplace err: %s", err)
+    }
+    return err
+  } else if ts.Cache != nil {
+    return ts.Cache.Init(task)
+  } else if ts.TableProject != nil {
+    err := ts.TableProject.Init(task)
+    if err != nil {
+      log.Printf("TableProject err: %s", err)
+    }
+    return err
+  } else if ts.Fork != nil {
+    err := ts.Fork.Init(task)
+    if err != nil {
+      log.Printf("Fork err: %s", err)
+    }
+    return err
+  }
+  return nil
+}
+
+
+func (ts TransformStep) Close() {
+  if ts.Filter != nil {
+    ts.Filter.Close()
+  } else if ts.FieldProcess != nil {
+    ts.FieldProcess.Close()
+  } else if ts.Map != nil {
+    ts.Map.Close()
+  } else if ts.TableWrite != nil {
+    ts.TableWrite.Close()
+  } else if ts.Cache != nil {
+    ts.Cache.Close()
+  } else if ts.Fork != nil {
+    ts.Fork.Close()
+  }
+}
 
 
 func (ts TransformStep) Start(in chan map[string]interface{},
@@ -518,34 +634,17 @@ func (ts TransformStep) Start(in chan map[string]interface{},
       for i := range in {
         out <- ts.FieldType.Run(i, task)
       }
-      /*
-    } else if ts.VertexCreate != nil {
-      for i := range in {
-        out <- ts.VertexCreate.Run(i, task)
-      }
-    } else if ts.EdgeCreate != nil {
-      for i := range in {
-        out <- ts.EdgeCreate.Run(i, task)
-      } */
     } else if ts.Filter != nil {
-      ts.Filter.Start(task, wg)
-      for i := range in {
-        out <- ts.Filter.Run(i, task)
-      }
-      ts.Filter.Close()
+      out, _ = ts.Filter.Start(in, task, wg)
     } else if ts.FieldProcess != nil {
-      ts.FieldProcess.Start(task, wg)
       for i := range in {
         out <- ts.FieldProcess.Run(i, task)
       }
-      ts.FieldProcess.Close()
     } else if ts.Debug != nil {
       for i := range in {
         out <- ts.Debug.Run(i, task)
       }
     } else if ts.RegexReplace != nil {
-      re, _ := evaluate.ExpressionString(ts.RegexReplace.Regex, task.Inputs, nil)
-      ts.RegexReplace.reg, _ = regexp.Compile(re)
       for i := range in {
         out <- ts.RegexReplace.Run(i, task)
       }
@@ -558,14 +657,11 @@ func (ts TransformStep) Start(in chan map[string]interface{},
         out <- ts.Project.Run(i, task)
       }
     } else if ts.Map != nil {
-      ts.Map.Start(task, wg)
       for i := range in {
         o := ts.Map.Run(i, task)
         out <- o
       }
-      ts.Map.Close()
     } else if ts.Reduce != nil {
-      ts.Reduce.Start(task, wg)
       for i := range in {
         ts.Reduce.Add(i, task)
       }
@@ -577,36 +673,29 @@ func (ts TransformStep) Start(in chan map[string]interface{},
         out <- ts.ObjectCreate.Run(i, task)
       }
     } else if ts.TableWrite != nil {
-      ts.TableWrite.Start(task, wg)
       for i := range in {
         out <- ts.TableWrite.Run(i, task)
       }
-      ts.TableWrite.Close()
     } else if ts.TableReplace != nil {
-      err := ts.TableReplace.Start(task, wg)
-      if err != nil {
-        log.Printf("TableReplace err: %s", err)
-      }
       for i := range in {
         out <- ts.TableReplace.Run(i, task)
       }
     } else if ts.TableProject != nil {
-      err := ts.TableProject.Start(task, wg)
-      if err != nil {
-        log.Printf("TableProject err: %s", err)
-      }
       for i := range in {
         out <- ts.TableProject.Run(i, task)
       }
-    } else if ts.Fork != nil {
-      err := ts.Fork.Start(task, wg)
+    } else if ts.Cache != nil {
+      outCache, err := ts.Cache.Start(in, task, wg)
       if err != nil {
-        log.Printf("Fork err: %s", err)
+        log.Printf("TableProject err: %s", err)
       }
+      for i := range outCache {
+        out <- i
+      }
+    } else if ts.Fork != nil {
       for i := range in {
         out <- ts.Fork.Run(i, task)
       }
-      ts.Fork.Close()
     } else {
       log.Printf("Unknown field step")
     }
@@ -614,21 +703,39 @@ func (ts TransformStep) Start(in chan map[string]interface{},
   return out
 }
 
+func (tp TransformPipe) Init(task *pipeline.Task) error {
+  log.Printf("TransformPipe Init")
+  for _, s := range tp {
+    if err := s.Init(task); err != nil {
+      return err
+    }
+  }
+  return nil
+}
+
+func (tp TransformPipe) Close() {
+  for _, s := range tp {
+    s.Close()
+  }
+}
+
 func (tp TransformPipe) Start( in chan map[string]interface{},
   task *pipeline.Task,
-  wg *sync.WaitGroup) {
+  wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 
     log.Printf("Starting TransformPipe")
+    out := make(chan map[string]interface{}, 10)
     wg.Add(1)
-    //connect the input stream to the processing chain
-    cur := in
-    for _, s := range tp {
-      cur = s.Start(cur, task, wg)
-    }
-
-    go func () {
-      //read the output pipe to pull all the data through the pipe
-      for range cur {}
+    go func() {
+      //connect the input stream to the processing chain
+      cur := in
+      for i, s := range tp {
+        cur = s.Start(cur, task.Child(fmt.Sprintf("%d", i)), wg)
+      }
+      for i := range cur {
+        out <- i
+      }
       wg.Done()
     }()
+    return out, nil
 }

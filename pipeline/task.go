@@ -13,6 +13,8 @@ import (
 	"github.com/bmeg/sifter/emitter"
 	"github.com/hashicorp/go-getter"
 
+	"github.com/bmeg/sifter/datastore"
+
 )
 
 type Task struct {
@@ -20,12 +22,13 @@ type Task struct {
 	Runtime *Runtime
 	Workdir string
 	Inputs  map[string]interface{}
+	DataStore  datastore.DataStore
 	AllowLocalFiles bool
 }
 
 func (m *Task) Child(name string) *Task {
 	cname := fmt.Sprintf("%s.%s", m.Name, name)
-	return &Task{Name:cname, Runtime:m.Runtime, Workdir:m.Workdir, Inputs:m.Inputs, AllowLocalFiles:m.AllowLocalFiles}
+	return &Task{Name:cname, Runtime:m.Runtime, Workdir:m.Workdir, Inputs:m.Inputs, AllowLocalFiles:m.AllowLocalFiles, DataStore:m.DataStore}
 }
 
 func (m *Task) Path(p string) (string, error) {
@@ -104,4 +107,8 @@ func (m *Task) Output(name string, value string) error {
 
 func (m *Task) Printf(s string, x ...interface{}) {
 	m.Runtime.Printf(s, x...)
+}
+
+func (m *Task) GetDataStore() (datastore.DataStore, error) {
+	return m.DataStore, nil //DEBUG: fix this
 }

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
+	"github.com/bmeg/sifter/datastore"
 	"github.com/bmeg/sifter/manager"
 	//"github.com/bmeg/sifter/webserver"
 	"github.com/bmeg/sifter/evaluate"
@@ -33,7 +34,9 @@ var Cmd = &cobra.Command{
 			driver = "stdout://"
 		}
 
-		man, err := manager.Init(manager.Config{Driver: driver, WorkDir: workDir})
+		dsConfig := datastore.Config{ URL:"mongodb://localhost:27017", Database:"sifter", Collection:"cache" }
+
+		man, err := manager.Init(manager.Config{Driver: driver, WorkDir: workDir, DataStore:&dsConfig})
 		if err != nil {
 			log.Printf("Error stating load manager: %s", err)
 			return err

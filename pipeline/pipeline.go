@@ -6,6 +6,7 @@ import (
 	"sync/atomic"
 
 	//"github.com/bmeg/grip/gripql"
+	"github.com/bmeg/sifter/datastore"
 	"github.com/bmeg/sifter/emitter"
 )
 
@@ -18,14 +19,15 @@ type Runtime struct {
 	StepCount   int64
 	StepTotal   int64
 	OutputCallback func(string, string) error
+	datastore   datastore.DataStore
 }
 
-func NewRuntime(output emitter.Emitter, dir string, name string) *Runtime {
-	return &Runtime{output:output, dir:dir, name:name, Status:"Starting"}
+func NewRuntime(output emitter.Emitter, dir string, name string, ds datastore.DataStore) *Runtime {
+	return &Runtime{output:output, dir:dir, name:name, Status:"Starting", datastore:ds}
 }
 
 func (run *Runtime) NewTask(inputs map[string]interface{}) *Task {
-	return &Task{Name: run.name, Runtime:run, Workdir:run.dir, Inputs:inputs, AllowLocalFiles:true}
+	return &Task{Name: run.name, Runtime:run, Workdir:run.dir, Inputs:inputs, AllowLocalFiles:true, DataStore:run.datastore}
 }
 
 func (run *Runtime) Close() {

@@ -108,7 +108,6 @@ type DebugStep struct {
 
 type CacheStep struct {
 	Transform TransformPipe `json:"transform"`
-	pipe      chan map[string]interface{}
 }
 
 type TransformStep struct {
@@ -322,11 +321,12 @@ func (fs *FilterStep) Init(task *pipeline.Task) {
 
 func (fs FilterStep) Start(in chan map[string]interface{}, task *pipeline.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 	out := make(chan map[string]interface{}, 10)
-  fs.inChan = make(chan map[string]interface{}, 100)
+	fs.inChan = make(chan map[string]interface{}, 100)
 	tout, _ := fs.Steps.Start(fs.inChan, task.Child("filter"), wg)
 	go func() {
 		//Filter does not emit the output of its sub pipeline, but it has to digest it
-		for range tout {}
+		for range tout {
+		}
 	}()
 
 	go func() {
@@ -369,7 +369,7 @@ func (fs FilterStep) Close() {
 	if fs.proc != nil {
 		fs.proc.Close()
 	}
-  fs.Steps.Close()
+	fs.Steps.Close()
 }
 
 func (fs *FieldProcessStep) Init(task *pipeline.Task) {
@@ -501,30 +501,62 @@ func (cs *CacheStep) Init(task *pipeline.Task) error {
 
 func (cs *CacheStep) Start(in chan map[string]interface{}, task *pipeline.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 	log.Printf("Starting Cache: %s", task.Name)
-	cin := make(chan map[string]interface{}, 10)
-	out, err := cs.Transform.Start(cin, task, wg)
+
+	ds, err := task.GetDataStore()
 	if err != nil {
+		log.Printf("Cache setup error: %s", err)
+	}
+
+	if ds == nil {
+		log.Printf("No cache setup")
+		out, err := cs.Transform.Start(in, task, wg)
 		return out, err
 	}
-	cs.pipe = out
 
+	out := make(chan map[string]interface{}, 10)
 	go func() {
+		defer close(out)
 		for i := range in {
-			//key, err := evaluate.ExpressionString(cs.Key, task.Inputs, i)
 			hash, err := structhash.Hash(i, 1)
 			if err == nil {
-				log.Printf("Cache Key: %s %s", task.Name, hash)
+				key := fmt.Sprintf("%s.%s", task.Name, hash)
+				log.Printf("Cache Key: %s.%s", task.Name, hash)
+				if ds.HasRecordStream(key) {
+					log.Printf("Cache Hit")
+					for j := range ds.GetRecordStream(key) {
+						out <- j
+					}
+				} else {
+					log.Printf("Cache Miss")
+
+					manIn := make(chan map[string]interface{}, 10)
+					manIn <- i
+					close(manIn)
+
+					cacheIn := make(chan map[string]interface{}, 10)
+					go ds.SetRecordStream(key, cacheIn)
+
+					newWG := &sync.WaitGroup{}
+
+					tOut, _ := cs.Transform.Start(manIn, task, newWG)
+					for j := range tOut {
+						log.Printf("Cache Calc out: %s", j)
+						cacheIn <- j
+						out <- j
+					}
+					close(cacheIn)
+				}
+			} else {
+				log.Printf("Hashing Error")
 			}
-			cin <- i
 		}
-		close(cin)
 	}()
 
 	return out, nil
 }
 
 func (cs *CacheStep) Close() {
-	close(cs.pipe)
+
 }
 
 func (fs *ForkStep) Init(task *pipeline.Task) error {
@@ -622,9 +654,9 @@ func (ts TransformStep) Start(in chan map[string]interface{},
 			}
 		} else if ts.Filter != nil {
 			fOut, _ := ts.Filter.Start(in, task, wg)
-      for i := range fOut {
-        out <- i
-      }
+			for i := range fOut {
+				out <- i
+			}
 		} else if ts.FieldProcess != nil {
 			for i := range in {
 				out <- ts.FieldProcess.Run(i, task)
@@ -716,6 +748,7 @@ func (tp TransformPipe) Start(in chan map[string]interface{},
 	out := make(chan map[string]interface{}, 10)
 	wg.Add(1)
 	go func() {
+		defer close(out)
 		//connect the input stream to the processing chain
 		cur := in
 		for i, s := range tp {
@@ -725,6 +758,7 @@ func (tp TransformPipe) Start(in chan map[string]interface{},
 			out <- i
 		}
 		wg.Done()
+		log.Printf("Ending TransformPipe")
 	}()
 	return out, nil
 }

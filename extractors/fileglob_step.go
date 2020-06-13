@@ -1,4 +1,4 @@
-package steps
+package extractors
 
 import (
   "log"
@@ -10,7 +10,7 @@ type FileGlobStep struct {
 	Files     []string `json:"files" jsonschema_description:"Array of files (with wildcards) to scan for"`
 	Limit     int      `json:"limit" jsonschema_description:""`
 	InputName string   `json:"inputName" jsonschema_description:"variable name the file will be stored in when calling the extraction steps"`
-	Steps     []Step   `json:"steps" jsonschema_description:"Extraction pipeline to run"`
+	Steps     []Extractor   `json:"steps" jsonschema_description:"Extraction pipeline to run"`
 }
 
 func (fs *FileGlobStep) Run(task *pipeline.Task) error {

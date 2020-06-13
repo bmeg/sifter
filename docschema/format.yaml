@@ -31,6 +31,200 @@
      - Programmatic transformation
      - Table based field translation
      - Outputing the message as a JSON Schema checked object
+ - title: Example Playbook
+   text: |
+    Our first task will be to convert a ZIP code TSV into a set of county level
+    entries.
+
+    The input file looks like:
+
+    ```
+    ZIP,COUNTYNAME,STATE,STCOUNTYFP,CLASSFP
+    36003,Autauga County,AL,01001,H1
+    36006,Autauga County,AL,01001,H1
+    36067,Autauga County,AL,01001,H1
+    36066,Autauga County,AL,01001,H1
+    36703,Autauga County,AL,01001,H1
+    36701,Autauga County,AL,01001,H1
+    36091,Autauga County,AL,01001,H1
+    ```
+
+    First is the header of the Playbook. This declared that is a playbook, the
+    unique name of the playbook and the directory where the target schema files
+    can be found.
+
+    ```
+    class: Playbook
+
+    name: zipcode_map
+    schema: ../covid19_datadictionary/gdcdictionary/schemas/
+
+    ```
+
+    Next the inputs are declared. In this case the only input is the zipcode TSV.
+    There is a default value, so the playbook can be invoked without passing in
+    any parameters. However, to apply this playbook to a new input file, the
+    input parameter `zipcode` could be used to define the source file.
+
+    ```
+
+    inputs:
+      zipcode:
+        type: File
+        default: ../data/ZIP-COUNTY-FIPS_2017-06.csv
+    ```
+
+    The `steps` section defines the sequence extraction steps that can be taken.
+    In this program, there is only one extraction step, which is to run the table
+    loader. The table loader then has a transform pipeline that is applied to the
+    data extracted from the file.
+
+    Tableload operaters of the input file that was originally passed in using the
+    `inputs` stanza. SIFTER string parsing is based on mustache template system.
+    To access the string passed in the template is `{{inputs.zipcode}}`.
+    The seperator in the file input file is a `,` so that is also passed in as a
+    parameter to the extractor.
+
+    ```
+    steps:
+      - desc: Convert ZIP code File
+        tableLoad:
+          input: "{{inputs.zipcode}}"
+          sep: ","
+          transform:
+            .......
+    ```
+
+    The `tableLoad` extractor opens up the TSV and generates a one message for
+    every row in the file. It uses the header of the file to map the column values
+    into a dictionary. The first row would produce the message:
+
+    ```
+    {
+        "ZIP" : "36003",
+        "COUNTYNAME" : "Autauga County",
+        "STATE" : "AL",
+        "STCOUNTYFP" : "01001",
+        "CLASSFP" : "H1"
+    }
+    ```
+
+    The stream of messages are then passed into the steps listed in the `transform`
+    section of the tableLoad extractor.
+
+    The first step is to create an output table, with two columns connecting
+    `ZIP` values to `STCOUNTYFP` values. The `STCOUNTYFP` is a county level FIPS
+    code, used by the census office. A single FIPS code my contain many ZIP codes,
+    and we can use this table later for mapping ids when loading the data into a database.
+
+    ```
+            - tableWrite:
+                output: zip2fips
+                columns:
+                  - ZIP
+                  - STCOUNTYFP
+    ```
+
+    For the current tranform, we want to produce a single entry per `STCOUNTYFP`,
+    however, the file has a line per `ZIP`. We need to run a `reduce` transform,
+    that collects rows togeather using a field key, which in this case is `"{{row.STCOUNTYFP}}"`,
+    and then runs a function `merge` that takes two messages, merges them togeather
+    and produces a single output message.
+
+    The two messages:
+
+    ```
+    { "ZIP" : "36003", "COUNTYNAME" : "Autauga County", "STATE" : "AL", "STCOUNTYFP" : "01001", "CLASSFP" : "H1"}
+    { "ZIP" : "36006", "COUNTYNAME" : "Autauga County", "STATE" : "AL", "STCOUNTYFP" : "01001", "CLASSFP" : "H1"}
+    ```
+
+    Would be merged into the message:
+
+    ```
+    { "ZIP" : ["36003", "36006"], "COUNTYNAME" : "Autauga County", "STATE" : "AL", "STCOUNTYFP" : "01001", "CLASSFP" : "H1"}
+    ```
+
+    The `reduce` transform step uses a block of python code to describe the function.
+    The `method` field names the function, in this case `merge` that will be used
+    as the reduce function.
+
+    ```
+            - reduce:
+                field: "{{row.STCOUNTYFP}}"
+                method: merge
+                python: >
+                  def merge(x,y):
+                    a = x.get('zipcodes', []) + [x['ZIP']]
+                    b = y.get('zipcodes', []) + [y['ZIP']]
+                    x['zipcodes'] = a + b
+                    return x
+    ```
+
+    The original messages produced by the loader have all of the information required
+    by the `summary_location` object type as described by the JSON schema that was linked
+    to in the header stanza. However, the data is all under the wrong field names.
+    To remap the data, we use a `project` tranformation that uses the template engine
+    to project data into new files in the message. The template engine has the current
+    message data in the value `row`. So the value
+    `FIPS:{{row.STCOUNTYFP}}` is mapped into the field `id`.
+
+    ```
+            - project:
+                mapping:
+                  id: "FIPS:{{row.STCOUNTYFP}}"
+                  province_state: "{{row.STATE}}"
+                  summary_locations: "{{row.STCOUNTYFP}}"
+                  county: "{{row.COUNTYNAME}}"
+                  submitter_id: "{{row.STCOUNTYFP}}"
+                  type: summary_location
+                  projects: []
+    ```
+
+    Using this projection, the message:
+
+    ```
+    {
+      "ZIP" : ["36003", "36006"],
+      "COUNTYNAME" : "Autauga County",
+      "STATE" : "AL",
+      "STCOUNTYFP" : "01001",
+      "CLASSFP" : "H1"
+    }
+    ```
+
+    would become
+
+    ```
+    {
+      "id" : "FIPS:01001",
+      "province_state" : "AL",
+      "summary_locations" : "01001",
+      "county" : "Autauga County",
+      "submitter_id" : "01001",
+      "type" : "summary_location"
+      "projects" : [],
+      "ZIP" : ["36003", "36006"],
+      "COUNTYNAME" : "Autauga County",
+      "STATE" : "AL",
+      "STCOUNTYFP" : "01001",
+      "CLASSFP" : "H1"
+    }
+    ```
+
+    Now that the data has been remapped, we pass the data into the 'objectCreate'
+    transformation, which will read in the schema for `summary_location`, check the
+    message to make sure it matches and then output it.
+
+    ```
+            - objectCreate:
+                  class: summary_location
+    ```
+
+ - title: File Format
+   text: |
+    A Playbook is a YAML file, that links a schema to a series of extractors that
+    in turn, can run several transforms to emit objects that are checked against
+    the schema.
 
  - class: Playbook
    description: |
@@ -38,11 +232,210 @@
     and turns them into multiple output streams. It can take a set of inputs
     then run a sequential set of extraction steps.
 
- - class: Step
+ - class: Input
+
+ - title: Extraction Steps
+   text: |
+    Every playbook consists of a series of extraction steps. An extraction step
+    can be a data extractor that runs a transform pipeline.
+
+ - class: Extractor
    description: |
-    Each extraction step
+    This object represents a single extractor step. It has a field for each possible
+    extractor type, but only one is supposed to be filed in at a time.
+
+   example: |
+    An array of Extractors, each defining a different extraction step
+
+    ```
+    - desc: Untar the input file
+      untar:
+        input: "{{inputs.tar}}"
+    - desc: Loading Patient List
+      tableLoad:
+        input: data_clinical_patient.txt
+        transform:
+          ...
+    - desc: Loading Sample List
+      tableLoad:
+        input: data_clinical_sample.txt
+        transform:
+          ...
+    - fileGlob:
+        files: [ data_RNA_Seq_expression_median.txt, data_RNA_Seq_V2_expression_median.txt ]
+        steps:
+          ...
+    ```
+
+ - class: TransposeFileStep
+   example: |
+
+    ```
+      - desc: Transpose RNA file
+        transposeFile:
+          input: "{{inputs.rnaFile}}"
+          output: data_RNA_Seq_expression_median_transpose.txt
+    ```
+
+ - class: DownloadStep
+
+ - class: UntarStep
+   example: |
+
+    ```
+      - desc: Untar
+        untar:
+          input: "{{inputs.tar}}"
+    ```
+
+ - class: SQLDumpStep
+
+ - class: TableTransform
+
+ - class: ScriptStep
+   example: |
+    ```
+      - desc: Scrape GDC Projects
+        script:
+          dockerImage: bmeg/sifter-gdc-scan
+          command: [/opt/gdc-scan.py, projects]
+      - desc: Scrape GDC Cases
+        script:
+          dockerImage: bmeg/sifter-gdc-scan
+          command: [/opt/gdc-scan.py, cases]
+    ```
+
+ - class: TableLoadStep
+
+ - class: JSONLoadStep
+   example: |
+    ```
+    - desc: Convert Census File
+      jsonLoad:
+        input: "{{inputs.census}}"
+        transform:
+          ...
+    ```
+
+ - class: FileGlobStep
+
+ - title: Transform Pipelines
+   text: |
+    A tranform pipeline is a series of method to alter a message stream.
 
  - class: TransformStep
    description: |
     The transform step represents the transition from extraction to transformation
     code. A tranform pipeline is always the child of an extractor. A transform
+
+ - class: AlleleIDStep
+ - class: TableWriteStep
+ - class: TableReplaceStep
+   description: Use a two column file to make values from one value to another.
+   example: |
+    Starting with a table that maps state names to the two character state code:
+
+    ```
+    North Dakota	ND
+    Ohio	OH
+    Oklahoma	OK
+    Oregon	OR
+    Pennsylvania	PA
+    ```
+
+    The transform:
+
+    ```
+      - tableReplace:
+          input: "{{inputs.stateTable}}"
+          field: sub_region_1
+    ```
+
+    Would change the message:
+
+    ```
+    { "sub_region_1" : "Oregon" }
+    ```
+
+    to
+
+    ```
+    { "sub_region_1" : "OR" }
+    ```
+
+ - class: RegexReplaceStep
+ - class: ReduceStep
+   example: |
+    ```
+      - reduce:
+          field: "{{row.STCOUNTYFP}}"
+          method: merge
+          python: >
+            def merge(x,y):
+              a = x.get('zipcodes', []) + [x['ZIP']]
+              b = y.get('zipcodes', []) + [y['ZIP']]
+              x['zipcodes'] = a + b
+              return x
+    ```
+
+ - class: ForkStep
+   example: |
+    ```
+      - desc: Loading ProjectData
+        jsonLoad:
+          input: out.projects.json
+          transform:
+            - fork:
+                transform:
+                  -
+                    - project:
+                        mapping:
+                          code: "{{row.project_id}}"
+                          programs: "{{row.program.name}}"
+                    - objectCreate:
+                        class: project
+                  -
+                    - project:
+                        mapping:
+                          code: "{{row.project_id}}"
+                          programs: "{{row.program.name}}"
+                          submitter_id: "{{row.program.name}}"
+                          projects: "{{row.project_id}}"
+                          type: experiment
+                    - objectCreate:
+                        class: experiment
+    ```
+
+ - class: CacheStep
+   description: |
+      The results of long running functions can be stored in a database and only
+      calculated as needed.
+
+   example: |
+     The address lookup function provided by the Census bureau is takes time to
+     run, so we use the `cache` step to define a subsection of the pipeline
+     that should be cached in a database, and if the transform is run again,
+     the results would be pulled out of the database.
+
+     ```
+      - cache:
+          transform:
+            - map:
+                method: addressLookup
+                python: >
+
+                  import json
+
+                  from urllib import request, parse
+
+                  def addressLookup(x):
+                    try:
+                      address = x['query']
+                      baseUrl = "https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?format=json&benchmark=9&address="
+                      out = request.urlopen(baseUrl + parse.quote(address))
+                      data = json.loads(out.read())
+                      x['addressLookup'] = data
+                    except:
+                      pass
+                    return x
+     ```

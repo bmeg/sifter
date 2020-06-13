@@ -1,5 +1,5 @@
 
-package steps
+package extractors
 
 
 import (

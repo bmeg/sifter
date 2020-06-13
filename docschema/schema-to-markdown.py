@@ -33,22 +33,22 @@ class MDGenerator:
 
             output.write("\n***\n")
 
-        for elemName, elm in schemaMap.items():
-            gen.printClass(elemName, elem, section, output)
+        for elemName, elem in schemaMap.items():
+            gen.printClass(elemName, elem, None, output)
 
 
 
     def printClass(self, elemName, elem, classFormat, output):
-        output.write("# %s\n" % elemName)
+        output.write("## %s\n" % elemName)
         if classFormat is not None:
             if 'description' in classFormat:
                 output.write("%s\n" % (classFormat['description']))
         for propName, prop in elem["properties"].items():
-            output.write("## %s\n" % propName)
+            output.write(" -  %s\n" % propName)
             if 'type' in prop:
                 output.write("Type: *%s*\n\n" % prop['type'])
             if "description" in prop:
-                output.write("%s\n" % prop["description"])
+                output.write(" > %s\n" % prop["description"])
             if "items" in prop:
                 prop = prop["items"]
             if "patternProperties" in prop:
@@ -57,6 +57,10 @@ class MDGenerator:
                 refName = prop["$ref"].replace("#/definitions/", "")
                 output.write("[%s](#%s)\n" % (refName, anchorName(refName)))
 
+            output.write("\n")
+
+        if classFormat is not None and "example" in classFormat:
+            output.write(classFormat["example"])
             output.write("\n")
 
 

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/bmeg/grip/gripql"
-	"github.com/bmeg/sifter/steps"
+	"github.com/bmeg/sifter/extractors"
 	"github.com/ghodss/yaml"
 )
 
@@ -29,7 +29,7 @@ type Playbook struct {
 	Inputs Inputs `json:"inputs,omitempty" jsonschema_description:"Optional inputs to Playbook"`
 	Schema string `json:"schema" jsonschema_description:"Name of directory with library of Gen3/JSON Schema files"`
 	Class string `json:"class" jsonschema_description:"Notation for file inspection, set as 'Playbook'"`
-	Steps []steps.Step `json:"steps" jsonschema_description:"Steps of the transformation"`
+	Steps []extractors.Extractor `json:"steps" jsonschema_description:"Steps of the transformation"`
 }
 
 // Parse parses a YAML doc into the given Config instance.

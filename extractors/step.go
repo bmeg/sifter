@@ -1,5 +1,5 @@
 
-package steps
+package extractors
 
 import (
   "log"
@@ -7,7 +7,7 @@ import (
 )
 
 
-type Step struct {
+type Extractor struct {
 	Description   string             `json:"description"  jsonschema_description:"Human Readable description of step"`
 	Download     *DownloadStep       `json:"download" jsonschema_description:"Download a File"`
 	Untar        *UntarStep          `json:"untar" jsonschema_description:"Untar a file"`
@@ -21,7 +21,7 @@ type Step struct {
 }
 
 
-func (step *Step) Run(run *pipeline.Runtime, inputs map[string]interface{}) error {
+func (step *Extractor) Run(run *pipeline.Runtime, inputs map[string]interface{}) error {
 
   if step.TransposeFile != nil {
     task := run.NewTask(inputs)

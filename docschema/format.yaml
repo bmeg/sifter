@@ -1,0 +1,48 @@
+
+ - title: Introduction
+   text: |
+    SIFTER is an Extract Transform Load (ETL) platform that is designed to take
+    a variety of standard input sources, create a message streams and run a
+    set of transforms to create JSON schema validated output classes.
+    SIFTER is based based on implementing a Playbook that describes top level
+    Extractions, that can include downloads, file manipulation and finally reading
+    the contents of the files. Every extractor is meant to produce a stream of
+    MESSAGES for transformation. A message is a simple nested dictionary data structure.
+
+    Example Message:
+
+    ```
+    {
+      "firstName" : "bob",
+      "age" : "25"
+      "friends" : [ "Max", "Alex"]
+    }
+    ```
+
+    Once a stream of messages are produced, that can be run through a TRANSFORM
+    pipeline. A transform pipeline is an array of transform steps, each transform
+    step can represent a different way to alter the data. The array of transforms link
+    togeather into a pipe that makes multiple alterations to messages as they are
+    passed along. There are a number of different transform steps types that can
+    be done in a transform pipeline these include:
+
+     - Projection
+     - Filtering
+     - Programmatic transformation
+     - Table based field translation
+     - Outputing the message as a JSON Schema checked object
+
+ - class: Playbook
+   description: |
+    The Playbook represents a single ETL pipeline that takes multiple inputs
+    and turns them into multiple output streams. It can take a set of inputs
+    then run a sequential set of extraction steps.
+
+ - class: Step
+   description: |
+    Each extraction step
+
+ - class: TransformStep
+   description: |
+    The transform step represents the transition from extraction to transformation
+    code. A tranform pipeline is always the child of an extractor. A transform

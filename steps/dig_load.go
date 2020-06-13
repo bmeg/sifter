@@ -16,9 +16,9 @@ import (
 
 
 type DigLoadStep struct {
-  Host          string                  `json:"host"`
-	Collection    string                  `json:"collection"`
-  Transform     transform.TransformPipe `json:"transform"`
+  Host          string                  `json:"host" jsonschema_description:"DIG URL"`
+	Collection    string                  `json:"collection" jsonschema_description:"DIG collection to target"`
+  Transform     transform.TransformPipe `json:"transform" jsonschema_description:"The transform pipeline to run"`
 }
 
 func (ml *DigLoadStep) Run(task *pipeline.Task) error {

@@ -17,9 +17,9 @@ import (
 
 
 type TransposeFileStep struct {
-  Input   string  `json:"input"`
-  Output  string  `json:"output"`
-  LineSkip int    `json:"lineSkip"`
+  Input   string  `json:"input" jsonschema_description:"TSV to transpose"`
+  Output  string  `json:"output" jsonschema_description:"Where transpose output should be stored"`
+  LineSkip int    `json:"lineSkip" jsonschema_description:"Number of header lines to skip"`
 }
 
 

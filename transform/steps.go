@@ -24,8 +24,8 @@ import (
 var DEFAULT_ENGINE = "python"
 
 type ObjectCreateStep struct {
-	Class string `json:"class"`
-	Name  string `json:"name"`
+	Class string `json:"class" jsonschema_description:"Object class, should match declared class in JSON Schema"`
+	Name  string `json:"name" jsonschema_description:"domain name of stream, to seperate it from other output streams of the same output type"`
 }
 
 type ColumnReplaceStep struct {
@@ -75,7 +75,7 @@ type AlleleIDStep struct {
 }
 
 type ProjectStep struct {
-	Mapping map[string]interface{} `json:"mapping"`
+	Mapping map[string]interface{} `json:"mapping" jsonschema_description:"New fields to be generated from template"`
 }
 
 type FieldProcessStep struct {
@@ -86,8 +86,8 @@ type FieldProcessStep struct {
 }
 
 type TableWriteStep struct {
-	Output  string   `json:"output"`
-	Columns []string `json:"columns"`
+	Output  string   `json:"output" jsonschema_description:"Name of file to create"`
+	Columns []string `json:"columns" jsonschema_description:"Columns to be written into table file"`
 	emit    emitter.TableEmitter
 }
 
@@ -111,22 +111,22 @@ type CacheStep struct {
 }
 
 type TransformStep struct {
-	FieldMap     *FieldMapStep     `json:"fieldMap"`
-	FieldType    *FieldTypeStep    `json:"fieldType"`
-	ObjectCreate *ObjectCreateStep `json:"objectCreate"`
+	FieldMap     *FieldMapStep     `json:"fieldMap" jsonschema_description:"fieldMap to run"`
+	FieldType    *FieldTypeStep    `json:"fieldType" jsonschema_description:"Change type of a field (ie string -> integer)"`
+	ObjectCreate *ObjectCreateStep `json:"objectCreate" jsonschema_description:"Create a JSON schema based object"`
 	Filter       *FilterStep       `json:"filter"`
-	Debug        *DebugStep        `json:"debug"`
+	Debug        *DebugStep        `json:"debug" jsonschema_description:"Print message contents to stdout"`
 	RegexReplace *RegexReplaceStep `json:"regexReplace"`
-	AlleleID     *AlleleIDStep     `json:"alleleID"`
-	Project      *ProjectStep      `json:"project"`
-	Map          *MapStep          `json:"map"`
+	AlleleID     *AlleleIDStep     `json:"alleleID" jsonschema_description:"Generate a standardized allele hash ID"`
+	Project      *ProjectStep      `json:"project" jsonschema_description:"Run a projection mapping message"`
+	Map          *MapStep          `json:"map" jsonschema_description:"Apply a single function to all records"`
 	Reduce       *ReduceStep       `json:"reduce"`
-	FieldProcess *FieldProcessStep `json:"fieldProcess"`
-	TableWrite   *TableWriteStep   `json:"tableWrite"`
-	TableReplace *TableReplaceStep `json:"tableReplace"`
+	FieldProcess *FieldProcessStep `json:"fieldProcess" jsonschema_description:"Take an array field from a message and run in child transform"`
+	TableWrite   *TableWriteStep   `json:"tableWrite" jsonschema_description:"Write out a TSV"`
+	TableReplace *TableReplaceStep `json:"tableReplace" jsonschema_description:"Load in TSV to map a fields values"`
 	TableProject *TableProjectStep `json:"tableProject"`
-	Fork         *ForkStep         `json:"fork"`
-	Cache        *CacheStep        `json:"cache"`
+	Fork         *ForkStep         `json:"fork" jsonschema_description:"Take message stream and split into multiple child transforms"`
+	Cache        *CacheStep        `json:"cache" jsonschema_description:"Sub a child transform pipeline, caching the results in a database"`
 }
 
 type TransformPipe []TransformStep

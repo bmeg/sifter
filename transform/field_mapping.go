@@ -15,8 +15,8 @@ import (
 )
 
 type MapStep struct {
-  Method string `json:"method"`
-  Python string `json:"python"`
+  Method string `json:"method" jsonschema_description:"Name of function to call"`
+  Python string `json:"python" jsonschema_description:"Python code to be run"`
   proc evaluate.Processor
 }
 

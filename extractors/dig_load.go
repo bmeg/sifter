@@ -1,4 +1,4 @@
-package steps
+package extractors
 
 
 import (
@@ -16,9 +16,9 @@ import (
 
 
 type DigLoadStep struct {
-  Host          string                  `json:"host"`
-	Collection    string                  `json:"collection"`
-  Transform     transform.TransformPipe `json:"transform"`
+  Host          string                  `json:"host" jsonschema_description:"DIG URL"`
+	Collection    string                  `json:"collection" jsonschema_description:"DIG collection to target"`
+  Transform     transform.TransformPipe `json:"transform" jsonschema_description:"The transform pipeline to run"`
 }
 
 func (ml *DigLoadStep) Run(task *pipeline.Task) error {
@@ -36,7 +36,16 @@ func (ml *DigLoadStep) Run(task *pipeline.Task) error {
   procChan := make(chan map[string]interface{}, 100)
   wg := &sync.WaitGroup{}
 
-  ml.Transform.Start( procChan, task, wg )
+  ml.Transform.Init(task)
+  out, err := ml.Transform.Start( procChan, task, wg )
+  if err != nil {
+    return err
+  }
+  go func() {
+    //we don't do anything with the transform output. So just read it and
+    //toss it
+    for range out {}
+  }()
 
   req := dig.Collection{Name: ml.Collection}
   log.Printf("Loading: '%s'", ml.Collection)
@@ -58,6 +67,7 @@ func (ml *DigLoadStep) Run(task *pipeline.Task) error {
   log.Printf("Done Loading")
   close(procChan)
   wg.Wait()
+  ml.Transform.Close()
 
 	return nil
 }

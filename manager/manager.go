@@ -4,6 +4,7 @@ import (
 	"github.com/bmeg/sifter/emitter"
 	"github.com/bmeg/sifter/pipeline"
 	"github.com/bmeg/sifter/schema"
+	"github.com/bmeg/sifter/datastore"
 	"log"
 	"path/filepath"
 	"sync"
@@ -14,12 +15,14 @@ type Manager struct {
 	Playbooks map[string]Playbook
 	Runtimes  sync.Map
 	AllowLocalFiles bool
+	DataStore       datastore.DataStore
 }
 
 type Config struct {
 	Driver       string
 	PlaybookDirs []string
 	WorkDir      string
+	DataStore    *datastore.Config
 }
 
 func Init(config Config) (*Manager, error) {
@@ -35,7 +38,19 @@ func Init(config Config) (*Manager, error) {
 			}
 		}
 	}
-	return &Manager{config, pbMap, sync.Map{}, false}, nil
+
+	man := &Manager{config, pbMap, sync.Map{}, false, nil}
+
+	if config.DataStore != nil {
+		d, err := datastore.GetMongoStore(*config.DataStore)
+		log.Printf("Mongo Error: %s", err)
+		if err != nil {
+			return nil, err
+		}
+		man.DataStore = d
+	}
+
+	return man, nil
 }
 
 func (m *Manager) Close() {
@@ -69,7 +84,7 @@ func (m *Manager) NewRuntime(name string, dir string, sc *schema.Schemas) (*pipe
 	if name == "" {
 		name = "default"
 	}
-	r := pipeline.NewRuntime(e, dir, name)
+	r := pipeline.NewRuntime(e, dir, name, m.DataStore)
 	m.Runtimes.Store(name, r)
 	return r, err
 }

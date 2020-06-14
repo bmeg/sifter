@@ -7,7 +7,7 @@ import (
   "encoding/binary"
   "path/filepath"
   "bytes"
-  "sync"
+  //"sync"
   "log"
   "github.com/bmeg/sifter/evaluate"
   "github.com/bmeg/sifter/pipeline"
@@ -15,14 +15,14 @@ import (
 )
 
 type MapStep struct {
-  Method string `json:"method"`
-  Python string `json:"python"`
+  Method string `json:"method" jsonschema_description:"Name of function to call"`
+  Python string `json:"python" jsonschema_description:"Python code to be run"`
   proc evaluate.Processor
 }
 
 
-func (ms *MapStep) Start(task *pipeline.Task, wg *sync.WaitGroup) {
-  log.Printf("Starting Map: %s", ms.Python)
+func (ms *MapStep) Init(task *pipeline.Task) {
+  log.Printf("Init Map: %s", ms.Python)
   e := evaluate.GetEngine(DEFAULT_ENGINE)
   c, err := e.Compile(ms.Python, ms.Method)
   if err != nil {
@@ -55,7 +55,7 @@ type ReduceStep struct {
 }
 
 
-func (ms *ReduceStep) Start(task *pipeline.Task, wg *sync.WaitGroup) {
+func (ms *ReduceStep) Init(task *pipeline.Task) {
   log.Printf("Starting Reduce: %s", ms.Python)
   e := evaluate.GetEngine(DEFAULT_ENGINE)
   c, err := e.Compile(ms.Python, ms.Method)

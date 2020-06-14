@@ -1,5 +1,5 @@
 
-package steps
+package extractors
 
 import (
   "log"
@@ -7,23 +7,21 @@ import (
 )
 
 
-type Step struct {
-	Desc         string            `json:"desc"`
-	//ManifestLoad *ManifestLoadStep `json:"manifestLoad"`
-	Download     *DownloadStep     `json:"download"`
-	Untar        *UntarStep        `json:"untar"`
-	//VCFLoad      *VCFStep          `json:"vcfLoad"`
-	TableLoad    *TableLoadStep    `json:"tableLoad"`
-	JSONLoad     *JSONLoadStep     `json:"jsonLoad"`
-  SQLDumpLoad   *SQLDumpStep     `json:"sqldumpLoad"`
-	TransposeFile *TransposeFileStep `json:"transposeFile"`
-	FileGlob      *FileGlobStep      `json:"fileGlob"`
-	Script        *ScriptStep        `json:"script"`
-  DigLoad       *DigLoadStep       `json;"digLoad"`
+type Extractor struct {
+	Description   string             `json:"description"  jsonschema_description:"Human Readable description of step"`
+	Download     *DownloadStep       `json:"download" jsonschema_description:"Download a File"`
+	Untar        *UntarStep          `json:"untar" jsonschema_description:"Untar a file"`
+  TransposeFile *TransposeFileStep `json:"transposeFile" jsonschema_description:"Take a matrix TSV and transpose it (row become columns)"`
+	TableLoad    *TableLoadStep      `json:"tableLoad" jsonschema_description:"Run transform pipeline on a TSV or CSV"`
+	JSONLoad     *JSONLoadStep       `json:"jsonLoad" jsonschema_description:"Run a transform pipeline on a multi line json file"`
+  SQLDumpLoad   *SQLDumpStep       `json:"sqldumpLoad" jsonschema_description:"Parse the content of a SQL dump to find insert and run a transform pipeline"`
+	FileGlob      *FileGlobStep      `json:"fileGlob" jsonschema_description:"Scan a directory and run a ETL pipeline on each of the files"`
+	Script        *ScriptStep        `json:"script" jsonschema_description:"Execute a script"`
+  DigLoad       *DigLoadStep       `json;"digLoad" jsonschema_description:"Use a GRIP Dig server to get data and run a transform pipeline"`
 }
 
 
-func (step *Step) Run(run *pipeline.Runtime, inputs map[string]interface{}) error {
+func (step *Extractor) Run(run *pipeline.Runtime, inputs map[string]interface{}) error {
 
   if step.TransposeFile != nil {
     task := run.NewTask(inputs)

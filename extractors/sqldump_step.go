@@ -1,4 +1,4 @@
-package steps
+package extractors
 
 import (
   "os"
@@ -16,15 +16,15 @@ import (
 
 
 type TableTransform struct {
-  Table         string                  `json:"table"`
-  Transform     transform.TransformPipe `json:"transform"`
+  Table         string                  `json:"table" jsonschema_description:"Name of the SQL file to transform"`
+  Transform     transform.TransformPipe `json:"transform" jsonschema_description:"The transform pipeline"`
 }
 
 
 type SQLDumpStep struct {
-  Input         string                  `json:"input"`
-  Tables        []TableTransform        `json:"tables"`
-  SkipIfMissing bool                    `json:"skipIfMissing"`
+  Input         string                  `json:"input" jsonschema_description:"Path to the SQL dump file"`
+  Tables        []TableTransform        `json:"tables" jsonschema_description:"Array of transforms for the different tables in the SQL dump"`
+  SkipIfMissing bool                    `json:"skipIfMissing" jsonschema_description:"Option to skip without fail if input file does not exist"`
 }
 
 

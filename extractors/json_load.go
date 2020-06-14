@@ -1,5 +1,5 @@
 
-package steps
+package extractors
 
 import (
   "os"
@@ -15,9 +15,9 @@ import (
 )
 
 type JSONLoadStep struct {
-  Input         string                    `json:"input"`
-  Transform     transform.TransformPipe   `json:"transform"`
-  SkipIfMissing bool                      `json:"skipIfMissing"`
+  Input         string                    `json:"input" jsonschema_description:"Path of multiline JSON file to transform"`
+  Transform     transform.TransformPipe   `json:"transform" jsonschema_description:"Transformation Pipeline"`
+  SkipIfMissing bool                      `json:"skipIfMissing" jsonschema_description:"Skip without error if file does note exist"`
 }
 
 func (ml *JSONLoadStep) Run(task *pipeline.Task) error {
@@ -45,7 +45,17 @@ func (ml *JSONLoadStep) Run(task *pipeline.Task) error {
   procChan := make(chan map[string]interface{}, 100)
   wg := &sync.WaitGroup{}
 
-  ml.Transform.Start( procChan, task, wg )
+  if err := ml.Transform.Init( task ); err != nil {
+    return err
+  }
+
+  out, err := ml.Transform.Start( procChan, task, wg )
+  if err != nil {
+    return err
+  }
+  go func() {
+    for range out {}
+  }()
 
   for line := range reader {
     o := map[string]interface{}{}

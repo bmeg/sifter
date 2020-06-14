@@ -27,8 +27,5 @@ lint:
 		-e '.*bundle.go' -e ".*pb.go" -e ".*pb.gw.go" -e ".*pb.dgw.go" -e "underscore.go" \
 		./...
 
-swagger:
-	swagger generate server --exclude-main
-
-swagger-code:
-	go get -u github.com/go-swagger/go-swagger/cmd/swagger
+docs:
+	@go run docschema/main.go | ./docschema/schema-to-markdown.py > Playbook.md

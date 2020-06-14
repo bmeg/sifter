@@ -319,6 +319,9 @@
 
  - class: FileGlobStep
 
+ - class: DigLoadStep
+   description: Use a GRIP DIG server to obtain data
+
  - title: Transform Pipelines
    text: |
     A tranform pipeline is a series of method to alter a message stream.
@@ -328,7 +331,38 @@
     The transform step represents the transition from extraction to transformation
     code. A tranform pipeline is always the child of an extractor. A transform
 
- - class: AlleleIDStep
+ - class: ObjectCreateStep
+   description: Output a JSON schema described object
+
+ - class: MapStep
+   description: Apply the sample function to every message
+   example: |
+    The `python` section defines the code, and the `method` parameter defines
+    which function from the code to call
+    ```
+    - map:
+        #fix weird formatting of zip code
+        python: >
+          def f(x):
+            d = int(x['zipcode'])
+            x['zipcode'] = "%05d" % (int(d))
+            return x
+        method: f
+    ```
+ - class: ProjectStep
+   description: Project templates into fields in the message
+   example: |
+
+    ```
+    - project:
+        mapping:
+          code: "{{row.project_id}}"
+          programs: "{{row.program.name}}"
+          submitter_id: "{{row.program.name}}"
+          projects: "{{row.project_id}}"
+          type: experiment
+    ```
+
  - class: TableWriteStep
  - class: TableReplaceStep
    description: Use a two column file to make values from one value to another.
@@ -364,6 +398,16 @@
     ```
 
  - class: RegexReplaceStep
+   description: Use a regular expression based replacement to alter a field
+   example: |
+
+    ```
+    - regexReplace:
+        col: "{{row.attributes.Parent}}"
+        regex: "^transcript:"
+        replace: ""
+        dst: transcript_id
+    ```
  - class: ReduceStep
    example: |
     ```
@@ -376,6 +420,34 @@
               b = y.get('zipcodes', []) + [y['ZIP']]
               x['zipcodes'] = a + b
               return x
+    ```
+
+ - class: FilterStep
+   example: |
+
+    Match based filtering:
+
+    ```
+      - filter:
+          col: "{{row.tax_id}}"
+          match: "9606"
+          steps:
+          - tableWrite:
+    ```
+
+    Code based filters:
+
+    ```
+    - filter:
+        python: >
+          def f(x):
+            if 'FIPS' in x and len(x['FIPS']) > 0 and len(x['date']) > 0:
+              return True
+            return False
+        method: f
+        steps:
+          - objectCreate:
+              class: summary_report
     ```
 
  - class: ForkStep
@@ -405,6 +477,59 @@
                     - objectCreate:
                         class: experiment
     ```
+
+ - class: DebugStep
+   description: Print out messages
+   example: |
+    ```
+    - debug: {}
+    ```
+ - class: FieldProcessStep
+   description: |
+    Table an array field from a message, split it into a series of
+    messages and run on child transform pipeline. The `mapping` field
+    allows you to take data from the parent message and map it into the
+    child messages.
+
+   example: |
+    ```
+    - fieldProcess:
+        col: portions
+        mapping:
+          samples: "{{row.id}}"
+        steps:
+          - fieldProcess:
+              ...
+    ```
+
+ - class: FieldMapStep
+   description: Take a param style string and parse it into independent elements in the message
+   example: |
+
+    The messages
+
+    ```
+    { "attributes" : "ID=CDS:ENSP00000419345;Parent=transcript:ENST00000486405;protein_id=ENSP00000419345" }
+    ```
+
+    After the transform:
+
+    ```
+      - fieldMap:
+          col: attributes
+          sep: ";"
+    ```
+
+    Becomes:
+    ```
+    {
+      "attributes" : "ID=CDS:ENSP00000419345;Parent=transcript:ENST00000486405;protein_id=ENSP00000419345",
+      "ID" : "CDS:ENSP00000419345",
+      "Parent" : "transcript:ENST00000486405",
+      "protein_id" : "ENSP00000419345"
+    }
+    ```
+
 
  - class: CacheStep
    description: |
@@ -439,3 +564,4 @@
                       pass
                     return x
      ```
+ - class: AlleleIDStep

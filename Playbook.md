@@ -235,41 +235,48 @@ and turns them into multiple output streams. It can take a set of inputs
 then run a sequential set of extraction steps.
 
  -  name
-Type: *string*
+
+Type: *string* 
 
  > Unique name of the playbook
 
  -  inputs
-Type: *object*
+
+Type: *object*  of [Input](#input)
+
 
  > Optional inputs to Playbook
-[Input](#input)
 
  -  schema
-Type: *string*
+
+Type: *string* 
 
  > Name of directory with library of Gen3/JSON Schema files
 
  -  class
-Type: *string*
+
+Type: *string* 
 
  > Notation for file inspection, set as 'Playbook'
 
  -  steps
-Type: *array*
+
+Type: *array*  of [Extractor](#extractor)
+
 
  > Steps of the transformation
-[Extractor](#extractor)
 
 
 ***
 ## Input
  -  type
-Type: *string*
+
+Type: *string* 
 
 
  -  default
-Type: *string*
+
+Type: *string* 
 
 
 
@@ -285,44 +292,72 @@ This object represents a single extractor step. It has a field for each possible
 extractor type, but only one is supposed to be filed in at a time.
 
  -  description
-Type: *string*
+
+Type: *string* 
 
  > Human Readable description of step
 
  -  download
+
+ of [DownloadStep](#downloadstep)
+
+
  > Download a File
-[DownloadStep](#downloadstep)
 
  -  untar
+
+ of [UntarStep](#untarstep)
+
+
  > Untar a file
-[UntarStep](#untarstep)
 
  -  transposeFile
+
+ of [TransposeFileStep](#transposefilestep)
+
+
  > Take a matrix TSV and transpose it (row become columns)
-[TransposeFileStep](#transposefilestep)
 
  -  tableLoad
+
+ of [TableLoadStep](#tableloadstep)
+
+
  > Run transform pipeline on a TSV or CSV
-[TableLoadStep](#tableloadstep)
 
  -  jsonLoad
+
+ of [JSONLoadStep](#jsonloadstep)
+
+
  > Run a transform pipeline on a multi line json file
-[JSONLoadStep](#jsonloadstep)
 
  -  sqldumpLoad
+
+ of [SQLDumpStep](#sqldumpstep)
+
+
  > Parse the content of a SQL dump to find insert and run a transform pipeline
-[SQLDumpStep](#sqldumpstep)
 
  -  fileGlob
+
+ of [FileGlobStep](#fileglobstep)
+
+
  > Scan a directory and run a ETL pipeline on each of the files
-[FileGlobStep](#fileglobstep)
 
  -  script
+
+ of [ScriptStep](#scriptstep)
+
+
  > Execute a script
-[ScriptStep](#scriptstep)
 
  -  DigLoad
-[DigLoadStep](#digloadstep)
+
+ of [DigLoadStep](#digloadstep)
+
+
 
 An array of Extractors, each defining a different extraction step
 
@@ -350,17 +385,20 @@ An array of Extractors, each defining a different extraction step
 ***
 ## TransposeFileStep
  -  input
-Type: *string*
+
+Type: *string* 
 
  > TSV to transpose
 
  -  output
-Type: *string*
+
+Type: *string* 
 
  > Where transpose output should be stored
 
  -  lineSkip
-Type: *integer*
+
+Type: *integer* 
 
  > Number of header lines to skip
 
@@ -376,27 +414,32 @@ Type: *integer*
 ***
 ## DownloadStep
  -  source
-Type: *string*
+
+Type: *string* 
 
 
  -  dest
-Type: *string*
+
+Type: *string* 
 
 
  -  output
-Type: *string*
+
+Type: *string* 
 
 
 
 ***
 ## UntarStep
  -  input
-Type: *string*
+
+Type: *string* 
 
  > Path to TAR file
 
  -  Strip
-Type: *integer*
+
+Type: *integer* 
 
 
 
@@ -410,18 +453,21 @@ Type: *integer*
 ***
 ## SQLDumpStep
  -  input
-Type: *string*
+
+Type: *string* 
 
  > Path to the SQL dump file
 
  -  tables
-Type: *array*
+
+Type: *array*  of [TableTransform](#tabletransform)
+
 
  > Array of transforms for the different tables in the SQL dump
-[TableTransform](#tabletransform)
 
  -  skipIfMissing
-Type: *boolean*
+
+Type: *boolean* 
 
  > Option to skip without fail if input file does not exist
 
@@ -429,31 +475,36 @@ Type: *boolean*
 ***
 ## TableTransform
  -  table
-Type: *string*
+
+Type: *string* 
 
  > Name of the SQL file to transform
 
  -  transform
-Type: *array*
+
+Type: *array*  of [TransformStep](#transformstep)
+
 
  > The transform pipeline
-[TransformStep](#transformstep)
 
 
 ***
 ## ScriptStep
  -  dockerImage
-Type: *string*
+
+Type: *string* 
 
  > Docker image the contains script environtment
 
  -  command
-Type: *array*
+
+Type: *array* 
 
  > Command line to be run
 
  -  Stdout
-Type: *string*
+
+Type: *string* 
 
 
 ```
@@ -471,33 +522,39 @@ Type: *string*
 ***
 ## TableLoadStep
  -  input
-Type: *string*
+
+Type: *string* 
 
  > TSV to be transformed
 
  -  rowSkip
-Type: *integer*
+
+Type: *integer* 
 
  > Number of header rows to skip
 
  -  skipIfMissing
-Type: *boolean*
+
+Type: *boolean* 
 
  > Skip without error if file missing
 
  -  columns
-Type: *array*
+
+Type: *array* 
 
  > Manually set names of columns
 
  -  transform
-Type: *array*
+
+Type: *array*  of [TransformStep](#transformstep)
+
 
  > Transform pipelines
-[TransformStep](#transformstep)
 
  -  sep
-Type: *string*
+
+Type: *string* 
 
  > Seperator 
 
@@ -505,18 +562,21 @@ Type: *string*
 ***
 ## JSONLoadStep
  -  input
-Type: *string*
+
+Type: *string* 
 
  > Path of multiline JSON file to transform
 
  -  transform
-Type: *array*
+
+Type: *array*  of [TransformStep](#transformstep)
+
 
  > Transformation Pipeline
-[TransformStep](#transformstep)
 
  -  skipIfMissing
-Type: *boolean*
+
+Type: *boolean* 
 
  > Skip without error if file does note exist
 
@@ -532,24 +592,51 @@ Type: *boolean*
 ***
 ## FileGlobStep
  -  files
-Type: *array*
+
+Type: *array* 
 
  > Array of files (with wildcards) to scan for
 
  -  limit
-Type: *integer*
+
+Type: *integer* 
 
 
  -  inputName
-Type: *string*
+
+Type: *string* 
 
  > variable name the file will be stored in when calling the extraction steps
 
  -  steps
-Type: *array*
+
+Type: *array*  of [Extractor](#extractor)
+
 
  > Extraction pipeline to run
-[Extractor](#extractor)
+
+
+***
+## DigLoadStep
+Use a GRIP DIG server to obtain data
+ -  host
+
+Type: *string* 
+
+ > DIG URL
+
+ -  collection
+
+Type: *string* 
+
+ > DIG collection to target
+
+ -  transform
+
+Type: *array*  of [TransformStep](#transformstep)
+
+
+ > The transform pipeline to run
 
 
 ***
@@ -563,110 +650,191 @@ The transform step represents the transition from extraction to transformation
 code. A tranform pipeline is always the child of an extractor. A transform
 
  -  fieldMap
+
+ of [FieldMapStep](#fieldmapstep)
+
+
  > fieldMap to run
-[FieldMapStep](#fieldmapstep)
 
  -  fieldType
+
+ of [FieldTypeStep](#fieldtypestep)
+
+
  > Change type of a field (ie string -> integer)
-[FieldTypeStep](#fieldtypestep)
 
  -  objectCreate
+
+ of [ObjectCreateStep](#objectcreatestep)
+
+
  > Create a JSON schema based object
-[ObjectCreateStep](#objectcreatestep)
 
  -  filter
-[FilterStep](#filterstep)
+
+ of [FilterStep](#filterstep)
+
+
 
  -  debug
+
+ of [DebugStep](#debugstep)
+
+
  > Print message contents to stdout
-[DebugStep](#debugstep)
 
  -  regexReplace
-[RegexReplaceStep](#regexreplacestep)
+
+ of [RegexReplaceStep](#regexreplacestep)
+
+
 
  -  alleleID
+
+ of [AlleleIDStep](#alleleidstep)
+
+
  > Generate a standardized allele hash ID
-[AlleleIDStep](#alleleidstep)
 
  -  project
+
+ of [ProjectStep](#projectstep)
+
+
  > Run a projection mapping message
-[ProjectStep](#projectstep)
 
  -  map
+
+ of [MapStep](#mapstep)
+
+
  > Apply a single function to all records
-[MapStep](#mapstep)
 
  -  reduce
-[ReduceStep](#reducestep)
+
+ of [ReduceStep](#reducestep)
+
+
 
  -  fieldProcess
+
+ of [FieldProcessStep](#fieldprocessstep)
+
+
  > Take an array field from a message and run in child transform
-[FieldProcessStep](#fieldprocessstep)
 
  -  tableWrite
+
+ of [TableWriteStep](#tablewritestep)
+
+
  > Write out a TSV
-[TableWriteStep](#tablewritestep)
 
  -  tableReplace
+
+ of [TableReplaceStep](#tablereplacestep)
+
+
  > Load in TSV to map a fields values
-[TableReplaceStep](#tablereplacestep)
 
  -  tableProject
-[TableProjectStep](#tableprojectstep)
+
+ of [TableProjectStep](#tableprojectstep)
+
+
 
  -  fork
+
+ of [ForkStep](#forkstep)
+
+
  > Take message stream and split into multiple child transforms
-[ForkStep](#forkstep)
 
  -  cache
+
+ of [CacheStep](#cachestep)
+
+
  > Sub a child transform pipeline, caching the results in a database
-[CacheStep](#cachestep)
 
 
 ***
-## AlleleIDStep
- -  Prefix
-Type: *string*
+## ObjectCreateStep
+Output a JSON schema described object
+ -  class
+
+Type: *string* 
+
+ > Object class, should match declared class in JSON Schema
+
+ -  name
+
+Type: *string* 
+
+ > domain name of stream, to seperate it from other output streams of the same output type
 
 
- -  genome
-Type: *string*
+***
+## MapStep
+Apply the sample function to every message
+ -  method
+
+Type: *string* 
+
+ > Name of function to call
+
+ -  python
+
+Type: *string* 
+
+ > Python code to be run
+
+The `python` section defines the code, and the `method` parameter defines
+which function from the code to call
+```
+- map:
+    #fix weird formatting of zip code
+    python: >
+      def f(x):
+        d = int(x['zipcode'])
+        x['zipcode'] = "%05d" % (int(d))
+        return x
+    method: f
+```
 
 
- -  chromosome
-Type: *string*
+***
+## ProjectStep
+Project templates into fields in the message
+ -  mapping
+
+Type: *object* 
+
+ > New fields to be generated from template
 
 
- -  start
-Type: *string*
-
-
- -  end
-Type: *string*
-
-
- -  reference_bases
-Type: *string*
-
-
- -  alternate_bases
-Type: *string*
-
-
- -  dst
-Type: *string*
-
+```
+- project:
+    mapping:
+      code: "{{row.project_id}}"
+      programs: "{{row.program.name}}"
+      submitter_id: "{{row.program.name}}"
+      projects: "{{row.project_id}}"
+      type: experiment
+```
 
 
 ***
 ## TableWriteStep
  -  output
-Type: *string*
+
+Type: *string* 
 
  > Name of file to create
 
  -  columns
-Type: *array*
+
+Type: *array* 
 
  > Columns to be written into table file
 
@@ -675,11 +843,13 @@ Type: *array*
 ## TableReplaceStep
 Use a two column file to make values from one value to another.
  -  input
-Type: *string*
+
+Type: *string* 
 
 
  -  field
-Type: *string*
+
+Type: *string* 
 
 
 Starting with a table that maps state names to the two character state code:
@@ -715,35 +885,52 @@ to
 
 ***
 ## RegexReplaceStep
+Use a regular expression based replacement to alter a field
  -  col
-Type: *string*
+
+Type: *string* 
 
 
  -  regex
-Type: *string*
+
+Type: *string* 
 
 
  -  replace
-Type: *string*
+
+Type: *string* 
 
 
  -  dst
-Type: *string*
 
+Type: *string* 
+
+
+
+```
+- regexReplace:
+    col: "{{row.attributes.Parent}}"
+    regex: "^transcript:"
+    replace: ""
+    dst: transcript_id
+```
 
 
 ***
 ## ReduceStep
  -  field
-Type: *string*
+
+Type: *string* 
 
 
  -  method
-Type: *string*
+
+Type: *string* 
 
 
  -  python
-Type: *string*
+
+Type: *string* 
 
 
 ```
@@ -760,9 +947,70 @@ Type: *string*
 
 
 ***
+## FilterStep
+ -  col
+
+Type: *string* 
+
+
+ -  match
+
+Type: *string* 
+
+
+ -  exists
+
+Type: *boolean* 
+
+
+ -  method
+
+Type: *string* 
+
+
+ -  python
+
+Type: *string* 
+
+
+ -  steps
+
+Type: *array*  of [TransformStep](#transformstep)
+
+
+
+
+Match based filtering:
+
+```
+  - filter:
+      col: "{{row.tax_id}}"
+      match: "9606"
+      steps:
+      - tableWrite:
+```
+
+Code based filters:
+
+```
+- filter:
+    python: >
+      def f(x):
+        if 'FIPS' in x and len(x['FIPS']) > 0 and len(x['date']) > 0:
+          return True
+        return False
+    method: f
+    steps:
+      - objectCreate:
+          class: summary_report
+```
+
+
+***
 ## ForkStep
  -  transform
-Type: *array*
+
+Type: *array* 
 
 
 ```
@@ -793,14 +1041,101 @@ Type: *array*
 
 
 ***
+## DebugStep
+Print out messages
+ -  label
+
+Type: *string* 
+
+
+```
+- debug: {}
+```
+
+
+***
+## FieldProcessStep
+Table an array field from a message, split it into a series of
+messages and run on child transform pipeline. The `mapping` field
+allows you to take data from the parent message and map it into the
+child messages.
+
+ -  col
+
+Type: *string* 
+
+
+ -  steps
+
+Type: *array*  of [TransformStep](#transformstep)
+
+
+
+ -  mapping
+
+Type: *object* 
+
+
+```
+- fieldProcess:
+    col: portions
+    mapping:
+      samples: "{{row.id}}"
+    steps:
+      - fieldProcess:
+          ...
+```
+
+
+***
+## FieldMapStep
+Take a param style string and parse it into independent elements in the message
+ -  col
+
+Type: *string* 
+
+
+ -  sep
+
+Type: *string* 
+
+
+
+The messages
+
+```
+{ "attributes" : "ID=CDS:ENSP00000419345;Parent=transcript:ENST00000486405;protein_id=ENSP00000419345" }
+```
+
+After the transform:
+
+```
+  - fieldMap:
+      col: attributes
+      sep: ";"
+```
+
+Becomes:
+```
+{
+  "attributes" : "ID=CDS:ENSP00000419345;Parent=transcript:ENST00000486405;protein_id=ENSP00000419345",
+  "ID" : "CDS:ENSP00000419345",
+  "Parent" : "transcript:ENST00000486405",
+  "protein_id" : "ENSP00000419345"
+}
+```
+
+
+***
 ## CacheStep
 The results of long running functions can be stored in a database and only
 calculated as needed.
 
  -  transform
-Type: *array*
 
-[TransformStep](#transformstep)
+Type: *array*  of [TransformStep](#transformstep)
+
+
 
 The address lookup function provided by the Census bureau is takes time to
 run, so we use the `cache` step to define a subsection of the pipeline
@@ -832,116 +1167,63 @@ the results would be pulled out of the database.
 
 
 ***
-## DebugStep
- -  label
-Type: *string*
+## AlleleIDStep
+ -  Prefix
+
+Type: *string* 
 
 
-## DigLoadStep
- -  host
-Type: *string*
+ -  genome
 
- > DIG URL
-
- -  collection
-Type: *string*
-
- > DIG collection to target
-
- -  transform
-Type: *array*
-
- > The transform pipeline to run
-[TransformStep](#transformstep)
-
-## FieldMapStep
- -  col
-Type: *string*
+Type: *string* 
 
 
- -  sep
-Type: *string*
+ -  chromosome
+
+Type: *string* 
 
 
-## FieldProcessStep
- -  col
-Type: *string*
+ -  start
+
+Type: *string* 
 
 
- -  steps
-Type: *array*
+ -  end
 
-[TransformStep](#transformstep)
-
- -  mapping
-Type: *object*
+Type: *string* 
 
 
+ -  reference_bases
+
+Type: *string* 
+
+
+ -  alternate_bases
+
+Type: *string* 
+
+
+ -  dst
+
+Type: *string* 
+
+
+
+***
 ## FieldTypeStep
  -  col
-Type: *string*
+
+Type: *string* 
 
 
  -  type
-Type: *string*
 
+Type: *string* 
 
-## FilterStep
- -  col
-Type: *string*
-
-
- -  match
-Type: *string*
-
-
- -  exists
-Type: *boolean*
-
-
- -  method
-Type: *string*
-
-
- -  python
-Type: *string*
-
-
- -  steps
-Type: *array*
-
-[TransformStep](#transformstep)
-
-## MapStep
- -  method
-Type: *string*
-
- > Name of function to call
-
- -  python
-Type: *string*
-
- > Python code to be run
-
-## ObjectCreateStep
- -  class
-Type: *string*
-
- > Object class, should match declared class in JSON Schema
-
- -  name
-Type: *string*
-
- > domain name of stream, to seperate it from other output streams of the same output type
-
-## ProjectStep
- -  mapping
-Type: *object*
-
- > New fields to be generated from template
 
 ## TableProjectStep
  -  input
-Type: *string*
+
+Type: *string* 
 
 

@@ -44,18 +44,26 @@ class MDGenerator:
             if 'description' in classFormat:
                 output.write("%s\n" % (classFormat['description']))
         for propName, prop in elem["properties"].items():
-            output.write(" -  %s\n" % propName)
+            output.write(" -  %s\n\n" % propName)
             if 'type' in prop:
-                output.write("Type: *%s*\n\n" % prop['type'])
-            if "description" in prop:
-                output.write(" > %s\n" % prop["description"])
+                output.write("Type: *%s* " % prop['type'])
             if "items" in prop:
-                prop = prop["items"]
+                sprop = prop["items"]
+                if "$ref" in sprop:
+                    refName = sprop["$ref"].replace("#/definitions/", "")
+                    output.write(" of [%s](#%s)\n" % (refName, anchorName(refName)))
             if "patternProperties" in prop:
-                prop = prop["patternProperties"][".*"]
+                sprop = prop["patternProperties"][".*"]
+                if "$ref" in sprop:
+                    refName = sprop["$ref"].replace("#/definitions/", "")
+                    output.write(" of [%s](#%s)\n" % (refName, anchorName(refName)))
             if "$ref" in prop:
                 refName = prop["$ref"].replace("#/definitions/", "")
-                output.write("[%s](#%s)\n" % (refName, anchorName(refName)))
+                output.write(" of [%s](#%s)\n" % (refName, anchorName(refName)))
+            output.write("\n\n")
+            if "description" in prop:
+                output.write(" > %s\n" % prop["description"])
+
 
             output.write("\n")
 

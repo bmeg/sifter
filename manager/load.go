@@ -30,6 +30,7 @@ type Playbook struct {
 	Schema string `json:"schema" jsonschema_description:"Name of directory with library of Gen3/JSON Schema files"`
 	Class string `json:"class" jsonschema_description:"Notation for file inspection, set as 'Playbook'"`
 	Steps []extractors.Extractor `json:"steps" jsonschema_description:"Steps of the transformation"`
+	path string
 }
 
 // Parse parses a YAML doc into the given Config instance.
@@ -63,7 +64,7 @@ func ParseFile(relpath string, conf *Playbook) error {
 	}
 
 	conf.Schema = filepath.Join(filepath.Dir(path), conf.Schema)
-
+	conf.path = path
 	return nil
 }
 

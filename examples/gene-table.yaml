@@ -23,13 +23,12 @@ steps:
         - protein_accession.version
         - Ensembl_protein_identifier
       transform:
-        -
-          - filter:
-              col: "{{row.tax_id}}"
-              match: "9606"
-              steps:
-                - tableWrite:
-                    output: "gene.table"
-                    columns:
-                      - GeneID
-                      - Ensembl_gene_identifier
+        - filter:
+            col: "{{row.tax_id}}"
+            match: "9606"
+            steps:
+              - tableWrite:
+                  output: "gene.table"
+                  columns:
+                    - GeneID
+                    - Ensembl_gene_identifier

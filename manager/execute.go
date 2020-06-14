@@ -7,10 +7,41 @@ import (
 	"log"
 	"path"
 
+	"path/filepath"
+
+	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/schema"
 )
 
+func isURL(s string) bool {
+	if strings.HasPrefix(s, "http://") { return true}
+	if strings.HasPrefix(s, "https://") { return true}
+	if strings.HasPrefix(s, "s3://") { return true}
+	if strings.HasPrefix(s, "ftp://") { return true}
+	return false
+}
+
 func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir string) error {
+
+	for k, v := range pb.Inputs {
+		if _, ok := inputs[k]; !ok {
+			if v.Default != "" {
+				if (v.Type == "File" || v.Type == "Directory") && !isURL(v.Default) {
+					defaultPath := filepath.Join(filepath.Dir(pb.path), v.Default)
+					inputs[k], _ = filepath.Abs(defaultPath)
+				} else {
+					inputs[k] = v.Default
+				}
+			}
+		}
+	}
+
+	if pb.Schema != "" {
+		schema, _ := evaluate.ExpressionString(pb.Schema, inputs, nil)
+		pb.Schema = schema
+		log.Printf("Schema: %s", schema)
+	}
+
 	var sc *schema.Schemas
 	if pb.Schema != "" {
 		log.Printf("Loading Schema: %s", pb.Schema)
@@ -22,9 +53,35 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 		log.Printf("Loaded Schema: %s", t.GetClasses())
 		sc = &t
 	}
+
+
 	run, err := man.NewRuntime(pb.Name, dir, sc)
-	run.Printf("Starting Playbook")
 	defer run.Close()
+
+	for k, i := range pb.Inputs {
+		if v, ok := inputs[k]; ok {
+			if i.Type == "File" || i.Type == "Directory" {
+				path := v.(string)
+				if isURL(path) {
+					log.Printf("Found a URL to download: %s", path)
+					tmpTask := run.NewTask(map[string]interface{}{})
+					newPath, err := tmpTask.DownloadFile(path, filepath.Base(path))
+					if err != nil {
+						log.Printf("Download Error: %s", err)
+						return err
+					}
+					inputs[k] = newPath
+				} else {
+					inputs[k], _ = filepath.Abs(path)
+				}
+			}
+		}
+	}
+
+
+
+
+	run.Printf("Starting Playbook")
 	defer run.Printf("Playbook done")
 	if err != nil {
 		return err

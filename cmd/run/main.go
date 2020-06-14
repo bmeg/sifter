@@ -5,12 +5,9 @@ import (
 	"log"
 	"os"
 	"io/ioutil"
-	"path/filepath"
 
 	"github.com/bmeg/sifter/datastore"
 	"github.com/bmeg/sifter/manager"
-	//"github.com/bmeg/sifter/webserver"
-	"github.com/bmeg/sifter/evaluate"
 
 	"github.com/spf13/cobra"
 )
@@ -56,11 +53,12 @@ var Cmd = &cobra.Command{
 
 		if len(args) > 1 {
 			dataFile := args[1]
-			fileInputs := map[string]interface{}{}
-			if err := manager.ParseDataFile(dataFile, &fileInputs); err != nil {
+			if err := manager.ParseDataFile(dataFile, &inputs); err != nil {
 				log.Printf("%s", err)
 				return err
 			}
+		}
+		/*
 			for k, v := range fileInputs {
 				if i, ok := pb.Inputs[k]; ok {
 					if i.Type == "File" || i.Type == "Directory" {
@@ -71,35 +69,12 @@ var Cmd = &cobra.Command{
 				}
 			}
 		}
+		*/
 
 		for k, v := range cmdInputs {
-			if i, ok := pb.Inputs[k]; ok {
-				if i.Type == "File" || i.Type == "Directory" {
-					inputs[k], _ = filepath.Abs(v)
-				} else {
-					inputs[k] = v
-				}
-			}
+			inputs[k] = v
 		}
 
-		for k, v := range pb.Inputs {
-			if _, ok := inputs[k]; !ok {
-				if v.Default != "" {
-					if v.Type == "File" || v.Type == "Directory" {
-						defaultPath := filepath.Join(filepath.Dir(playFile), v.Default)
-						inputs[k], _ = filepath.Abs(defaultPath)
-					} else {
-						inputs[k] = v.Default
-					}
-				}
-			}
-		}
-
-		if pb.Schema != "" {
-			schema, _ := evaluate.ExpressionString(pb.Schema, inputs, nil)
-			pb.Schema = schema
-			log.Printf("Schema: %s", schema)
-		}
 
 		fmt.Printf("Starting: %s\n", playFile)
 

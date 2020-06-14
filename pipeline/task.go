@@ -5,6 +5,9 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"io"
+	"log"
+	"time"
 	"path"
 	"path/filepath"
 	"strings"
@@ -12,6 +15,8 @@ import (
 	//"github.com/bmeg/grip/gripql"
 	"github.com/bmeg/sifter/emitter"
 	"github.com/hashicorp/go-getter"
+
+	"github.com/jlaffaye/ftp"
 
 	"github.com/bmeg/sifter/datastore"
 
@@ -65,6 +70,50 @@ func (m *Task) DownloadFile(src string, dest string) (string, error) {
 		if err != nil {
 			return "", err
 		}
+	}
+
+	if strings.HasPrefix(src, "ftp:") {
+		u, err := url.Parse(src)
+		if err != nil {
+			return "", err
+		}
+		c, err := ftp.Dial(u.Host + ":21", ftp.DialWithTimeout(5*time.Second))
+		if err != nil {
+		    return "", err
+		}
+		err = c.Login("anonymous", "anonymous")
+		if err != nil {
+			return "", err
+		}
+		r, err := c.Retr(u.Path)
+		if err != nil {
+			return "", err
+		}
+		defer r.Close()
+
+		log.Printf("Saving to %s", dest)
+		f, err := os.Create(dest)
+		if err != nil {
+			return "", err
+		}
+		defer f.Close()
+
+		buffer := make([]byte, 1024)
+		downloadSize := 0
+		for {
+		  buffSize, err := r.Read(buffer)
+			downloadSize += buffSize
+			f.Write(buffer)
+		  if err != nil {
+		    if err != io.EOF {
+					log.Printf("Error during download: %s", err)
+		      return "", err
+		    }
+		    break
+		  }
+		}
+		log.Printf("Downloaded %d bytes", downloadSize)
+		return dest, nil
 	}
 
 	if strings.HasPrefix(src, "s3:") {

@@ -27,6 +27,7 @@ require (
 	github.com/hashicorp/go-getter v1.2.0
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/jessevdk/go-flags v1.4.0
+	github.com/jlaffaye/ftp v0.0.0-20200602180915-5563613968bf
 	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
 	github.com/spf13/cobra v0.0.5
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2

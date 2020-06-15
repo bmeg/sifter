@@ -9,7 +9,7 @@ inputs:
 
   schema:
     type: Directory
-    default: schemas
+    default: ./bmeg-dictionary/gdcdictionary/schemas
 
 schema: "{{inputs.schema}}"
 
@@ -28,63 +28,62 @@ steps:
         - phase
         - attributes
       transform:
-        -
-          - fieldMap:
-              col: attributes
-              sep: ";"
-          - fieldType:
-              col: start
-              type: int
-          - fieldType:
-              col: end
-              type: int
-          - filter:
-              col: "{{row.type}}"
-              match: exon
-              steps:
-                - regexReplace:
-                    col: "{{row.attributes.Parent}}"
-                    regex: "^transcript:"
-                    replace: ""
-                    dst: transcript_id
-                - project:
-                    mapping:
-                      exon_id : "{{row.attributes.exon_id}}"
-                - map:
-                    method: mapList
-                    python: >
-                      def mapList(x):
-                        x['transcript_id'] = [x['transcript_id']]
-                        return x
-                - reduce:
-                    field: "{{row.exon_id}}"
-                    method: merge
-                    python: >
-                      def merge(x,y):
-                        x['transcript_id'] = x['transcript_id'] + y['transcript_id']
-                        return x
-                - objectCreate:
-                    class: exon
-          - filter:
-              col: "{{row.type}}"
-              match: gene
-              steps:
-                - project:
-                    mapping:
-                      gene_id : "{{row.attributes.gene_id}}"
-                - objectCreate:
-                    class: gene
-          - filter:
-              col: "{{row.type}}"
-              match: mRNA
-              steps:
-                - regexReplace:
-                    col: "{{row.attributes.Parent}}"
-                    regex: "^gene:"
-                    replace: ""
-                    dst: gene_id
-                - project:
-                    mapping:
-                      transcript_id : "{{row.attributes.transcript_id}}"
-                - objectCreate:
-                    class: transcript
+        - fieldMap:
+            col: attributes
+            sep: ";"
+        - fieldType:
+            col: start
+            type: int
+        - fieldType:
+            col: end
+            type: int
+        - filter:
+            col: "{{row.type}}"
+            match: exon
+            steps:
+              - regexReplace:
+                  col: "{{row.attributes.Parent}}"
+                  regex: "^transcript:"
+                  replace: ""
+                  dst: transcript_id
+              - project:
+                  mapping:
+                    exon_id : "{{row.attributes.exon_id}}"
+              - map:
+                  method: mapList
+                  python: >
+                    def mapList(x):
+                      x['transcript_id'] = [x['transcript_id']]
+                      return x
+              - reduce:
+                  field: "{{row.exon_id}}"
+                  method: merge
+                  python: >
+                    def merge(x,y):
+                      x['transcript_id'] = x['transcript_id'] + y['transcript_id']
+                      return x
+              - objectCreate:
+                  class: exon
+        - filter:
+            col: "{{row.type}}"
+            match: gene
+            steps:
+              - project:
+                  mapping:
+                    gene_id : "{{row.attributes.gene_id}}"
+              - objectCreate:
+                  class: gene
+        - filter:
+            col: "{{row.type}}"
+            match: mRNA
+            steps:
+              - regexReplace:
+                  col: "{{row.attributes.Parent}}"
+                  regex: "^gene:"
+                  replace: ""
+                  dst: gene_id
+              - project:
+                  mapping:
+                    transcript_id : "{{row.attributes.transcript_id}}"
+              - objectCreate:
+                  class: transcript

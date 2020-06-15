@@ -27,6 +27,7 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 		if _, ok := inputs[k]; !ok {
 			if v.Default != "" {
 				if (v.Type == "File" || v.Type == "Directory") && !isURL(v.Default) {
+					log.Printf("Setting input: %s %s", filepath.Dir(pb.path), v.Default)
 					defaultPath := filepath.Join(filepath.Dir(pb.path), v.Default)
 					inputs[k], _ = filepath.Abs(defaultPath)
 				} else {
@@ -37,9 +38,13 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 	}
 
 	if pb.Schema != "" {
+		log.Printf("Schema eval inputs: %s %s", pb.Schema, inputs)
 		schema, _ := evaluate.ExpressionString(pb.Schema, inputs, nil)
+		if !filepath.IsAbs(schema) {
+			schema = filepath.Join(filepath.Dir(pb.path), schema)
+		}
 		pb.Schema = schema
-		log.Printf("Schema: %s", schema)
+		log.Printf("Schema eval Path: %s", schema)
 	}
 
 	var sc *schema.Schemas

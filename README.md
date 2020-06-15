@@ -65,8 +65,17 @@ steps:
 ```
 
 
-Running Sifter:
+## Running Sifter
+
 
 ```
 sifter run examples/genome.yaml
+```
+
+CBioPortal Example:
+
+```
+./sifter run examples/gene-table.yaml
+wget http://download.cbioportal.org/brca_tcga_pub.tar.gz
+./sifter run ./examples/cbio.yaml -i tar=brca_tcga_pub.tar.gz -i geneTable=out/gene.table.table.gz
 ```

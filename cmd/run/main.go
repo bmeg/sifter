@@ -2,9 +2,9 @@ package run
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
-	"io/ioutil"
 
 	"github.com/bmeg/sifter/datastore"
 	"github.com/bmeg/sifter/manager"
@@ -13,8 +13,8 @@ import (
 )
 
 var workDir string = "./"
-var outDir  string = "./out"
-var resume  string = ""
+var outDir string = "./out"
+var resume string = ""
 var toStdout bool
 var keep bool
 var cmdInputs map[string]string
@@ -26,14 +26,21 @@ var Cmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
+
+		if _, err := os.Stat(outDir); os.IsNotExist(err) {
+			os.MkdirAll(outDir, 0777)
+		}
+
 		driver := fmt.Sprintf("dir://%s", outDir)
 		if toStdout {
 			driver = "stdout://"
 		}
 
-		dsConfig := datastore.Config{ URL:"mongodb://localhost:27017", Database:"sifter", Collection:"cache" }
+		//TODO: This needs to be configurable
+		dsConfig := datastore.Config{URL: "mongodb://localhost:27017", Database: "sifter", Collection: "cache"}
 
-		man, err := manager.Init(manager.Config{Driver: driver, WorkDir: workDir, DataStore:&dsConfig})
+
+		man, err := manager.Init(manager.Config{Driver: driver, WorkDir: workDir, DataStore: &dsConfig})
 		if err != nil {
 			log.Printf("Error stating load manager: %s", err)
 			return err
@@ -42,8 +49,6 @@ var Cmd = &cobra.Command{
 
 		man.AllowLocalFiles = true
 
-		inputs := map[string]interface{}{}
-
 		playFile := args[0]
 		pb := manager.Playbook{}
 		if err := manager.ParseFile(playFile, &pb); err != nil {
@@ -51,6 +56,7 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
+		inputs := map[string]interface{}{}
 		if len(args) > 1 {
 			dataFile := args[1]
 			if err := manager.ParseDataFile(dataFile, &inputs); err != nil {
@@ -58,23 +64,9 @@ var Cmd = &cobra.Command{
 				return err
 			}
 		}
-		/*
-			for k, v := range fileInputs {
-				if i, ok := pb.Inputs[k]; ok {
-					if i.Type == "File" || i.Type == "Directory" {
-						inputs[k], _ = filepath.Abs(v.(string))
-					} else {
-						inputs[k] = v
-					}
-				}
-			}
-		}
-		*/
-
 		for k, v := range cmdInputs {
 			inputs[k] = v
 		}
-
 
 		fmt.Printf("Starting: %s\n", playFile)
 
@@ -88,23 +80,10 @@ var Cmd = &cobra.Command{
 			dir = d
 		}
 
-		/*
-		if server != 0 {
-			go pb.Execute(man, graph, inputs, dir)
-			conf := webserver.WebServerHandler{
-				PostPlaybookHandler:        nil,
-				GetPlaybookHandler:         nil,
-				GetStatusHandler:           manager.NewManagerStatusHandler(man),
-				PostPlaybookIDGraphHandler: nil,
-			}
-			webserver.RunServer(conf, server, "")
-		} else {
-			*/
-			pb.Execute(man, inputs, dir)
-			if !keep {
-				os.RemoveAll(dir)
-			}
-		//}
+		pb.Execute(man, inputs, dir)
+		if !keep {
+			os.RemoveAll(dir)
+		}
 		return nil
 	},
 }

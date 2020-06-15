@@ -1,7 +1,6 @@
 package manager
 
 import (
-	//"io"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -34,7 +33,7 @@ type Playbook struct {
 }
 
 // Parse parses a YAML doc into the given Config instance.
-func Parse(raw []byte, conf *Playbook) error {
+func parse(raw []byte, conf *Playbook) error {
 	return yaml.Unmarshal(raw, conf)
 }
 
@@ -58,12 +57,11 @@ func ParseFile(relpath string, conf *Playbook) error {
 	}
 
 	// Parse file
-	err = Parse(source, conf)
+	err = parse(source, conf)
 	if err != nil {
 		return fmt.Errorf("failed to parse config at path %s: \n%v", path, err)
 	}
 
-	conf.Schema = filepath.Join(filepath.Dir(path), conf.Schema)
 	conf.path = path
 	return nil
 }

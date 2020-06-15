@@ -9,7 +9,6 @@ require (
 	github.com/bmeg/grip v0.0.0-20200411033704-d18c2a54ff34
 	github.com/brentp/irelate v0.0.0-20180801151701-1bf7c8f95c75 // indirect
 	github.com/brentp/vcfgo v0.0.0-20190315012323-bdb8e831fc71
-	github.com/ckaznocha/protoc-gen-lint v0.2.1 // indirect
 	github.com/cnf/structhash v0.0.0-20180104161610-62a607eb0224
 	github.com/dgraph-io/badger/v2 v2.0.1
 	github.com/ghodss/yaml v1.0.0
@@ -22,7 +21,6 @@ require (
 	github.com/go-openapi/strfmt v0.19.0
 	github.com/go-openapi/swag v0.19.0
 	github.com/go-python/gpython v0.0.3
-	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/protobuf v1.3.5
 	github.com/hashicorp/go-getter v1.2.0
 	github.com/hashicorp/go-multierror v1.0.0

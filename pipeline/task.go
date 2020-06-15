@@ -98,20 +98,7 @@ func (m *Task) DownloadFile(src string, dest string) (string, error) {
 		}
 		defer f.Close()
 
-		buffer := make([]byte, 1024)
-		downloadSize := 0
-		for {
-		  buffSize, err := r.Read(buffer)
-			downloadSize += buffSize
-			f.Write(buffer)
-		  if err != nil {
-		    if err != io.EOF {
-					log.Printf("Error during download: %s", err)
-		      return "", err
-		    }
-		    break
-		  }
-		}
+		downloadSize, _ := io.Copy(f, r)
 		log.Printf("Downloaded %d bytes", downloadSize)
 		return dest, nil
 	}

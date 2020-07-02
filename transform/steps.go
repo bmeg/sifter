@@ -3,22 +3,16 @@ package transform
 import (
 	"fmt"
 	"log"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/bmeg/sifter/emitter"
-	"github.com/bmeg/sifter/evaluate"
-
 	"encoding/json"
-
 	"crypto/sha1"
-	"github.com/bmeg/golib"
-	"github.com/bmeg/sifter/pipeline"
 
-	"github.com/cnf/structhash"
+	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/pipeline"
 )
 
 var DEFAULT_ENGINE = "python"
@@ -44,17 +38,6 @@ type FieldTypeStep struct {
 	Type   string `json:"type"`
 }
 
-type FilterStep struct {
-	Column string        `json:"col"`
-	Match  string        `json:"match"`
-	Exists bool          `json:"exists"`
-	Method string        `json:"method"`
-	Python string        `json:"python"`
-	Steps  TransformPipe `json:"steps"`
-	inChan chan map[string]interface{}
-	proc   evaluate.Processor
-}
-
 type RegexReplaceStep struct {
 	Column  string `json:"col"`
 	Regex   string `json:"regex"`
@@ -74,32 +57,11 @@ type AlleleIDStep struct {
 	Dest           string `json:"dst"`
 }
 
-type ProjectStep struct {
-	Mapping map[string]interface{} `json:"mapping" jsonschema_description:"New fields to be generated from template"`
-}
-
 type FieldProcessStep struct {
 	Column  string            `json:"col"`
 	Steps   TransformPipe     `json:"steps"`
 	Mapping map[string]string `json:"mapping"`
 	inChan  chan map[string]interface{}
-}
-
-type TableWriteStep struct {
-	Output  string   `json:"output" jsonschema_description:"Name of file to create"`
-	Columns []string `json:"columns" jsonschema_description:"Columns to be written into table file"`
-	emit    emitter.TableEmitter
-}
-
-type TableReplaceStep struct {
-	Input string `json:"input"`
-	Field string `json:"field"`
-	table map[string]string
-}
-
-type TableProjectStep struct {
-	Input string `json:"input"`
-	table map[string]string
 }
 
 type DebugStep struct {
@@ -130,11 +92,6 @@ type TransformStep struct {
 }
 
 type TransformPipe []TransformStep
-
-type ForkStep struct {
-	Transform []TransformPipe `json:"transform"`
-	pipes     []chan map[string]interface{}
-}
 
 func (fm FieldMapStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
 	o := map[string]interface{}{}
@@ -190,187 +147,6 @@ func (ts ObjectCreateStep) Run(i map[string]interface{}, task *pipeline.Task) ma
 	return i
 }
 
-func (tw *TableWriteStep) Init(task *pipeline.Task) {
-	tw.emit = task.Runtime.EmitTable(tw.Output, tw.Columns)
-}
-
-func (tw *TableWriteStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-	if err := tw.emit.EmitRow(i); err != nil {
-		log.Printf("Row Error: %s", err)
-	}
-	return i
-}
-
-func (tw *TableWriteStep) Close() {
-	tw.emit.Close()
-}
-
-func (tr *TableReplaceStep) Init(task *pipeline.Task) error {
-	input, err := evaluate.ExpressionString(tr.Input, task.Inputs, nil)
-	inputPath, err := task.Path(input)
-	if err != nil {
-		return err
-	}
-
-	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
-		return fmt.Errorf("File Not Found: %s", input)
-	}
-	log.Printf("Loading: %s", inputPath)
-
-	inputStream, err := golib.ReadFileLines(inputPath)
-	if err != nil {
-		return err
-	}
-	tr.table = map[string]string{}
-	for line := range inputStream {
-		if len(line) > 0 {
-			row := strings.Split(string(line), "\t")
-			tr.table[row[0]] = row[1]
-		}
-	}
-	return nil
-}
-
-func (tw *TableReplaceStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-
-	if _, ok := i[tw.Field]; ok {
-		out := map[string]interface{}{}
-		for k, v := range i {
-			if k == tw.Field {
-				if x, ok := v.(string); ok {
-					if n, ok := tw.table[x]; ok {
-						out[k] = n
-					} else {
-						out[k] = x
-					}
-				} else if x, ok := v.([]interface{}); ok {
-					o := []interface{}{}
-					for _, y := range x {
-						if z, ok := y.(string); ok {
-							if n, ok := tw.table[z]; ok {
-								o = append(o, n)
-							} else {
-								o = append(o, z)
-							}
-						}
-					}
-					out[k] = o
-				} else {
-					out[k] = v
-				}
-			} else {
-				out[k] = v
-			}
-		}
-		return out
-	}
-	return i
-}
-
-func (tr *TableProjectStep) Init(task *pipeline.Task) error {
-	input, err := evaluate.ExpressionString(tr.Input, task.Inputs, nil)
-	inputPath, err := task.Path(input)
-	if err != nil {
-		return err
-	}
-
-	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
-		return fmt.Errorf("File Not Found: %s", input)
-	}
-	log.Printf("Loading Translation file: %s", inputPath)
-
-	inputStream, err := golib.ReadFileLines(inputPath)
-	if err != nil {
-		return err
-	}
-	tr.table = map[string]string{}
-	for line := range inputStream {
-		if len(line) > 0 {
-			row := strings.Split(string(line), "\t")
-			tr.table[row[0]] = row[1]
-		}
-	}
-	return nil
-}
-
-func (tw *TableProjectStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-
-	out := map[string]interface{}{}
-	for k, v := range i {
-		if n, ok := tw.table[k]; ok {
-			out[n] = v
-		} else {
-			out[k] = v
-		}
-	}
-	return out
-}
-
-func (fs *FilterStep) Init(task *pipeline.Task) {
-	if fs.Python != "" && fs.Method != "" {
-		log.Printf("Starting Map: %s", fs.Python)
-		e := evaluate.GetEngine(DEFAULT_ENGINE)
-		c, err := e.Compile(fs.Python, fs.Method)
-		if err != nil {
-			log.Printf("Compile Error: %s", err)
-		}
-		fs.proc = c
-	}
-	fs.Steps.Init(task)
-}
-
-func (fs FilterStep) Start(in chan map[string]interface{}, task *pipeline.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
-	out := make(chan map[string]interface{}, 10)
-	fs.inChan = make(chan map[string]interface{}, 100)
-	tout, _ := fs.Steps.Start(fs.inChan, task.Child("filter"), wg)
-	go func() {
-		//Filter does not emit the output of its sub pipeline, but it has to digest it
-		for range tout {
-		}
-	}()
-
-	go func() {
-		//Filter emits a copy of its input, without changing it
-		defer close(out)
-		defer close(fs.inChan)
-		for i := range in {
-			fs.run(i, task)
-			out <- i
-		}
-	}()
-	return out, nil
-}
-
-func (fs FilterStep) run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-	if fs.Python != "" && fs.Method != "" {
-		out, err := fs.proc.EvaluateBool(i)
-		if err != nil {
-			log.Printf("Filter Error: %s", err)
-		}
-		if out {
-			fs.inChan <- i
-		}
-		return i
-	}
-	col, err := evaluate.ExpressionString(fs.Column, task.Inputs, i)
-	if fs.Exists {
-		if err != nil {
-			return i
-		}
-	}
-	match, _ := evaluate.ExpressionString(fs.Match, task.Inputs, i)
-	if col == match {
-		fs.inChan <- i
-	}
-	return i
-}
-
-func (fs FilterStep) Close() {
-	if fs.proc != nil {
-		fs.proc.Close()
-	}
-	fs.Steps.Close()
-}
 
 func (fs *FieldProcessStep) Init(task *pipeline.Task) {
 	fs.inChan = make(chan map[string]interface{}, 100)
@@ -449,137 +225,10 @@ func (al AlleleIDStep) Run(i map[string]interface{}, task *pipeline.Task) map[st
 	return o
 }
 
-func valueRender(v interface{}, task *pipeline.Task, row map[string]interface{}) (interface{}, error) {
-	if vStr, ok := v.(string); ok {
-		return evaluate.ExpressionString(vStr, task.Inputs, row)
-	} else if vMap, ok := v.(map[string]interface{}); ok {
-		o := map[string]interface{}{}
-		for key, val := range vMap {
-			o[key], _ = valueRender(val, task, row)
-		}
-		return o, nil
-	} else if vArray, ok := v.([]interface{}); ok {
-		o := []interface{}{}
-		for _, val := range vArray {
-			j, _ := valueRender(val, task, row)
-			o = append(o, j)
-		}
-		return o, nil
-	} else if vArray, ok := v.([]string); ok {
-		o := []string{}
-		for _, vStr := range vArray {
-			j, _ := evaluate.ExpressionString(vStr, task.Inputs, row)
-			o = append(o, j)
-		}
-		return o, nil
-	}
-	return v, nil
-}
-
-func (pr ProjectStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-
-	o := map[string]interface{}{}
-	for k, v := range i {
-		o[k] = v
-	}
-
-	for k, v := range pr.Mapping {
-		o[k], _ = valueRender(v, task, i)
-	}
-	return o
-}
-
 func (db DebugStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
 	s, _ := json.Marshal(i)
 	log.Printf("DebugData %s: %s", db.Label, s)
 	return i
-}
-
-func (cs *CacheStep) Init(task *pipeline.Task) error {
-	return cs.Transform.Init(task)
-}
-
-func (cs *CacheStep) Start(in chan map[string]interface{}, task *pipeline.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
-	log.Printf("Starting Cache: %s", task.Name)
-
-	ds, err := task.GetDataStore()
-	if err != nil {
-		log.Printf("Cache setup error: %s", err)
-	}
-
-	if ds == nil {
-		log.Printf("No cache setup")
-		out, err := cs.Transform.Start(in, task, wg)
-		return out, err
-	}
-
-	out := make(chan map[string]interface{}, 10)
-	go func() {
-		defer close(out)
-		for i := range in {
-			hash, err := structhash.Hash(i, 1)
-			if err == nil {
-				key := fmt.Sprintf("%s.%s", task.Name, hash)
-				log.Printf("Cache Key: %s.%s", task.Name, hash)
-				if ds.HasRecordStream(key) {
-					log.Printf("Cache Hit")
-					for j := range ds.GetRecordStream(key) {
-						out <- j
-					}
-				} else {
-					log.Printf("Cache Miss")
-
-					manIn := make(chan map[string]interface{}, 10)
-					manIn <- i
-					close(manIn)
-
-					cacheIn := make(chan map[string]interface{}, 10)
-					go ds.SetRecordStream(key, cacheIn)
-
-					newWG := &sync.WaitGroup{}
-
-					tOut, _ := cs.Transform.Start(manIn, task, newWG)
-					for j := range tOut {
-						log.Printf("Cache Calc out: %s", j)
-						cacheIn <- j
-						out <- j
-					}
-					close(cacheIn)
-				}
-			} else {
-				log.Printf("Hashing Error")
-			}
-		}
-	}()
-
-	return out, nil
-}
-
-func (cs *CacheStep) Close() {
-
-}
-
-func (fs *ForkStep) Init(task *pipeline.Task) error {
-	fs.pipes = []chan map[string]interface{}{}
-	//for _, t := range fs.Transform {
-	//  p := make(chan map[string]interface{}, 100)
-	//t.Start(p, task, wg)
-	//  fs.pipes = append(fs.pipes, p)
-	//}
-	return nil
-}
-
-func (fs *ForkStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-	for _, p := range fs.pipes {
-		p <- i
-	}
-	return i
-}
-
-func (fs *ForkStep) Close() {
-	for _, p := range fs.pipes {
-		close(p)
-	}
 }
 
 func (ts TransformStep) Init(task *pipeline.Task) error {
@@ -708,14 +357,18 @@ func (ts TransformStep) Start(in chan map[string]interface{},
 		} else if ts.Cache != nil {
 			outCache, err := ts.Cache.Start(in, task, wg)
 			if err != nil {
-				log.Printf("TableProject err: %s", err)
+				log.Printf("Cache err: %s", err)
 			}
 			for i := range outCache {
 				out <- i
 			}
 		} else if ts.Fork != nil {
-			for i := range in {
-				out <- ts.Fork.Run(i, task)
+			outFork, err := ts.Fork.Start(in, task, wg)
+			if err != nil {
+				log.Printf("Fork err: %s", err)
+			}
+			for i := range outFork {
+				out <- i
 			}
 		} else {
 			log.Printf("Unknown field step")

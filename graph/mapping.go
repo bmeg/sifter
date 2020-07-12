@@ -118,12 +118,18 @@ func (f *FieldTransform) Run(d map[string]interface{}) map[string]interface{} {
 					//log.Printf("Translate %s to %s", iString, o)
 					d[f.field] = o
 				} else {
-					log.Printf("Missing from translation table: %s", iString)
+					log.Printf("Missing from %s translation table: %s", f.TableLookup.From, iString)
 				}
 			}
 		} else {
 			log.Printf("Field Missing: %s", f.TableLookup.From)
 		}
+	}
+	if f.Template != "" {
+		  val, err := evaluate.ExpressionString(f.Template, nil, d)
+			if err != nil {
+				d[f.field] = val
+			}
 	}
 	return d
 }

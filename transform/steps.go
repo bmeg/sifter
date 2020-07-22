@@ -57,13 +57,6 @@ type AlleleIDStep struct {
 	Dest           string `json:"dst"`
 }
 
-type FieldProcessStep struct {
-	Column  string            `json:"col"`
-	Steps   TransformPipe     `json:"steps"`
-	Mapping map[string]string `json:"mapping"`
-	inChan  chan map[string]interface{}
-}
-
 type DebugStep struct {
 	Label string `json:"label"`
 }
@@ -148,41 +141,6 @@ func (ts ObjectCreateStep) Run(i map[string]interface{}, task *pipeline.Task) ma
 }
 
 
-func (fs *FieldProcessStep) Init(task *pipeline.Task) {
-	fs.inChan = make(chan map[string]interface{}, 100)
-	//fs.Steps.Start(fs.inChan, task, wg)
-}
-
-func (fs FieldProcessStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-	if v, ok := i[fs.Column]; ok {
-		if vList, ok := v.([]interface{}); ok {
-			for _, l := range vList {
-				if m, ok := l.(map[string]interface{}); ok {
-					r := map[string]interface{}{}
-					for k, v := range m {
-						r[k] = v
-					}
-					for k, v := range fs.Mapping {
-						val, _ := evaluate.ExpressionString(v, task.Inputs, i)
-						r[k] = val
-					}
-					fs.inChan <- r
-				} else {
-					log.Printf("Incorrect Field Type: %s", l)
-				}
-			}
-		} else {
-			log.Printf("Field list incorrect type: %s", v)
-		}
-	} else {
-		log.Printf("Field %s missing", fs.Column)
-	}
-	return i
-}
-
-func (fs FieldProcessStep) Close() {
-	close(fs.inChan)
-}
 
 func (re RegexReplaceStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
 	col, _ := evaluate.ExpressionString(re.Column, task.Inputs, i)
@@ -307,8 +265,9 @@ func (ts TransformStep) Start(in chan map[string]interface{},
 				out <- i
 			}
 		} else if ts.FieldProcess != nil {
-			for i := range in {
-				out <- ts.FieldProcess.Run(i, task)
+			fOut, _ := ts.FieldProcess.Start(in, task, wg)
+			for i := range fOut {
+				out <- i
 			}
 		} else if ts.Debug != nil {
 			for i := range in {

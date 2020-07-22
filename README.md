@@ -79,3 +79,12 @@ CBioPortal Example:
 wget http://download.cbioportal.org/brca_tcga_pub.tar.gz
 ./sifter run ./examples/cbio.yaml -i tar=brca_tcga_pub.tar.gz -i geneTable=out/gene.table.table.gz
 ```
+
+
+## Python Exec
+
+Sifter will run Python code, however for this to function, the python environment
+needs to have GRPC install. To install, run:
+```
+pip install grpcio-tools
+```

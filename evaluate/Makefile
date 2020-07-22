@@ -13,3 +13,6 @@ proto-depends:
 	@go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 	@go install github.com/golang/protobuf/protoc-gen-go
 	@go install github.com/ckaznocha/protoc-gen-lint
+
+bindata:
+	go-bindata -pkg evaluate ./*.py

@@ -10,12 +10,13 @@ type Engine interface {
   Compile(code string, method string) (Processor, error)
 }
 
-func GetEngine(name string) Engine {
+func GetEngine(name string, workdir string) Engine {
   if name == "gpython" {
     return GPythonEngine{}
   }
   if name == "python" {
-    return DockerPythonEngine{}
+    //return DockerPythonEngine{}
+    return PythonEngine{Workdir:workdir}
   }
   return nil
 }

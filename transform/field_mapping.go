@@ -23,7 +23,7 @@ type MapStep struct {
 
 func (ms *MapStep) Init(task *pipeline.Task) {
   log.Printf("Init Map: %s", ms.Python)
-  e := evaluate.GetEngine(DEFAULT_ENGINE)
+  e := evaluate.GetEngine(DEFAULT_ENGINE, task.Workdir)
   c, err := e.Compile(ms.Python, ms.Method)
   if err != nil {
     log.Printf("Compile Error: %s", err)
@@ -57,7 +57,7 @@ type ReduceStep struct {
 
 func (ms *ReduceStep) Init(task *pipeline.Task) {
   log.Printf("Starting Reduce: %s", ms.Python)
-  e := evaluate.GetEngine(DEFAULT_ENGINE)
+  e := evaluate.GetEngine(DEFAULT_ENGINE, task.Workdir)
   c, err := e.Compile(ms.Python, ms.Method)
   if err != nil {
     log.Printf("%s", err)

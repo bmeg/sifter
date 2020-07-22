@@ -14,7 +14,7 @@ from concurrent import futures
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
-logging.basicConfig(filename='sifter-exec.log', level=logging.INFO)
+#logging.basicConfig(filename='sifter-exec.log', level=logging.INFO)
 
 class CallableCode:
     def __init__(self, funcName, code):

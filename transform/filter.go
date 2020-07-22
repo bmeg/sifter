@@ -22,7 +22,7 @@ type FilterStep struct {
 func (fs *FilterStep) Init(task *pipeline.Task) {
 	if fs.Python != "" && fs.Method != "" {
 		log.Printf("Starting Map: %s", fs.Python)
-		e := evaluate.GetEngine(DEFAULT_ENGINE)
+		e := evaluate.GetEngine(DEFAULT_ENGINE, task.Workdir)
 		c, err := e.Compile(fs.Python, fs.Method)
 		if err != nil {
 			log.Printf("Compile Error: %s", err)

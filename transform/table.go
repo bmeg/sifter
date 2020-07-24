@@ -1,16 +1,17 @@
 package transform
 
 import (
-  "os"
-  "log"
-  "fmt"
-  "strings"
-  "github.com/bmeg/sifter/emitter"
-  "github.com/bmeg/golib"
+	"fmt"
+	"github.com/bmeg/golib"
+	"github.com/bmeg/sifter/emitter"
+	"log"
+	"os"
+	"strings"
 
-  "github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/pipeline"
 )
+
 type TableWriteStep struct {
 	Output  string   `json:"output" jsonschema_description:"Name of file to create"`
 	Columns []string `json:"columns" jsonschema_description:"Columns to be written into table file"`
@@ -24,10 +25,13 @@ type TableReplaceStep struct {
 }
 
 type TableProjectStep struct {
-	Input string `json:"input"`
-	table map[string]string
+	Input   string `json:"input"`
+  Sep     string `json:"sep"`
+	Field   string `json:"field"`
+	Project map[string]string
+	header  map[string]int
+	table   map[string][]string
 }
-
 
 func (tw *TableWriteStep) Init(task *pipeline.Task) {
 	tw.emit = task.Runtime.EmitTable(tw.Output, tw.Columns)
@@ -122,25 +126,38 @@ func (tr *TableProjectStep) Init(task *pipeline.Task) error {
 	if err != nil {
 		return err
 	}
-	tr.table = map[string]string{}
+  if tr.Sep == "" {
+    tr.Sep = "\t"
+  }
+	tr.header = nil
+	tr.table = map[string][]string{}
 	for line := range inputStream {
 		if len(line) > 0 {
-			row := strings.Split(string(line), "\t")
-			tr.table[row[0]] = row[1]
+			row := strings.Split(string(line), tr.Sep)
+			if tr.header == nil {
+        tr.header = map[string]int{}
+        for i, k := range row {
+          tr.header[k] = i
+        }
+			} else {
+				tr.table[row[0]] = row
+			}
 		}
 	}
 	return nil
 }
 
 func (tw *TableProjectStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-
-	out := map[string]interface{}{}
-	for k, v := range i {
-		if n, ok := tw.table[k]; ok {
-			out[n] = v
-		} else {
-			out[k] = v
-		}
+	if fv, ok := i[tw.Field]; ok {
+    if fstr, ok := fv.(string); ok {
+      if pv, ok := tw.table[fstr]; ok {
+  		  for k, v := range tw.Project {
+          if ki, ok := tw.header[v]; ok {
+            i[k] = pv[ki]
+          }
+  			}
+  		}
+    }
 	}
-	return out
+  return i
 }

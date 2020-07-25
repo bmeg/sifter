@@ -13,7 +13,7 @@ import (
   "compress/gzip"
 
   "github.com/bmeg/sifter/evaluate"
-  "github.com/bmeg/golib"
+  "github.com/bmeg/sifter/readers"
   "github.com/bmeg/sifter/transform"
   "github.com/bmeg/sifter/pipeline"
 )
@@ -57,7 +57,7 @@ func (ml *TableLoadStep) Run(task *pipeline.Task) error {
   }
 
 
-  r := golib.CSVReader{}
+  r := readers.CSVReader{}
   if ml.Sep == "" {
     r.Comma = "\t"
   } else {
@@ -87,7 +87,7 @@ func (ml *TableLoadStep) Run(task *pipeline.Task) error {
 
   rowSkip := ml.RowSkip
 
-  inputStream, err := golib.ReadLines(hd)
+  inputStream, err := readers.ReadLines(hd)
   if err != nil {
     log.Printf("Error %s", err)
     return err

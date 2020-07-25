@@ -5,7 +5,7 @@ require (
 	github.com/akrylysov/pogreb v0.9.1
 	github.com/alecthomas/jsonschema v0.0.0-20200514014646-0366d1034a17 // indirect
 	github.com/aymerick/raymond v2.0.2+incompatible
-	github.com/bmeg/golib v0.0.0-20191012173545-4e32f1cffdff
+	github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50
 	github.com/bmeg/grip v0.0.0-20200411033704-d18c2a54ff34
 	github.com/brentp/irelate v0.0.0-20180801151701-1bf7c8f95c75 // indirect
 	github.com/brentp/vcfgo v0.0.0-20190315012323-bdb8e831fc71

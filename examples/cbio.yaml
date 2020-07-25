@@ -18,6 +18,7 @@ steps:
     tableLoad:
       input: data_clinical_patient.txt
       transform:
+        - debug: {}
         - project:
             mapping:
               id : "{{row.PATIENT_ID}}"

@@ -44,6 +44,8 @@ github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d h1:xDfNPAt8lFiC1U
 github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d/go.mod h1:6QX/PXZ00z/TKoufEY6K/a0k6AhaJrQKdFe6OfVXsa4=
 github.com/bmeg/golib v0.0.0-20191012173545-4e32f1cffdff h1:O27jffcIvaDPPT2V0erTcDHsgJ/ZbGUxp1WtLXmZ4Pg=
 github.com/bmeg/golib v0.0.0-20191012173545-4e32f1cffdff/go.mod h1:hoSeuZtqe58ANXHuWpeODx4bDHGV36QXlCs1yrUvK6M=
+github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50 h1:zg0pjw8ZUufzIo7iEr0811OZ1UkcjEL8579AdUL8ISU=
+github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50/go.mod h1:hoSeuZtqe58ANXHuWpeODx4bDHGV36QXlCs1yrUvK6M=
 github.com/bmeg/grip v0.0.0-20200411033704-d18c2a54ff34 h1:NBt6Gyk/Up+3Cu9XtiLAYpETq9ZyYerIEcLty7oRX6o=
 github.com/bmeg/grip v0.0.0-20200411033704-d18c2a54ff34/go.mod h1:EcD+/RY7kwUvxKRRL2tyt4c1cyFHpep3PkTHxcSIqoo=
 github.com/bmeg/protoc-gen-grcp-rest-direct v0.0.0-20190228222353-4d40e8b9d305/go.mod h1:1S3ijn0o+w7RmSdfX3EQttlrF9csSziK8dpeh0nP4LU=

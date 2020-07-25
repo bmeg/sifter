@@ -4,15 +4,18 @@ import (
 	//"io"
 	"os"
 	//"strings"
-	"log"
+	"compress/gzip"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"path/filepath"
-	"compress/gzip"
 
-  "github.com/ghodss/yaml"
 	"github.com/bmeg/golib"
-  "github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/evaluate"
+	"github.com/ghodss/yaml"
+
+	"github.com/bmeg/grip/gripql"
+	"github.com/bmeg/grip/protoutil"
 )
 
 type GraphMapping struct {
@@ -22,19 +25,24 @@ type GraphMapping struct {
 type DomainMap map[string]*ObjectMap
 
 type TableLookupTransform struct {
-	Table string    `json:"table"`
-	From  string    `json:"From"`
+	Table string `json:"table"`
+	From  string `json:"From"`
 }
 
 type FieldTransform struct {
-		Template string `json:"template"`
-		TableLookup *TableLookupTransform `json:"tableLookup"`
-		table    map[string]string
-		field    string
+	Template    string                `json:"template"`
+	TableLookup *TableLookupTransform `json:"tableLookup"`
+	table       map[string]string
+	field       string
+}
+
+type EdgeTransform struct {
+	Template string `json:"template"`
 }
 
 type ObjectMap struct {
-	Fields     map[string]*FieldTransform `fields`
+	Fields map[string]*FieldTransform `fields`
+	Edges  map[string]*EdgeTransform  `edges`
 }
 
 func LoadMapping(path string, inputDir string) (*GraphMapping, error) {
@@ -48,7 +56,7 @@ func LoadMapping(path string, inputDir string) (*GraphMapping, error) {
 	}
 
 	for _, domain := range o.Domains {
-		for _, cls := range (*domain) {
+		for _, cls := range *domain {
 			for f, field := range cls.Fields {
 				field.Init(f, inputDir)
 			}
@@ -59,12 +67,12 @@ func LoadMapping(path string, inputDir string) (*GraphMapping, error) {
 }
 
 func (o *ObjectMap) MapObject(d map[string]interface{}) map[string]interface{} {
-  if i, ok := o.Fields["_gid"]; ok {
-    sid, err := evaluate.ExpressionString(i.Template, nil, d)
-    if err == nil {
-      d["id"] = sid
-    }
-  }
+	if i, ok := o.Fields["_gid"]; ok {
+		sid, err := evaluate.ExpressionString(i.Template, nil, d)
+		if err == nil {
+			d["id"] = sid
+		}
+	}
 	for _, f := range o.Fields {
 		d = f.Run(d)
 	}
@@ -126,10 +134,27 @@ func (f *FieldTransform) Run(d map[string]interface{}) map[string]interface{} {
 		}
 	}
 	if f.Template != "" {
-		  val, err := evaluate.ExpressionString(f.Template, nil, d)
-			if err != nil {
-				d[f.field] = val
-			}
+		val, err := evaluate.ExpressionString(f.Template, nil, d)
+		if err == nil {
+			d[f.field] = val
+		}
 	}
 	return d
+}
+
+func (et *EdgeTransform) Run(e *gripql.Edge) *gripql.Edge {
+	if et.Template != "" {
+		d := protoutil.AsMap(e.Data)
+		if d == nil {
+			d = map[string]interface{}{}
+		}
+		d["_to"] = e.To
+		d["_from"] = e.From
+		d["_label"] = e.Label
+		val, err := evaluate.ExpressionString(et.Template, nil, d)
+		if err == nil {
+			e.To = val
+		}
+	}
+	return e
 }

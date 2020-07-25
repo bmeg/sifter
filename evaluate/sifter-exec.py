@@ -45,7 +45,6 @@ class PySifterExec:
     def Call(self, request, context):
         c = self.code[request.code]
         try:
-            print("calling %s on %s" % (request.code, request.data))
             logging.info("calling %s on %s" % (request.code, request.data))
             data = json.loads(request.data)
             value = c.call(data)

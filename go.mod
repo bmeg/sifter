@@ -3,7 +3,7 @@ module github.com/bmeg/sifter
 require (
 	github.com/AndreasBriese/bbloom v0.0.0-20190825152654-46b345b51c96 // indirect
 	github.com/akrylysov/pogreb v0.9.1
-	github.com/alecthomas/jsonschema v0.0.0-20200514014646-0366d1034a17 // indirect
+	github.com/alecthomas/jsonschema v0.0.0-20200514014646-0366d1034a17
 	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50
 	github.com/bmeg/grip v0.0.0-20200411033704-d18c2a54ff34
@@ -22,16 +22,17 @@ require (
 	github.com/go-openapi/swag v0.19.0
 	github.com/go-python/gpython v0.0.3
 	github.com/golang/protobuf v1.3.5
+	github.com/golangci/golangci-lint v1.29.0 // indirect
 	github.com/hashicorp/go-getter v1.2.0
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/jlaffaye/ftp v0.0.0-20200602180915-5563613968bf
 	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
-	github.com/spf13/cobra v0.0.5
+	github.com/spf13/cobra v1.0.0
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
 	go.mongodb.org/mongo-driver v1.3.0
-	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
+	golang.org/x/net v0.0.0-20200625001655-4c5254603344
 	google.golang.org/grpc v1.27.1
 )
 
-go 1.13
+go 1.14

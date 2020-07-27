@@ -1,6 +1,6 @@
 
 
-SIFTER_VERSION=0.1.2
+SIFTER_VERSION=0.1.3
 
 #hack to get around submodule weirdness in automated docker builds
 hub-build:

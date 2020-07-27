@@ -1,0 +1,37 @@
+os:
+  - linux
+language: go
+go:
+  - "1.13"
+
+dist: xenial
+sudo: required
+
+services:
+  - docker
+
+cache:
+  directories:
+    - $GOPATH/pkg
+
+git:
+  submodules: true
+
+install:
+  - sudo pip install -U grpcio-tools
+
+jobs:
+  include:
+    - stage: all
+      script:
+        - make lint-depends
+        - make lint
+      env:
+        - n=lint
+    - script:
+        - make test
+      env:
+        - n=tests
+
+notifications:
+  email: false

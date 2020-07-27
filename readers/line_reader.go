@@ -3,7 +3,6 @@ package readers
 import (
 	"bufio"
 	"os"
-	"strings"
 	"sync"
 )
 
@@ -76,21 +75,4 @@ func (l *LineReader) SeekRead(offset uint64) []byte {
 		}
 	}
 	return ln
-}
-
-type CSVParse struct {
-	Comma   string
-	Comment string
-}
-
-func (c *CSVParse) Parse(line string) []string {
-	comma := c.Comma
-	if comma == "" {
-		comma = ","
-	}
-	comment := c.Comment
-	if comment != "" {
-		line = strings.Split(line, comment)[0]
-	}
-	return strings.Split(line, comma)
 }

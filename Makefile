@@ -20,12 +20,10 @@ tidy:
 
 # Run code style and other checks
 lint:
-	@go get github.com/alecthomas/gometalinter
-	@gometalinter --install > /dev/null
-	@gometalinter --disable-all --enable=vet --enable=golint --enable=gofmt --enable=misspell \
-		--vendor \
-		-e '.*bundle.go' -e ".*pb.go" -e ".*pb.gw.go" -e ".*pb.dgw.go" -e "underscore.go" \
-		./...
+	@golangci-lint run
+
+lint-depends:
+	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
 
 docs:
 	@go run docschema/main.go | ./docschema/schema-to-markdown.py > Playbook.md

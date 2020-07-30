@@ -1,36 +1,33 @@
 package extractors
 
 import (
-  "os"
-  "io"
-  "fmt"
-  "log"
-  "strings"
-  "compress/gzip"
-  "github.com/xwb1989/sqlparser"
-  "github.com/bmeg/sifter/transform"
-  "github.com/bmeg/sifter/pipeline"
-  "github.com/bmeg/sifter/evaluate"
+	"compress/gzip"
+	"fmt"
+  "sync"
+	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/transform"
+	"github.com/xwb1989/sqlparser"
+	"io"
+	"log"
+	"os"
+	"strings"
 )
 
-
-
 type TableTransform struct {
-  Table         string                  `json:"table" jsonschema_description:"Name of the SQL file to transform"`
-  Transform     transform.TransformPipe `json:"transform" jsonschema_description:"The transform pipeline"`
+	Name     string                   `json:"name" jsonschema_description:"Name of the SQL file to transform"`
+	Transform transform.TransformPipe `json:"transform" jsonschema_description:"The transform pipeline"`
 }
-
 
 type SQLDumpStep struct {
-  Input         string                  `json:"input" jsonschema_description:"Path to the SQL dump file"`
-  Tables        []TableTransform        `json:"tables" jsonschema_description:"Array of transforms for the different tables in the SQL dump"`
-  SkipIfMissing bool                    `json:"skipIfMissing" jsonschema_description:"Option to skip without fail if input file does not exist"`
+	Input         string           `json:"input" jsonschema_description:"Path to the SQL dump file"`
+	Tables        []TableTransform `json:"tables" jsonschema_description:"Array of transforms for the different tables in the SQL dump"`
+	SkipIfMissing bool             `json:"skipIfMissing" jsonschema_description:"Option to skip without fail if input file does not exist"`
 }
-
 
 func (ml *SQLDumpStep) Run(task *pipeline.Task) error {
 
-  log.Printf("Starting SQLDump Load")
+	log.Printf("Starting SQLDump Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
 	inputPath, err := task.Path(input)
 
@@ -54,45 +51,88 @@ func (ml *SQLDumpStep) Run(task *pipeline.Task) error {
 			return err
 		}
 	} else {
-    hd = fhd
-  }
+		hd = fhd
+	}
 
-  tableColumns := map[string][]string{}
+	wg := &sync.WaitGroup{}
+	chanMap := map[string][]chan map[string]interface{}{}
 
-  tokens := sqlparser.NewTokenizer(hd)
-  for {
-  	stmt, err := sqlparser.ParseNext(tokens)
-  	if err == io.EOF {
-  		break
-  	}
-    switch stmt := stmt.(type) {
-      case *sqlparser.DDL:
-        if stmt.Action == "create" {
-          fmt.Printf("Table Create: %s\n", stmt.NewName.Name. CompliantName())
-          columns := []string{}
-          for _, col := range stmt.TableSpec.Columns {
-            name := col.Name.CompliantName()
-            columns = append(columns, name)
+	for t := range ml.Tables {
+		procChan := make(chan map[string]interface{}, 100)
+		if err := ml.Tables[t].Transform.Init(task); err != nil {
+			return err
+		}
+		out, err := ml.Tables[t].Transform.Start(procChan, task, wg)
+		if err != nil {
+			return err
+		}
+		go func() {
+			for range out {
+			}
+		}()
+    log.Printf("Adding transform pipe for table: %s", ml.Tables[t].Name)
+		if x, ok := chanMap[ml.Tables[t].Name]; ok {
+			chanMap[ml.Tables[t].Name] = append(x, procChan)
+		} else {
+			chanMap[ml.Tables[t].Name] = []chan map[string]interface{}{procChan}
+		}
+	}
+
+	tableColumns := map[string][]string{}
+
+	tokens := sqlparser.NewTokenizer(hd)
+	for {
+		stmt, err := sqlparser.ParseNext(tokens)
+		if err == io.EOF {
+			break
+		}
+		switch stmt := stmt.(type) {
+		case *sqlparser.DDL:
+			if stmt.Action == "create" {
+				fmt.Printf("SQL Parser found: Table Create: %s\n", stmt.NewName.Name.CompliantName())
+				columns := []string{}
+				for _, col := range stmt.TableSpec.Columns {
+					name := col.Name.CompliantName()
+					columns = append(columns, name)
+				}
+				fmt.Printf("%s\n", columns)
+				tableColumns[stmt.NewName.Name.CompliantName()] = columns
+			}
+		case *sqlparser.Insert:
+			//fmt.Printf("Inserting into: %s\n", stmt.Table.Name)
+
+			cols := tableColumns[stmt.Table.Name.CompliantName()]
+			if irows, ok := stmt.Rows.(sqlparser.Values); ok {
+				for _, row := range irows {
+          data := map[string]interface{}{}
+					for i := range row {
+						if sval, ok := row[i].(*sqlparser.SQLVal); ok {
+							data[cols[i]] = string(sval.Val)
+						}
+					}
+				  if x, ok := chanMap[stmt.Table.Name.CompliantName()]; ok {
+            //fmt.Printf("%s - %s\n", stmt.Table.Name.CompliantName(), data)
+		        for i := range x {
+						  x[i] <- data
+					  }
+				  } else {
+            //log.Printf("Skip: %s", stmt.Table.Name.CompliantName())
           }
-          fmt.Printf("%s\n", columns)
-          tableColumns[stmt.NewName.Name.CompliantName()] = columns
         }
-      case *sqlparser.Insert:
-        //fmt.Printf("Inserting into: %s\n", stmt.Table.Name)
-        data := map[string]interface{}{}
-
-        cols := tableColumns[stmt.Table.Name.CompliantName()]
-        if irows, ok := stmt.Rows.(sqlparser.Values); ok {
-          for _, row := range irows {
-            for i := range row {
-              if sval, ok := row[i].(*sqlparser.SQLVal); ok {
-                data[cols[i]] = string(sval.Val)
-              }
-            }
-          }
-          fmt.Printf("%s - %s\n", stmt.Table.Name, data)
-        }
+			} else {
+        log.Printf("WARNING: Other sql.InsertValue")
+      }
+		}
+	}
+  for i := range chanMap {
+    for j := range chanMap[i] {
+      close(chanMap[i][j])
     }
   }
-  return nil
+  wg.Wait()
+  for t := range ml.Tables {
+    ml.Tables[t].Transform.Close()
+  }
+
+	return nil
 }

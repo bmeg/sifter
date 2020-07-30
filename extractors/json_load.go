@@ -68,6 +68,7 @@ func (ml *JSONLoadStep) Run(task *pipeline.Task) error {
   log.Printf("Done Loading")
   close(procChan)
   wg.Wait()
+  ml.Transform.Close()
 
 	return nil
 }

@@ -45,6 +45,7 @@ func (tw *TableWriteStep) Run(i map[string]interface{}, task *pipeline.Task) map
 }
 
 func (tw *TableWriteStep) Close() {
+	log.Printf("Closing tableWriter: %s", tw.Output)
 	tw.emit.Close()
 }
 

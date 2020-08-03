@@ -45,8 +45,8 @@ func (run *Runtime) EmitObject(prefix string, c string, o map[string]interface{}
 }
 
 
-func (run *Runtime) EmitTable(prefix string, columns []string) emitter.TableEmitter {
-	return run.output.EmitTable(prefix, columns)
+func (run *Runtime) EmitTable(prefix string, columns []string, sep rune) emitter.TableEmitter {
+	return run.output.EmitTable(prefix, columns, sep)
 }
 
 func (m *Runtime) Printf(s string, x ...interface{}) {

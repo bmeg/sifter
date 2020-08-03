@@ -15,6 +15,7 @@ import (
 type TableWriteStep struct {
 	Output  string   `json:"output" jsonschema_description:"Name of file to create"`
 	Columns []string `json:"columns" jsonschema_description:"Columns to be written into table file"`
+	Sep     string `json:"sep"`
 	emit    emitter.TableEmitter
 }
 
@@ -34,7 +35,11 @@ type TableProjectStep struct {
 }
 
 func (tw *TableWriteStep) Init(task *pipeline.Task) {
-	tw.emit = task.Runtime.EmitTable(tw.Output, tw.Columns)
+	sep := '\t'
+	if tw.Sep != "" {
+		sep = rune(tw.Sep[0])
+	}
+	tw.emit = task.Runtime.EmitTable(tw.Output, tw.Columns, sep)
 }
 
 func (tw *TableWriteStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {

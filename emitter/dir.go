@@ -102,13 +102,13 @@ func (s *dirTableEmitter) Close() {
 }
 
 
-func (s *DirEmitter) EmitTable( prefix string, columns []string ) TableEmitter {
-  path := filepath.Join(s.dir, fmt.Sprintf("%s.table.gz", prefix))
+func (s *DirEmitter) EmitTable( prefix string, columns []string, sep rune ) TableEmitter {
+  path := filepath.Join(s.dir, fmt.Sprintf("%s.gz", prefix))
   te := dirTableEmitter{}
   te.handle, _ = os.Create(path)
   te.out = gzip.NewWriter(te.handle)
   te.writer = csv.NewWriter(te.out)
-  te.writer.Comma = '\t'
+  te.writer.Comma = sep
   te.columns = columns
   te.writer.Write(te.columns)
   return &te

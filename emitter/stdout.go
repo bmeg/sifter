@@ -45,7 +45,7 @@ func (s *stdTableEmitter) EmitRow(i map[string]interface{}) error {
 
 func (s *stdTableEmitter) Close() {}
 
-func (s StdoutEmitter) EmitTable( prefix string, columns []string ) TableEmitter {
+func (s StdoutEmitter) EmitTable( prefix string, columns []string, sep rune ) TableEmitter {
  	te := stdTableEmitter{columns}
 	fmt.Printf("%s\n", columns)
   return &te

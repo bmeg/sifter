@@ -130,8 +130,8 @@ func (m *Task) EmitObject(prefix string, c string, e map[string]interface{}) err
 	return m.Runtime.EmitObject(prefix, c, e)
 }
 
-func (m *Task) EmitTable(prefix string, columns []string) emitter.TableEmitter {
-	return m.Runtime.EmitTable(prefix, columns)
+func (m *Task) EmitTable(prefix string, columns []string, sep rune) emitter.TableEmitter {
+	return m.Runtime.EmitTable(prefix, columns, sep)
 }
 
 func (m *Task) Output(name string, value string) error {

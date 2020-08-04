@@ -7,6 +7,7 @@ import (
   "log"
   "fmt"
   "sync"
+  "strings"
   "compress/gzip"
   "encoding/json"
   "encoding/csv"
@@ -102,13 +103,17 @@ func (s *dirTableEmitter) Close() {
 }
 
 
-func (s *DirEmitter) EmitTable( prefix string, columns []string ) TableEmitter {
-  path := filepath.Join(s.dir, fmt.Sprintf("%s.table.gz", prefix))
+func (s *DirEmitter) EmitTable( name string, columns []string, sep rune ) TableEmitter {
+  path := filepath.Join(s.dir, name)
   te := dirTableEmitter{}
   te.handle, _ = os.Create(path)
-  te.out = gzip.NewWriter(te.handle)
+  if strings.HasSuffix(name, ".gz") {
+    te.out = gzip.NewWriter(te.handle)
+  } else {
+    te.out = te.handle
+  }
   te.writer = csv.NewWriter(te.out)
-  te.writer.Comma = '\t'
+  te.writer.Comma = sep
   te.columns = columns
   te.writer.Write(te.columns)
   return &te

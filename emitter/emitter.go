@@ -13,7 +13,7 @@ type TableEmitter interface {
 
 type Emitter interface {
 	EmitObject(prefix string, objClass string, e map[string]interface{}) error
-	EmitTable(prefix string, columns []string) TableEmitter
+	EmitTable(prefix string, columns []string, sep rune) TableEmitter
 	Close()
 }
 

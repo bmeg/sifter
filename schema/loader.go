@@ -18,6 +18,7 @@ type Link struct {
   TargetType   string   `json:"target_type"`
   Multiplicity string   `json:multiplicity`
   Required     bool     `json:"required"`
+  Subgroup     []Link   `json:"subgroup"`
 }
 
 type Value struct {

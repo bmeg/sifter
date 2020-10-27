@@ -1,14 +1,14 @@
 package transform
 
 import (
-  "log"
-  "sync"
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/pipeline"
+	"log"
+	"sync"
 )
 
 type FilterStep struct {
-	Column string        `json:"col"`
+	Field  string        `json:"field"`
 	Match  string        `json:"match"`
 	Exists bool          `json:"exists"`
 	Method string        `json:"method"`
@@ -17,7 +17,6 @@ type FilterStep struct {
 	inChan chan map[string]interface{}
 	proc   evaluate.Processor
 }
-
 
 func (fs *FilterStep) Init(task *pipeline.Task) {
 	if fs.Python != "" && fs.Method != "" {
@@ -65,15 +64,16 @@ func (fs FilterStep) run(i map[string]interface{}, task *pipeline.Task) map[stri
 		}
 		return i
 	}
-	col, err := evaluate.ExpressionString(fs.Column, task.Inputs, i)
-	if fs.Exists {
-		if err != nil {
+	if _, err := evaluate.GetJSONPath(fs.Field, i); err == nil {
+		if fs.Exists {
+			fs.inChan <- i
 			return i
 		}
-	}
-	match, _ := evaluate.ExpressionString(fs.Match, task.Inputs, i)
-	if col == match {
-		fs.inChan <- i
+		valueStr, _ := evaluate.ExpressionString(fs.Field, task.Inputs, i)
+		match, _ := evaluate.ExpressionString(fs.Match, task.Inputs, i)
+		if valueStr == match {
+			fs.inChan <- i
+		}
 	}
 	return i
 }

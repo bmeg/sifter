@@ -38,7 +38,7 @@ steps:
             col: end
             type: int
         - filter:
-            col: "{{row.type}}"
+            field: row.type
             match: exon
             steps:
               - regexReplace:
@@ -65,7 +65,7 @@ steps:
               - objectCreate:
                   class: exon
         - filter:
-            col: "{{row.type}}"
+            field: row.type
             match: gene
             steps:
               - project:
@@ -74,7 +74,7 @@ steps:
               - objectCreate:
                   class: gene
         - filter:
-            col: "{{row.type}}"
+            field: row.type
             match: mRNA
             steps:
               - regexReplace:

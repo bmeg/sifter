@@ -9,7 +9,7 @@ import (
 )
 
 type FieldProcessStep struct {
-	Column  string            `json:"col"`
+	Field  string             `json:"field"`
 	Steps   TransformPipe     `json:"steps"`
 	Mapping map[string]string `json:"mapping"`
 }
@@ -26,7 +26,7 @@ func (fs FieldProcessStep) Start(in chan map[string]interface{}, task *pipeline.
   go func() {
 		defer close(inChan)
 		for i := range in {
-    	if v, ok := i[fs.Column]; ok {
+    	if v, err := evaluate.GetJSONPath(fs.Field, i); err == nil {
     		if vList, ok := v.([]interface{}); ok {
     			for _, l := range vList {
     				if m, ok := l.(map[string]interface{}); ok {
@@ -47,7 +47,7 @@ func (fs FieldProcessStep) Start(in chan map[string]interface{}, task *pipeline.
     			log.Printf("Field list incorrect type: %s", v)
     		}
     	} else {
-    		log.Printf("Field %s missing", fs.Column)
+    		log.Printf("Field %s missing", fs.Field)
     	}
     }
   }()

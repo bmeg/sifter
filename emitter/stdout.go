@@ -11,6 +11,15 @@ type StdoutEmitter struct {
 	schemas *schema.Schemas
 }
 
+
+
+func (s StdoutEmitter) Emit(name string, v map[string]interface{}) error {
+	o, _ := json.Marshal(v)
+	fmt.Printf("%s\t%s\n", name, o)
+	return nil
+}
+
+
 func (s StdoutEmitter) EmitObject(prefix string, objClass string, i map[string]interface{}) error {
 	v, err := s.schemas.Validate(objClass, i)
 	if err != nil {

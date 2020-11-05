@@ -126,6 +126,10 @@ func (m *Task) DownloadFile(src string, dest string) (string, error) {
 	return dest, getter.GetFile(dest, src)
 }
 
+func (m *Task) Emit(name string, e map[string]interface{}) error {
+	return m.Runtime.Emit(name, e)
+}
+
 func (m *Task) EmitObject(prefix string, c string, e map[string]interface{}) error {
 	return m.Runtime.EmitObject(prefix, c, e)
 }

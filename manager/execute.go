@@ -59,9 +59,7 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 		sc = &t
 	}
 
-
 	run, err := man.NewRuntime(pb.Name, dir, sc)
-	defer run.Close()
 
 	for k, i := range pb.Inputs {
 		if v, ok := inputs[k]; ok {
@@ -83,14 +81,8 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 		}
 	}
 
-
-
-
-	run.Printf("Starting Playbook")
-	defer run.Printf("Playbook done")
-	if err != nil {
-		return err
-	}
+	//run.Printf("Starting Playbook")
+	//defer run.Printf("Playbook done")
 
 	//run.LoadSchema(pb.Schema)
 
@@ -123,14 +115,19 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 
 	for i, step := range pb.Steps {
 		if i >= startStep {
-			log.Printf("Running: %#v", step)
+			log.Printf("Running Playbook Step: %#v", step)
 			err := step.Run(run, inputs)
 			if err == nil {
 				f.WriteString("OK\n")
+				log.Printf("Playbook Step Done")
 			} else {
+				log.Printf("Playbook Step Error: %s", err)
 				break
 			}
 		}
 	}
+	log.Printf("Done with steps")
+	run.Close()
+
 	return nil
 }

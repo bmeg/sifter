@@ -11,6 +11,7 @@ type Extractor struct {
 	Description   string             `json:"description"  jsonschema_description:"Human Readable description of step"`
 	Download     *DownloadStep       `json:"download" jsonschema_description:"Download a File"`
 	Untar        *UntarStep          `json:"untar" jsonschema_description:"Untar a file"`
+  XMLLoad      *XMLLoadStep        `json:"xmlLoad"`
   TransposeFile *TransposeFileStep `json:"transposeFile" jsonschema_description:"Take a matrix TSV and transpose it (row become columns)"`
 	TableLoad    *TableLoadStep      `json:"tableLoad" jsonschema_description:"Run transform pipeline on a TSV or CSV"`
 	JSONLoad     *JSONLoadStep       `json:"jsonLoad" jsonschema_description:"Run a transform pipeline on a multi line json file"`
@@ -79,6 +80,14 @@ func (step *Extractor) Run(run *pipeline.Runtime, inputs map[string]interface{})
       run.Printf("JSON Load Error: %s", err)
       return err
     }
+  } else if step.XMLLoad != nil {
+     task := run.NewTask(inputs)
+     log.Printf("Running XMLLoad")
+     if err := step.XMLLoad.Run(task); err != nil {
+       run.Printf("XML Load Error: %s", err)
+       return err
+     }
+     log.Printf("XMLLoad Done")
   } else if step.SQLDumpLoad != nil {
     task := run.NewTask(inputs)
     log.Printf("Running SQLDumpLoad")

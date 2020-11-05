@@ -20,8 +20,7 @@ type DirEmitter struct {
   dir string
   mux sync.Mutex
   schemas *schema.Schemas
-  vout map[string]io.WriteCloser
-  eout map[string]io.WriteCloser
+  dout map[string]io.WriteCloser
   oout map[string]io.WriteCloser
 }
 
@@ -30,10 +29,27 @@ func NewDirEmitter(dir string, schemas *schema.Schemas) *DirEmitter {
   return &DirEmitter{
     dir: dir,
     schemas:schemas,
-    vout: map[string]io.WriteCloser{},
-    eout: map[string]io.WriteCloser{},
+    dout: map[string]io.WriteCloser{},
     oout: map[string]io.WriteCloser{},
   }
+}
+
+func (s *DirEmitter) Emit(name string, v map[string]interface{}) error {
+  s.mux.Lock()
+  defer s.mux.Unlock()
+  f, ok := s.dout[name]
+  if !ok {
+    j, err := os.Create(path.Join(s.dir, name + ".json.gz" ))
+    if err != nil {
+      return err
+    }
+    f = gzip.NewWriter(j)
+    s.dout[name] = f
+  }
+  o, _ := json.Marshal(v)
+  f.Write([]byte(o))
+  f.Write([]byte("\n"))
+  return nil
 }
 
 
@@ -62,14 +78,11 @@ func (s *DirEmitter) EmitObject(prefix string, objClass string, i map[string]int
 }
 
 func (s *DirEmitter) Close() {
-  log.Printf("Closing emitter")
-  for _, v := range s.vout {
-    v.Close()
-  }
-  for _, v := range s.eout {
-    v.Close()
-  }
+  log.Printf("Closing dir emitter")
   for _, v := range s.oout {
+    v.Close()
+  }
+  for _, v := range s.dout {
     v.Close()
   }
 }

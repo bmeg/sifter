@@ -65,10 +65,15 @@ type CacheStep struct {
 	Transform TransformPipe `json:"transform"`
 }
 
+type EmitStep struct {
+	Name      string        `json:"name"`
+}
+
 type TransformStep struct {
 	FieldMap     *FieldMapStep     `json:"fieldMap" jsonschema_description:"fieldMap to run"`
 	FieldType    *FieldTypeStep    `json:"fieldType" jsonschema_description:"Change type of a field (ie string -> integer)"`
 	ObjectCreate *ObjectCreateStep `json:"objectCreate" jsonschema_description:"Create a JSON schema based object"`
+	Emit         *EmitStep         `json:"emit" jsonschema_description:"Write to unstructured JSON file"`
 	Filter       *FilterStep       `json:"filter"`
 	Debug        *DebugStep        `json:"debug" jsonschema_description:"Print message contents to stdout"`
 	RegexReplace *RegexReplaceStep `json:"regexReplace"`
@@ -134,13 +139,6 @@ func contains(s []string, q string) bool {
 	}
 	return false
 }
-
-func (ts ObjectCreateStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-	task.Runtime.EmitObject(ts.Name, ts.Class, i)
-	return i
-}
-
-
 
 func (re RegexReplaceStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
 	col, _ := evaluate.ExpressionString(re.Column, task.Inputs, i)
@@ -249,7 +247,9 @@ func (ts TransformStep) Start(in chan map[string]interface{},
 	task *pipeline.Task, wg *sync.WaitGroup) chan map[string]interface{} {
 
 	out := make(chan map[string]interface{}, 100)
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		defer close(out)
 		if ts.FieldMap != nil {
 			for i := range in {
@@ -300,6 +300,10 @@ func (ts TransformStep) Start(in chan map[string]interface{},
 		} else if ts.ObjectCreate != nil {
 			for i := range in {
 				out <- ts.ObjectCreate.Run(i, task)
+			}
+		} else if ts.Emit != nil {
+			for i := range in {
+				out <- ts.Emit.Run(i, task)
 			}
 		} else if ts.TableWrite != nil {
 			for i := range in {
@@ -361,14 +365,16 @@ func (tp TransformPipe) Start(in chan map[string]interface{},
 	wg.Add(1)
 	go func() {
 		defer close(out)
+		cwg := &sync.WaitGroup{}
 		//connect the input stream to the processing chain
 		cur := in
 		for i, s := range tp {
-			cur = s.Start(cur, task.Child(fmt.Sprintf("%d", i)), wg)
+			cur = s.Start(cur, task.Child(fmt.Sprintf("%d", i)), cwg)
 		}
 		for i := range cur {
 			out <- i
 		}
+		cwg.Wait()
 		wg.Done()
 		log.Printf("Ending TransformPipe")
 	}()

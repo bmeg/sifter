@@ -12,22 +12,22 @@ import (
 
 type Runtime struct {
 	//man         *Manager
-	output      emitter.Emitter
-	dir         string
-	name        string
-	Status      string
-	StepCount   int64
-	StepTotal   int64
+	output         emitter.Emitter
+	dir            string
+	name           string
+	Status         string
+	StepCount      int64
+	StepTotal      int64
 	OutputCallback func(string, string) error
-	datastore   datastore.DataStore
+	datastore      datastore.DataStore
 }
 
 func NewRuntime(output emitter.Emitter, dir string, name string, ds datastore.DataStore) *Runtime {
-	return &Runtime{output:output, dir:dir, name:name, Status:"Starting", datastore:ds}
+	return &Runtime{output: output, dir: dir, name: name, Status: "Starting", datastore: ds}
 }
 
 func (run *Runtime) NewTask(inputs map[string]interface{}) *Task {
-	return &Task{Name: run.name, Runtime:run, Workdir:run.dir, Inputs:inputs, AllowLocalFiles:true, DataStore:run.datastore}
+	return &Task{Name: run.name, Runtime: run, Workdir: run.dir, Inputs: inputs, AllowLocalFiles: true, DataStore: run.datastore}
 }
 
 func (run *Runtime) Close() {
@@ -38,18 +38,16 @@ func (run *Runtime) Close() {
 	//run.man.DropRuntime(run.name)
 }
 
-
 func (run *Runtime) Emit(name string, o map[string]interface{}) error {
 	return run.output.Emit(name, o)
 }
 
 func (run *Runtime) EmitObject(prefix string, c string, o map[string]interface{}) error {
 	if prefix == "" {
-		return run.output.EmitObject(run.name, c,o)
+		return run.output.EmitObject(run.name, c, o)
 	}
-	return run.output.EmitObject(prefix, c,o)
+	return run.output.EmitObject(prefix, c, o)
 }
-
 
 func (run *Runtime) EmitTable(prefix string, columns []string, sep rune) emitter.TableEmitter {
 	return run.output.EmitTable(prefix, columns, sep)

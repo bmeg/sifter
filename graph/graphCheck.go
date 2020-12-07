@@ -1,9 +1,10 @@
 package graph
 
 import (
-  "log"
-	"github.com/akrylysov/pogreb"
+	"log"
 	"path/filepath"
+
+	"github.com/akrylysov/pogreb"
 )
 
 type GraphCheck struct {
@@ -63,7 +64,7 @@ func (gc *GraphCheck) HasVertex(s string) bool {
 }
 
 func (gc *GraphCheck) GetEdgeSource(s string) string {
-  val, err := gc.edgeDB.Get([]byte(s))
+	val, err := gc.edgeDB.Get([]byte(s))
 	if val == nil || err != nil {
 		return ""
 	}

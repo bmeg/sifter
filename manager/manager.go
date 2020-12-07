@@ -1,19 +1,20 @@
 package manager
 
 import (
-	"github.com/bmeg/sifter/emitter"
-	"github.com/bmeg/sifter/pipeline"
-	"github.com/bmeg/sifter/schema"
-	"github.com/bmeg/sifter/datastore"
 	"log"
 	"path/filepath"
 	"sync"
+
+	"github.com/bmeg/sifter/datastore"
+	"github.com/bmeg/sifter/emitter"
+	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/schema"
 )
 
 type Manager struct {
-	Config    Config
-	Playbooks map[string]Playbook
-	Runtimes  sync.Map
+	Config          Config
+	Playbooks       map[string]Playbook
+	Runtimes        sync.Map
 	AllowLocalFiles bool
 	DataStore       datastore.DataStore
 }

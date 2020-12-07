@@ -1,8 +1,9 @@
 package transform
 
 import (
-	"github.com/bmeg/sifter/pipeline"
 	"sync"
+
+	"github.com/bmeg/sifter/pipeline"
 )
 
 type ForkStep struct {

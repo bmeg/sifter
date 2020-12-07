@@ -17,20 +17,20 @@ type Loader interface {
 }
 
 type Input struct {
-	Type string    `json:"type"`
+	Type    string `json:"type"`
 	Default string `json:"default"`
-	Source string  `json:"source"`
+	Source  string `json:"source"`
 }
 
 type Inputs map[string]Input
 
 type Playbook struct {
-	Name  string `json:"name" jsonschema_description:"Unique name of the playbook"`
-	Inputs Inputs `json:"inputs,omitempty" jsonschema_description:"Optional inputs to Playbook"`
-	Schema string `json:"schema" jsonschema_description:"Name of directory with library of Gen3/JSON Schema files"`
-	Class string `json:"class" jsonschema_description:"Notation for file inspection, set as 'Playbook'"`
-	Steps []extractors.Extractor `json:"steps" jsonschema_description:"Steps of the transformation"`
-	path string
+	Name   string                 `json:"name" jsonschema_description:"Unique name of the playbook"`
+	Inputs Inputs                 `json:"inputs,omitempty" jsonschema_description:"Optional inputs to Playbook"`
+	Schema string                 `json:"schema" jsonschema_description:"Name of directory with library of Gen3/JSON Schema files"`
+	Class  string                 `json:"class" jsonschema_description:"Notation for file inspection, set as 'Playbook'"`
+	Steps  []extractors.Extractor `json:"steps" jsonschema_description:"Steps of the transformation"`
+	path   string
 }
 
 // Parse parses a YAML doc into the given Config instance.

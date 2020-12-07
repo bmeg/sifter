@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
-	"encoding/json"
 	"crypto/sha1"
+	"encoding/json"
 
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/pipeline"
@@ -66,7 +66,7 @@ type CacheStep struct {
 }
 
 type EmitStep struct {
-	Name      string        `json:"name"`
+	Name string `json:"name"`
 }
 
 type TransformStep struct {

@@ -1,8 +1,9 @@
 package transform
 
 import (
-  "log"
-  "sync"
+	"log"
+	"sync"
+
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/pipeline"
 )
@@ -17,7 +18,6 @@ type FilterStep struct {
 	inChan chan map[string]interface{}
 	proc   evaluate.Processor
 }
-
 
 func (fs *FilterStep) Init(task *pipeline.Task) {
 	if fs.Python != "" && fs.Method != "" {
@@ -68,15 +68,15 @@ func (fs FilterStep) run(i map[string]interface{}, task *pipeline.Task) map[stri
 	col, err := evaluate.ExpressionString(fs.Column, task.Inputs, i)
 	if (fs.Check == "" && fs.Match == "") || fs.Check == "exists" {
 		if err == nil {
-      fs.inChan <- i
-    }
-    return i
+			fs.inChan <- i
+		}
+		return i
 	} else if fs.Check == "hasValue" {
-    if err == nil && col != "" {
-      fs.inChan <- i
-    }
-    return i
-  }
+		if err == nil && col != "" {
+			fs.inChan <- i
+		}
+		return i
+	}
 
 	match, _ := evaluate.ExpressionString(fs.Match, task.Inputs, i)
 	if col == match {

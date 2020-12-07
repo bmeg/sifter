@@ -21,6 +21,14 @@ func isURL(s string) bool {
 	return false
 }
 
+func fileExists(filename string) bool {
+    info, err := os.Stat(filename)
+    if os.IsNotExist(err) {
+        return false
+    }
+    return !info.IsDir()
+}
+
 func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir string) error {
 
 	for k, v := range pb.Inputs {
@@ -75,7 +83,20 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 					}
 					inputs[k] = newPath
 				} else {
-					inputs[k], _ = filepath.Abs(path)
+					p, _ := filepath.Abs(path)
+					if fileExists(p) {
+						inputs[k] = p
+					} else {
+						if i.Source != "" {
+							tmpTask := run.NewTask(map[string]interface{}{})
+							newPath, err := tmpTask.DownloadFile(i.Source, p)
+							if err != nil {
+								log.Printf("Download Error: %s", err)
+								return err
+							}
+							inputs[k] = newPath
+						}
+					}
 				}
 			}
 		}

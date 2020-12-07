@@ -12,7 +12,7 @@ import (
 )
 
 type ScriptStep struct {
-	DockerImage string   `json:"dockerImage" jsonschema_description:"Docker image the contains script environtment"`
+	DockerImage string   `json:"dockerImage" jsonschema_description:"Docker image the contains script environment"`
 	Command     []string `json:"command" jsonschema_description:"Command line to be run"`
   Stdout      string   `json:stdout jsonschema_description:"File to capture stdout"`
 }

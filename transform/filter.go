@@ -10,7 +10,7 @@ import (
 type FilterStep struct {
 	Column string        `json:"col"`
 	Match  string        `json:"match"`
-	Exists bool          `json:"exists"`
+	Check  string        `json:"check" jsonschema_description:"How to check value, 'exists' or 'hasValue'"`
 	Method string        `json:"method"`
 	Python string        `json:"python"`
 	Steps  TransformPipe `json:"steps"`
@@ -66,11 +66,18 @@ func (fs FilterStep) run(i map[string]interface{}, task *pipeline.Task) map[stri
 		return i
 	}
 	col, err := evaluate.ExpressionString(fs.Column, task.Inputs, i)
-	if fs.Exists {
-		if err != nil {
-			return i
-		}
-	}
+	if (fs.Check == "" && fs.Match == "") || fs.Check == "exists" {
+		if err == nil {
+      fs.inChan <- i
+    }
+    return i
+	} else if fs.Check == "hasValue" {
+    if err == nil && col != "" {
+      fs.inChan <- i
+    }
+    return i
+  }
+
 	match, _ := evaluate.ExpressionString(fs.Match, task.Inputs, i)
 	if col == match {
 		fs.inChan <- i

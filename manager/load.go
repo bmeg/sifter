@@ -17,8 +17,9 @@ type Loader interface {
 }
 
 type Input struct {
-	Type string `json:"type"`
+	Type string    `json:"type"`
 	Default string `json:"default"`
+	Source string  `json:"source"`
 }
 
 type Inputs map[string]Input

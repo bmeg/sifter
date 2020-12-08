@@ -6,15 +6,14 @@ import (
 	"os"
 	"strings"
 
-	"compress/gzip"
 	"bytes"
-	"encoding/csv"
+	"compress/gzip"
 	"encoding/binary"
+	"encoding/csv"
+
 	//"encoding/gob"
 
-
 	"path/filepath"
-
 
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/pipeline"
@@ -29,10 +28,9 @@ type TransposeFileStep struct {
 	LowMem   bool   `json:"lowMem" jsonschema_description:"Do transpose without caching matrix in memory. Takes longer but works on large files"`
 }
 
-
 type csvReader struct {
-	inputPath    string
-	lineSkip int
+	inputPath string
+	lineSkip  int
 }
 
 func (c csvReader) open() (*csv.Reader, error) {

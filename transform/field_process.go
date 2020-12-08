@@ -9,7 +9,7 @@ import (
 )
 
 type FieldProcessStep struct {
-	Field  string             `json:"field"`
+	Field   string            `json:"field"`
 	Steps   TransformPipe     `json:"steps"`
 	Mapping map[string]string `json:"mapping"`
 }
@@ -25,31 +25,31 @@ func (fs FieldProcessStep) Start(in chan map[string]interface{}, task *pipeline.
 	go func() {
 		defer close(inChan)
 		for i := range in {
-    	if v, err := evaluate.GetJSONPath(fs.Field, i); err == nil {
-    		if vList, ok := v.([]interface{}); ok {
-    			for _, l := range vList {
-    				if m, ok := l.(map[string]interface{}); ok {
-    					r := map[string]interface{}{}
-    					for k, v := range m {
-    						r[k] = v
-    					}
-    					for k, v := range fs.Mapping {
-    						val, _ := evaluate.ExpressionString(v, task.Inputs, i)
-    						r[k] = val
-    					}
-    					inChan <- r
-    				} else {
-    					log.Printf("Incorrect Field Type: %s", l)
-    				}
-    			}
-    		} else {
-    			log.Printf("Field list incorrect type: %s", v)
-    		}
-    	} else {
-    		log.Printf("Field %s missing", fs.Field)
-    	}
-    }
-  }()
+			if v, err := evaluate.GetJSONPath(fs.Field, i); err == nil {
+				if vList, ok := v.([]interface{}); ok {
+					for _, l := range vList {
+						if m, ok := l.(map[string]interface{}); ok {
+							r := map[string]interface{}{}
+							for k, v := range m {
+								r[k] = v
+							}
+							for k, v := range fs.Mapping {
+								val, _ := evaluate.ExpressionString(v, task.Inputs, i)
+								r[k] = val
+							}
+							inChan <- r
+						} else {
+							log.Printf("Incorrect Field Type: %s", l)
+						}
+					}
+				} else {
+					log.Printf("Field list incorrect type: %s", v)
+				}
+			} else {
+				log.Printf("Field %s missing", fs.Field)
+			}
+		}
+	}()
 	return tout, nil
 }
 

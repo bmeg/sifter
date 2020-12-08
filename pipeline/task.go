@@ -2,15 +2,15 @@ package pipeline
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
+	"log"
 	"net/url"
 	"os"
-	"io"
-	"log"
-	"time"
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	//"github.com/bmeg/grip/gripql"
 	"github.com/bmeg/sifter/emitter"
@@ -19,21 +19,20 @@ import (
 	"github.com/jlaffaye/ftp"
 
 	"github.com/bmeg/sifter/datastore"
-
 )
 
 type Task struct {
-	Name    string
-	Runtime *Runtime
-	Workdir string
-	Inputs  map[string]interface{}
-	DataStore  datastore.DataStore
+	Name            string
+	Runtime         *Runtime
+	Workdir         string
+	Inputs          map[string]interface{}
+	DataStore       datastore.DataStore
 	AllowLocalFiles bool
 }
 
 func (m *Task) Child(name string) *Task {
 	cname := fmt.Sprintf("%s.%s", m.Name, name)
-	return &Task{Name:cname, Runtime:m.Runtime, Workdir:m.Workdir, Inputs:m.Inputs, AllowLocalFiles:m.AllowLocalFiles, DataStore:m.DataStore}
+	return &Task{Name: cname, Runtime: m.Runtime, Workdir: m.Workdir, Inputs: m.Inputs, AllowLocalFiles: m.AllowLocalFiles, DataStore: m.DataStore}
 }
 
 func (m *Task) Path(p string) (string, error) {
@@ -77,9 +76,9 @@ func (m *Task) DownloadFile(src string, dest string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		c, err := ftp.Dial(u.Host + ":21", ftp.DialWithTimeout(5*time.Second))
+		c, err := ftp.Dial(u.Host+":21", ftp.DialWithTimeout(5*time.Second))
 		if err != nil {
-		    return "", err
+			return "", err
 		}
 		err = c.Login("anonymous", "anonymous")
 		if err != nil {

@@ -2,8 +2,9 @@ package graph
 
 import (
 	"fmt"
-	"github.com/golang/protobuf/jsonpb"
+
 	"github.com/bmeg/grip/gripql"
+	"github.com/golang/protobuf/jsonpb"
 )
 
 type StdoutEmitter struct {
@@ -21,6 +22,5 @@ func (s StdoutEmitter) EmitEdge(e *gripql.Edge) error {
 	fmt.Printf("%s\n", o)
 	return nil
 }
-
 
 func (s StdoutEmitter) Close() {}

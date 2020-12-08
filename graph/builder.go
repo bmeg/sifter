@@ -2,11 +2,12 @@ package graph
 
 import (
 	"fmt"
-	"github.com/bmeg/grip/gripql"
-	"github.com/bmeg/sifter/schema"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/bmeg/grip/gripql"
+	"github.com/bmeg/sifter/schema"
 )
 
 type DomainClassInfo struct {

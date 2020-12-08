@@ -45,7 +45,7 @@ func NewGraphEmitter(driver string) (GraphEmitter, error) {
 		return StdoutEmitter{}, nil
 	}
 	if u.Scheme == "dir" {
-		return NewDirEmitter( u.Host + u.Path ), nil
+		return NewDirEmitter(u.Host + u.Path), nil
 	}
 	return nil, fmt.Errorf("Unknown driver: %s", u.Scheme)
 }

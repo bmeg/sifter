@@ -1,11 +1,11 @@
 package manager
 
 import (
-	"os"
 	"io/ioutil"
-	"strings"
 	"log"
+	"os"
 	"path"
+	"strings"
 
 	"path/filepath"
 
@@ -14,11 +14,27 @@ import (
 )
 
 func isURL(s string) bool {
-	if strings.HasPrefix(s, "http://") { return true}
-	if strings.HasPrefix(s, "https://") { return true}
-	if strings.HasPrefix(s, "s3://") { return true}
-	if strings.HasPrefix(s, "ftp://") { return true}
+	if strings.HasPrefix(s, "http://") {
+		return true
+	}
+	if strings.HasPrefix(s, "https://") {
+		return true
+	}
+	if strings.HasPrefix(s, "s3://") {
+		return true
+	}
+	if strings.HasPrefix(s, "ftp://") {
+		return true
+	}
 	return false
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
 
 func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir string) error {
@@ -75,7 +91,20 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 					}
 					inputs[k] = newPath
 				} else {
-					inputs[k], _ = filepath.Abs(path)
+					p, _ := filepath.Abs(path)
+					if fileExists(p) {
+						inputs[k] = p
+					} else {
+						if i.Source != "" {
+							tmpTask := run.NewTask(map[string]interface{}{})
+							newPath, err := tmpTask.DownloadFile(i.Source, p)
+							if err != nil {
+								log.Printf("Download Error: %s", err)
+								return err
+							}
+							inputs[k] = newPath
+						}
+					}
 				}
 			}
 		}
@@ -101,12 +130,12 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 		for i, line := range lines {
 			log.Printf("Line: %s", line)
 			if line == "OK" {
-				startStep = i+1
+				startStep = i + 1
 			}
 		}
 	}
 
-	f, err := os.OpenFile(stepFile,	os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(stepFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println(err)
 	}

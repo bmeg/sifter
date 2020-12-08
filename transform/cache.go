@@ -1,12 +1,13 @@
 package transform
 
 import (
-  "log"
-  "fmt"
-  "sync"
-  "github.com/bmeg/sifter/pipeline"
+	"fmt"
+	"log"
+	"sync"
 
-  "github.com/cnf/structhash"
+	"github.com/bmeg/sifter/pipeline"
+
+	"github.com/cnf/structhash"
 )
 
 func (cs *CacheStep) Init(task *pipeline.Task) error {

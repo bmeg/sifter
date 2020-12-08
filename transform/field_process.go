@@ -1,11 +1,11 @@
 package transform
 
 import (
-  "log"
-  "sync"
+	"log"
+	"sync"
 
-  "github.com/bmeg/sifter/evaluate"
-  "github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/pipeline"
 )
 
 type FieldProcessStep struct {
@@ -14,16 +14,15 @@ type FieldProcessStep struct {
 	Mapping map[string]string `json:"mapping"`
 }
 
-
 func (fs *FieldProcessStep) Init(task *pipeline.Task) {
-  fs.Steps.Init(task)
+	fs.Steps.Init(task)
 }
 
 func (fs FieldProcessStep) Start(in chan map[string]interface{}, task *pipeline.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 	inChan := make(chan map[string]interface{}, 100)
 	tout, _ := fs.Steps.Start(inChan, task.Child("fieldProcess"), wg)
 
-  go func() {
+	go func() {
 		defer close(inChan)
 		for i := range in {
     	if v, err := evaluate.GetJSONPath(fs.Field, i); err == nil {
@@ -55,5 +54,5 @@ func (fs FieldProcessStep) Start(in chan map[string]interface{}, task *pipeline.
 }
 
 func (fs FieldProcessStep) Close() {
-  fs.Steps.Close()
+	fs.Steps.Close()
 }

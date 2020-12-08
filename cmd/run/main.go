@@ -26,7 +26,6 @@ var Cmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-
 		if _, err := os.Stat(outDir); os.IsNotExist(err) {
 			os.MkdirAll(outDir, 0777)
 		}
@@ -38,7 +37,6 @@ var Cmd = &cobra.Command{
 
 		//TODO: This needs to be configurable
 		dsConfig := datastore.Config{URL: "mongodb://localhost:27017", Database: "sifter", Collection: "cache"}
-
 
 		man, err := manager.Init(manager.Config{Driver: driver, WorkDir: workDir, DataStore: &dsConfig})
 		if err != nil {

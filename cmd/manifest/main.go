@@ -22,47 +22,47 @@ var Cmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		log.Printf("Need to reimplement this")
 		/*
-		man, err := manager.Init(manager.Config{GripServer: gripServer, WorkDir: workDir})
-		if err != nil {
-			log.Printf("Error stating load manager: %s", err)
-			return err
-		}
-		defer man.Close()
-
-		if runOnce {
-			if man.GraphExists(graph) {
-				log.Printf("Graph found, exiting")
-				return nil
+			man, err := manager.Init(manager.Config{GripServer: gripServer, WorkDir: workDir})
+			if err != nil {
+				log.Printf("Error stating load manager: %s", err)
+				return err
 			}
-		}
+			defer man.Close()
 
-		manifestURL := args[0]
-		baseURL := args[1]
+			if runOnce {
+				if man.GraphExists(graph) {
+					log.Printf("Graph found, exiting")
+					return nil
+				}
+			}
 
-		dir, err := ioutil.TempDir(workDir, "sifterwork_")
-		if err != nil {
-			log.Printf("%s", err)
-			return err
-		}
+			manifestURL := args[0]
+			baseURL := args[1]
 
-		run, err := man.NewRuntime(graph, dir, nil)
-		if err != nil {
-			log.Printf("Error stating load runtime: %s", err)
-			return err
-		}
+			dir, err := ioutil.TempDir(workDir, "sifterwork_")
+			if err != nil {
+				log.Printf("%s", err)
+				return err
+			}
 
-		task := run.NewTask(map[string]interface{}{})
-		_, err = task.DownloadFile(manifestURL, "input.manifest")
-		if err != nil {
-			log.Printf("Error downloading manifest %s : %s", manifestURL, err)
-			return err
-		}
+			run, err := man.NewRuntime(graph, dir, nil)
+			if err != nil {
+				log.Printf("Error stating load runtime: %s", err)
+				return err
+			}
 
-		mani := steps.ManifestLoadStep{
-			Input:   "input.manifest",
-			BaseURL: baseURL,
-		}
-		mani.Run(task)
+			task := run.NewTask(map[string]interface{}{})
+			_, err = task.DownloadFile(manifestURL, "input.manifest")
+			if err != nil {
+				log.Printf("Error downloading manifest %s : %s", manifestURL, err)
+				return err
+			}
+
+			mani := steps.ManifestLoadStep{
+				Input:   "input.manifest",
+				BaseURL: baseURL,
+			}
+			mani.Run(task)
 		*/
 		return nil
 	},

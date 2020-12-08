@@ -2,8 +2,9 @@ package extractors
 
 import (
 	"log"
-	"github.com/bmeg/sifter/pipeline"
+
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/pipeline"
 )
 
 type DownloadStep struct {

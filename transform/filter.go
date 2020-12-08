@@ -1,16 +1,17 @@
 package transform
 
 import (
-	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
 	"log"
 	"sync"
+
+	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/pipeline"
 )
 
 type FilterStep struct {
 	Field  string        `json:"field"`
 	Match  string        `json:"match"`
-	Exists bool          `json:"exists"`
+	Check  string        `json:"check" jsonschema_description:"How to check value, 'exists' or 'hasValue'"`
 	Method string        `json:"method"`
 	Python string        `json:"python"`
 	Steps  TransformPipe `json:"steps"`
@@ -64,16 +65,22 @@ func (fs FilterStep) run(i map[string]interface{}, task *pipeline.Task) map[stri
 		}
 		return i
 	}
-	if _, err := evaluate.GetJSONPath(fs.Field, i); err == nil {
-		if fs.Exists {
-			fs.inChan <- i
-			return i
-		}
-		valueStr, _ := evaluate.ExpressionString(fs.Field, task.Inputs, i)
-		match, _ := evaluate.ExpressionString(fs.Match, task.Inputs, i)
-		if valueStr == match {
+	col, err := evaluate.ExpressionString(fs.Field, task.Inputs, i)
+	if (fs.Check == "" && fs.Match == "") || fs.Check == "exists" {
+		if err == nil {
 			fs.inChan <- i
 		}
+		return i
+	} else if fs.Check == "hasValue" {
+		if err == nil && col != "" {
+			fs.inChan <- i
+		}
+		return i
+	}
+
+	match, _ := evaluate.ExpressionString(fs.Match, task.Inputs, i)
+	if col == match {
+		fs.inChan <- i
 	}
 	return i
 }

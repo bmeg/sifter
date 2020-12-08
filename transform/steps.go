@@ -16,6 +16,7 @@ import (
 )
 
 var DEFAULT_ENGINE = "python"
+var PIPE_SIZE = 20
 
 type ObjectCreateStep struct {
 	Class string `json:"class" jsonschema_description:"Object class, should match declared class in JSON Schema"`
@@ -246,7 +247,7 @@ func (ts TransformStep) Close() {
 func (ts TransformStep) Start(in chan map[string]interface{},
 	task *pipeline.Task, wg *sync.WaitGroup) chan map[string]interface{} {
 
-	out := make(chan map[string]interface{}, 100)
+	out := make(chan map[string]interface{}, PIPE_SIZE)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()

@@ -66,7 +66,7 @@ func (ml *TableLoadStep) Run(task *pipeline.Task) error {
 		columns = ml.Columns
 	}
 
-	procChan := make(chan map[string]interface{}, 100)
+	procChan := make(chan map[string]interface{}, 25)
 	wg := &sync.WaitGroup{}
 
 	if err := ml.Transform.Init(task); err != nil {

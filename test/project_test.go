@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/bmeg/sifter/cmd/run"
 	"github.com/bmeg/sifter/manager"
-  "github.com/bmeg/sifter/cmd/run"
 )
 
 func TestProject(t *testing.T) {
@@ -19,10 +19,10 @@ func TestProject(t *testing.T) {
 	man.AllowLocalFiles = true
 	inputs := map[string]interface{}{}
 	dir, err := ioutil.TempDir(workDir, "sifterwork_")
-  defer os.RemoveAll(dir)
+	defer os.RemoveAll(dir)
 
 	err = run.Execute("./resources/project.yaml", dir, inputs, man)
-  if err != nil {
+	if err != nil {
 		t.Error(err)
 	}
 	os.RemoveAll(dir)

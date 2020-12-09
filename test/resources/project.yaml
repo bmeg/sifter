@@ -1,0 +1,18 @@
+
+class: Playbook
+
+
+inputs:
+  genes:
+    type: File
+    default: ./gene_with_protein_product.json
+
+steps:
+  - jsonLoad:
+      input: "{{inputs.genes}}"
+      transform:
+        - project:
+            mapping:
+              _id: "{{row.ensembl_gene_id}}"
+        - emit:
+            name: new_ids

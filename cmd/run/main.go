@@ -48,11 +48,6 @@ var Cmd = &cobra.Command{
 		man.AllowLocalFiles = true
 
 		playFile := args[0]
-		pb := manager.Playbook{}
-		if err := manager.ParseFile(playFile, &pb); err != nil {
-			log.Printf("%s", err)
-			return err
-		}
 
 		inputs := map[string]interface{}{}
 		if len(args) > 1 {
@@ -65,9 +60,6 @@ var Cmd = &cobra.Command{
 		for k, v := range cmdInputs {
 			inputs[k] = v
 		}
-
-		fmt.Printf("Starting: %s\n", playFile)
-
 		dir := resume
 		if dir == "" {
 			d, err := ioutil.TempDir(workDir, "sifterwork_")
@@ -77,8 +69,7 @@ var Cmd = &cobra.Command{
 			}
 			dir = d
 		}
-
-		pb.Execute(man, inputs, dir)
+		Execute(playFile, dir, inputs, man)
 		if !keep {
 			os.RemoveAll(dir)
 		}

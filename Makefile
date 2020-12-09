@@ -26,5 +26,10 @@ lint:
 lint-depends:
 	@go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.22.2
 
+test: .TEST
+
+.TEST:
+	go test ./test
+
 docs:
 	@go run docschema/main.go | ./docschema/schema-to-markdown.py > Playbook.md

@@ -9,7 +9,7 @@ import (
 )
 
 type Allele struct {
-	AlleleId          string `json:"allele_id"`
+	AlleleID          string `json:"allele_id"`
 	Genome            string `json:"genome"`
 	Chromosome        string `json:"chromosome"`
 	Start             uint64 `json:"start"`
@@ -17,11 +17,11 @@ type Allele struct {
 	Strand            string `json:"strand"`
 	ReferenceBases    string `json:"reference_bases"`
 	AlternateBases    string `json:"alternate_bases"`
-	HugoSymbol        string `json:hugo_symbol`
+	HugoSymbol        string `json:"hugo_symbol"`
 	EnsemblTranscript string `json:"ensembl_transcript"`
 	Type              string `json:"type"`
 	Effect            string `json:"effect"`
-	DBSNP_RS          string `json:"dbSNP_RS"`
+	DBSNPRS           string `json:"dbSNP_RS"`
 }
 
 func (al *Allele) Render() ([]*gripql.Vertex, []*gripql.Edge) {
@@ -46,8 +46,8 @@ func (al *Allele) Render() ([]*gripql.Vertex, []*gripql.Edge) {
 	if len(al.Effect) > 0 {
 		data["effect"] = al.Effect
 	}
-	if len(al.DBSNP_RS) > 0 {
-		data["dbSNP_RS"] = al.DBSNP_RS
+	if len(al.DBSNPRS) > 0 {
+		data["dbSNP_RS"] = al.DBSNPRS
 	}
 
 	a := gripql.Vertex{Gid: al.ID(), Label: "Allele", Data: protoutil.AsStruct(data)}

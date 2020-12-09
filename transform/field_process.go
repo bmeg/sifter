@@ -10,7 +10,7 @@ import (
 
 type FieldProcessStep struct {
 	Field   string            `json:"field"`
-	Steps   TransformPipe     `json:"steps"`
+	Steps   Pipe              `json:"steps"`
 	Mapping map[string]string `json:"mapping"`
 }
 

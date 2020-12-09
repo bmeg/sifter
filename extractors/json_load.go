@@ -15,9 +15,9 @@ import (
 )
 
 type JSONLoadStep struct {
-	Input         string                  `json:"input" jsonschema_description:"Path of multiline JSON file to transform"`
-	Transform     transform.TransformPipe `json:"transform" jsonschema_description:"Transformation Pipeline"`
-	SkipIfMissing bool                    `json:"skipIfMissing" jsonschema_description:"Skip without error if file does note exist"`
+	Input         string         `json:"input" jsonschema_description:"Path of multiline JSON file to transform"`
+	Transform     transform.Pipe `json:"transform" jsonschema_description:"Transformation Pipeline"`
+	SkipIfMissing bool           `json:"skipIfMissing" jsonschema_description:"Skip without error if file does note exist"`
 }
 
 func (ml *JSONLoadStep) Run(task *pipeline.Task) error {

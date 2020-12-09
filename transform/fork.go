@@ -7,7 +7,7 @@ import (
 )
 
 type ForkStep struct {
-	Transform []TransformPipe `json:"transform"`
+	Transform []Pipe `json:"transform"`
 }
 
 func (fs *ForkStep) Init(task *pipeline.Task) error {

@@ -150,7 +150,7 @@ func StartLocalExecutor(workdir string) (Runner, error) {
 		sent := false
 		defer close(m)
 		var out []byte
-		buf := make([]byte, 1024, 1024)
+		buf := make([]byte, 1024)
 		for {
 			n, ierr := stdout.Read(buf)
 			if !sent {
@@ -180,8 +180,7 @@ func StartLocalExecutor(workdir string) (Runner, error) {
 			}
 		}
 	}()
-	var port int
-	port = <-m
+	port := <-m
 	serverAddr := fmt.Sprintf("localhost:%d", port)
 	conn, err := grpc.Dial(serverAddr, grpc.WithInsecure())
 	if err != nil {
@@ -206,7 +205,7 @@ func (run *LocalRunner) Close() {
 }
 
 type DockerRunner struct {
-	containerId string
+	containerID string
 	conn        *grpc.ClientConn
 	client      ExecutorClient
 }
@@ -244,7 +243,7 @@ func StartDockerExecutor(dockerImage string) (Runner, error) {
 		return nil, err
 	}
 	client := NewExecutorClient(conn)
-	return &DockerRunner{containerId: id, conn: conn, client: client}, nil
+	return &DockerRunner{containerID: id, conn: conn, client: client}, nil
 }
 
 func (run *DockerRunner) Compile(code *Code) (*CompileResult, error) {
@@ -256,8 +255,8 @@ func (run *DockerRunner) Call(in *Input) (*Result, error) {
 }
 
 func (run *DockerRunner) Close() {
-	log.Printf("Closing docker %s", run.containerId)
+	log.Printf("Closing docker %s", run.containerID)
 	run.conn.Close()
-	cmd := exec.Command("docker", "kill", run.containerId)
+	cmd := exec.Command("docker", "kill", run.containerID)
 	cmd.Run()
 }

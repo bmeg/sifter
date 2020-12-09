@@ -31,8 +31,8 @@ func MongoGraphExists(uri string, graph string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
-
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	err = client.Connect(ctx)
 	if err != nil {
 		return false, err
@@ -60,7 +60,8 @@ func NewMongoEmitter(uri string, graph string) (MongoEmitter, error) {
 	if err != nil {
 		return MongoEmitter{}, err
 	}
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	err = client.Connect(ctx)
 
 	addGraph(client, database, graph)

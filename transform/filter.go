@@ -9,12 +9,12 @@ import (
 )
 
 type FilterStep struct {
-	Field  string        `json:"field"`
-	Match  string        `json:"match"`
-	Check  string        `json:"check" jsonschema_description:"How to check value, 'exists' or 'hasValue'"`
-	Method string        `json:"method"`
-	Python string        `json:"python"`
-	Steps  TransformPipe `json:"steps"`
+	Field  string `json:"field"`
+	Match  string `json:"match"`
+	Check  string `json:"check" jsonschema_description:"How to check value, 'exists' or 'hasValue'"`
+	Method string `json:"method"`
+	Python string `json:"python"`
+	Steps  Pipe   `json:"steps"`
 	inChan chan map[string]interface{}
 	proc   evaluate.Processor
 }
@@ -22,7 +22,7 @@ type FilterStep struct {
 func (fs *FilterStep) Init(task *pipeline.Task) {
 	if fs.Python != "" && fs.Method != "" {
 		log.Printf("Starting Filter Map: %s", fs.Python)
-		e := evaluate.GetEngine(DEFAULT_ENGINE, task.Workdir)
+		e := evaluate.GetEngine(DefaultEngine, task.Workdir)
 		c, err := e.Compile(fs.Python, fs.Method)
 		if err != nil {
 			log.Printf("Compile Error: %s", err)

@@ -14,7 +14,7 @@ import (
 
 type UntarStep struct {
 	Input string `json:"input" jsonschema_description:"Path to TAR file"`
-	Strip int    `json:strip jsonschema_description:"Number of base directories to strip with untaring"`
+	Strip int    `json:"strip" jsonschema_description:"Number of base directories to strip with untaring"`
 }
 
 func (us *UntarStep) Run(task *pipeline.Task) error {

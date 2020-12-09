@@ -16,7 +16,7 @@ type Link struct {
 	Backref      string `json:"backref,omitempty"`
 	Label        string `json:"label"`
 	TargetType   string `json:"target_type"`
-	Multiplicity string `json:multiplicity`
+	Multiplicity string `json:"multiplicity"`
 	Required     bool   `json:"required"`
 	Subgroup     []Link `json:"subgroup"`
 }
@@ -107,7 +107,7 @@ type Edge struct {
 type Properties map[string]PropertyElement
 
 type Schema struct {
-	Id         string     `json:"id"`
+	ID         string     `json:"id"`
 	Title      string     `json:"title"`
 	Type       string     `json:"type"`
 	Required   []string   `json:"required"`
@@ -151,7 +151,7 @@ func Load(path string) (Schemas, error) {
 	out := Schemas{Classes: map[string]Schema{}}
 	for _, f := range files {
 		if s, err := LoadSchema(f); err == nil {
-			out.Classes[s.Id] = s
+			out.Classes[s.ID] = s
 		} else {
 			log.Printf("Error loading: %s", err)
 		}

@@ -18,7 +18,7 @@ import (
 	"github.com/bmeg/grip/protoutil"
 )
 
-type GraphMapping struct {
+type Mapping struct {
 	Domains map[string]*DomainMap `json:"domains"`
 }
 
@@ -41,12 +41,12 @@ type EdgeTransform struct {
 }
 
 type ObjectMap struct {
-	Fields map[string]*FieldTransform `fields`
-	Edges  map[string]*EdgeTransform  `edges`
+	Fields map[string]*FieldTransform `json:"fields"`
+	Edges  map[string]*EdgeTransform  `json:"edges"`
 }
 
-func LoadMapping(path string, inputDir string) (*GraphMapping, error) {
-	o := GraphMapping{}
+func LoadMapping(path string, inputDir string) (*Mapping, error) {
+	o := Mapping{}
 	raw, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read data at path %s: \n%v", path, err)

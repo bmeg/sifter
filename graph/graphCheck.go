@@ -7,12 +7,12 @@ import (
 	"github.com/akrylysov/pogreb"
 )
 
-type GraphCheck struct {
+type Check struct {
 	vertDB *pogreb.DB
 	edgeDB *pogreb.DB
 }
 
-func NewGraphCheck(dir string) (*GraphCheck, error) {
+func NewGraphCheck(dir string) (*Check, error) {
 	vertFile := filepath.Join(dir, "vert.db")
 	edgeFile := filepath.Join(dir, "edge.db")
 	vertDB, err := pogreb.Open(vertFile, nil)
@@ -23,19 +23,19 @@ func NewGraphCheck(dir string) (*GraphCheck, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &GraphCheck{vertDB: vertDB, edgeDB: edgeDB}, nil
+	return &Check{vertDB: vertDB, edgeDB: edgeDB}, nil
 }
 
-func (gc *GraphCheck) AddVertex(g string) {
+func (gc *Check) AddVertex(g string) {
 	gc.vertDB.Put([]byte(g), []byte{})
 }
 
-func (gc *GraphCheck) AddEdge(from, to string) {
+func (gc *Check) AddEdge(from, to string) {
 	gc.edgeDB.Put([]byte(from), []byte(to))
 	gc.edgeDB.Put([]byte(to), []byte(from))
 }
 
-func (gc *GraphCheck) GetEdgeVertices() chan string {
+func (gc *Check) GetEdgeVertices() chan string {
 	out := make(chan string, 100)
 	go func() {
 		defer close(out)
@@ -55,7 +55,7 @@ func (gc *GraphCheck) GetEdgeVertices() chan string {
 	return out
 }
 
-func (gc *GraphCheck) HasVertex(s string) bool {
+func (gc *Check) HasVertex(s string) bool {
 	val, err := gc.vertDB.Get([]byte(s))
 	if val == nil || err != nil {
 		return false
@@ -63,7 +63,7 @@ func (gc *GraphCheck) HasVertex(s string) bool {
 	return true
 }
 
-func (gc *GraphCheck) GetEdgeSource(s string) string {
+func (gc *Check) GetEdgeSource(s string) string {
 	val, err := gc.edgeDB.Get([]byte(s))
 	if val == nil || err != nil {
 		return ""

@@ -103,19 +103,19 @@ func (m *Task) DownloadFile(src string, dest string) (string, error) {
 	}
 
 	if strings.HasPrefix(src, "s3:") {
-		s3_key := os.Getenv("AWS_ACCESS_KEY_ID")
-		s3_secret := os.Getenv("AWS_SECRET_ACCESS_KEY")
-		s3_endpoint := os.Getenv("AWS_ENDPOINT")
-		if s3_endpoint != "" {
+		s3Key := os.Getenv("AWS_ACCESS_KEY_ID")
+		s3Secret := os.Getenv("AWS_SECRET_ACCESS_KEY")
+		s3Endpoint := os.Getenv("AWS_ENDPOINT")
+		if s3Endpoint != "" {
 			u, err := url.Parse(src)
 			if err != nil {
 				return "", err
 			}
 			//"s3::http://127.0.0.1:9000/test-bucket/hello.txt?aws_access_key_id=KEYID&aws_access_key_secret=SECRETKEY&region=us-east-2"
-			src = fmt.Sprintf("s3::%s/%s%s", s3_endpoint, u.Host, u.Path)
+			src = fmt.Sprintf("s3::%s/%s%s", s3Endpoint, u.Host, u.Path)
 		}
-		if s3_key != "" && s3_secret != "" {
-			src = src + fmt.Sprintf("?aws_access_key_id=%s&aws_access_key_secret=%s", s3_key, s3_secret)
+		if s3Key != "" && s3Secret != "" {
+			src = src + fmt.Sprintf("?aws_access_key_id=%s&aws_access_key_secret=%s", s3Key, s3Secret)
 		}
 		src = src + "&archive=false"
 	} else {

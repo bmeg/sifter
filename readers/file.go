@@ -8,23 +8,25 @@ import (
 )
 
 func ReadFileLines(path string) (chan []byte, error) {
-	if file, err := os.Open(path); err == nil {
+	var err error
+	var file *os.File
+	if file, err = os.Open(path); err == nil {
 		return ReadLines(file)
-	} else {
-		return nil, err
 	}
+	return nil, err
 }
 
 func ReadGzipLines(path string) (chan []byte, error) {
-	if gfile, err := os.Open(path); err == nil {
+	var err error
+	var gfile *os.File
+	if gfile, err = os.Open(path); err == nil {
 		file, err := gzip.NewReader(gfile)
 		if err != nil {
 			return nil, err
 		}
 		return ReadLines(file)
-	} else {
-		return nil, err
 	}
+	return nil, err
 }
 
 func ReadLines(r io.Reader) (chan []byte, error) {

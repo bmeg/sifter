@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	_ "github.com/go-python/gpython/builtin"
+	_ "github.com/go-python/gpython/builtin" // initialize builing gpython functions
 	"github.com/go-python/gpython/compile"
 	"github.com/go-python/gpython/py"
 	"github.com/go-python/gpython/vm"
@@ -30,12 +30,12 @@ func (g GPythonEngine) Compile(code string, method string) (Processor, error) {
 
 func (g GPythonProcessor) Close() {}
 
-func (d GPythonProcessor) Evaluate(inputs ...map[string]interface{}) (map[string]interface{}, error) {
-	return d.code.Evaluate(d.method, inputs...)
+func (g GPythonProcessor) Evaluate(inputs ...map[string]interface{}) (map[string]interface{}, error) {
+	return g.code.Evaluate(g.method, inputs...)
 }
 
-func (d GPythonProcessor) EvaluateBool(inputs ...map[string]interface{}) (bool, error) {
-	return d.code.EvaluateBool(d.method, inputs...)
+func (g GPythonProcessor) EvaluateBool(inputs ...map[string]interface{}) (bool, error) {
+	return g.code.EvaluateBool(g.method, inputs...)
 }
 
 func PyObject(i interface{}) py.Object {

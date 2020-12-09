@@ -47,7 +47,7 @@ func (s Schema) Validate(data map[string]interface{}) (map[string]interface{}, e
 	for _, r := range s.Required {
 		if _, ok := out[r]; !ok {
 			log.Printf("Not Found %s in %s ", r, data)
-			return nil, fmt.Errorf("Required field '%s' in '%s' not found", r, s.Id)
+			return nil, fmt.Errorf("Required field '%s' in '%s' not found", r, s.ID)
 		}
 	}
 
@@ -139,8 +139,8 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
 					gid = ks
 				}
 			} else {
-				err := fmt.Errorf("node_id field '%s' not in %s data", k, s.Id)
-				log.Printf("node_id field '%s' not in %s data", k, s.Id)
+				err := fmt.Errorf("node_id field '%s' not in %s data", k, s.ID)
+				log.Printf("node_id field '%s' not in %s data", k, s.ID)
 				result = multierror.Append(result, err)
 			}
 		} else {
@@ -150,12 +150,12 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
 		}
 	}
 	if s.Edge != nil {
-		if tId, ok := data[s.Edge.To]; ok {
-			if tIdStr, ok := tId.(string); ok {
-				if fId, ok := data[s.Edge.From]; ok {
-					if fIdStr, ok := fId.(string); ok {
+		if tID, ok := data[s.Edge.To]; ok {
+			if tIDStr, ok := tID.(string); ok {
+				if fID, ok := data[s.Edge.From]; ok {
+					if fIDStr, ok := fID.(string); ok {
 						ds := protoutil.AsStruct(outData)
-						e := gripql.Edge{Gid: gid, To: tIdStr, From: fIdStr, Label: s.Edge.Label, Data: ds}
+						e := gripql.Edge{Gid: gid, To: tIDStr, From: fIDStr, Label: s.Edge.Label, Data: ds}
 						out = append(out, GraphElement{Edge: &e})
 					}
 				} else {
@@ -169,7 +169,7 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
 		}
 	} else {
 		if gid == "" {
-			log.Printf("GID not found for %s", s.Id)
+			log.Printf("GID not found for %s", s.ID)
 		}
 		ds := protoutil.AsStruct(outData)
 		v := gripql.Vertex{Gid: gid, Label: s.Title, Data: ds}

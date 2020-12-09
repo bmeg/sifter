@@ -16,8 +16,8 @@ import (
 )
 
 type TableTransform struct {
-	Name      string                  `json:"name" jsonschema_description:"Name of the SQL file to transform"`
-	Transform transform.TransformPipe `json:"transform" jsonschema_description:"The transform pipeline"`
+	Name      string         `json:"name" jsonschema_description:"Name of the SQL file to transform"`
+	Transform transform.Pipe `json:"transform" jsonschema_description:"The transform pipeline"`
 }
 
 type SQLDumpStep struct {

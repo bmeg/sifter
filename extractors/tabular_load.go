@@ -17,12 +17,12 @@ import (
 )
 
 type TableLoadStep struct {
-	Input         string                  `json:"input" jsonschema_description:"TSV to be transformed"`
-	RowSkip       int                     `json:"rowSkip" jsonschema_description:"Number of header rows to skip"`
-	SkipIfMissing bool                    `json:"skipIfMissing" jsonschema_description:"Skip without error if file missing"`
-	Columns       []string                `json:"columns" jsonschema_description:"Manually set names of columns"`
-	Transform     transform.TransformPipe `json:"transform" jsonschema_description:"Transform pipelines"`
-	Sep           string                  `json:"sep" jsonschema_description:"Seperator "\\t" for TSVs or "," for CSVs"`
+	Input         string         `json:"input" jsonschema_description:"TSV to be transformed"`
+	RowSkip       int            `json:"rowSkip" jsonschema_description:"Number of header rows to skip"`
+	SkipIfMissing bool           `json:"skipIfMissing" jsonschema_description:"Skip without error if file missing"`
+	Columns       []string       `json:"columns" jsonschema_description:"Manually set names of columns"`
+	Transform     transform.Pipe `json:"transform" jsonschema_description:"Transform pipelines"`
+	Sep           string         `json:"sep" jsonschema_description:"Separator \\t for TSVs or , for CSVs"`
 }
 
 func (ml *TableLoadStep) Run(task *pipeline.Task) error {

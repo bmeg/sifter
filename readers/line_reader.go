@@ -17,11 +17,12 @@ type LineReader struct {
 }
 
 func NewLineReader(path string) (*LineReader, error) {
-	if file, err := os.Open(path); err != nil {
+	var err error
+	var file *os.File
+	if file, err = os.Open(path); err != nil {
 		return nil, err
-	} else {
-		return &LineReader{file: file}, nil
 	}
+	return &LineReader{file: file}, nil
 }
 
 func (l *LineReader) Close() error {

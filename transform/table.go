@@ -82,18 +82,18 @@ func (tr *TableReplaceStep) Init(task *pipeline.Task) error {
 	return nil
 }
 
-func (tw *TableReplaceStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+func (tr *TableReplaceStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
 
-	if _, ok := i[tw.Field]; ok {
+	if _, ok := i[tr.Field]; ok {
 		out := map[string]interface{}{}
 		for k, v := range i {
-			if k == tw.Field {
+			if k == tr.Field {
 				d := k
-				if tw.Target != "" {
-					d = tw.Target
+				if tr.Target != "" {
+					d = tr.Target
 				}
 				if x, ok := v.(string); ok {
-					if n, ok := tw.table[x]; ok {
+					if n, ok := tr.table[x]; ok {
 						out[d] = n
 					} else {
 						out[d] = x
@@ -102,7 +102,7 @@ func (tw *TableReplaceStep) Run(i map[string]interface{}, task *pipeline.Task) m
 					o := []interface{}{}
 					for _, y := range x {
 						if z, ok := y.(string); ok {
-							if n, ok := tw.table[z]; ok {
+							if n, ok := tr.table[z]; ok {
 								o = append(o, n)
 							} else {
 								o = append(o, z)
@@ -159,12 +159,12 @@ func (tr *TableProjectStep) Init(task *pipeline.Task) error {
 	return nil
 }
 
-func (tw *TableProjectStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-	if fv, ok := i[tw.Field]; ok {
+func (tr *TableProjectStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+	if fv, ok := i[tr.Field]; ok {
 		if fstr, ok := fv.(string); ok {
-			if pv, ok := tw.table[fstr]; ok {
-				for k, v := range tw.Project {
-					if ki, ok := tw.header[v]; ok {
+			if pv, ok := tr.table[fstr]; ok {
+				for k, v := range tr.Project {
+					if ki, ok := tr.header[v]; ok {
 						i[k] = pv[ki]
 					}
 				}

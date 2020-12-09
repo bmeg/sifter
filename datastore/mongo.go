@@ -87,10 +87,7 @@ func (ms mongoStore) SetRecordStream(key string, data chan map[string]interface{
 func (ms mongoStore) HasRecordStream(key string) bool {
 	coll := ms.client.Database(ms.database).Collection(ms.collection)
 	result := coll.FindOne(context.Background(), bson.M{"_id": key})
-	if result.Err() != nil {
-		return false
-	}
-	return true
+	return result.Err() == nil
 }
 
 func (ms mongoStore) GetRecordStream(key string) chan map[string]interface{} {

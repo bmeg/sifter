@@ -17,7 +17,7 @@ type Extractor struct {
 	SQLDumpLoad   *SQLDumpStep       `json:"sqldumpLoad" jsonschema_description:"Parse the content of a SQL dump to find insert and run a transform pipeline"`
 	FileGlob      *FileGlobStep      `json:"fileGlob" jsonschema_description:"Scan a directory and run a ETL pipeline on each of the files"`
 	Script        *ScriptStep        `json:"script" jsonschema_description:"Execute a script"`
-	DigLoad       *DigLoadStep       `json;"digLoad" jsonschema_description:"Use a GRIP Dig server to get data and run a transform pipeline"`
+	DigLoad       *DigLoadStep       `json:"digLoad" jsonschema_description:"Use a GRIP Dig server to get data and run a transform pipeline"`
 }
 
 func (step *Extractor) Run(run *pipeline.Runtime, inputs map[string]interface{}) error {

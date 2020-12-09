@@ -15,9 +15,9 @@ import (
 )
 
 type XMLLoadStep struct {
-	Input         string                  `json:"input"`
-	Transform     transform.TransformPipe `json:"transform"`
-	SkipIfMissing bool                    `json:"skipIfMissing"`
+	Input         string         `json:"input"`
+	Transform     transform.Pipe `json:"transform"`
+	SkipIfMissing bool           `json:"skipIfMissing"`
 }
 
 func xmlStream(file io.Reader, out chan map[string]interface{}) {

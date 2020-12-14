@@ -20,10 +20,16 @@ tidy:
 
 # Run code style and other checks
 lint:
-	@golangci-lint run
+	@golangci-lint run --disable-all \
+		-E gofmt -E goimports -E misspell -E typecheck -E golint -E gosimple -E govet
 
 lint-depends:
-	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
+	@go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.22.2
+
+test: .TEST
+
+.TEST:
+	go test ./test
 
 docs:
 	@go run docschema/main.go | ./docschema/schema-to-markdown.py > Playbook.md

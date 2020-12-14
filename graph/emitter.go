@@ -8,13 +8,13 @@ import (
 	"github.com/bmeg/grip/gripql"
 )
 
-type GraphEmitter interface {
+type Emitter interface {
 	EmitVertex(v *gripql.Vertex) error
 	EmitEdge(e *gripql.Edge) error
 	Close()
 }
 
-func GraphExists(server string, graph string, args string) (bool, error) {
+func Exists(server string, graph string, args string) (bool, error) {
 	u, _ := url.Parse(server)
 
 	if u.Scheme == "grip" {
@@ -33,7 +33,7 @@ func GraphExists(server string, graph string, args string) (bool, error) {
 	return false, fmt.Errorf("Unknown driver: %s", u.Scheme)
 }
 
-func NewGraphEmitter(driver string) (GraphEmitter, error) {
+func NewGraphEmitter(driver string) (Emitter, error) {
 	u, _ := url.Parse(driver)
 	if u.Scheme == "grip" {
 		return NewGripEmitter(u.Host, u.Path)
@@ -45,7 +45,7 @@ func NewGraphEmitter(driver string) (GraphEmitter, error) {
 		return StdoutEmitter{}, nil
 	}
 	if u.Scheme == "dir" {
-		return NewDirEmitter( u.Host + u.Path ), nil
+		return NewDirEmitter(u.Host + u.Path), nil
 	}
 	return nil, fmt.Errorf("Unknown driver: %s", u.Scheme)
 }

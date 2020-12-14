@@ -3,9 +3,9 @@ package cmd
 import (
 	"os"
 
+	"github.com/bmeg/sifter/cmd/graph"
 	"github.com/bmeg/sifter/cmd/manifest"
 	"github.com/bmeg/sifter/cmd/run"
-	"github.com/bmeg/sifter/cmd/graph"
 	"github.com/spf13/cobra"
 )
 

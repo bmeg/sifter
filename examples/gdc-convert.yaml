@@ -51,7 +51,7 @@ steps:
         - objectCreate:
             class: case
         - fieldProcess:
-            col: samples
+            field: samples
             mapping:
               cases: "{{row.id}}"
             steps:
@@ -63,17 +63,17 @@ steps:
               - objectCreate:
                   class: sample
               - fieldProcess:
-                  col: portions
+                  field: portions
                   mapping:
                     samples: "{{row.id}}"
                   steps:
                     - fieldProcess:
-                        col: analytes
+                        field: analytes
                         mapping:
                           samples: "{{row.samples}}"
                         steps:
                           - fieldProcess:
-                              col: aliquots
+                              field: aliquots
                               mapping:
                                 samples: "{{row.samples}}"
                               steps:

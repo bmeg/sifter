@@ -2,11 +2,12 @@ package transform
 
 import (
 	"fmt"
-	"github.com/bmeg/golib"
-	"github.com/bmeg/sifter/emitter"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/bmeg/golib"
+	"github.com/bmeg/sifter/emitter"
 
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/pipeline"
@@ -15,19 +16,20 @@ import (
 type TableWriteStep struct {
 	Output  string   `json:"output" jsonschema_description:"Name of file to create"`
 	Columns []string `json:"columns" jsonschema_description:"Columns to be written into table file"`
-	Sep     string `json:"sep"`
+	Sep     string   `json:"sep"`
 	emit    emitter.TableEmitter
 }
 
 type TableReplaceStep struct {
-	Input string `json:"input"`
-	Field string `json:"field"`
-	table map[string]string
+	Input  string `json:"input"`
+	Field  string `json:"field"`
+	Target string `json:"target"`
+	table  map[string]string
 }
 
 type TableProjectStep struct {
 	Input   string `json:"input"`
-  Sep     string `json:"sep"`
+	Sep     string `json:"sep"`
 	Field   string `json:"field"`
 	Project map[string]string
 	header  map[string]int
@@ -80,32 +82,36 @@ func (tr *TableReplaceStep) Init(task *pipeline.Task) error {
 	return nil
 }
 
-func (tw *TableReplaceStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+func (tr *TableReplaceStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
 
-	if _, ok := i[tw.Field]; ok {
+	if _, ok := i[tr.Field]; ok {
 		out := map[string]interface{}{}
 		for k, v := range i {
-			if k == tw.Field {
+			if k == tr.Field {
+				d := k
+				if tr.Target != "" {
+					d = tr.Target
+				}
 				if x, ok := v.(string); ok {
-					if n, ok := tw.table[x]; ok {
-						out[k] = n
+					if n, ok := tr.table[x]; ok {
+						out[d] = n
 					} else {
-						out[k] = x
+						out[d] = x
 					}
 				} else if x, ok := v.([]interface{}); ok {
 					o := []interface{}{}
 					for _, y := range x {
 						if z, ok := y.(string); ok {
-							if n, ok := tw.table[z]; ok {
+							if n, ok := tr.table[z]; ok {
 								o = append(o, n)
 							} else {
 								o = append(o, z)
 							}
 						}
 					}
-					out[k] = o
+					out[d] = o
 				} else {
-					out[k] = v
+					out[d] = v
 				}
 			} else {
 				out[k] = v
@@ -132,19 +138,19 @@ func (tr *TableProjectStep) Init(task *pipeline.Task) error {
 	if err != nil {
 		return err
 	}
-  if tr.Sep == "" {
-    tr.Sep = "\t"
-  }
+	if tr.Sep == "" {
+		tr.Sep = "\t"
+	}
 	tr.header = nil
 	tr.table = map[string][]string{}
 	for line := range inputStream {
 		if len(line) > 0 {
 			row := strings.Split(string(line), tr.Sep)
 			if tr.header == nil {
-        tr.header = map[string]int{}
-        for i, k := range row {
-          tr.header[k] = i
-        }
+				tr.header = map[string]int{}
+				for i, k := range row {
+					tr.header[k] = i
+				}
 			} else {
 				tr.table[row[0]] = row
 			}
@@ -153,17 +159,17 @@ func (tr *TableProjectStep) Init(task *pipeline.Task) error {
 	return nil
 }
 
-func (tw *TableProjectStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-	if fv, ok := i[tw.Field]; ok {
-    if fstr, ok := fv.(string); ok {
-      if pv, ok := tw.table[fstr]; ok {
-  		  for k, v := range tw.Project {
-          if ki, ok := tw.header[v]; ok {
-            i[k] = pv[ki]
-          }
-  			}
-  		}
-    }
+func (tr *TableProjectStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+	if fv, ok := i[tr.Field]; ok {
+		if fstr, ok := fv.(string); ok {
+			if pv, ok := tr.table[fstr]; ok {
+				for k, v := range tr.Project {
+					if ki, ok := tr.header[v]; ok {
+						i[k] = pv[ki]
+					}
+				}
+			}
+		}
 	}
-  return i
+	return i
 }

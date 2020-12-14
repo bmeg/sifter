@@ -1,28 +1,28 @@
 package transform
 
 import (
-  "log"
-  "sync"
+	"log"
+	"sync"
+
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/pipeline"
 )
 
 type FilterStep struct {
-	Column string        `json:"col"`
-	Match  string        `json:"match"`
-	Exists bool          `json:"exists"`
-	Method string        `json:"method"`
-	Python string        `json:"python"`
-	Steps  TransformPipe `json:"steps"`
+	Field  string `json:"field"`
+	Match  string `json:"match"`
+	Check  string `json:"check" jsonschema_description:"How to check value, 'exists' or 'hasValue'"`
+	Method string `json:"method"`
+	Python string `json:"python"`
+	Steps  Pipe   `json:"steps"`
 	inChan chan map[string]interface{}
 	proc   evaluate.Processor
 }
 
-
 func (fs *FilterStep) Init(task *pipeline.Task) {
 	if fs.Python != "" && fs.Method != "" {
 		log.Printf("Starting Filter Map: %s", fs.Python)
-		e := evaluate.GetEngine(DEFAULT_ENGINE, task.Workdir)
+		e := evaluate.GetEngine(DefaultEngine, task.Workdir)
 		c, err := e.Compile(fs.Python, fs.Method)
 		if err != nil {
 			log.Printf("Compile Error: %s", err)
@@ -65,12 +65,19 @@ func (fs FilterStep) run(i map[string]interface{}, task *pipeline.Task) map[stri
 		}
 		return i
 	}
-	col, err := evaluate.ExpressionString(fs.Column, task.Inputs, i)
-	if fs.Exists {
-		if err != nil {
-			return i
+	col, err := evaluate.ExpressionString(fs.Field, task.Inputs, i)
+	if (fs.Check == "" && fs.Match == "") || fs.Check == "exists" {
+		if err == nil {
+			fs.inChan <- i
 		}
+		return i
+	} else if fs.Check == "hasValue" {
+		if err == nil && col != "" {
+			fs.inChan <- i
+		}
+		return i
 	}
+
 	match, _ := evaluate.ExpressionString(fs.Match, task.Inputs, i)
 	if col == match {
 		fs.inChan <- i

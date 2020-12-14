@@ -1,22 +1,22 @@
 package graph
 
 import (
-	"log"
-	"fmt"
-	"os"
-	"io/ioutil"
-	"strings"
-	"path/filepath"
-	"github.com/spf13/cobra"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
+	"strings"
 
-  "github.com/bmeg/sifter/graph"
-	"github.com/bmeg/sifter/schema"
+	"github.com/spf13/cobra"
+
 	"github.com/bmeg/golib"
-
+	"github.com/bmeg/sifter/graph"
+	"github.com/bmeg/sifter/schema"
 )
 
-var outDir  string = "./out-graph"
+var outDir string = "./out-graph"
 var mappingFile string
 var workDir string = "./"
 
@@ -32,8 +32,8 @@ var Cmd = &cobra.Command{
 
 		schemas, err := schema.Load(schemaDir)
 		if err != nil {
-      return err
-    }
+			return err
+		}
 
 		tmpDir, err := ioutil.TempDir(workDir, "siftergraph_")
 		if err != nil {
@@ -41,16 +41,16 @@ var Cmd = &cobra.Command{
 		}
 
 		driver := fmt.Sprintf("dir://%s", outDir)
-		builder,err := graph.NewBuilder(driver, schemas, tmpDir)
-    if err != nil {
-      return err
-    }
+		builder, err := graph.NewBuilder(driver, schemas, tmpDir)
+		if err != nil {
+			return err
+		}
 
 		if mappingFile != "" {
 			m, err := graph.LoadMapping(mappingFile, inDir)
 			if err != nil {
-	      return err
-	    }
+				return err
+			}
 			log.Printf("Loaded Mapping: %s", mappingFile)
 			builder.AddMapping(m)
 		}
@@ -76,7 +76,7 @@ var Cmd = &cobra.Command{
 				tmp := strings.Split(n, ".")
 				prefix := tmp[0]
 				class := tmp[1]
-				builder.Process( prefix, class, objChan )
+				builder.Process(prefix, class, objChan)
 			}
 		}
 		builder.Close()

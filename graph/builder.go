@@ -2,33 +2,34 @@ package graph
 
 import (
 	"fmt"
-	"github.com/bmeg/grip/gripql"
-	"github.com/bmeg/sifter/schema"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/bmeg/grip/gripql"
+	"github.com/bmeg/sifter/schema"
 )
 
 type DomainClassInfo struct {
-	emitter   GraphEmitter
-	gc        *GraphCheck
+	emitter   Emitter
+	gc        *Check
 	om        *ObjectMap
 	vertCount int64
 	edgeCount int64
 }
 
 type DomainInfo struct {
-	emitter GraphEmitter
-	gc      *GraphCheck
+	emitter Emitter
+	gc      *Check
 	dm      *DomainMap
 	classes map[string]*DomainClassInfo
 }
 
 type Builder struct {
-	emitter GraphEmitter
+	emitter Emitter
 	sc      schema.Schemas
-	gm      *GraphMapping
-	gc      *GraphCheck
+	gm      *Mapping
+	gc      *Check
 	domains map[string]*DomainInfo
 }
 
@@ -48,7 +49,7 @@ func (b *Builder) Close() {
 	b.emitter.Close()
 }
 
-func (b *Builder) AddMapping(m *GraphMapping) {
+func (b *Builder) AddMapping(m *Mapping) {
 	b.gm = m
 }
 
@@ -98,7 +99,7 @@ func (b *Builder) Process(prefix string, class string, in chan map[string]interf
 	}
 }
 
-func (b *Builder) GenerateGraph(objMap *ObjectMap, class string, data map[string]interface{}, emitter GraphEmitter) error {
+func (b *Builder) GenerateGraph(objMap *ObjectMap, class string, data map[string]interface{}, emitter Emitter) error {
 	if o, err := b.sc.Generate(class, data); err == nil {
 		for _, j := range o {
 			if j.Vertex != nil {
@@ -159,7 +160,7 @@ func (dc *DomainClassInfo) Close() {
 }
 
 func (dc *DomainClassInfo) EmitVertex(v *gripql.Vertex) error {
-	dc.vertCount += 1
+	dc.vertCount++
 	if dc.om != nil {
 		if l, ok := dc.om.Fields["_label"]; ok {
 			v.Label = l.Template
@@ -170,7 +171,7 @@ func (dc *DomainClassInfo) EmitVertex(v *gripql.Vertex) error {
 }
 
 func (dc *DomainClassInfo) EmitEdge(e *gripql.Edge) error {
-	dc.edgeCount += 1
+	dc.edgeCount++
 	dc.gc.AddEdge(e.From, e.To)
 	return dc.emitter.EmitEdge(e)
 }

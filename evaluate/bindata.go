@@ -237,9 +237,9 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"exec_pb2.py":      &bintree{exec_pb2Py, map[string]*bintree{}},
-	"exec_pb2_grpc.py": &bintree{exec_pb2_grpcPy, map[string]*bintree{}},
-	"sifter-exec.py":   &bintree{sifterExecPy, map[string]*bintree{}},
+	"exec_pb2.py":      {exec_pb2Py, map[string]*bintree{}},
+	"exec_pb2_grpc.py": {exec_pb2_grpcPy, map[string]*bintree{}},
+	"sifter-exec.py":   {sifterExecPy, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory

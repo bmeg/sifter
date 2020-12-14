@@ -8,18 +8,19 @@ import (
 	"strings"
 	"sync"
 
-	"encoding/json"
 	"crypto/sha1"
+	"encoding/json"
 
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/pipeline"
 )
 
-var DEFAULT_ENGINE = "python"
+var DefaultEngine = "python"
+var PipeSize = 20
 
 type ObjectCreateStep struct {
 	Class string `json:"class" jsonschema_description:"Object class, should match declared class in JSON Schema"`
-	Name  string `json:"name" jsonschema_description:"domain name of stream, to seperate it from other output streams of the same output type"`
+	Name  string `json:"name" jsonschema_description:"domain name of stream, to separate it from other output streams of the same output type"`
 }
 
 type ColumnReplaceStep struct {
@@ -47,7 +48,7 @@ type RegexReplaceStep struct {
 }
 
 type AlleleIDStep struct {
-	Prefix         string `json:prefix`
+	Prefix         string `json:"prefix"`
 	Genome         string `json:"genome"`
 	Chromosome     string `json:"chromosome"`
 	Start          string `json:"start"`
@@ -62,14 +63,14 @@ type DebugStep struct {
 }
 
 type CacheStep struct {
-	Transform TransformPipe `json:"transform"`
+	Transform Pipe `json:"transform"`
 }
 
 type EmitStep struct {
-	Name      string        `json:"name"`
+	Name string `json:"name"`
 }
 
-type TransformStep struct {
+type Step struct {
 	FieldMap     *FieldMapStep     `json:"fieldMap" jsonschema_description:"fieldMap to run"`
 	FieldType    *FieldTypeStep    `json:"fieldType" jsonschema_description:"Change type of a field (ie string -> integer)"`
 	ObjectCreate *ObjectCreateStep `json:"objectCreate" jsonschema_description:"Create a JSON schema based object"`
@@ -89,7 +90,7 @@ type TransformStep struct {
 	Cache        *CacheStep        `json:"cache" jsonschema_description:"Sub a child transform pipeline, caching the results in a database"`
 }
 
-type TransformPipe []TransformStep
+type Pipe []Step
 
 func (fm FieldMapStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
 	o := map[string]interface{}{}
@@ -187,7 +188,7 @@ func (db DebugStep) Run(i map[string]interface{}, task *pipeline.Task) map[strin
 	return i
 }
 
-func (ts TransformStep) Init(task *pipeline.Task) error {
+func (ts Step) Init(task *pipeline.Task) error {
 	log.Printf("Doing Step Init")
 	if ts.Filter != nil {
 		ts.Filter.Init(task)
@@ -227,7 +228,7 @@ func (ts TransformStep) Init(task *pipeline.Task) error {
 	return nil
 }
 
-func (ts TransformStep) Close() {
+func (ts Step) Close() {
 	if ts.Filter != nil {
 		ts.Filter.Close()
 	} else if ts.FieldProcess != nil {
@@ -243,10 +244,10 @@ func (ts TransformStep) Close() {
 	}
 }
 
-func (ts TransformStep) Start(in chan map[string]interface{},
+func (ts Step) Start(in chan map[string]interface{},
 	task *pipeline.Task, wg *sync.WaitGroup) chan map[string]interface{} {
 
-	out := make(chan map[string]interface{}, 100)
+	out := make(chan map[string]interface{}, PipeSize)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -340,8 +341,8 @@ func (ts TransformStep) Start(in chan map[string]interface{},
 	return out
 }
 
-func (tp TransformPipe) Init(task *pipeline.Task) error {
-	log.Printf("TransformPipe Init")
+func (tp Pipe) Init(task *pipeline.Task) error {
+	log.Printf("Transform Pipe Init")
 	for _, s := range tp {
 		if err := s.Init(task); err != nil {
 			return err
@@ -350,17 +351,17 @@ func (tp TransformPipe) Init(task *pipeline.Task) error {
 	return nil
 }
 
-func (tp TransformPipe) Close() {
+func (tp Pipe) Close() {
 	for _, s := range tp {
 		s.Close()
 	}
 }
 
-func (tp TransformPipe) Start(in chan map[string]interface{},
+func (tp Pipe) Start(in chan map[string]interface{},
 	task *pipeline.Task,
 	wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 
-	log.Printf("Starting TransformPipe")
+	log.Printf("Starting Transform Pipe")
 	out := make(chan map[string]interface{}, 10)
 	wg.Add(1)
 	go func() {
@@ -376,7 +377,7 @@ func (tp TransformPipe) Start(in chan map[string]interface{},
 		}
 		cwg.Wait()
 		wg.Done()
-		log.Printf("Ending TransformPipe")
+		log.Printf("Ending Transform Pipe")
 	}()
 	return out, nil
 }

@@ -3,20 +3,21 @@ package extractors
 import (
 	"compress/gzip"
 	"fmt"
-  "sync"
-	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
-	"github.com/bmeg/sifter/transform"
-	"github.com/xwb1989/sqlparser"
 	"io"
 	"log"
 	"os"
 	"strings"
+	"sync"
+
+	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/transform"
+	"github.com/xwb1989/sqlparser"
 )
 
 type TableTransform struct {
-	Name     string                   `json:"name" jsonschema_description:"Name of the SQL file to transform"`
-	Transform transform.TransformPipe `json:"transform" jsonschema_description:"The transform pipeline"`
+	Name      string         `json:"name" jsonschema_description:"Name of the SQL file to transform"`
+	Transform transform.Pipe `json:"transform" jsonschema_description:"The transform pipeline"`
 }
 
 type SQLDumpStep struct {
@@ -70,7 +71,7 @@ func (ml *SQLDumpStep) Run(task *pipeline.Task) error {
 			for range out {
 			}
 		}()
-    log.Printf("Adding transform pipe for table: %s", ml.Tables[t].Name)
+		log.Printf("Adding transform pipe for table: %s", ml.Tables[t].Name)
 		if x, ok := chanMap[ml.Tables[t].Name]; ok {
 			chanMap[ml.Tables[t].Name] = append(x, procChan)
 		} else {
@@ -104,35 +105,35 @@ func (ml *SQLDumpStep) Run(task *pipeline.Task) error {
 			cols := tableColumns[stmt.Table.Name.CompliantName()]
 			if irows, ok := stmt.Rows.(sqlparser.Values); ok {
 				for _, row := range irows {
-          data := map[string]interface{}{}
+					data := map[string]interface{}{}
 					for i := range row {
 						if sval, ok := row[i].(*sqlparser.SQLVal); ok {
 							data[cols[i]] = string(sval.Val)
 						}
 					}
-				  if x, ok := chanMap[stmt.Table.Name.CompliantName()]; ok {
-            //fmt.Printf("%s - %s\n", stmt.Table.Name.CompliantName(), data)
-		        for i := range x {
-						  x[i] <- data
-					  }
-				  } else {
-            //log.Printf("Skip: %s", stmt.Table.Name.CompliantName())
-          }
-        }
+					if x, ok := chanMap[stmt.Table.Name.CompliantName()]; ok {
+						//fmt.Printf("%s - %s\n", stmt.Table.Name.CompliantName(), data)
+						for i := range x {
+							x[i] <- data
+						}
+					} else {
+						//log.Printf("Skip: %s", stmt.Table.Name.CompliantName())
+					}
+				}
 			} else {
-        log.Printf("WARNING: Other sql.InsertValue")
-      }
+				log.Printf("WARNING: Other sql.InsertValue")
+			}
 		}
 	}
-  for i := range chanMap {
-    for j := range chanMap[i] {
-      close(chanMap[i][j])
-    }
-  }
-  wg.Wait()
-  for t := range ml.Tables {
-    ml.Tables[t].Transform.Close()
-  }
+	for i := range chanMap {
+		for j := range chanMap[i] {
+			close(chanMap[i][j])
+		}
+	}
+	wg.Wait()
+	for t := range ml.Tables {
+		ml.Tables[t].Transform.Close()
+	}
 
 	return nil
 }

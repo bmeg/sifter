@@ -1,14 +1,14 @@
 package transform
 
 import (
-  "github.com/bmeg/sifter/evaluate"
-  "github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/pipeline"
 )
 
 type ProjectStep struct {
 	Mapping map[string]interface{} `json:"mapping" jsonschema_description:"New fields to be generated from template"`
+	Rename  map[string]string      `json:"rename" jsonschema_description:"Rename field (no template engine)"`
 }
-
 
 func valueRender(v interface{}, task *pipeline.Task, row map[string]interface{}) (interface{}, error) {
 	if vStr, ok := v.(string); ok {
@@ -41,7 +41,11 @@ func (pr ProjectStep) Run(i map[string]interface{}, task *pipeline.Task) map[str
 
 	o := map[string]interface{}{}
 	for k, v := range i {
-		o[k] = v
+		if r, ok := pr.Rename[k]; ok {
+			o[r] = v
+		} else {
+			o[k] = v
+		}
 	}
 
 	for k, v := range pr.Mapping {

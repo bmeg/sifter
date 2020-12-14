@@ -1,12 +1,13 @@
 package transform
 
 import (
-	"github.com/bmeg/sifter/pipeline"
 	"sync"
+
+	"github.com/bmeg/sifter/pipeline"
 )
 
 type ForkStep struct {
-	Transform []TransformPipe `json:"transform"`
+	Transform []Pipe `json:"transform"`
 }
 
 func (fs *ForkStep) Init(task *pipeline.Task) error {

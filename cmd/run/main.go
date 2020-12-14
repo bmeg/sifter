@@ -26,7 +26,6 @@ var Cmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-
 		if _, err := os.Stat(outDir); os.IsNotExist(err) {
 			os.MkdirAll(outDir, 0777)
 		}
@@ -39,7 +38,6 @@ var Cmd = &cobra.Command{
 		//TODO: This needs to be configurable
 		dsConfig := datastore.Config{URL: "mongodb://localhost:27017", Database: "sifter", Collection: "cache"}
 
-
 		man, err := manager.Init(manager.Config{Driver: driver, WorkDir: workDir, DataStore: &dsConfig})
 		if err != nil {
 			log.Printf("Error stating load manager: %s", err)
@@ -50,11 +48,6 @@ var Cmd = &cobra.Command{
 		man.AllowLocalFiles = true
 
 		playFile := args[0]
-		pb := manager.Playbook{}
-		if err := manager.ParseFile(playFile, &pb); err != nil {
-			log.Printf("%s", err)
-			return err
-		}
 
 		inputs := map[string]interface{}{}
 		if len(args) > 1 {
@@ -67,9 +60,6 @@ var Cmd = &cobra.Command{
 		for k, v := range cmdInputs {
 			inputs[k] = v
 		}
-
-		fmt.Printf("Starting: %s\n", playFile)
-
 		dir := resume
 		if dir == "" {
 			d, err := ioutil.TempDir(workDir, "sifterwork_")
@@ -79,8 +69,7 @@ var Cmd = &cobra.Command{
 			}
 			dir = d
 		}
-
-		pb.Execute(man, inputs, dir)
+		Execute(playFile, dir, inputs, man)
 		if !keep {
 			os.RemoveAll(dir)
 		}

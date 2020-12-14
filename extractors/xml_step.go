@@ -78,20 +78,23 @@ func xmlStream(file io.Reader, out chan map[string]interface{}) {
 					}
 				}
 			}
+
+			if len(mapStack) == 1 {
+				c := mapStack[0]
+				if len(c) > 0 {
+					t := map[string]interface{}{}
+					for k := range c {
+						t[k] = c[k]
+					}
+					out <- t
+				}
+				 mapStack[0] = map[string]interface{}{}
+			}
+
 		case xml.CharData:
 			curString = append(curString, se...)
 		default:
 			log.Printf("Unknown Element: %#v\n", se)
-		}
-		if len(nameStack) == 1 {
-			c := mapStack[0]
-			if len(c) > 0 {
-				t := map[string]interface{}{}
-				for k := range c {
-					t[k] = c[k]
-				}
-				out <- t
-			}
 		}
 	}
 }

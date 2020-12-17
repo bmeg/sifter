@@ -21,10 +21,13 @@ func (fs *FieldProcessStep) Init(task *pipeline.Task) {
 func (fs FieldProcessStep) Start(in chan map[string]interface{}, task *pipeline.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 	inChan := make(chan map[string]interface{}, 100)
 	tout, _ := fs.Steps.Start(inChan, task.Child("fieldProcess"), wg)
+	out := make(chan map[string]interface{}, 10)
 
 	go func() {
 		defer close(inChan)
+		defer close(out)
 		for i := range in {
+			out <- i
 			if v, err := evaluate.GetJSONPath(fs.Field, i); err == nil {
 				if vList, ok := v.([]interface{}); ok {
 					for _, l := range vList {
@@ -50,7 +53,14 @@ func (fs FieldProcessStep) Start(in chan map[string]interface{}, task *pipeline.
 			}
 		}
 	}()
-	return tout, nil
+
+	//consume output of child pipeline
+	go func() {
+		for range tout {
+		}
+	}()
+
+	return out, nil
 }
 
 func (fs FieldProcessStep) Close() {

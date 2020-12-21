@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -13,37 +12,46 @@ import (
 	"github.com/bmeg/sifter/manager"
 )
 
+var extractMethod string = ""
+var transformMethod string = ""
+var loadMethod string = "dir://."
+
+var extractOpts = map[string]string{}
+var transformOpts = map[string]string{}
+var loadOpts = map[string]string{}
+
 var workDir string = "./"
+var cache string = ""
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
 	Use:   "template",
 	Short: "Run templated job",
-	Args:  cobra.MinimumNArgs(1),
+	Args:  cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		outDir := "./"
-		driver := fmt.Sprintf("dir://%s", outDir)
-
 		//TODO: This needs to be configurable
-		dsConfig := datastore.Config{URL: "mongodb://localhost:27017", Database: "sifter", Collection: "cache"}
+		var dsConfig *datastore.Config
+		if cache != "" {
+			dsConfig = &datastore.Config{URL: cache, Database: "sifter", Collection: "cache"}
+		}
 
-		man, err := manager.Init(manager.Config{Driver: driver, WorkDir: workDir, DataStore: &dsConfig})
+		man, err := manager.Init(manager.Config{Driver: loadMethod, WorkDir: workDir, DataStore: dsConfig})
 		if err != nil {
 			return err
 		}
 
-		template := args[0]
-		steps := strings.Split(template, ":")
 		inputs := map[string]interface{}{}
-		for _, k := range args[1:] {
-			tmp := strings.Split(k, "=")
-			inputs[tmp[0]] = tmp[1]
+		for k, v := range extractOpts {
+			inputs[k] = v
+		}
+		for k, v := range transformOpts {
+			inputs[k] = v
 		}
 
-		if ext, ok := ExtractTemplates[steps[0]]; ok {
-			if trans, ok := TransformTemplates[steps[1]]; ok {
-				if dec, ok := ExtractorDecorate[steps[0]]; ok {
+		if ext, ok := ExtractTemplates[extractMethod]; ok {
+			if trans, ok := TransformTemplates[transformMethod]; ok {
+				if dec, ok := ExtractorDecorate[extractMethod]; ok {
 					ext = dec(ext, trans)
 
 					dir, err := ioutil.TempDir(workDir, "sifterwork_")
@@ -52,7 +60,7 @@ var Cmd = &cobra.Command{
 						return err
 					}
 					pb := manager.Playbook{
-						Name: template,
+						Name: fmt.Sprintf("%s:%s:%s", extractMethod, transformMethod, loadMethod),
 						Inputs: map[string]manager.Input{
 							"input": {Type: "file"},
 						},
@@ -63,13 +71,23 @@ var Cmd = &cobra.Command{
 					err = pb.Execute(man, inputs, dir)
 					return err
 				}
+			} else {
+				return fmt.Errorf("Transformer %s not found", transformMethod)
 			}
+		} else {
+			return fmt.Errorf("Extractor %s not found", extractMethod)
 		}
 		return nil
 	},
 }
 
 func init() {
-	//flags := Cmd.Flags()
-	//flags.StringVar(&template, "template", template, "Workdir")
+	flags := Cmd.Flags()
+	flags.StringVarP(&extractMethod, "extract", "E", extractMethod, "Name of extractor engine to use")
+	flags.StringVarP(&transformMethod, "transform", "T", transformMethod, "Name of transform template to use")
+	flags.StringVarP(&loadMethod, "load", "L", loadMethod, "Name of load engine to use")
+
+	flags.StringToStringVarP(&extractOpts, "extract-opts", "e", extractOpts, "Options for extractor engine")
+	flags.StringToStringVarP(&transformOpts, "transform-opts", "t", transformOpts, "Options for transform template")
+	flags.StringToStringVarP(&loadOpts, "load-opts", "l", loadOpts, "Options for load engine")
 }

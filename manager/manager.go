@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/bmeg/sifter/datastore"
-	"github.com/bmeg/sifter/emitter"
+	"github.com/bmeg/sifter/loader"
 	"github.com/bmeg/sifter/pipeline"
 	"github.com/bmeg/sifter/schema"
 )
@@ -78,7 +78,7 @@ func (m *Manager) GetPlaybook(name string) (Playbook, bool) {
 
 func (m *Manager) NewRuntime(name string, dir string, sc *schema.Schemas) (*pipeline.Runtime, error) {
 	dir, _ = filepath.Abs(dir)
-	e, err := emitter.NewEmitter(m.Config.Driver, sc)
+	e, err := loader.NewDataEmitter(m.Config.Driver, sc)
 	if err != nil {
 		log.Printf("Emitter init failed: %s", err)
 	}

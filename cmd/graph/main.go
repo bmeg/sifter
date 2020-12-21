@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/bmeg/golib"
-	"github.com/bmeg/sifter/graph"
+	"github.com/bmeg/sifter/graphbuild"
 	"github.com/bmeg/sifter/schema"
 )
 
@@ -41,13 +41,13 @@ var Cmd = &cobra.Command{
 		}
 
 		driver := fmt.Sprintf("dir://%s", outDir)
-		builder, err := graph.NewBuilder(driver, schemas, tmpDir)
+		builder, err := graphbuild.NewBuilder(driver, schemas, tmpDir)
 		if err != nil {
 			return err
 		}
 
 		if mappingFile != "" {
-			m, err := graph.LoadMapping(mappingFile, inDir)
+			m, err := graphbuild.LoadMapping(mappingFile, inDir)
 			if err != nil {
 				return err
 			}

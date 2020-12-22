@@ -12,9 +12,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/bmeg/sifter/schema"
 )
 
-type MongoEmitter struct {
+type MongoLoader struct {
 	edgeCol    *mongo.Collection
 	vertexCol  *mongo.Collection
 	edgeChan   chan bson.M
@@ -54,11 +56,11 @@ func MongoGraphExists(uri string, graph string) (bool, error) {
 
 // NewMongoEmitter
 // url : "mongodb://localhost:27017"
-func NewMongoEmitter(uri string, graph string) (MongoEmitter, error) {
+func NewMongoLoader(uri string, graph string) (MongoLoader, error) {
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
 	if err != nil {
-		return MongoEmitter{}, err
+		return MongoLoader{}, err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -78,7 +80,15 @@ func NewMongoEmitter(uri string, graph string) (MongoEmitter, error) {
 	go docWriter(vertexCol, vertexChan, s)
 	s.Add(1)
 
-	return MongoEmitter{edgeCol, vertexCol, edgeChan, vertexChan, s}, nil
+	return MongoLoader{edgeCol, vertexCol, edgeChan, vertexChan, s}, nil
+}
+
+func (s MongoLoader) NewDataEmitter(sc *schema.Schemas) (DataEmitter, error) {
+	return nil, fmt.Errorf("Mongo data loader not implemented")
+}
+
+func (s MongoLoader) NewGraphEmitter() (GraphEmitter, error) {
+	return s, nil
 }
 
 func boolPtr(a bool) *bool {
@@ -184,17 +194,17 @@ func docWriter(col *mongo.Collection, docChan chan bson.M, sn *sync.WaitGroup) {
 	}
 }
 
-func (s MongoEmitter) EmitVertex(v *gripql.Vertex) error {
+func (s MongoLoader) EmitVertex(v *gripql.Vertex) error {
 	s.vertexChan <- packVertex(v)
 	return nil
 }
 
-func (s MongoEmitter) EmitEdge(e *gripql.Edge) error {
+func (s MongoLoader) EmitEdge(e *gripql.Edge) error {
 	s.edgeChan <- packEdge(e)
 	return nil
 }
 
-func (s MongoEmitter) Close() {
+func (s MongoLoader) Close() {
 	close(s.vertexChan)
 	close(s.edgeChan)
 	s.writers.Wait()

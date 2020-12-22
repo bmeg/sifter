@@ -10,6 +10,7 @@ import (
 	"github.com/bmeg/sifter/datastore"
 	"github.com/bmeg/sifter/extractors"
 	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/loader"
 )
 
 var extractMethod string = ""
@@ -36,7 +37,17 @@ var Cmd = &cobra.Command{
 			dsConfig = &datastore.Config{URL: cache, Database: "sifter", Collection: "cache"}
 		}
 
-		man, err := manager.Init(manager.Config{Driver: loadMethod, WorkDir: workDir, DataStore: dsConfig})
+		var ld loader.Loader
+		if lm, ok := LoadTemplates[loadMethod]; ok {
+			var err error
+			ld, err = lm(loadOpts)
+			if err != nil {
+				return err
+			}
+		}
+		defer ld.Close()
+
+		man, err := manager.Init(manager.Config{Loader: ld, WorkDir: workDir, DataStore: dsConfig})
 		if err != nil {
 			return err
 		}

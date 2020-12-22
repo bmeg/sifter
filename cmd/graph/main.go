@@ -14,6 +14,7 @@ import (
 	"github.com/bmeg/golib"
 	"github.com/bmeg/sifter/graphbuild"
 	"github.com/bmeg/sifter/schema"
+	"github.com/bmeg/sifter/loader"
 )
 
 var outDir string = "./out-graph"
@@ -40,8 +41,12 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
-		driver := fmt.Sprintf("dir://%s", outDir)
-		builder, err := graphbuild.NewBuilder(driver, schemas, tmpDir)
+		loaderOpt := fmt.Sprintf("dir://%s", outDir)
+		ld, err := loader.NewLoader(loaderOpt)
+		if err != nil {
+			return err
+		}
+		builder, err := graphbuild.NewBuilder(ld, schemas, tmpDir)
 		if err != nil {
 			return err
 		}

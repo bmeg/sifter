@@ -18,31 +18,42 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 )
 
-type DirEmitter struct {
+type DirLoader struct {
 	jm      jsonpb.Marshaler
 	dir     string
 	mux     sync.Mutex
-	schemas *schema.Schemas
 	vout    map[string]io.WriteCloser
 	eout    map[string]io.WriteCloser
 	oout    map[string]io.WriteCloser
 	dout    map[string]io.WriteCloser
 }
 
-func NewDirEmitter(dir string, schemas *schema.Schemas) *DirEmitter {
+type DirDataLoader struct {
+	schemas *schema.Schemas
+	dl      *DirLoader
+}
+
+func (s *DirLoader) NewGraphEmitter() (GraphEmitter, error) {
+	return s, nil
+}
+
+func (s *DirLoader) NewDataEmitter(sc *schema.Schemas) (DataEmitter, error) {
+	return &DirDataLoader{sc, s}, nil
+}
+
+func NewDirLoader(dir string) *DirLoader {
 	log.Printf("Emitting to %s", dir)
-	return &DirEmitter{
+	return &DirLoader{
 		jm:      jsonpb.Marshaler{},
 		dir:     dir,
 		vout:    map[string]io.WriteCloser{},
 		eout:    map[string]io.WriteCloser{},
 		oout:    map[string]io.WriteCloser{},
 		dout:    map[string]io.WriteCloser{},
-		schemas: schemas,
 	}
 }
 
-func (s *DirEmitter) EmitVertex(v *gripql.Vertex) error {
+func (s *DirLoader) EmitVertex(v *gripql.Vertex) error {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 	f, ok := s.vout[v.Label]
@@ -61,7 +72,7 @@ func (s *DirEmitter) EmitVertex(v *gripql.Vertex) error {
 	return nil
 }
 
-func (s *DirEmitter) EmitEdge(e *gripql.Edge) error {
+func (s *DirLoader) EmitEdge(e *gripql.Edge) error {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 	f, ok := s.eout[e.Label]
@@ -83,7 +94,7 @@ func (s *DirEmitter) EmitEdge(e *gripql.Edge) error {
 	return nil
 }
 
-func (s *DirEmitter) Close() {
+func (s *DirLoader) Close() {
 	log.Printf("Closing emitter")
 	for _, v := range s.vout {
 		v.Close()
@@ -99,17 +110,17 @@ func (s *DirEmitter) Close() {
 	}
 }
 
-func (s *DirEmitter) Emit(name string, v map[string]interface{}) error {
-	s.mux.Lock()
-	defer s.mux.Unlock()
-	f, ok := s.dout[name]
+func (s *DirDataLoader) Emit(name string, v map[string]interface{}) error {
+	s.dl.mux.Lock()
+	defer s.dl.mux.Unlock()
+	f, ok := s.dl.dout[name]
 	if !ok {
-		j, err := os.Create(path.Join(s.dir, name+".json.gz"))
+		j, err := os.Create(path.Join(s.dl.dir, name+".json.gz"))
 		if err != nil {
 			return err
 		}
 		f = gzip.NewWriter(j)
-		s.dout[name] = f
+		s.dl.dout[name] = f
 	}
 	o, _ := json.Marshal(v)
 	f.Write([]byte(o))
@@ -117,18 +128,18 @@ func (s *DirEmitter) Emit(name string, v map[string]interface{}) error {
 	return nil
 }
 
-func (s *DirEmitter) EmitObject(prefix string, objClass string, i map[string]interface{}) error {
-	s.mux.Lock()
-	defer s.mux.Unlock()
+func (s *DirDataLoader) EmitObject(prefix string, objClass string, i map[string]interface{}) error {
+	s.dl.mux.Lock()
+	defer s.dl.mux.Unlock()
 	name := fmt.Sprintf("%s.%s", prefix, objClass)
-	f, ok := s.oout[name]
+	f, ok := s.dl.oout[name]
 	if !ok {
-		j, err := os.Create(path.Join(s.dir, name+".json.gz"))
+		j, err := os.Create(path.Join(s.dl.dir, name+".json.gz"))
 		if err != nil {
 			return err
 		}
 		f = gzip.NewWriter(j)
-		s.oout[name] = f
+		s.dl.oout[name] = f
 	}
 	v, err := s.schemas.Validate(objClass, i)
 	if err != nil {
@@ -167,8 +178,8 @@ func (s *dirTableEmitter) Close() {
 	s.handle.Close()
 }
 
-func (s *DirEmitter) EmitTable(name string, columns []string, sep rune) TableEmitter {
-	path := filepath.Join(s.dir, name)
+func (s *DirDataLoader) EmitTable(name string, columns []string, sep rune) TableEmitter {
+	path := filepath.Join(s.dl.dir, name)
 	te := dirTableEmitter{}
 	te.handle, _ = os.Create(path)
 	if strings.HasSuffix(name, ".gz") {

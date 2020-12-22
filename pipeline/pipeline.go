@@ -32,9 +32,6 @@ func (run *Runtime) NewTask(inputs map[string]interface{}) *Task {
 
 func (run *Runtime) Close() {
 	log.Printf("Runtime closing")
-	if run.output != nil {
-		run.output.Close()
-	}
 	//run.man.DropRuntime(run.name)
 }
 

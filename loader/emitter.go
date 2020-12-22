@@ -18,39 +18,33 @@ type DataEmitter interface {
 	Emit(name string, e map[string]interface{}) error
 	EmitObject(prefix string, objClass string, e map[string]interface{}) error
 	EmitTable(prefix string, columns []string, sep rune) TableEmitter
-	Close()
 }
 
 type GraphEmitter interface {
 	EmitVertex(v *gripql.Vertex) error
 	EmitEdge(e *gripql.Edge) error
+}
+
+type Loader interface {
+	NewDataEmitter(*schema.Schemas) (DataEmitter, error)
+	NewGraphEmitter() (GraphEmitter, error)
 	Close()
 }
 
-func NewDataEmitter(driver string, sc *schema.Schemas) (DataEmitter, error) {
+
+func NewLoader(driver string) (Loader, error) {
 	u, _ := url.Parse(driver)
 	if u.Scheme == "stdout" {
-		return StdoutEmitter{schemas: sc}, nil
+		return StdoutLoader{}, nil
 	}
 	if u.Scheme == "dir" {
-		return NewDirEmitter(u.Host+u.Path, sc), nil
+		return NewDirLoader(u.Host+u.Path), nil
 	}
-	return nil, fmt.Errorf("Unknown driver: %s", u.Scheme)
-}
-
-func NewGraphEmitter(driver string) (GraphEmitter, error) {
-	u, _ := url.Parse(driver)
 	if u.Scheme == "grip" {
-		return NewGripEmitter(u.Host, u.Path)
+		return NewGripLoader(u.Host, u.Path)
 	}
 	if u.Scheme == "mongodb" {
-		return NewMongoEmitter(u.Host, u.Path)
-	}
-	if u.Scheme == "stdout" {
-		return StdoutEmitter{}, nil
-	}
-	if u.Scheme == "dir" {
-		return NewDirEmitter(u.Host+u.Path, nil), nil
+		return NewMongoLoader(u.Host, u.Path)
 	}
 	return nil, fmt.Errorf("Unknown driver: %s", u.Scheme)
 }

@@ -11,6 +11,19 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 )
 
+type StdoutLoader struct { }
+
+func (s StdoutLoader) Close() {}
+
+func (s StdoutLoader) NewDataEmitter(schemas *schema.Schemas) (DataEmitter, error) {
+	return StdoutEmitter{schemas:schemas}, nil
+}
+
+func (s StdoutLoader) NewGraphEmitter() (GraphEmitter, error) {
+	return StdoutEmitter{}, nil
+}
+
+
 type StdoutEmitter struct {
 	jm      jsonpb.Marshaler
 	schemas *schema.Schemas
@@ -28,7 +41,6 @@ func (s StdoutEmitter) EmitEdge(e *gripql.Edge) error {
 	return nil
 }
 
-func (s StdoutEmitter) Close() {}
 
 func (s StdoutEmitter) Emit(name string, v map[string]interface{}) error {
 	o, _ := json.Marshal(v)

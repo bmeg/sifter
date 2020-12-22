@@ -27,6 +27,7 @@ type DomainInfo struct {
 }
 
 type Builder struct {
+	loader  loader.Loader
 	emitter loader.GraphEmitter
 	sc      schema.Schemas
 	gm      *Mapping
@@ -34,8 +35,8 @@ type Builder struct {
 	domains map[string]*DomainInfo
 }
 
-func NewBuilder(driver string, sc schema.Schemas, workdir string) (*Builder, error) {
-	emitter, err := loader.NewGraphEmitter(driver)
+func NewBuilder(ld loader.Loader, sc schema.Schemas, workdir string) (*Builder, error) {
+	emitter, err := ld.NewGraphEmitter()
 	if err != nil {
 		return nil, err
 	}
@@ -43,11 +44,11 @@ func NewBuilder(driver string, sc schema.Schemas, workdir string) (*Builder, err
 	if err != nil {
 		return nil, err
 	}
-	return &Builder{sc: sc, emitter: emitter, domains: map[string]*DomainInfo{}, gc: gc}, nil
+	return &Builder{loader: ld, sc: sc, emitter: emitter, domains: map[string]*DomainInfo{}, gc: gc}, nil
 }
 
 func (b *Builder) Close() {
-	b.emitter.Close()
+	b.loader.Close()
 }
 
 func (b *Builder) AddMapping(m *Mapping) {
@@ -154,10 +155,6 @@ func (d *DomainInfo) GetClass(cls string) *DomainClassInfo {
 	}
 	d.classes[cls] = &o
 	return &o
-}
-
-func (dc *DomainClassInfo) Close() {
-	dc.emitter.Close()
 }
 
 func (dc *DomainClassInfo) EmitVertex(v *gripql.Vertex) error {

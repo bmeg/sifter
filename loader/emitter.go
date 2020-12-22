@@ -3,6 +3,7 @@ package loader
 import (
 	"fmt"
 	"log"
+	"strings"
 	"net/url"
 
 	"github.com/bmeg/grip/gripql"
@@ -41,6 +42,9 @@ func NewLoader(driver string) (Loader, error) {
 		return NewDirLoader(u.Host+u.Path), nil
 	}
 	if u.Scheme == "grip" {
+		if strings.HasPrefix(u.Path, "/") {
+			u.Path = u.Path[1:len(u.Path)]
+		}
 		return NewGripLoader(u.Host, u.Path)
 	}
 	if u.Scheme == "mongodb" {

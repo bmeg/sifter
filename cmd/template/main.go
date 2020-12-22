@@ -73,7 +73,7 @@ var Cmd = &cobra.Command{
 					pb := manager.Playbook{
 						Name: fmt.Sprintf("%s:%s:%s", extractMethod, transformMethod, loadMethod),
 						Inputs: map[string]manager.Input{
-							"input": {Type: "file"},
+							"input": {Type: "File"},
 						},
 						Steps: []extractors.Extractor{
 							ext,

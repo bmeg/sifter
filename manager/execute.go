@@ -75,8 +75,9 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 		sc = &t
 	}
 
-	run, err := man.NewRuntime(pb.Name, dir, sc)
+	dir, _ = filepath.Abs(dir)
 
+	run, err := man.NewRuntime(pb.Name, dir, sc)
 	for k, i := range pb.Inputs {
 		if v, ok := inputs[k]; ok {
 			if i.Type == "File" || i.Type == "Directory" {
@@ -93,6 +94,7 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 				} else {
 					p, _ := filepath.Abs(path)
 					if fileExists(p) {
+						log.Printf("Using file: %s", p)
 						inputs[k] = p
 					} else {
 						if i.Source != "" {
@@ -120,7 +122,7 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 		return nil
 	}
 
-	log.Printf("Using %s", dir)
+	log.Printf("Playbook executing in %s", dir)
 	stepFile := path.Join(dir, ".sifter_steps")
 
 	startStep := 0

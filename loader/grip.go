@@ -20,7 +20,7 @@ type GripLoader struct {
 func GripGraphExists(host string, graph string) (bool, error) {
 	conn, err := gripql.Connect(rpc.ConfigWithDefaults(host), true)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("Connection %s error: %s", host, err)
 	}
 
 	resp, err := conn.ListGraphs()

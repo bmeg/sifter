@@ -14,11 +14,11 @@ var TransformTemplates = map[string]transform.Pipe{
 					transform.Step{
 						Project: &transform.ProjectStep{
 							Mapping: map[string]interface{}{
-								"gid":   "{{row.id.string}}",
-								"label": "{{row.name}}",
+								"_gid":   "{{row.id.string}}",
+								"_label": "{{row.name}}",
 							},
 							Rename: map[string]string{
-								"object": "data",
+								"object": "_data",
 							},
 						},
 					},
@@ -26,21 +26,21 @@ var TransformTemplates = map[string]transform.Pipe{
 						FieldProcess: &transform.FieldProcessStep{
 							Field: "relations",
 							Mapping: map[string]string{
-								"src_id": "{{row.gid}}",
+								"src_id": "{{row._gid}}",
 							},
 							Steps: transform.Pipe{
 								transform.Step{
 									Project: &transform.ProjectStep{
 										Mapping: map[string]interface{}{
-											"to":    "{{row.dst_id}}",
-											"from":  "{{row.src_id}}",
-											"label": "{{row.dst_name}}",
+											"_to":    "{{row.dst_id}}",
+											"_from":  "{{row.src_id}}",
+											"_label": "{{row.dst_name}}",
 										},
 									},
 								},
 								transform.Step{
 									Clean: &transform.CleanStep{
-										Fields: []string{"to", "from", "label"},
+										Fields: []string{"_to", "_from", "_label"},
 									},
 								},
 								transform.Step{
@@ -51,7 +51,7 @@ var TransformTemplates = map[string]transform.Pipe{
 					},
 					transform.Step{
 						Clean: &transform.CleanStep{
-							Fields: []string{"gid", "label", "data"},
+							Fields: []string{"_gid", "_label", "_data"},
 						},
 					},
 					transform.Step{

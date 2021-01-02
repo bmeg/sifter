@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/bmeg/sifter/cmd/run"
-	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/loader"
+	"github.com/bmeg/sifter/manager"
 )
 
 func TestProject(t *testing.T) {

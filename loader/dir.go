@@ -19,13 +19,13 @@ import (
 )
 
 type DirLoader struct {
-	jm      jsonpb.Marshaler
-	dir     string
-	mux     sync.Mutex
-	vout    map[string]io.WriteCloser
-	eout    map[string]io.WriteCloser
-	oout    map[string]io.WriteCloser
-	dout    map[string]io.WriteCloser
+	jm   jsonpb.Marshaler
+	dir  string
+	mux  sync.Mutex
+	vout map[string]io.WriteCloser
+	eout map[string]io.WriteCloser
+	oout map[string]io.WriteCloser
+	dout map[string]io.WriteCloser
 }
 
 type DirDataLoader struct {
@@ -44,12 +44,12 @@ func (s *DirLoader) NewDataEmitter(sc *schema.Schemas) (DataEmitter, error) {
 func NewDirLoader(dir string) *DirLoader {
 	log.Printf("Emitting to %s", dir)
 	return &DirLoader{
-		jm:      jsonpb.Marshaler{},
-		dir:     dir,
-		vout:    map[string]io.WriteCloser{},
-		eout:    map[string]io.WriteCloser{},
-		oout:    map[string]io.WriteCloser{},
-		dout:    map[string]io.WriteCloser{},
+		jm:   jsonpb.Marshaler{},
+		dir:  dir,
+		vout: map[string]io.WriteCloser{},
+		eout: map[string]io.WriteCloser{},
+		oout: map[string]io.WriteCloser{},
+		dout: map[string]io.WriteCloser{},
 	}
 }
 

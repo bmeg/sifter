@@ -9,8 +9,8 @@ import (
 
 	"github.com/bmeg/sifter/datastore"
 	"github.com/bmeg/sifter/extractors"
-	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/loader"
+	"github.com/bmeg/sifter/manager"
 )
 
 var extractMethod string = ""

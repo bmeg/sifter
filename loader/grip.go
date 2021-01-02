@@ -1,8 +1,8 @@
 package loader
 
 import (
-	"log"
 	"fmt"
+	"log"
 	"sync"
 
 	"github.com/bmeg/grip/gripql"
@@ -74,7 +74,6 @@ func NewGripLoader(host string, graph string) (*GripLoader, error) {
 	return &GripLoader{conn, graph, elemChan, &done}, nil
 
 }
-
 
 func (s *GripLoader) NewDataEmitter(sc *schema.Schemas) (DataEmitter, error) {
 	return nil, fmt.Errorf("GRIP data loader not implemented")

@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/bmeg/sifter/datastore"
-	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/loader"
+	"github.com/bmeg/sifter/manager"
 
 	"github.com/spf13/cobra"
 )

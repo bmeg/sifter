@@ -13,8 +13,8 @@ import (
 
 	"github.com/bmeg/golib"
 	"github.com/bmeg/sifter/graphbuild"
-	"github.com/bmeg/sifter/schema"
 	"github.com/bmeg/sifter/loader"
+	"github.com/bmeg/sifter/schema"
 )
 
 var outDir string = "./out-graph"

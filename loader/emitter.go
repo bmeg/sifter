@@ -3,8 +3,8 @@ package loader
 import (
 	"fmt"
 	"log"
-	"strings"
 	"net/url"
+	"strings"
 
 	"github.com/bmeg/grip/gripql"
 	"github.com/bmeg/sifter/schema"
@@ -32,14 +32,13 @@ type Loader interface {
 	Close()
 }
 
-
 func NewLoader(driver string) (Loader, error) {
 	u, _ := url.Parse(driver)
 	if u.Scheme == "stdout" {
 		return StdoutLoader{}, nil
 	}
 	if u.Scheme == "dir" {
-		return NewDirLoader(u.Host+u.Path), nil
+		return NewDirLoader(u.Host + u.Path), nil
 	}
 	if u.Scheme == "grip" {
 		if strings.HasPrefix(u.Path, "/") {

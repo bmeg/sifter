@@ -7,12 +7,12 @@ import (
 
 	//"github.com/bmeg/grip/gripql"
 	"github.com/bmeg/sifter/datastore"
-	"github.com/bmeg/sifter/emitter"
+	"github.com/bmeg/sifter/loader"
 )
 
 type Runtime struct {
 	//man         *Manager
-	output         emitter.Emitter
+	output         loader.DataEmitter
 	dir            string
 	name           string
 	Status         string
@@ -22,7 +22,7 @@ type Runtime struct {
 	datastore      datastore.DataStore
 }
 
-func NewRuntime(output emitter.Emitter, dir string, name string, ds datastore.DataStore) *Runtime {
+func NewRuntime(output loader.DataEmitter, dir string, name string, ds datastore.DataStore) *Runtime {
 	return &Runtime{output: output, dir: dir, name: name, Status: "Starting", datastore: ds}
 }
 
@@ -32,9 +32,6 @@ func (run *Runtime) NewTask(inputs map[string]interface{}) *Task {
 
 func (run *Runtime) Close() {
 	log.Printf("Runtime closing")
-	if run.output != nil {
-		run.output.Close()
-	}
 	//run.man.DropRuntime(run.name)
 }
 
@@ -49,7 +46,7 @@ func (run *Runtime) EmitObject(prefix string, c string, o map[string]interface{}
 	return run.output.EmitObject(prefix, c, o)
 }
 
-func (run *Runtime) EmitTable(prefix string, columns []string, sep rune) emitter.TableEmitter {
+func (run *Runtime) EmitTable(prefix string, columns []string, sep rune) loader.TableEmitter {
 	return run.output.EmitTable(prefix, columns, sep)
 }
 

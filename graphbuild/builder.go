@@ -1,4 +1,4 @@
-package graph
+package graphbuild
 
 import (
 	"fmt"
@@ -7,11 +7,12 @@ import (
 	"path/filepath"
 
 	"github.com/bmeg/grip/gripql"
+	"github.com/bmeg/sifter/loader"
 	"github.com/bmeg/sifter/schema"
 )
 
 type DomainClassInfo struct {
-	emitter   Emitter
+	emitter   loader.GraphEmitter
 	gc        *Check
 	om        *ObjectMap
 	vertCount int64
@@ -19,22 +20,23 @@ type DomainClassInfo struct {
 }
 
 type DomainInfo struct {
-	emitter Emitter
+	emitter loader.GraphEmitter
 	gc      *Check
 	dm      *DomainMap
 	classes map[string]*DomainClassInfo
 }
 
 type Builder struct {
-	emitter Emitter
+	loader  loader.Loader
+	emitter loader.GraphEmitter
 	sc      schema.Schemas
 	gm      *Mapping
 	gc      *Check
 	domains map[string]*DomainInfo
 }
 
-func NewBuilder(driver string, sc schema.Schemas, workdir string) (*Builder, error) {
-	emitter, err := NewGraphEmitter(driver)
+func NewBuilder(ld loader.Loader, sc schema.Schemas, workdir string) (*Builder, error) {
+	emitter, err := ld.NewGraphEmitter()
 	if err != nil {
 		return nil, err
 	}
@@ -42,11 +44,11 @@ func NewBuilder(driver string, sc schema.Schemas, workdir string) (*Builder, err
 	if err != nil {
 		return nil, err
 	}
-	return &Builder{sc: sc, emitter: emitter, domains: map[string]*DomainInfo{}, gc: gc}, nil
+	return &Builder{loader: ld, sc: sc, emitter: emitter, domains: map[string]*DomainInfo{}, gc: gc}, nil
 }
 
 func (b *Builder) Close() {
-	b.emitter.Close()
+	b.loader.Close()
 }
 
 func (b *Builder) AddMapping(m *Mapping) {
@@ -99,7 +101,7 @@ func (b *Builder) Process(prefix string, class string, in chan map[string]interf
 	}
 }
 
-func (b *Builder) GenerateGraph(objMap *ObjectMap, class string, data map[string]interface{}, emitter Emitter) error {
+func (b *Builder) GenerateGraph(objMap *ObjectMap, class string, data map[string]interface{}, emitter loader.GraphEmitter) error {
 	if o, err := b.sc.Generate(class, data); err == nil {
 		for _, j := range o {
 			if j.Vertex != nil {
@@ -153,10 +155,6 @@ func (d *DomainInfo) GetClass(cls string) *DomainClassInfo {
 	}
 	d.classes[cls] = &o
 	return &o
-}
-
-func (dc *DomainClassInfo) Close() {
-	dc.emitter.Close()
 }
 
 func (dc *DomainClassInfo) EmitVertex(v *gripql.Vertex) error {

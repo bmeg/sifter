@@ -1,4 +1,4 @@
-package emitter
+package loader
 
 import (
 	"encoding/json"
@@ -6,11 +6,41 @@ import (
 	"log"
 
 	"github.com/bmeg/sifter/schema"
+
+	"github.com/bmeg/grip/gripql"
+	"github.com/golang/protobuf/jsonpb"
 )
 
+type StdoutLoader struct { }
+
+func (s StdoutLoader) Close() {}
+
+func (s StdoutLoader) NewDataEmitter(schemas *schema.Schemas) (DataEmitter, error) {
+	return StdoutEmitter{schemas:schemas}, nil
+}
+
+func (s StdoutLoader) NewGraphEmitter() (GraphEmitter, error) {
+	return StdoutEmitter{}, nil
+}
+
+
 type StdoutEmitter struct {
+	jm      jsonpb.Marshaler
 	schemas *schema.Schemas
 }
+
+func (s StdoutEmitter) EmitVertex(v *gripql.Vertex) error {
+	o, _ := s.jm.MarshalToString(v)
+	fmt.Printf("%s\n", o)
+	return nil
+}
+
+func (s StdoutEmitter) EmitEdge(e *gripql.Edge) error {
+	o, _ := s.jm.MarshalToString(e)
+	fmt.Printf("%s\n", o)
+	return nil
+}
+
 
 func (s StdoutEmitter) Emit(name string, v map[string]interface{}) error {
 	o, _ := json.Marshal(v)
@@ -28,8 +58,6 @@ func (s StdoutEmitter) EmitObject(prefix string, objClass string, i map[string]i
 	fmt.Printf("%s.%s : %s\n", prefix, objClass, o)
 	return nil
 }
-
-func (s StdoutEmitter) Close() {}
 
 type stdTableEmitter struct {
 	columns []string

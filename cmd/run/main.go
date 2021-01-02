@@ -8,6 +8,7 @@ import (
 
 	"github.com/bmeg/sifter/datastore"
 	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/loader"
 
 	"github.com/spf13/cobra"
 )
@@ -38,7 +39,14 @@ var Cmd = &cobra.Command{
 		//TODO: This needs to be configurable
 		dsConfig := datastore.Config{URL: "mongodb://localhost:27017", Database: "sifter", Collection: "cache"}
 
-		man, err := manager.Init(manager.Config{Driver: driver, WorkDir: workDir, DataStore: &dsConfig})
+		ld, err := loader.NewLoader(driver)
+		if err != nil {
+			log.Printf("Error stating load manager: %s", err)
+			return err
+		}
+		defer ld.Close()
+
+		man, err := manager.Init(manager.Config{Loader: ld, WorkDir: workDir, DataStore: &dsConfig})
 		if err != nil {
 			log.Printf("Error stating load manager: %s", err)
 			return err

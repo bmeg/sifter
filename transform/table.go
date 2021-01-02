@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/bmeg/golib"
-	"github.com/bmeg/sifter/emitter"
+	"github.com/bmeg/sifter/loader"
 
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/pipeline"
@@ -17,7 +17,7 @@ type TableWriteStep struct {
 	Output  string   `json:"output" jsonschema_description:"Name of file to create"`
 	Columns []string `json:"columns" jsonschema_description:"Columns to be written into table file"`
 	Sep     string   `json:"sep"`
-	emit    emitter.TableEmitter
+	emit    loader.TableEmitter
 }
 
 type TableReplaceStep struct {

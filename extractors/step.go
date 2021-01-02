@@ -18,6 +18,7 @@ type Extractor struct {
 	FileGlob      *FileGlobStep      `json:"fileGlob" jsonschema_description:"Scan a directory and run a ETL pipeline on each of the files"`
 	Script        *ScriptStep        `json:"script" jsonschema_description:"Execute a script"`
 	DigLoad       *DigLoadStep       `json:"digLoad" jsonschema_description:"Use a GRIP Dig server to get data and run a transform pipeline"`
+	AvroLoad      *AvroLoadStep      `json:"avroLoad" jsonschema_description:"Load data from avro file"`
 }
 
 func (step *Extractor) Run(run *pipeline.Runtime, inputs map[string]interface{}) error {
@@ -86,6 +87,14 @@ func (step *Extractor) Run(run *pipeline.Runtime, inputs map[string]interface{})
 			return err
 		}
 		log.Printf("XMLLoad Done")
+	} else if step.AvroLoad != nil {
+		task := run.NewTask(inputs)
+		log.Printf("Running AvroLoad")
+		if err := step.AvroLoad.Run(task); err != nil {
+			run.Printf("Avro Load Error: %s", err)
+			return err
+		}
+		log.Printf("AvroLoad Done")
 	} else if step.SQLDumpLoad != nil {
 		task := run.NewTask(inputs)
 		log.Printf("Running SQLDumpLoad")

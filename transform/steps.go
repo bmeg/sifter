@@ -18,11 +18,6 @@ import (
 var DefaultEngine = "python"
 var PipeSize = 20
 
-type ObjectCreateStep struct {
-	Class string `json:"class" jsonschema_description:"Object class, should match declared class in JSON Schema"`
-	Name  string `json:"name" jsonschema_description:"domain name of stream, to separate it from other output streams of the same output type"`
-}
-
 type ColumnReplaceStep struct {
 	Column  string `json:"col"`
 	Pattern string `json:"pattern"`
@@ -66,16 +61,13 @@ type CacheStep struct {
 	Transform Pipe `json:"transform"`
 }
 
-type EmitStep struct {
-	Name string `json:"name"`
-}
-
 type Step struct {
 	FieldMap     *FieldMapStep     `json:"fieldMap" jsonschema_description:"fieldMap to run"`
 	FieldType    *FieldTypeStep    `json:"fieldType" jsonschema_description:"Change type of a field (ie string -> integer)"`
 	ObjectCreate *ObjectCreateStep `json:"objectCreate" jsonschema_description:"Create a JSON schema based object"`
 	Emit         *EmitStep         `json:"emit" jsonschema_description:"Write to unstructured JSON file"`
 	Filter       *FilterStep       `json:"filter"`
+	Clean        *CleanStep        `json:"clean"`
 	Debug        *DebugStep        `json:"debug" jsonschema_description:"Print message contents to stdout"`
 	RegexReplace *RegexReplaceStep `json:"regexReplace"`
 	AlleleID     *AlleleIDStep     `json:"alleleID" jsonschema_description:"Generate a standardized allele hash ID"`
@@ -262,6 +254,11 @@ func (ts Step) Start(in chan map[string]interface{},
 			}
 		} else if ts.Filter != nil {
 			fOut, _ := ts.Filter.Start(in, task, wg)
+			for i := range fOut {
+				out <- i
+			}
+		} else if ts.Clean != nil {
+			fOut, _ := ts.Clean.Start(in, task, wg)
 			for i := range fOut {
 				out <- i
 			}

@@ -1,77 +1,90 @@
 package manifest
 
 import (
-	"log"
+	"fmt"
+	//"log"
 	//"io/ioutil"
 
 	//"github.com/bmeg/sifter/manager"
 	//"github.com/bmeg/sifter/steps"
+	"github.com/bmeg/sifter/manifest"
+
 	"github.com/spf13/cobra"
 )
 
-var graph string = "test-data"
-var runOnce bool = false
-var workDir string = "./"
-var gripServer string = "grip://localhost:8202"
-
 // Cmd is the declaration of the command line
-var Cmd = &cobra.Command{
-	Use:   "manifest",
-	Short: "Import manifest file <manifest URL> <download base URL>",
-	Args:  cobra.MinimumNArgs(2),
+var CheckCmd = &cobra.Command{
+	Use:   "check",
+	Short: "Check files against manifest",
+	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		log.Printf("Need to reimplement this")
-		/*
-			man, err := manager.Init(manager.Config{GripServer: gripServer, WorkDir: workDir})
-			if err != nil {
-				log.Printf("Error stating load manager: %s", err)
-				return err
-			}
-			defer man.Close()
 
-			if runOnce {
-				if man.GraphExists(graph) {
-					log.Printf("Graph found, exiting")
-					return nil
+		man, err := manifest.Load(args[0])
+		if err != nil {
+			return err
+		}
+		for _, ent := range man.Entries {
+			state := "MISSING"
+			fileMD5 := ""
+			if ent.Exists() {
+				state = "OK"
+				if m, err := ent.CalcMD5(); err == nil {
+					fileMD5 = m
+				} else {
+					fileMD5 = "ERROR"
 				}
 			}
-
-			manifestURL := args[0]
-			baseURL := args[1]
-
-			dir, err := ioutil.TempDir(workDir, "sifterwork_")
-			if err != nil {
-				log.Printf("%s", err)
-				return err
+			manMD5 := ent.MD5
+			if ent.MD5 == "" {
+				manMD5 = "NoMD5"
 			}
-
-			run, err := man.NewRuntime(graph, dir, nil)
-			if err != nil {
-				log.Printf("Error stating load runtime: %s", err)
-				return err
+			if state == "OK" {
+				if manMD5 != fileMD5 {
+					state = "MD5-Change"
+				}
 			}
-
-			task := run.NewTask(map[string]interface{}{})
-			_, err = task.DownloadFile(manifestURL, "input.manifest")
-			if err != nil {
-				log.Printf("Error downloading manifest %s : %s", manifestURL, err)
-				return err
-			}
-
-			mani := steps.ManifestLoadStep{
-				Input:   "input.manifest",
-				BaseURL: baseURL,
-			}
-			mani.Run(task)
-		*/
+			fmt.Printf("%s\t%s\t%s\t%s\n", ent.Path, state, fileMD5, manMD5)
+		}
 		return nil
 	},
 }
 
+
+var SumCmd = &cobra.Command{
+	Use:   "sum",
+	Short: "Compute and update checksums for manifest",
+	Args:  cobra.MinimumNArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		man, err := manifest.Load(args[0])
+		if err != nil {
+			return err
+		}
+		changed := false
+		for i := range man.Entries {
+			if man.Entries[i].Exists() {
+				if m, err := man.Entries[i].CalcMD5(); err == nil {
+					if m != man.Entries[i].MD5 {
+						fmt.Printf("Updating %s\n", man.Entries[i].Path)
+						man.Entries[i].MD5 = m
+						changed = true
+					}
+				}
+			}
+		}
+		if changed {
+			fmt.Printf("Saving results\n")
+		}
+		return nil
+	},
+}
+
+var Cmd = & cobra.Command{
+	Use:           "manifest",
+	SilenceErrors: true,
+	SilenceUsage:  true,
+}
+
 func init() {
-	flags := Cmd.Flags()
-	flags.BoolVar(&runOnce, "run-once", false, "Only Run if database is unintialized")
-	flags.StringVar(&graph, "graph", graph, "Destination Graph")
-	flags.StringVar(&workDir, "workdir", workDir, "Workdir")
-	flags.StringVar(&gripServer, "server", gripServer, "Destination Server")
+	Cmd.AddCommand(CheckCmd)
+	Cmd.AddCommand(SumCmd)
 }

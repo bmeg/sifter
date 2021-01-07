@@ -12,7 +12,11 @@ var LoadTemplates = map[string]setupLoader{
 		return loader.NewLoader("dir://./")
 	},
 	"grip": func(opts map[string]string) (loader.Loader, error) {
-		ld, err := loader.NewLoader("grip://localhost:8202/sifter")
+		grip := "grip://localhost:8202/sifter"
+		if g, ok := opts["grip"]; ok {
+			grip = g
+		}
+		ld, err := loader.NewLoader(grip)
 		if err != nil {
 			return nil, err
 		}

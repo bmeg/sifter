@@ -84,7 +84,7 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 				path := v.(string)
 				if isURL(path) {
 					log.Printf("Found a URL to download: %s", path)
-					tmpTask := run.NewTask(map[string]interface{}{})
+					tmpTask := run.NewTask(pb.path, map[string]interface{}{})
 					newPath, err := tmpTask.DownloadFile(path, filepath.Base(path))
 					if err != nil {
 						log.Printf("Download Error: %s", err)
@@ -98,7 +98,7 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 						inputs[k] = p
 					} else {
 						if i.Source != "" {
-							tmpTask := run.NewTask(map[string]interface{}{})
+							tmpTask := run.NewTask(pb.path, map[string]interface{}{})
 							newPath, err := tmpTask.DownloadFile(i.Source, p)
 							if err != nil {
 								log.Printf("Download Error: %s", err)
@@ -147,7 +147,7 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 	for i, step := range pb.Steps {
 		if i >= startStep {
 			log.Printf("Running Playbook Step: %#v", step)
-			err := step.Run(run, inputs)
+			err := step.Run(run, pb.path, inputs)
 			if err == nil {
 				f.WriteString("OK\n")
 				log.Printf("Playbook Step Done")

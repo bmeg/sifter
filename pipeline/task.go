@@ -25,6 +25,7 @@ type Task struct {
 	Name            string
 	Runtime         *Runtime
 	Workdir         string
+	SourcePath      string
 	Inputs          map[string]interface{}
 	DataStore       datastore.DataStore
 	AllowLocalFiles bool

@@ -26,8 +26,8 @@ func NewRuntime(output loader.DataEmitter, dir string, name string, ds datastore
 	return &Runtime{output: output, dir: dir, name: name, Status: "Starting", datastore: ds}
 }
 
-func (run *Runtime) NewTask(inputs map[string]interface{}) *Task {
-	return &Task{Name: run.name, Runtime: run, Workdir: run.dir, Inputs: inputs, AllowLocalFiles: true, DataStore: run.datastore}
+func (run *Runtime) NewTask(sourcePath string, inputs map[string]interface{}) *Task {
+	return &Task{Name: run.name, Runtime: run, Workdir: run.dir, SourcePath: sourcePath, Inputs: inputs, AllowLocalFiles: true, DataStore: run.datastore}
 }
 
 func (run *Runtime) Close() {

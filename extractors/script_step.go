@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"os/user"
 
+	"path/filepath"
+
 	shellquote "github.com/kballard/go-shellquote"
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/pipeline"
@@ -79,7 +81,8 @@ func (ss *ScriptStep) Run(task *pipeline.Task) error {
 
 	prog := baseCommand[0]
 	cmd := exec.Command(prog, baseCommand[1:len(baseCommand)]...)
-	cmd.Dir = task.Workdir
+	baseDir := filepath.Dir(task.SourcePath)
+	cmd.Dir = baseDir
 	cmd.Stderr = os.Stderr
 	if ss.Stdout != "" {
 		p, _ := task.Path(ss.Stdout)

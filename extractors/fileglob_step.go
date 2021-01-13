@@ -34,7 +34,7 @@ func (fs *FileGlobStep) Run(task *pipeline.Task) error {
 			}
 			newInputs[fs.InputName] = path
 			for _, s := range fs.Steps {
-				s.Run(task.Runtime, newInputs)
+				s.Run(task.Runtime, task.SourcePath, newInputs)
 			}
 		}
 	}

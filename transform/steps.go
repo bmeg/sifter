@@ -77,7 +77,8 @@ type Step struct {
 	FieldProcess *FieldProcessStep `json:"fieldProcess" jsonschema_description:"Take an array field from a message and run in child transform"`
 	TableWrite   *TableWriteStep   `json:"tableWrite" jsonschema_description:"Write out a TSV"`
 	TableReplace *TableReplaceStep `json:"tableReplace" jsonschema_description:"Load in TSV to map a fields values"`
-	TableProject *TableProjectStep `json:"tableProject"`
+	TableLookup *TableLookupStep `json:"tableLookup"`
+	JSONFileLookup *JSONFileLookupStep `json:"jsonLookup"`
 	Fork         *ForkStep         `json:"fork" jsonschema_description:"Take message stream and split into multiple child transforms"`
 	Cache        *CacheStep        `json:"cache" jsonschema_description:"Sub a child transform pipeline, caching the results in a database"`
 }
@@ -204,10 +205,16 @@ func (ts Step) Init(task *pipeline.Task) error {
 		return err
 	} else if ts.Cache != nil {
 		return ts.Cache.Init(task)
-	} else if ts.TableProject != nil {
-		err := ts.TableProject.Init(task)
+	} else if ts.TableLookup != nil {
+		err := ts.TableLookup.Init(task)
 		if err != nil {
-			log.Printf("TableProject err: %s", err)
+			log.Printf("TableLookup err: %s", err)
+		}
+		return err
+	} else if ts.JSONFileLookup != nil {
+		err := ts.JSONFileLookup.Init(task)
+		if err != nil {
+			log.Printf("JSONFileLookup err: %s", err)
 		}
 		return err
 	} else if ts.Fork != nil {
@@ -311,9 +318,13 @@ func (ts Step) Start(in chan map[string]interface{},
 			for i := range in {
 				out <- ts.TableReplace.Run(i, task)
 			}
-		} else if ts.TableProject != nil {
+		} else if ts.TableLookup != nil {
 			for i := range in {
-				out <- ts.TableProject.Run(i, task)
+				out <- ts.TableLookup.Run(i, task)
+			}
+		} else if ts.JSONFileLookup != nil {
+			for i := range in {
+				out <- ts.JSONFileLookup.Run(i, task)
 			}
 		} else if ts.Cache != nil {
 			outCache, err := ts.Cache.Start(in, task, wg)

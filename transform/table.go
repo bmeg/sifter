@@ -27,12 +27,14 @@ type TableReplaceStep struct {
 	table  map[string]string
 }
 
-type TableProjectStep struct {
+type TableLookupStep struct {
 	Input   string `json:"input"`
 	Sep     string `json:"sep"`
 	Field   string `json:"field"`
+	Key     string `json:"key"`
+	Header  []string `json:"header"`
 	Project map[string]string
-	header  map[string]int
+	colmap  map[string]int
 	table   map[string][]string
 }
 
@@ -122,7 +124,7 @@ func (tr *TableReplaceStep) Run(i map[string]interface{}, task *pipeline.Task) m
 	return i
 }
 
-func (tr *TableProjectStep) Init(task *pipeline.Task) error {
+func (tr *TableLookupStep) Init(task *pipeline.Task) error {
 	input, err := evaluate.ExpressionString(tr.Input, task.Inputs, nil)
 	inputPath, err := task.Path(input)
 	if err != nil {
@@ -134,39 +136,50 @@ func (tr *TableProjectStep) Init(task *pipeline.Task) error {
 	}
 	log.Printf("Loading Translation file: %s", inputPath)
 
-	inputStream, err := golib.ReadFileLines(inputPath)
+	var inputStream chan []byte
+  if strings.HasSuffix(inputPath, ".gz") {
+    inputStream, err = golib.ReadGzipLines(inputPath)
+  } else {
+    inputStream, err = golib.ReadFileLines(inputPath)
+  }
 	if err != nil {
 		return err
 	}
+
 	if tr.Sep == "" {
 		tr.Sep = "\t"
 	}
-	tr.header = nil
+	tr.colmap = nil
+	if len(tr.Header) > 0 {
+		tr.colmap = map[string]int{}
+		for i, n := range tr.Header {
+			tr.colmap[n] = i
+		}
+	}
 	tr.table = map[string][]string{}
 	for line := range inputStream {
 		if len(line) > 0 {
 			row := strings.Split(string(line), tr.Sep)
-			if tr.header == nil {
-				tr.header = map[string]int{}
+			if tr.colmap == nil {
+				tr.colmap = map[string]int{}
 				for i, k := range row {
-					tr.header[k] = i
+					tr.colmap[k] = i
 				}
 			} else {
-				tr.table[row[0]] = row
+				tr.table[row[tr.colmap[tr.Key]]] = row
 			}
 		}
 	}
 	return nil
 }
 
-func (tr *TableProjectStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-	if fv, ok := i[tr.Field]; ok {
-		if fstr, ok := fv.(string); ok {
-			if pv, ok := tr.table[fstr]; ok {
-				for k, v := range tr.Project {
-					if ki, ok := tr.header[v]; ok {
-						i[k] = pv[ki]
-					}
+func (tr *TableLookupStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+	field, err := evaluate.ExpressionString(tr.Field, task.Inputs, i)
+	if err == nil {
+		if pv, ok := tr.table[field]; ok {
+			for k, v := range tr.Project {
+				if ki, ok := tr.colmap[v]; ok {
+					i[k] = pv[ki]
 				}
 			}
 		}

@@ -32,11 +32,8 @@ steps:
             col: attributes
             sep: ";"
         - fieldType:
-            col: start
-            type: int
-        - fieldType:
-            col: end
-            type: int
+            start: int
+            end: int
         - filter:
             field: row.type
             match: exon

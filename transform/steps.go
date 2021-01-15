@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
-	"strconv"
+
 	"strings"
 	"sync"
 
@@ -27,11 +27,6 @@ type ColumnReplaceStep struct {
 type FieldMapStep struct {
 	Column string `json:"col"`
 	Sep    string `json:"sep"`
-}
-
-type FieldTypeStep struct {
-	Column string `json:"col"`
-	Type   string `json:"type"`
 }
 
 type RegexReplaceStep struct {
@@ -103,23 +98,6 @@ func (fm FieldMapStep) Run(i map[string]interface{}, task *pipeline.Task) map[st
 				}
 			}
 			o[fm.Column] = t
-		}
-	}
-	return o
-}
-
-func (fs FieldTypeStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-	o := map[string]interface{}{}
-	for x, y := range i {
-		o[x] = y
-	}
-	if fs.Type == "int" {
-		if val, ok := i[fs.Column]; ok {
-			if vStr, ok := val.(string); ok {
-				if d, err := strconv.ParseInt(vStr, 10, 64); err == nil {
-					o[fs.Column] = d
-				}
-			}
 		}
 	}
 	return o

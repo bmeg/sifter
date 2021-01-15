@@ -19,7 +19,13 @@ import (
 )
 
 type Mapping struct {
+	All     *AllMapping           `json:"all"`
 	Domains map[string]*DomainMap `json:"domains"`
+}
+
+type AllMapping struct {
+	Fields map[string]*FieldTransform `json:"fields"`
+	Edges  *EdgeTransform             `json:"edges"`
 }
 
 type DomainMap map[string]*ObjectMap
@@ -37,7 +43,7 @@ type FieldTransform struct {
 }
 
 type EdgeTransform struct {
-	Template string `json:"template"`
+	Fields map[string]*FieldTransform `json:"fields"`
 }
 
 type ObjectMap struct {
@@ -58,6 +64,22 @@ func LoadMapping(path string, inputDir string) (*Mapping, error) {
 	for _, domain := range o.Domains {
 		for _, cls := range *domain {
 			for f, field := range cls.Fields {
+				field.Init(f, inputDir)
+			}
+			for _, edge := range cls.Edges {
+				for f, field := range edge.Fields {
+					field.Init(f, inputDir)
+				}
+			}
+		}
+	}
+
+	if o.All != nil {
+		for f, field := range o.All.Fields {
+			field.Init(f, inputDir)
+		}
+		if o.All.Edges != nil {
+			for f, field := range o.All.Edges.Fields {
 				field.Init(f, inputDir)
 			}
 		}
@@ -143,18 +165,26 @@ func (f *FieldTransform) Run(d map[string]interface{}) map[string]interface{} {
 }
 
 func (et *EdgeTransform) Run(e *gripql.Edge) *gripql.Edge {
-	if et.Template != "" {
-		d := protoutil.AsMap(e.Data)
-		if d == nil {
-			d = map[string]interface{}{}
-		}
-		d["_to"] = e.To
-		d["_from"] = e.From
-		d["_label"] = e.Label
-		val, err := evaluate.ExpressionString(et.Template, nil, d)
-		if err == nil {
-			e.To = val
-		}
+	d := protoutil.AsMap(e.Data)
+	if d == nil {
+		d = map[string]interface{}{}
 	}
-	return e
+	d["_to"] = e.To
+	d["_from"] = e.From
+	d["_label"] = e.Label
+
+	for _, f := range et.Fields {
+		d = f.Run(d)
+	}
+	gid := ""
+	if g, ok := d["_gid"]; ok {
+		gid = g.(string)
+	}
+	o := gripql.Edge{Gid: gid, From: d["_from"].(string), To:d["_to"].(string), Label:d["_label"].(string)}
+	delete(d, "_gid")
+	delete(d, "_to")
+	delete(d, "_from")
+	delete(d, "_label")
+	o.Data = protoutil.AsStruct(d)
+	return &o
 }

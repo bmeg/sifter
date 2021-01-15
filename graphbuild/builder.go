@@ -91,6 +91,11 @@ func (b *Builder) Process(prefix string, class string, in chan map[string]interf
 	}
 
 	for obj := range in {
+		if b.gm.All != nil {
+			for _, f := range b.gm.All.Fields {
+				obj = f.Run(obj)
+			}
+		}
 		if m != nil {
 			obj = m.MapObject(obj)
 		}
@@ -107,6 +112,9 @@ func (b *Builder) GenerateGraph(objMap *ObjectMap, class string, data map[string
 			if j.Vertex != nil {
 				emitter.EmitVertex(j.Vertex)
 			} else if j.Edge != nil {
+				if b.gm.All != nil && b.gm.All.Edges != nil {
+					j.Edge = b.gm.All.Edges.Run(j.Edge)
+				}
 				if objMap != nil {
 					if em, ok := objMap.Edges[j.Edge.Label]; ok {
 						j.Edge = em.Run(j.Edge)

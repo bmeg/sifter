@@ -23,7 +23,7 @@ var workDir string = "./"
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
-	Use:   "graph",
+	Use:   "graph [schemaDir] [inputDir]",
 	Short: "Build graph from object files",
 	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {

@@ -3,7 +3,7 @@ package graphbuild
 import (
 	//"io"
 	"os"
-	//"strings"
+	"strings"
 	"compress/gzip"
 	"fmt"
 	"io/ioutil"
@@ -19,16 +19,20 @@ import (
 )
 
 type Mapping struct {
-	All     *AllMapping           `json:"all"`
-	Domains map[string]*DomainMap `json:"domains"`
+	AllVertex   *VertexFieldMapping         `json:"allVertex"`
+	AllEdge     *EdgeFieldMapping           `json:"allEdge"`
+	Domains map[string]*DomainMap           `json:"domains"`
 }
 
-type AllMapping struct {
+type VertexFieldMapping struct {
 	Fields map[string]*FieldTransform `json:"fields"`
-	Edges  *EdgeTransform             `json:"edges"`
 }
 
-type DomainMap map[string]*ObjectMap
+type EdgeFieldMapping struct {
+	Fields map[string]*FieldTransform `json:"fields"`
+}
+
+type DomainMap map[string]*VertexTransform
 
 type TableLookupTransform struct {
 	Table string `json:"table"`
@@ -43,11 +47,15 @@ type FieldTransform struct {
 }
 
 type EdgeTransform struct {
-	Fields map[string]*FieldTransform `json:"fields"`
+	EdgeFieldMapping
+	DomainFilter  bool                `json:"domainFilter"`
+	ToDomain string                   `json:"toDomain"`
 }
 
-type ObjectMap struct {
-	Fields map[string]*FieldTransform `json:"fields"`
+type VertexTransform struct {
+	VertexFieldMapping
+	IdField   string                  `json:"idField"`
+	Domain string                     `json:"domain"`
 	Edges  map[string]*EdgeTransform  `json:"edges"`
 }
 
@@ -74,12 +82,12 @@ func LoadMapping(path string, inputDir string) (*Mapping, error) {
 		}
 	}
 
-	if o.All != nil {
-		for f, field := range o.All.Fields {
+	if o.AllVertex != nil {
+		for f, field := range o.AllVertex.Fields {
 			field.Init(f, inputDir)
 		}
-		if o.All.Edges != nil {
-			for f, field := range o.All.Edges.Fields {
+		if o.AllEdge != nil {
+			for f, field := range o.AllEdge.Fields {
 				field.Init(f, inputDir)
 			}
 		}
@@ -88,17 +96,90 @@ func LoadMapping(path string, inputDir string) (*Mapping, error) {
 	return &o, nil
 }
 
-func (o *ObjectMap) MapObject(d map[string]interface{}) map[string]interface{} {
-	if i, ok := o.Fields["_gid"]; ok {
-		sid, err := evaluate.ExpressionString(i.Template, nil, d)
-		if err == nil {
-			d["id"] = sid
+func (vt *VertexTransform) Run(v *gripql.Vertex) *gripql.Vertex {
+	o := vt.VertexFieldMapping.Run(v)
+	if vt.Domain != "" && !strings.HasPrefix(o.Gid, vt.Domain) {
+		o.Gid = vt.Domain + o.Gid
+	}
+	return o
+}
+
+func (vt *VertexTransform) VertexObjectFix(obj map[string]interface{}) map[string]interface{} {
+	if vt.IdField != "" {
+		if g, ok := obj[vt.IdField]; ok {
+			if gStr, ok := g.(string); ok {
+				obj["id"] = gStr
+				obj["_gid"] = gStr
+			}
 		}
 	}
-	for _, f := range o.Fields {
+	if gid, ok := obj["_gid"]; ok {
+		if gStr, ok := gid.(string); ok {
+			if vt.Domain != "" && !strings.HasPrefix(gStr, vt.Domain) {
+				obj["_gid"] = vt.Domain + gStr
+				obj["id"] = vt.Domain + gStr
+			}
+		}
+	}
+	return obj
+}
+
+func (vfm *VertexFieldMapping) Run(v *gripql.Vertex) *gripql.Vertex {
+	d := protoutil.AsMap(v.Data)
+	if d == nil {
+		d = map[string]interface{}{}
+	}
+	d["_gid"] = v.Gid
+	d["_label"] = v.Label
+
+	for _, f := range vfm.Fields {
 		d = f.Run(d)
 	}
-	return d
+	gid := ""
+	if g, ok := d["_gid"]; ok {
+		gid = g.(string)
+	}
+	o := gripql.Vertex{Gid: gid, Label:d["_label"].(string)}
+	delete(d, "_gid")
+	delete(d, "_label")
+	o.Data = protoutil.AsStruct(d)
+	return &o
+}
+
+func (et *EdgeTransform) Run(e *gripql.Edge) *gripql.Edge {
+	o := et.EdgeFieldMapping.Run(e)
+	if et.ToDomain != "" && !strings.HasPrefix(o.To, et.ToDomain) {
+		if et.DomainFilter {
+			o.To = "" //domain filter is on, but dest edge doesn't match, so set to "", so it's filtered out later
+		} else {
+			o.To = et.ToDomain + o.To
+		}
+	}
+	return o
+}
+
+func (et *EdgeFieldMapping) Run(e *gripql.Edge) *gripql.Edge {
+	d := protoutil.AsMap(e.Data)
+	if d == nil {
+		d = map[string]interface{}{}
+	}
+	d["_to"] = e.To
+	d["_from"] = e.From
+	d["_label"] = e.Label
+
+	for _, f := range et.Fields {
+		d = f.Run(d)
+	}
+	gid := ""
+	if g, ok := d["_gid"]; ok {
+		gid = g.(string)}
+	o := gripql.Edge{Gid: gid, From: d["_from"].(string), To:d["_to"].(string), Label:d["_label"].(string)}
+	delete(d, "_gid")
+	delete(d, "_to")
+	delete(d, "_from")
+	delete(d, "_label")
+	o.Data = protoutil.AsStruct(d)
+	return &o
 }
 
 func (f *FieldTransform) Init(field string, inputDir string) error {
@@ -162,29 +243,4 @@ func (f *FieldTransform) Run(d map[string]interface{}) map[string]interface{} {
 		}
 	}
 	return d
-}
-
-func (et *EdgeTransform) Run(e *gripql.Edge) *gripql.Edge {
-	d := protoutil.AsMap(e.Data)
-	if d == nil {
-		d = map[string]interface{}{}
-	}
-	d["_to"] = e.To
-	d["_from"] = e.From
-	d["_label"] = e.Label
-
-	for _, f := range et.Fields {
-		d = f.Run(d)
-	}
-	gid := ""
-	if g, ok := d["_gid"]; ok {
-		gid = g.(string)
-	}
-	o := gripql.Edge{Gid: gid, From: d["_from"].(string), To:d["_to"].(string), Label:d["_label"].(string)}
-	delete(d, "_gid")
-	delete(d, "_to")
-	delete(d, "_from")
-	delete(d, "_label")
-	o.Data = protoutil.AsStruct(d)
-	return &o
 }

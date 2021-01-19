@@ -11,8 +11,9 @@ import (
 )
 
 type GraphElement struct {
-	Vertex *gripql.Vertex
-	Edge   *gripql.Edge
+	Vertex   *gripql.Vertex
+	InEdge   *gripql.Edge
+	OutEdge  *gripql.Edge
 }
 
 func (s Schemas) Generate(classID string, data map[string]interface{}) ([]GraphElement, error) {
@@ -117,10 +118,10 @@ func (l Link) Generate(gid string, data map[string]interface{}) ([]GraphElement,
 	*/
 	for _, d := range dst {
 		e := gripql.Edge{From: gid, To: d, Label: l.Label}
-		out = append(out, GraphElement{Edge: &e})
+		out = append(out, GraphElement{OutEdge: &e})
 		if l.Backref != "" {
 			e := gripql.Edge{To: gid, From: d, Label: l.Backref}
-			out = append(out, GraphElement{Edge: &e})
+			out = append(out, GraphElement{InEdge: &e})
 		}
 	}
 	return out, nil
@@ -156,7 +157,7 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
 					if fIDStr, ok := fID.(string); ok {
 						ds := protoutil.AsStruct(outData)
 						e := gripql.Edge{Gid: gid, To: tIDStr, From: fIDStr, Label: s.Edge.Label, Data: ds}
-						out = append(out, GraphElement{Edge: &e})
+						out = append(out, GraphElement{OutEdge: &e})
 					}
 				} else {
 					log.Printf("Edge from field '%s' missing", s.Edge.From)

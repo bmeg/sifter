@@ -64,24 +64,25 @@ var Cmd = &cobra.Command{
 		for _, path := range paths {
 			n := filepath.Base(path)
 			log.Printf("%s", n)
-
-			reader, err := golib.ReadGzipLines(path)
-			if err == nil {
-				objChan := make(chan map[string]interface{}, 100)
-				go func() {
-					defer close(objChan)
-					for line := range reader {
-						o := map[string]interface{}{}
-						if len(line) > 0 {
-							json.Unmarshal(line, &o)
-							objChan <- o
+			tmp := strings.Split(n, ".")
+			prefix := tmp[0]
+			class := tmp[1]
+			if builder.HasDomain(prefix, class) {
+				reader, err := golib.ReadGzipLines(path)
+				if err == nil {
+					objChan := make(chan map[string]interface{}, 100)
+					go func() {
+						defer close(objChan)
+						for line := range reader {
+							o := map[string]interface{}{}
+							if len(line) > 0 {
+								json.Unmarshal(line, &o)
+								objChan <- o
+							}
 						}
-					}
-				}()
-				tmp := strings.Split(n, ".")
-				prefix := tmp[0]
-				class := tmp[1]
-				builder.Process(prefix, class, objChan)
+					}()
+					builder.Process(prefix, class, objChan)
+				}
 			}
 		}
 		builder.Close()

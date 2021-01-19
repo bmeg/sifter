@@ -14,7 +14,7 @@ import (
 type DomainClassInfo struct {
 	emitter   loader.GraphEmitter
 	gc        *Check
-	om        *ObjectMap
+	om        *VertexTransform
 	vertCount int64
 	edgeCount int64
 }
@@ -70,8 +70,20 @@ func (b *Builder) GetDomain(prefix string) *DomainInfo {
 	return &o
 }
 
+func (b *Builder) HasDomain(prefix string, class string) bool {
+	d := b.GetDomain(prefix)
+	if d == nil {
+		return false
+	}
+	c := d.GetClass(class)
+	if c == nil {
+		return false
+	}
+	return true
+}
+
 func (b *Builder) Process(prefix string, class string, in chan map[string]interface{}) {
-	var m *ObjectMap
+	var m *VertexTransform
 	if b.gm != nil {
 		if x, ok := b.gm.Domains[prefix]; ok {
 			if y, ok := (*x)[class]; ok {
@@ -83,22 +95,17 @@ func (b *Builder) Process(prefix string, class string, in chan map[string]interf
 
 	d := b.GetDomain(prefix)
 	if d == nil {
+		for range in {}
 		return
 	}
 	c := d.GetClass(class)
 	if c == nil {
+		for range in {}
 		return
 	}
 
 	for obj := range in {
-		if b.gm.All != nil {
-			for _, f := range b.gm.All.Fields {
-				obj = f.Run(obj)
-			}
-		}
-		if m != nil {
-			obj = m.MapObject(obj)
-		}
+		obj = c.om.VertexObjectFix(obj)
 		err := b.GenerateGraph(m, class, obj, c)
 		if err != nil {
 			log.Printf("Graph Generation Error: %s.%s : %s", prefix, class, err)
@@ -106,21 +113,39 @@ func (b *Builder) Process(prefix string, class string, in chan map[string]interf
 	}
 }
 
-func (b *Builder) GenerateGraph(objMap *ObjectMap, class string, data map[string]interface{}, emitter loader.GraphEmitter) error {
+func (b *Builder) GenerateGraph(vertMap *VertexTransform, class string, data map[string]interface{}, emitter loader.GraphEmitter) error {
 	if o, err := b.sc.Generate(class, data); err == nil {
 		for _, j := range o {
 			if j.Vertex != nil {
-				emitter.EmitVertex(j.Vertex)
-			} else if j.Edge != nil {
-				if b.gm.All != nil && b.gm.All.Edges != nil {
-					j.Edge = b.gm.All.Edges.Run(j.Edge)
+				if b.gm.AllVertex != nil {
+					j.Vertex = b.gm.AllVertex.Run(j.Vertex)
 				}
-				if objMap != nil {
-					if em, ok := objMap.Edges[j.Edge.Label]; ok {
-						j.Edge = em.Run(j.Edge)
+				if vertMap != nil {
+					j.Vertex = vertMap.Run(j.Vertex)
+				}
+				emitter.EmitVertex(j.Vertex)
+			} else if j.OutEdge != nil || j.InEdge != nil {
+				var edge *gripql.Edge
+				if j.OutEdge != nil {
+					edge = j.OutEdge
+				}
+				if j.InEdge != nil {
+					edge = j.InEdge
+				}
+				if b.gm.AllEdge != nil {
+					edge = b.gm.AllEdge.Run(edge)
+				}
+				if vertMap != nil {
+					if em, ok := vertMap.Edges[edge.Label]; ok {
+						edge = em.Run(edge)
+					} else if j.OutEdge != nil {
+						//report if an outgoing edge does have mapping information
+						log.Printf("Mapping for edge %s not found", edge.Label )
 					}
 				}
-				emitter.EmitEdge(j.Edge)
+				if edge.To != "" && edge.From != "" && edge.Label != "" {
+					emitter.EmitEdge(edge)
+				}
 			}
 		}
 	} else {

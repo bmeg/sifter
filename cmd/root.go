@@ -4,10 +4,10 @@ import (
 	"os"
 
 	"github.com/bmeg/sifter/cmd/graph"
+	"github.com/bmeg/sifter/cmd/graphmanifest"
 	"github.com/bmeg/sifter/cmd/manifest"
 	"github.com/bmeg/sifter/cmd/run"
 	"github.com/bmeg/sifter/cmd/template"
-	"github.com/bmeg/sifter/cmd/graphmanifest"
 	"github.com/spf13/cobra"
 )
 

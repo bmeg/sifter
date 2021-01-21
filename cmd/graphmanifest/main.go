@@ -1,4 +1,3 @@
-
 package graphmanifest
 
 import (
@@ -11,7 +10,7 @@ var Cmd = &cobra.Command{
 	Short: "Build manifest for graph file archive",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-    ScanDir(args[0])
+		ScanDir(args[0])
 		return nil
 	},
 }

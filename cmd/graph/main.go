@@ -1,8 +1,8 @@
 package graph
 
 import (
-	"encoding/json"
 	"fmt"
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"os"
@@ -13,7 +13,6 @@ import (
 
 	"github.com/bmeg/golib"
 	"github.com/bmeg/sifter/graphbuild"
-	"github.com/bmeg/sifter/loader"
 	"github.com/bmeg/sifter/schema"
 )
 
@@ -41,24 +40,22 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
-		loaderOpt := fmt.Sprintf("dir://%s", outDir)
-		ld, err := loader.NewLoader(loaderOpt)
+
+		m, err := graphbuild.LoadMapping(mappingFile, inDir)
 		if err != nil {
 			return err
 		}
-		builder, err := graphbuild.NewBuilder(ld, schemas, tmpDir)
+		log.Printf("Loaded Mapping: %s", mappingFile)
+
+		emitter := NewGraphDomainEmitter(outDir, m.GetVertexDomains(), m.GetEdgeEndDomains())
+		builder, err := graphbuild.NewBuilder(emitter, schemas, tmpDir)
 		if err != nil {
 			return err
 		}
 
-		if mappingFile != "" {
-			m, err := graphbuild.LoadMapping(mappingFile, inDir)
-			if err != nil {
-				return err
-			}
-			log.Printf("Loaded Mapping: %s", mappingFile)
-			builder.AddMapping(m)
-		}
+		fmt.Printf("%s\n", m.GetVertexDomains())
+		fmt.Printf("%s\n", m.GetEdgeEndDomains())
+
 
 		paths, _ := filepath.Glob(filepath.Join(inDir, "*.json.gz"))
 		for _, path := range paths {
@@ -67,7 +64,7 @@ var Cmd = &cobra.Command{
 			tmp := strings.Split(n, ".")
 			prefix := tmp[0]
 			class := tmp[1]
-			if builder.HasDomain(prefix, class) {
+			if builder.HasDomain(prefix, class, m) {
 				reader, err := golib.ReadGzipLines(path)
 				if err == nil {
 					objChan := make(chan map[string]interface{}, 100)
@@ -81,7 +78,7 @@ var Cmd = &cobra.Command{
 							}
 						}
 					}()
-					builder.Process(prefix, class, objChan)
+					builder.Process(prefix, class, objChan, m, emitter)
 				}
 			}
 		}
@@ -89,6 +86,7 @@ var Cmd = &cobra.Command{
 
 		builder.Report(outDir)
 		os.RemoveAll(tmpDir)
+		emitter.Close()
 		return nil
 	},
 }

@@ -12,7 +12,6 @@ import (
 )
 
 type DomainClassInfo struct {
-	emitter   loader.GraphEmitter
 	gc        *Check
 	om        *VertexTransform
 	vertCount int64
@@ -20,47 +19,35 @@ type DomainClassInfo struct {
 }
 
 type DomainInfo struct {
-	emitter loader.GraphEmitter
 	gc      *Check
 	dm      *DomainMap
 	classes map[string]*DomainClassInfo
 }
 
 type Builder struct {
-	loader  loader.Loader
-	emitter loader.GraphEmitter
 	sc      schema.Schemas
-	gm      *Mapping
 	gc      *Check
 	domains map[string]*DomainInfo
 }
 
-func NewBuilder(ld loader.Loader, sc schema.Schemas, workdir string) (*Builder, error) {
-	emitter, err := ld.NewGraphEmitter()
-	if err != nil {
-		return nil, err
-	}
+func NewBuilder(emitter loader.GraphEmitter, sc schema.Schemas, workdir string) (*Builder, error) {
 	gc, err := NewGraphCheck(workdir)
 	if err != nil {
 		return nil, err
 	}
-	return &Builder{loader: ld, sc: sc, emitter: emitter, domains: map[string]*DomainInfo{}, gc: gc}, nil
+	return &Builder{sc: sc, domains: map[string]*DomainInfo{}, gc: gc}, nil
 }
 
 func (b *Builder) Close() {
-	b.loader.Close()
+
 }
 
-func (b *Builder) AddMapping(m *Mapping) {
-	b.gm = m
-}
-
-func (b *Builder) GetDomain(prefix string) *DomainInfo {
+func (b *Builder) GetDomain(prefix string, gm *Mapping) *DomainInfo {
 	if x, ok := b.domains[prefix]; ok {
 		return x
 	}
-	o := DomainInfo{emitter: b.emitter, classes: map[string]*DomainClassInfo{}, gc: b.gc}
-	if x, ok := b.gm.Domains[prefix]; ok {
+	o := DomainInfo{classes: map[string]*DomainClassInfo{}, gc: b.gc}
+	if x, ok := gm.Domains[prefix]; ok {
 		o.dm = x
 	} else {
 		log.Printf("Domain info for %s not found", prefix)
@@ -70,8 +57,8 @@ func (b *Builder) GetDomain(prefix string) *DomainInfo {
 	return &o
 }
 
-func (b *Builder) HasDomain(prefix string, class string) bool {
-	d := b.GetDomain(prefix)
+func (b *Builder) HasDomain(prefix string, class string, gm *Mapping) bool {
+	d := b.GetDomain(prefix, gm)
 	if d == nil {
 		return false
 	}
@@ -82,18 +69,17 @@ func (b *Builder) HasDomain(prefix string, class string) bool {
 	return true
 }
 
-func (b *Builder) Process(prefix string, class string, in chan map[string]interface{}) {
+func (b *Builder) Process(prefix string, class string, in chan map[string]interface{}, gm *Mapping, emitter loader.GraphEmitter) {
 	var m *VertexTransform
-	if b.gm != nil {
-		if x, ok := b.gm.Domains[prefix]; ok {
-			if y, ok := (*x)[class]; ok {
-				log.Printf("Using mapping: %s %s", prefix, class)
-				m = y
-			}
+
+	if x, ok := gm.Domains[prefix]; ok {
+		if y, ok := (*x)[class]; ok {
+			log.Printf("Using mapping: %s %s", prefix, class)
+			m = y
 		}
 	}
 
-	d := b.GetDomain(prefix)
+	d := b.GetDomain(prefix, gm)
 	if d == nil {
 		for range in {}
 		return
@@ -106,19 +92,19 @@ func (b *Builder) Process(prefix string, class string, in chan map[string]interf
 
 	for obj := range in {
 		obj = c.om.VertexObjectFix(obj)
-		err := b.GenerateGraph(m, class, obj, c)
+		err := b.GenerateGraph(m, class, obj, gm, emitter)
 		if err != nil {
 			log.Printf("Graph Generation Error: %s.%s : %s", prefix, class, err)
 		}
 	}
 }
 
-func (b *Builder) GenerateGraph(vertMap *VertexTransform, class string, data map[string]interface{}, emitter loader.GraphEmitter) error {
+func (b *Builder) GenerateGraph(vertMap *VertexTransform, class string, data map[string]interface{}, gm *Mapping, emitter loader.GraphEmitter) error {
 	if o, err := b.sc.Generate(class, data); err == nil {
 		for _, j := range o {
 			if j.Vertex != nil {
-				if b.gm.AllVertex != nil {
-					j.Vertex = b.gm.AllVertex.Run(j.Vertex)
+				if gm.AllVertex != nil {
+					j.Vertex = gm.AllVertex.Run(j.Vertex)
 				}
 				if vertMap != nil {
 					j.Vertex = vertMap.Run(j.Vertex)
@@ -132,8 +118,8 @@ func (b *Builder) GenerateGraph(vertMap *VertexTransform, class string, data map
 				if j.InEdge != nil {
 					edge = j.InEdge
 				}
-				if b.gm.AllEdge != nil {
-					edge = b.gm.AllEdge.Run(edge)
+				if gm.AllEdge != nil {
+					edge = gm.AllEdge.Run(edge)
 				}
 				if vertMap != nil {
 					if em, ok := vertMap.Edges[edge.Label]; ok {
@@ -182,27 +168,10 @@ func (d *DomainInfo) GetClass(cls string) *DomainClassInfo {
 	if x, ok := d.classes[cls]; ok {
 		return x
 	}
-	o := DomainClassInfo{emitter: d.emitter, gc: d.gc}
+	o := DomainClassInfo{gc: d.gc}
 	if x, ok := (*d.dm)[cls]; ok {
 		o.om = x
 	}
 	d.classes[cls] = &o
 	return &o
-}
-
-func (dc *DomainClassInfo) EmitVertex(v *gripql.Vertex) error {
-	dc.vertCount++
-	if dc.om != nil {
-		if l, ok := dc.om.Fields["_label"]; ok {
-			v.Label = l.Template
-		}
-	}
-	dc.gc.AddVertex(v.Gid)
-	return dc.emitter.EmitVertex(v)
-}
-
-func (dc *DomainClassInfo) EmitEdge(e *gripql.Edge) error {
-	dc.edgeCount++
-	dc.gc.AddEdge(e.From, e.To)
-	return dc.emitter.EmitEdge(e)
 }

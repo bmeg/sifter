@@ -50,12 +50,14 @@ type EdgeTransform struct {
 	EdgeFieldMapping
 	DomainFilter  bool                `json:"domainFilter"`
 	ToDomain string                   `json:"toDomain"`
+	Sep    *string                    `json:"sep"`
 }
 
 type VertexTransform struct {
 	VertexFieldMapping
 	IdField   string                  `json:"idField"`
 	Domain string                     `json:"domain"`
+	Sep    *string                    `json:"sep"`
 	Edges  map[string]*EdgeTransform  `json:"edges"`
 }
 
@@ -96,10 +98,38 @@ func LoadMapping(path string, inputDir string) (*Mapping, error) {
 	return &o, nil
 }
 
+
+func (m *Mapping) GetVertexDomains() []string {
+	out := []string{}
+	for _, d := range m.Domains {
+		for _, v := range *d {
+			out = append(out, v.Domain)
+		}
+	}
+	return out
+}
+
+func (m *Mapping) GetEdgeEndDomains() [][]string {
+	out := [][]string{}
+	for _, d := range m.Domains {
+		for _, v := range *d {
+			for _, e := range v.Edges {
+				out = append(out, []string{v.Domain,e.ToDomain})
+				out = append(out, []string{e.ToDomain,v.Domain})
+			}
+		}
+	}
+	return out
+}
+
 func (vt *VertexTransform) Run(v *gripql.Vertex) *gripql.Vertex {
 	o := vt.VertexFieldMapping.Run(v)
 	if vt.Domain != "" && !strings.HasPrefix(o.Gid, vt.Domain) {
-		o.Gid = vt.Domain + o.Gid
+		sep := ":"
+		if vt.Sep != nil {
+			sep = *vt.Sep
+		}
+		o.Gid = vt.Domain + sep + o.Gid
 	}
 	return o
 }
@@ -116,8 +146,12 @@ func (vt *VertexTransform) VertexObjectFix(obj map[string]interface{}) map[strin
 	if gid, ok := obj["_gid"]; ok {
 		if gStr, ok := gid.(string); ok {
 			if vt.Domain != "" && !strings.HasPrefix(gStr, vt.Domain) {
-				obj["_gid"] = vt.Domain + gStr
-				obj["id"] = vt.Domain + gStr
+				sep := ":"
+				if vt.Sep != nil {
+					sep = *vt.Sep
+				}
+				obj["_gid"] = vt.Domain + sep + gStr
+				obj["id"] = vt.Domain + sep + gStr
 			}
 		}
 	}
@@ -149,10 +183,14 @@ func (vfm *VertexFieldMapping) Run(v *gripql.Vertex) *gripql.Vertex {
 func (et *EdgeTransform) Run(e *gripql.Edge) *gripql.Edge {
 	o := et.EdgeFieldMapping.Run(e)
 	if et.ToDomain != "" && !strings.HasPrefix(o.To, et.ToDomain) {
+		sep := ":"
+		if et.Sep != nil {
+			sep = *et.Sep
+		}
 		if et.DomainFilter {
 			o.To = "" //domain filter is on, but dest edge doesn't match, so set to "", so it's filtered out later
 		} else {
-			o.To = et.ToDomain + o.To
+			o.To = et.ToDomain + sep + o.To
 		}
 	}
 	return o

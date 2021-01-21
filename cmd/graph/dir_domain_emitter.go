@@ -50,7 +50,7 @@ func (s *DomainEmitter) EmitVertex(v *gripql.Vertex) error {
 			return err
 		}
 		f = gzip.NewWriter(j)
-		s.vout[v.Label] = f
+		s.vout[prefix] = f
 	}
 	o, _ := s.jm.MarshalToString(v)
 	f.Write([]byte(o))

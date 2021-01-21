@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     notesPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "format.yaml")
     with open(notesPath) as handle:
-        notes = yaml.load(handle.read())
+        notes = yaml.load(handle.read(), Loader=yaml.BaseLoader)
 
     #print(data.keys())
     """

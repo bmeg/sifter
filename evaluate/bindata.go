@@ -6,7 +6,6 @@
 
 package evaluate
 
-
 import (
 	"bytes"
 	"compress/gzip"
@@ -38,7 +37,6 @@ func bindataRead(data []byte, name string) ([]byte, error) {
 
 	return buf.Bytes(), nil
 }
-
 
 type asset struct {
 	bytes []byte
@@ -89,8 +87,6 @@ func bindataExecpb2PyBytes() ([]byte, error) {
 	)
 }
 
-
-
 func bindataExecpb2Py() (*asset, error) {
 	bytes, err := bindataExecpb2PyBytes()
 	if err != nil {
@@ -98,11 +94,11 @@ func bindataExecpb2Py() (*asset, error) {
 	}
 
 	info := bindataFileInfo{
-		name: "exec_pb2.py",
-		size: 7571,
+		name:        "exec_pb2.py",
+		size:        7571,
 		md5checksum: "",
-		mode: os.FileMode(420),
-		modTime: time.Unix(1587596493, 0),
+		mode:        os.FileMode(420),
+		modTime:     time.Unix(1587596493, 0),
 	}
 
 	a := &asset{bytes: bytes, info: info}
@@ -119,8 +115,6 @@ func bindataExecpb2grpcPyBytes() ([]byte, error) {
 	)
 }
 
-
-
 func bindataExecpb2grpcPy() (*asset, error) {
 	bytes, err := bindataExecpb2grpcPyBytes()
 	if err != nil {
@@ -128,11 +122,11 @@ func bindataExecpb2grpcPy() (*asset, error) {
 	}
 
 	info := bindataFileInfo{
-		name: "exec_pb2_grpc.py",
-		size: 3555,
+		name:        "exec_pb2_grpc.py",
+		size:        3555,
 		md5checksum: "",
-		mode: os.FileMode(420),
-		modTime: time.Unix(1587596493, 0),
+		mode:        os.FileMode(420),
+		modTime:     time.Unix(1587596493, 0),
 	}
 
 	a := &asset{bytes: bytes, info: info}
@@ -149,8 +143,6 @@ func bindataSifterexecPyBytes() ([]byte, error) {
 	)
 }
 
-
-
 func bindataSifterexecPy() (*asset, error) {
 	bytes, err := bindataSifterexecPyBytes()
 	if err != nil {
@@ -158,18 +150,17 @@ func bindataSifterexecPy() (*asset, error) {
 	}
 
 	info := bindataFileInfo{
-		name: "sifter-exec.py",
-		size: 3161,
+		name:        "sifter-exec.py",
+		size:        3161,
 		md5checksum: "",
-		mode: os.FileMode(509),
-		modTime: time.Unix(1607993019, 0),
+		mode:        os.FileMode(509),
+		modTime:     time.Unix(1607993019, 0),
 	}
 
 	a := &asset{bytes: bytes, info: info}
 
 	return a, nil
 }
-
 
 //
 // Asset loads and returns the asset for the given name.
@@ -263,18 +254,18 @@ func AssetDir(name string) ([]string, error) {
 			node = node.Children[p]
 			if node == nil {
 				return nil, &os.PathError{
-					Op: "open",
+					Op:   "open",
 					Path: name,
-					Err: os.ErrNotExist,
+					Err:  os.ErrNotExist,
 				}
 			}
 		}
 	}
 	if node.Func != nil {
 		return nil, &os.PathError{
-			Op: "open",
+			Op:   "open",
 			Path: name,
-			Err: os.ErrNotExist,
+			Err:  os.ErrNotExist,
 		}
 	}
 	rv := make([]string, 0, len(node.Children))
@@ -284,16 +275,15 @@ func AssetDir(name string) ([]string, error) {
 	return rv, nil
 }
 
-
 type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
 
 var _bintree = &bintree{Func: nil, Children: map[string]*bintree{
-	"exec_pb2.py": {Func: bindataExecpb2Py, Children: map[string]*bintree{}},
+	"exec_pb2.py":      {Func: bindataExecpb2Py, Children: map[string]*bintree{}},
 	"exec_pb2_grpc.py": {Func: bindataExecpb2grpcPy, Children: map[string]*bintree{}},
-	"sifter-exec.py": {Func: bindataSifterexecPy, Children: map[string]*bintree{}},
+	"sifter-exec.py":   {Func: bindataSifterexecPy, Children: map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory

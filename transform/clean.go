@@ -7,9 +7,9 @@ import (
 )
 
 type CleanStep struct {
-	Fields []string `json:"fields" jsonschema_description:"List of valid fields that will be left. All others will be removed"`
-	RemoveEmpty bool `json:"removeEmpty"`
-	StoreExtra  string `json:"storeExtra"`
+	Fields      []string `json:"fields" jsonschema_description:"List of valid fields that will be left. All others will be removed"`
+	RemoveEmpty bool     `json:"removeEmpty"`
+	StoreExtra  string   `json:"storeExtra"`
 }
 
 func (fs CleanStep) has(name string) bool {

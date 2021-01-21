@@ -1,8 +1,8 @@
 package graph
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -40,14 +40,13 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
-
 		m, err := graphbuild.LoadMapping(mappingFile, inDir)
 		if err != nil {
 			return err
 		}
 		log.Printf("Loaded Mapping: %s", mappingFile)
 
-		emitter := NewGraphDomainEmitter(outDir, m.GetVertexDomains(), m.GetEdgeEndDomains())
+		emitter := NewDomainEmitter(outDir, m.GetVertexDomains(), m.GetEdgeEndDomains())
 		builder, err := graphbuild.NewBuilder(emitter, schemas, tmpDir)
 		if err != nil {
 			return err
@@ -55,7 +54,6 @@ var Cmd = &cobra.Command{
 
 		fmt.Printf("%s\n", m.GetVertexDomains())
 		fmt.Printf("%s\n", m.GetEdgeEndDomains())
-
 
 		paths, _ := filepath.Glob(filepath.Join(inDir, "*.json.gz"))
 		for _, path := range paths {

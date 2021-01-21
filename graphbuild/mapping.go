@@ -2,13 +2,13 @@ package graphbuild
 
 import (
 	//"io"
-	"os"
-	"strings"
 	"compress/gzip"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/bmeg/golib"
 	"github.com/bmeg/sifter/evaluate"
@@ -19,9 +19,9 @@ import (
 )
 
 type Mapping struct {
-	AllVertex   *VertexFieldMapping         `json:"allVertex"`
-	AllEdge     *EdgeFieldMapping           `json:"allEdge"`
-	Domains map[string]*DomainMap           `json:"domains"`
+	AllVertex *VertexFieldMapping   `json:"allVertex"`
+	AllEdge   *EdgeFieldMapping     `json:"allEdge"`
+	Domains   map[string]*DomainMap `json:"domains"`
 }
 
 type VertexFieldMapping struct {
@@ -48,17 +48,17 @@ type FieldTransform struct {
 
 type EdgeTransform struct {
 	EdgeFieldMapping
-	DomainFilter  bool                `json:"domainFilter"`
-	ToDomain string                   `json:"toDomain"`
-	Sep    *string                    `json:"sep"`
+	DomainFilter bool    `json:"domainFilter"`
+	ToDomain     string  `json:"toDomain"`
+	Sep          *string `json:"sep"`
 }
 
 type VertexTransform struct {
 	VertexFieldMapping
-	IdField   string                  `json:"idField"`
-	Domain string                     `json:"domain"`
-	Sep    *string                    `json:"sep"`
-	Edges  map[string]*EdgeTransform  `json:"edges"`
+	IDField string                    `json:"idField"`
+	Domain  string                    `json:"domain"`
+	Sep     *string                   `json:"sep"`
+	Edges   map[string]*EdgeTransform `json:"edges"`
 }
 
 func LoadMapping(path string, inputDir string) (*Mapping, error) {
@@ -98,7 +98,6 @@ func LoadMapping(path string, inputDir string) (*Mapping, error) {
 	return &o, nil
 }
 
-
 func (m *Mapping) GetVertexDomains() []string {
 	out := []string{}
 	for _, d := range m.Domains {
@@ -114,8 +113,8 @@ func (m *Mapping) GetEdgeEndDomains() [][]string {
 	for _, d := range m.Domains {
 		for _, v := range *d {
 			for _, e := range v.Edges {
-				out = append(out, []string{v.Domain,e.ToDomain})
-				out = append(out, []string{e.ToDomain,v.Domain})
+				out = append(out, []string{v.Domain, e.ToDomain})
+				out = append(out, []string{e.ToDomain, v.Domain})
 			}
 		}
 	}
@@ -135,8 +134,8 @@ func (vt *VertexTransform) Run(v *gripql.Vertex) *gripql.Vertex {
 }
 
 func (vt *VertexTransform) VertexObjectFix(obj map[string]interface{}) map[string]interface{} {
-	if vt.IdField != "" {
-		if g, ok := obj[vt.IdField]; ok {
+	if vt.IDField != "" {
+		if g, ok := obj[vt.IDField]; ok {
 			if gStr, ok := g.(string); ok {
 				obj["id"] = gStr
 				obj["_gid"] = gStr
@@ -173,7 +172,7 @@ func (vfm *VertexFieldMapping) Run(v *gripql.Vertex) *gripql.Vertex {
 	if g, ok := d["_gid"]; ok {
 		gid = g.(string)
 	}
-	o := gripql.Vertex{Gid: gid, Label:d["_label"].(string)}
+	o := gripql.Vertex{Gid: gid, Label: d["_label"].(string)}
 	delete(d, "_gid")
 	delete(d, "_label")
 	o.Data = protoutil.AsStruct(d)
@@ -210,8 +209,9 @@ func (et *EdgeFieldMapping) Run(e *gripql.Edge) *gripql.Edge {
 	}
 	gid := ""
 	if g, ok := d["_gid"]; ok {
-		gid = g.(string)}
-	o := gripql.Edge{Gid: gid, From: d["_from"].(string), To:d["_to"].(string), Label:d["_label"].(string)}
+		gid = g.(string)
+	}
+	o := gripql.Edge{Gid: gid, From: d["_from"].(string), To: d["_to"].(string), Label: d["_label"].(string)}
 	delete(d, "_gid")
 	delete(d, "_to")
 	delete(d, "_from")

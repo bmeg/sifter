@@ -88,7 +88,7 @@ func xmlStream(file io.Reader, out chan map[string]interface{}) {
 					}
 					out <- t
 				}
-				 mapStack[0] = map[string]interface{}{}
+				mapStack[0] = map[string]interface{}{}
 			}
 
 		case xml.CharData:

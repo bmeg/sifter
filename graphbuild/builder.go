@@ -63,10 +63,7 @@ func (b *Builder) HasDomain(prefix string, class string, gm *Mapping) bool {
 		return false
 	}
 	c := d.GetClass(class)
-	if c == nil {
-		return false
-	}
-	return true
+	return c != nil
 }
 
 func (b *Builder) Process(prefix string, class string, in chan map[string]interface{}, gm *Mapping, emitter loader.GraphEmitter) {
@@ -81,12 +78,14 @@ func (b *Builder) Process(prefix string, class string, in chan map[string]interf
 
 	d := b.GetDomain(prefix, gm)
 	if d == nil {
-		for range in {}
+		for range in {
+		}
 		return
 	}
 	c := d.GetClass(class)
 	if c == nil {
-		for range in {}
+		for range in {
+		}
 		return
 	}
 
@@ -126,7 +125,7 @@ func (b *Builder) GenerateGraph(vertMap *VertexTransform, class string, data map
 						edge = em.Run(edge)
 					} else if j.OutEdge != nil {
 						//report if an outgoing edge does have mapping information
-						log.Printf("Mapping for edge %s not found", edge.Label )
+						log.Printf("Mapping for edge %s not found", edge.Label)
 					}
 				}
 				if edge.To != "" && edge.From != "" && edge.Label != "" {

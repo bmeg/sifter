@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Cmd is the declaration of the command line
+// CheckCmd is the declaration of the command line
 var CheckCmd = &cobra.Command{
 	Use:   "check",
 	Short: "Check files against manifest",
@@ -49,7 +49,6 @@ var CheckCmd = &cobra.Command{
 	},
 }
 
-
 var SumCmd = &cobra.Command{
 	Use:   "sum",
 	Short: "Compute and update checksums for manifest",
@@ -78,7 +77,7 @@ var SumCmd = &cobra.Command{
 	},
 }
 
-var Cmd = & cobra.Command{
+var Cmd = &cobra.Command{
 	Use:           "manifest",
 	SilenceErrors: true,
 	SilenceUsage:  true,

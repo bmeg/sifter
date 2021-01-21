@@ -11,9 +11,9 @@ import (
 )
 
 type GraphElement struct {
-	Vertex   *gripql.Vertex
-	InEdge   *gripql.Edge
-	OutEdge  *gripql.Edge
+	Vertex  *gripql.Vertex
+	InEdge  *gripql.Edge
+	OutEdge *gripql.Edge
 }
 
 func (s Schemas) Generate(classID string, data map[string]interface{}) ([]GraphElement, error) {

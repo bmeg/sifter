@@ -44,14 +44,14 @@ func (ms *MapStep) Close() {
 }
 
 type ReduceStep struct {
-	Field  string `json:"field"`
-	Method string `json:"method"`
-	Python string `json:"python"`
-	InitData   *map[string]interface{} `json:"init"`
-	proc   evaluate.Processor
-	dump   *os.File
-	db     *badger.DB
-	batch  *badger.WriteBatch
+	Field    string                  `json:"field"`
+	Method   string                  `json:"method"`
+	Python   string                  `json:"python"`
+	InitData *map[string]interface{} `json:"init"`
+	proc     evaluate.Processor
+	dump     *os.File
+	db       *badger.DB
+	batch    *badger.WriteBatch
 }
 
 func (ms *ReduceStep) Init(task *pipeline.Task) {
@@ -159,7 +159,7 @@ func (ms *ReduceStep) Run() chan map[string]interface{} {
 					out <- last
 				}
 				key = d.key
-				if ms.Init != nil {
+				if ms.InitData != nil {
 					out, _ := ms.proc.Evaluate(*ms.InitData, d.data)
 					last = out
 				} else {

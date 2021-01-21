@@ -9,9 +9,9 @@ import (
 
 	"path/filepath"
 
-	shellquote "github.com/kballard/go-shellquote"
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/pipeline"
+	shellquote "github.com/kballard/go-shellquote"
 )
 
 type ScriptStep struct {
@@ -80,7 +80,7 @@ func (ss *ScriptStep) Run(task *pipeline.Task) error {
 	}
 
 	prog := baseCommand[0]
-	cmd := exec.Command(prog, baseCommand[1:len(baseCommand)]...)
+	cmd := exec.Command(prog, baseCommand[1:]...)
 	baseDir := filepath.Dir(task.SourcePath)
 	cmd.Dir = baseDir
 	cmd.Stderr = os.Stderr

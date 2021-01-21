@@ -28,10 +28,10 @@ type TableReplaceStep struct {
 }
 
 type TableLookupStep struct {
-	Input   string `json:"input"`
-	Sep     string `json:"sep"`
-	Field   string `json:"field"`
-	Key     string `json:"key"`
+	Input   string   `json:"input"`
+	Sep     string   `json:"sep"`
+	Field   string   `json:"field"`
+	Key     string   `json:"key"`
 	Header  []string `json:"header"`
 	Project map[string]string
 	colmap  map[string]int
@@ -137,11 +137,11 @@ func (tr *TableLookupStep) Init(task *pipeline.Task) error {
 	log.Printf("Loading Translation file: %s", inputPath)
 
 	var inputStream chan []byte
-  if strings.HasSuffix(inputPath, ".gz") {
-    inputStream, err = golib.ReadGzipLines(inputPath)
-  } else {
-    inputStream, err = golib.ReadFileLines(inputPath)
-  }
+	if strings.HasSuffix(inputPath, ".gz") {
+		inputStream, err = golib.ReadGzipLines(inputPath)
+	} else {
+		inputStream, err = golib.ReadFileLines(inputPath)
+	}
 	if err != nil {
 		return err
 	}

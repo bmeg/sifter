@@ -59,7 +59,7 @@ func TestPipeline(t *testing.T) {
 	run := pipeline.NewRuntime(dem, "./", "test", nil)
 
 	inputs := map[string]interface{}{}
-	task := run.NewTask(inputs)
+	task := run.NewTask("./", inputs)
 
 	testPipe.Init(task)
 

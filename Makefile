@@ -24,7 +24,7 @@ lint:
 		-E gofmt -E goimports -E misspell -E typecheck -E golint -E gosimple -E govet
 
 lint-depends:
-	@go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.22.2
+	@go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.35.2
 
 test: .TEST
 

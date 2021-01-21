@@ -11,6 +11,7 @@ import exec_pb2
 import exec_pb2_grpc
 from concurrent import futures
 
+from inspect import currentframe, getframeinfo
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
@@ -32,11 +33,13 @@ class PySifterExec:
     def __init__(self):
         self.code = {}
         self.code_num = 0
+        self.source = {}
 
     def Compile(self, request, context):
         logging.info("Compile: %s", request.code)
         c = CallableCode(request.function, request.code)
         self.code[self.code_num] = c
+        self.source[self.code_num] = request.code
         out = exec_pb2.CompileResult()
         out.id = self.code_num
         self.code_num += 1
@@ -44,16 +47,22 @@ class PySifterExec:
 
     def Call(self, request, context):
         c = self.code[request.code]
+        frameinfo = getframeinfo(currentframe())
         try:
             logging.info("calling %s on %s" % (request.code, request.data))
             data = json.loads(request.data)
-            value = c.call(data)
+            value = c.env[c.name](*data) #c.call(data)
             o = exec_pb2.Result()
             o.data = json.dumps(value)
             return o
         except Exception as e:
             o = exec_pb2.Result()
-            o.error = traceback.format_exc()
+            ln = sys.exc_info()[2].tb_next.tb_lineno - 1
+            code = self.source[request.code].split("\n")
+            errorLine = ""
+            if ln < len(code):
+                errorLine = code[ln]
+            o.error = traceback.format_exc() + "\n" + errorLine
             logging.info("ExecError: %s" % (o.error))
             return o
 

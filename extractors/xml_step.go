@@ -43,9 +43,24 @@ func xmlStream(file io.Reader, out chan map[string]interface{}) {
 			mapStack = mapStack[0 : len(mapStack)-1]
 			if len(mapStack) > 0 {
 				if len(cMap) > 0 {
-					//cMap["__text__"] = string(curString)
-					mapStack[len(mapStack)-1][se.Name.Local] = cMap
+					//the child structure contained substructures
+					if a, ok := mapStack[len(mapStack)-1][se.Name.Local]; ok {
+						if aa, ok := a.([]interface{}); ok {
+							aa = append(aa, cMap)
+							mapStack[len(mapStack)-1][se.Name.Local] = aa
+						} else {
+							if am, ok := a.(map[string]interface{}); ok {
+								aa := []interface{}{am, cMap}
+								mapStack[len(mapStack)-1][se.Name.Local] = aa
+							} else {
+								log.Printf("Typing Error")
+							}
+						}
+					} else {
+						mapStack[len(mapStack)-1][se.Name.Local] = cMap
+					}
 				} else {
+					//the child structure has no substructures, so we'll be treating it like string
 					if a, ok := mapStack[len(mapStack)-1][se.Name.Local]; ok {
 						if aa, ok := a.([]string); ok {
 							aa = append(aa, string(curString))
@@ -63,20 +78,23 @@ func xmlStream(file io.Reader, out chan map[string]interface{}) {
 					}
 				}
 			}
+
+			if len(mapStack) == 1 {
+				c := mapStack[0]
+				if len(c) > 0 {
+					t := map[string]interface{}{}
+					for k := range c {
+						t[k] = c[k]
+					}
+					out <- t
+				}
+				 mapStack[0] = map[string]interface{}{}
+			}
+
 		case xml.CharData:
 			curString = append(curString, se...)
 		default:
 			log.Printf("Unknown Element: %#v\n", se)
-		}
-		if len(nameStack) == 1 {
-			c := mapStack[0]
-			if len(c) > 0 {
-				t := map[string]interface{}{}
-				for k := range c {
-					t[k] = c[k]
-				}
-				out <- t
-			}
 		}
 	}
 }

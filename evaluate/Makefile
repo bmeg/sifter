@@ -16,3 +16,6 @@ proto-depends:
 
 bindata:
 	go-bindata -pkg evaluate ./*.py
+
+bindata-depends:
+	go get -u github.com/shuLhan/go-bindata/...

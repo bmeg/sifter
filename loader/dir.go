@@ -15,11 +15,11 @@ import (
 
 	"github.com/bmeg/grip/gripql"
 	"github.com/bmeg/sifter/schema"
-	"github.com/golang/protobuf/jsonpb"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type DirLoader struct {
-	jm   jsonpb.Marshaler
+	jm   protojson.MarshalOptions
 	dir  string
 	mux  sync.Mutex
 	vout map[string]io.WriteCloser
@@ -44,7 +44,7 @@ func (s *DirLoader) NewDataEmitter(sc *schema.Schemas) (DataEmitter, error) {
 func NewDirLoader(dir string) *DirLoader {
 	log.Printf("Emitting to %s", dir)
 	return &DirLoader{
-		jm:   jsonpb.Marshaler{},
+		jm:   protojson.MarshalOptions{},
 		dir:  dir,
 		vout: map[string]io.WriteCloser{},
 		eout: map[string]io.WriteCloser{},
@@ -66,7 +66,7 @@ func (s *DirLoader) EmitVertex(v *gripql.Vertex) error {
 		f = gzip.NewWriter(j)
 		s.vout[v.Label] = f
 	}
-	o, _ := s.jm.MarshalToString(v)
+	o := s.jm.Format(v)
 	f.Write([]byte(o))
 	f.Write([]byte("\n"))
 	return nil
@@ -84,11 +84,7 @@ func (s *DirLoader) EmitEdge(e *gripql.Edge) error {
 		f = gzip.NewWriter(j)
 		s.eout[e.Label] = f
 	}
-	o, err := s.jm.MarshalToString(e)
-	if err != nil {
-		log.Printf("Error: %s", err)
-		return err
-	}
+	o := s.jm.Format(e)
 	f.Write([]byte(o))
 	f.Write([]byte("\n"))
 	return nil

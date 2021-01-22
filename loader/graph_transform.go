@@ -2,10 +2,9 @@ package loader
 
 import (
 	"github.com/bmeg/grip/gripql"
-	"github.com/bmeg/grip/protoutil"
 	"github.com/bmeg/sifter/schema"
 
-	structpb "github.com/golang/protobuf/ptypes/struct"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type DataGraphEmitter struct {
@@ -27,7 +26,7 @@ func (dg *DataGraphEmitter) Emit(name string, e map[string]interface{}) error {
 					if label, ok := olabel.(string); ok {
 						if odata, ok := e["_data"]; ok {
 							if data, ok := odata.(map[string]interface{}); ok {
-								d := protoutil.AsStruct(data)
+								d, _ := structpb.NewStruct(data)
 								dg.gr.EmitVertex(&gripql.Vertex{Gid: gid, Label: label, Data: d})
 							}
 						}
@@ -46,7 +45,7 @@ func (dg *DataGraphEmitter) Emit(name string, e map[string]interface{}) error {
 		var data *structpb.Struct
 		if odata, ok := e["_data"]; ok {
 			if gdata, ok := odata.(map[string]interface{}); ok {
-				data = protoutil.AsStruct(gdata)
+				data, _ = structpb.NewStruct(gdata)
 			}
 		}
 

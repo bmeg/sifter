@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/bmeg/grip/gripql"
-	"github.com/bmeg/grip/protoutil"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	multierror "github.com/hashicorp/go-multierror"
 )
@@ -155,7 +155,7 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
 			if tIDStr, ok := tID.(string); ok {
 				if fID, ok := data[s.Edge.From]; ok {
 					if fIDStr, ok := fID.(string); ok {
-						ds := protoutil.AsStruct(outData)
+						ds, _ := structpb.NewStruct(outData)
 						e := gripql.Edge{Gid: gid, To: tIDStr, From: fIDStr, Label: s.Edge.Label, Data: ds}
 						out = append(out, GraphElement{OutEdge: &e})
 					}
@@ -172,7 +172,7 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
 		if gid == "" {
 			log.Printf("GID not found for %s", s.ID)
 		}
-		ds := protoutil.AsStruct(outData)
+		ds, _ := structpb.NewStruct(outData)
 		v := gripql.Vertex{Gid: gid, Label: s.Title, Data: ds}
 
 		out = append(out, GraphElement{Vertex: &v})

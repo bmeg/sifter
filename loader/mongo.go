@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/bmeg/grip/gripql"
-	"github.com/bmeg/grip/protoutil"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -216,7 +216,7 @@ func (s MongoLoader) Close() {
 func packVertex(v *gripql.Vertex) bson.M {
 	p := map[string]interface{}{}
 	if v.Data != nil {
-		p = protoutil.AsMap(v.Data)
+		p = v.Data.AsMap()
 	}
 	return bson.M{
 		"_id":   v.Gid,
@@ -228,7 +228,7 @@ func packVertex(v *gripql.Vertex) bson.M {
 func packEdge(e *gripql.Edge) bson.M {
 	p := map[string]interface{}{}
 	if e.Data != nil {
-		p = protoutil.AsMap(e.Data)
+		p = e.Data.AsMap()
 	}
 	return bson.M{
 		"_id":   e.Gid,

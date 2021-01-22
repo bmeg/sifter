@@ -15,7 +15,7 @@ import (
 	"github.com/ghodss/yaml"
 
 	"github.com/bmeg/grip/gripql"
-	"github.com/bmeg/grip/protoutil"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type Mapping struct {
@@ -158,7 +158,7 @@ func (vt *VertexTransform) VertexObjectFix(obj map[string]interface{}) map[strin
 }
 
 func (vfm *VertexFieldMapping) Run(v *gripql.Vertex) *gripql.Vertex {
-	d := protoutil.AsMap(v.Data)
+	d := v.Data.AsMap()
 	if d == nil {
 		d = map[string]interface{}{}
 	}
@@ -175,7 +175,7 @@ func (vfm *VertexFieldMapping) Run(v *gripql.Vertex) *gripql.Vertex {
 	o := gripql.Vertex{Gid: gid, Label: d["_label"].(string)}
 	delete(d, "_gid")
 	delete(d, "_label")
-	o.Data = protoutil.AsStruct(d)
+	o.Data, _ = structpb.NewStruct(d)
 	return &o
 }
 
@@ -196,7 +196,7 @@ func (et *EdgeTransform) Run(e *gripql.Edge) *gripql.Edge {
 }
 
 func (et *EdgeFieldMapping) Run(e *gripql.Edge) *gripql.Edge {
-	d := protoutil.AsMap(e.Data)
+	d := e.Data.AsMap()
 	if d == nil {
 		d = map[string]interface{}{}
 	}
@@ -216,7 +216,7 @@ func (et *EdgeFieldMapping) Run(e *gripql.Edge) *gripql.Edge {
 	delete(d, "_to")
 	delete(d, "_from")
 	delete(d, "_label")
-	o.Data = protoutil.AsStruct(d)
+	o.Data, _ = structpb.NewStruct(d)
 	return &o
 }
 

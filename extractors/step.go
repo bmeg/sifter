@@ -17,7 +17,7 @@ type Extractor struct {
 	SQLDumpLoad   *SQLDumpStep       `json:"sqldumpLoad" jsonschema_description:"Parse the content of a SQL dump to find insert and run a transform pipeline"`
 	FileGlob      *FileGlobStep      `json:"fileGlob" jsonschema_description:"Scan a directory and run a ETL pipeline on each of the files"`
 	Script        *ScriptStep        `json:"script" jsonschema_description:"Execute a script"`
-	DigLoad       *DigLoadStep       `json:"digLoad" jsonschema_description:"Use a GRIP Dig server to get data and run a transform pipeline"`
+	GripperLoad   *GripperLoadStep   `json:"gripperLoad" jsonschema_description:"Use a GRIPPER server to get data and run a transform pipeline"`
 	AvroLoad      *AvroLoadStep      `json:"avroLoad" jsonschema_description:"Load data from avro file"`
 }
 
@@ -65,11 +65,11 @@ func (step *Extractor) Run(run *pipeline.Runtime, playBookPath string, inputs ma
 			run.Printf("Table Load Error: %s", err)
 			return err
 		}
-	} else if step.DigLoad != nil {
+	} else if step.GripperLoad != nil {
 		task := run.NewTask(playBookPath, inputs)
-		log.Printf("Running DigLoad")
-		if err := step.DigLoad.Run(task); err != nil {
-			run.Printf("Dig Load Error: %s", err)
+		log.Printf("Running GripperLoad")
+		if err := step.GripperLoad.Run(task); err != nil {
+			run.Printf("Gripper Load Error: %s", err)
 			return err
 		}
 	} else if step.JSONLoad != nil {

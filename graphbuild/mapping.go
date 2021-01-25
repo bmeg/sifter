@@ -19,6 +19,7 @@ import (
 )
 
 type Mapping struct {
+	Schema  string                 `json:"schema" jsonschema_description:"Name of directory with library of Gen3/JSON Schema files"`
 	AllVertex *VertexFieldMapping   `json:"allVertex"`
 	AllEdge   *EdgeFieldMapping     `json:"allEdge"`
 	Domains   map[string]*DomainMap `json:"domains"`
@@ -95,6 +96,11 @@ func LoadMapping(path string, inputDir string) (*Mapping, error) {
 		}
 	}
 
+	absPath, _ := filepath.Abs(path)
+	dirPath := filepath.Dir(absPath)
+	schemaPath := filepath.Join(dirPath, o.Schema)
+	o.Schema = schemaPath
+	
 	return &o, nil
 }
 

@@ -3,7 +3,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/bmeg/sifter/cmd/graph"
+	"github.com/bmeg/sifter/cmd/graphbuild"
 	"github.com/bmeg/sifter/cmd/graphfix"
 	"github.com/bmeg/sifter/cmd/graphmanifest"
 	"github.com/bmeg/sifter/cmd/manifest"

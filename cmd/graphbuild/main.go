@@ -17,34 +17,34 @@ import (
 )
 
 var outDir string = "./out-graph"
-var mappingFile string
 var workDir string = "./"
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
-	Use:   "graph [schemaDir] [inputDir]",
+	Use:   "graph-build [mapping] [inputDir]",
 	Short: "Build graph from object files",
 	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		schemaDir := args[0]
+		mappingPath := args[0]
 		inDir := args[1]
-
-		schemas, err := schema.Load(schemaDir)
-		if err != nil {
-			return err
-		}
 
 		tmpDir, err := ioutil.TempDir(workDir, "siftergraph_")
 		if err != nil {
 			return err
 		}
 
-		m, err := graphbuild.LoadMapping(mappingFile, inDir)
+		m, err := graphbuild.LoadMapping(mappingPath, inDir)
 		if err != nil {
 			return err
 		}
-		log.Printf("Loaded Mapping: %s", mappingFile)
+		log.Printf("Loaded Mapping: %s", mappingPath)
+
+		schemas, err := schema.Load(m.Schema)
+		if err != nil {
+			return err
+		}
+		log.Printf("Loaded Schema: %s", m.Schema)
 
 		emitter := NewDomainEmitter(outDir, m.GetVertexDomains(), m.GetEdgeEndDomains())
 		builder, err := graphbuild.NewBuilder(emitter, schemas, tmpDir)
@@ -91,6 +91,5 @@ var Cmd = &cobra.Command{
 
 func init() {
 	flags := Cmd.Flags()
-	flags.StringVar(&outDir, "o", outDir, "Output Dir")
-	flags.StringVar(&mappingFile, "m", mappingFile, "Mapping File")
+	flags.StringVarP(&outDir, "out", "o", outDir, "Output Dir")
 }

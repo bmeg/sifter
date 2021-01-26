@@ -109,5 +109,6 @@ func (s *DomainEmitter) getEdgeEndDomain(e *gripql.Edge) string {
 			return i[0] + "_" + i[1]
 		}
 	}
+	log.Printf("Can't find domain match for %s %s", e.From, e.To)
 	return ""
 }

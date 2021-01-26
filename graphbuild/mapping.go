@@ -120,8 +120,14 @@ func (m *Mapping) GetEdgeEndDomains() [][]string {
 	for _, d := range m.Domains {
 		for _, v := range *d {
 			for _, e := range v.Edges {
-				out = append(out, []string{v.Domain, e.ToDomain})
-				out = append(out, []string{e.ToDomain, v.Domain})
+				if e.ToDomain != "" {
+					out = append(out, []string{v.Domain, e.ToDomain})
+					out = append(out, []string{e.ToDomain, v.Domain})
+				}
+				if e.FromDomain != "" {
+					out = append(out, []string{v.Domain, e.FromDomain})
+					out = append(out, []string{e.FromDomain, v.Domain})					
+				}
 			}
 		}
 	}

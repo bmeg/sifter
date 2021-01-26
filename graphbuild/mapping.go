@@ -51,6 +51,7 @@ type EdgeTransform struct {
 	EdgeFieldMapping
 	DomainFilter bool    `json:"domainFilter"`
 	ToDomain     string  `json:"toDomain"`
+	FromDomain   string  `json:"fromDomain"`
 	Sep          *string `json:"sep"`
 }
 
@@ -100,7 +101,7 @@ func LoadMapping(path string, inputDir string) (*Mapping, error) {
 	dirPath := filepath.Dir(absPath)
 	schemaPath := filepath.Join(dirPath, o.Schema)
 	o.Schema = schemaPath
-	
+
 	return &o, nil
 }
 
@@ -196,6 +197,16 @@ func (et *EdgeTransform) Run(e *gripql.Edge) *gripql.Edge {
 			o.To = "" //domain filter is on, but dest edge doesn't match, so set to "", so it's filtered out later
 		} else {
 			o.To = et.ToDomain + sep + o.To
+		}
+	} else if et.FromDomain != "" && !strings.HasPrefix(o.From, et.FromDomain) {
+		sep := ":"
+		if et.Sep != nil {
+			sep = *et.Sep
+		}
+		if et.DomainFilter {
+			o.From = "" //domain filter is on, but dest edge doesn't match, so set to "", so it's filtered out later
+		} else {
+			o.From = et.FromDomain + sep + o.From
 		}
 	}
 	return o

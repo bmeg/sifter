@@ -125,7 +125,10 @@ func (b *Builder) GenerateGraph(vertMap *VertexTransform, class string, data map
 						edge = em.Run(edge)
 					} else if j.OutEdge != nil {
 						//report if an outgoing edge does have mapping information
-						log.Printf("Mapping for edge %s not found", edge.Label)
+						log.Printf("Mapping for out edge %s not found", edge.Label)
+					} else if j.InEdge != nil {
+						//report if an outgoing edge does have mapping information
+						log.Printf("Mapping for in edge %s not found", edge.Label)
 					}
 				}
 				if edge.To != "" && edge.From != "" && edge.Label != "" {

@@ -90,10 +90,12 @@ func (b *Builder) Process(prefix string, class string, in chan map[string]interf
 	}
 
 	for obj := range in {
-		obj = c.om.VertexObjectFix(obj)
-		err := b.GenerateGraph(m, class, obj, gm, emitter)
-		if err != nil {
-			log.Printf("Graph Generation Error: %s.%s : %s", prefix, class, err)
+		if c.om != nil {
+			obj = c.om.VertexObjectFix(obj)
+			err := b.GenerateGraph(m, class, obj, gm, emitter)
+			if err != nil {
+				log.Printf("Graph Generation Error: %s.%s : %s", prefix, class, err)
+			}
 		}
 	}
 }
@@ -173,6 +175,8 @@ func (d *DomainInfo) GetClass(cls string) *DomainClassInfo {
 	o := DomainClassInfo{gc: d.gc}
 	if x, ok := (*d.dm)[cls]; ok {
 		o.om = x
+	} else {
+		log.Printf("Missing Class %s \n", cls)
 	}
 	d.classes[cls] = &o
 	return &o

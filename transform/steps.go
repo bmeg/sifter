@@ -69,6 +69,7 @@ type Step struct {
 	Project        *ProjectStep        `json:"project" jsonschema_description:"Run a projection mapping message"`
 	Map            *MapStep            `json:"map" jsonschema_description:"Apply a single function to all records"`
 	Reduce         *ReduceStep         `json:"reduce"`
+	Distinct       *DistinctStep       `json:"distinct"`
 	FieldProcess   *FieldProcessStep   `json:"fieldProcess" jsonschema_description:"Take an array field from a message and run in child transform"`
 	TableWrite     *TableWriteStep     `json:"tableWrite" jsonschema_description:"Write out a TSV"`
 	TableReplace   *TableReplaceStep   `json:"tableReplace" jsonschema_description:"Load in TSV to map a fields values"`
@@ -173,6 +174,8 @@ func (ts Step) Init(task *pipeline.Task) error {
 		ts.Map.Init(task)
 	} else if ts.Reduce != nil {
 		ts.Reduce.Init(task)
+	} else if ts.Distinct != nil {
+		ts.Distinct.Init(task)
 	} else if ts.TableWrite != nil {
 		ts.TableWrite.Init(task)
 	} else if ts.TableReplace != nil {
@@ -212,6 +215,8 @@ func (ts Step) Close() {
 		ts.FieldProcess.Close()
 	} else if ts.Map != nil {
 		ts.Map.Close()
+	} else if ts.Distinct != nil {
+		ts.Distinct.Close()
 	} else if ts.TableWrite != nil {
 		ts.TableWrite.Close()
 	} else if ts.Cache != nil {
@@ -279,6 +284,11 @@ func (ts Step) Start(in chan map[string]interface{},
 			}
 			for o := range ts.Reduce.Run() {
 				out <- o
+			}
+		} else if ts.Distinct != nil {
+			fOut, _ := ts.Distinct.Start(in, task, wg)
+			for i := range fOut {
+				out <- i
 			}
 		} else if ts.ObjectCreate != nil {
 			for i := range in {

@@ -22,7 +22,7 @@ type Config struct {
 }
 
 type DomainConfig struct {
-	IdMap         string `json:"idMap"`
+	IDMap         string `json:"idMap"`
 	StoreOriginal string `json:"storeOriginal"`
 	mapping       map[string]string
 }
@@ -41,9 +41,9 @@ func LoadGraphEdit(path string) (*Config, error) {
 	}
 
 	for _, domain := range o.Domains {
-		if domain.IdMap != "" {
+		if domain.IDMap != "" {
 			idmap := map[string]string{}
-			path := filepath.Join(baseDir, domain.IdMap)
+			path := filepath.Join(baseDir, domain.IDMap)
 			df, err := os.Open(path)
 			if err != nil {
 				return nil, err

@@ -19,7 +19,7 @@ import (
 )
 
 type Mapping struct {
-	Schema  string                 `json:"schema" jsonschema_description:"Name of directory with library of Gen3/JSON Schema files"`
+	Schema    string                `json:"schema" jsonschema_description:"Name of directory with library of Gen3/JSON Schema files"`
 	AllVertex *VertexFieldMapping   `json:"allVertex"`
 	AllEdge   *EdgeFieldMapping     `json:"allEdge"`
 	Domains   map[string]*DomainMap `json:"domains"`
@@ -126,7 +126,7 @@ func (m *Mapping) GetEdgeEndDomains() [][]string {
 				}
 				if e.FromDomain != "" {
 					out = append(out, []string{v.Domain, e.FromDomain})
-					out = append(out, []string{e.FromDomain, v.Domain})					
+					out = append(out, []string{e.FromDomain, v.Domain})
 				}
 			}
 		}

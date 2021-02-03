@@ -87,7 +87,7 @@ var Cmd = &cobra.Command{
 
 func init() {
 	flags := Cmd.Flags()
-	flags.StringVarP(&workDir, "workdir", "w",workDir, "Workdir")
+	flags.StringVarP(&workDir, "workdir", "w", workDir, "Workdir")
 	flags.BoolVarP(&toStdout, "stdout", "s", toStdout, "To STDOUT")
 	flags.BoolVarP(&keep, "keep", "k", keep, "Keep Working Directory")
 	flags.StringVarP(&outDir, "out", "o", outDir, "Output Dir")

@@ -13,7 +13,7 @@ import (
 	"time"
 
 	//"github.com/bmeg/grip/gripql"
-	"github.com/bmeg/sifter/emitter"
+	"github.com/bmeg/sifter/loader"
 	"github.com/hashicorp/go-getter"
 
 	"github.com/jlaffaye/ftp"
@@ -25,6 +25,7 @@ type Task struct {
 	Name            string
 	Runtime         *Runtime
 	Workdir         string
+	SourcePath      string
 	Inputs          map[string]interface{}
 	DataStore       datastore.DataStore
 	AllowLocalFiles bool
@@ -133,7 +134,7 @@ func (m *Task) EmitObject(prefix string, c string, e map[string]interface{}) err
 	return m.Runtime.EmitObject(prefix, c, e)
 }
 
-func (m *Task) EmitTable(prefix string, columns []string, sep rune) emitter.TableEmitter {
+func (m *Task) EmitTable(prefix string, columns []string, sep rune) loader.TableEmitter {
 	return m.Runtime.EmitTable(prefix, columns, sep)
 }
 

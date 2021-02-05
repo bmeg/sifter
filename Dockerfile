@@ -1,6 +1,6 @@
 # build stage
 FROM golang:alpine AS build-env
-RUN apk add make git bash
+RUN apk add make git bash gcc g++ zlib zlib-dev 
 ENV GOPATH=/go
 ENV PATH="/go/bin:${PATH}"
 ADD ./ /go/src/github.com/bmeg/sifter

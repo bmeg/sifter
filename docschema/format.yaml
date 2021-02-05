@@ -326,11 +326,6 @@
    text: |
     A tranform pipeline is a series of method to alter a message stream.
 
- - class: TransformStep
-   description: |
-    The transform step represents the transition from extraction to transformation
-    code. A tranform pipeline is always the child of an extractor. A transform
-
  - class: ObjectCreateStep
    description: Output a JSON schema described object
 

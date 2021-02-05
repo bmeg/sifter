@@ -6,22 +6,21 @@ import (
 	"log"
 	"sync"
 
-	"github.com/bmeg/grip/dig"
-	"github.com/bmeg/grip/protoutil"
+	"github.com/bmeg/grip/gripper"
 	"github.com/bmeg/grip/util/rpc"
 
 	"github.com/bmeg/sifter/pipeline"
 	"github.com/bmeg/sifter/transform"
 )
 
-type DigLoadStep struct {
-	Host       string         `json:"host" jsonschema_description:"DIG URL"`
-	Collection string         `json:"collection" jsonschema_description:"DIG collection to target"`
+type GripperLoadStep struct {
+	Host       string         `json:"host" jsonschema_description:"GRIPPER URL"`
+	Collection string         `json:"collection" jsonschema_description:"GRIPPER collection to target"`
 	Transform  transform.Pipe `json:"transform" jsonschema_description:"The transform pipeline to run"`
 }
 
-func (ml *DigLoadStep) Run(task *pipeline.Task) error {
-	log.Printf("Starting Dig Load")
+func (ml *GripperLoadStep) Run(task *pipeline.Task) error {
+	log.Printf("Starting GRIPPER Load")
 
 	rpcConf := rpc.ConfigWithDefaults(ml.Host)
 	log.Printf("Connecting to %s", ml.Host)
@@ -30,7 +29,7 @@ func (ml *DigLoadStep) Run(task *pipeline.Task) error {
 		log.Printf("RPC Connection error: %s", err)
 		return err
 	}
-	client := dig.NewDigSourceClient(conn)
+	client := gripper.NewGRIPSourceClient(conn)
 
 	procChan := make(chan map[string]interface{}, 100)
 	wg := &sync.WaitGroup{}
@@ -47,7 +46,7 @@ func (ml *DigLoadStep) Run(task *pipeline.Task) error {
 		}
 	}()
 
-	req := dig.Collection{Name: ml.Collection}
+	req := gripper.Collection{Name: ml.Collection}
 	log.Printf("Loading: '%s'", ml.Collection)
 	cl, err := client.GetRows(context.Background(), &req)
 	if err == nil {
@@ -56,7 +55,7 @@ func (ml *DigLoadStep) Run(task *pipeline.Task) error {
 			if err == io.EOF {
 				break
 			} else {
-				o := protoutil.AsMap(t.Data)
+				o := t.Data.AsMap()
 				procChan <- o
 			}
 		}

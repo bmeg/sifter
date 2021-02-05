@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
-	"strconv"
+
 	"strings"
 	"sync"
 
@@ -18,11 +18,6 @@ import (
 var DefaultEngine = "python"
 var PipeSize = 20
 
-type ObjectCreateStep struct {
-	Class string `json:"class" jsonschema_description:"Object class, should match declared class in JSON Schema"`
-	Name  string `json:"name" jsonschema_description:"domain name of stream, to separate it from other output streams of the same output type"`
-}
-
 type ColumnReplaceStep struct {
 	Column  string `json:"col"`
 	Pattern string `json:"pattern"`
@@ -32,11 +27,6 @@ type ColumnReplaceStep struct {
 type FieldMapStep struct {
 	Column string `json:"col"`
 	Sep    string `json:"sep"`
-}
-
-type FieldTypeStep struct {
-	Column string `json:"col"`
-	Type   string `json:"type"`
 }
 
 type RegexReplaceStep struct {
@@ -66,28 +56,27 @@ type CacheStep struct {
 	Transform Pipe `json:"transform"`
 }
 
-type EmitStep struct {
-	Name string `json:"name"`
-}
-
 type Step struct {
-	FieldMap     *FieldMapStep     `json:"fieldMap" jsonschema_description:"fieldMap to run"`
-	FieldType    *FieldTypeStep    `json:"fieldType" jsonschema_description:"Change type of a field (ie string -> integer)"`
-	ObjectCreate *ObjectCreateStep `json:"objectCreate" jsonschema_description:"Create a JSON schema based object"`
-	Emit         *EmitStep         `json:"emit" jsonschema_description:"Write to unstructured JSON file"`
-	Filter       *FilterStep       `json:"filter"`
-	Debug        *DebugStep        `json:"debug" jsonschema_description:"Print message contents to stdout"`
-	RegexReplace *RegexReplaceStep `json:"regexReplace"`
-	AlleleID     *AlleleIDStep     `json:"alleleID" jsonschema_description:"Generate a standardized allele hash ID"`
-	Project      *ProjectStep      `json:"project" jsonschema_description:"Run a projection mapping message"`
-	Map          *MapStep          `json:"map" jsonschema_description:"Apply a single function to all records"`
-	Reduce       *ReduceStep       `json:"reduce"`
-	FieldProcess *FieldProcessStep `json:"fieldProcess" jsonschema_description:"Take an array field from a message and run in child transform"`
-	TableWrite   *TableWriteStep   `json:"tableWrite" jsonschema_description:"Write out a TSV"`
-	TableReplace *TableReplaceStep `json:"tableReplace" jsonschema_description:"Load in TSV to map a fields values"`
-	TableProject *TableProjectStep `json:"tableProject"`
-	Fork         *ForkStep         `json:"fork" jsonschema_description:"Take message stream and split into multiple child transforms"`
-	Cache        *CacheStep        `json:"cache" jsonschema_description:"Sub a child transform pipeline, caching the results in a database"`
+	FieldMap       *FieldMapStep       `json:"fieldMap" jsonschema_description:"fieldMap to run"`
+	FieldType      *FieldTypeStep      `json:"fieldType" jsonschema_description:"Change type of a field (ie string -> integer)"`
+	ObjectCreate   *ObjectCreateStep   `json:"objectCreate" jsonschema_description:"Create a JSON schema based object"`
+	Emit           *EmitStep           `json:"emit" jsonschema_description:"Write to unstructured JSON file"`
+	Filter         *FilterStep         `json:"filter"`
+	Clean          *CleanStep          `json:"clean"`
+	Debug          *DebugStep          `json:"debug" jsonschema_description:"Print message contents to stdout"`
+	RegexReplace   *RegexReplaceStep   `json:"regexReplace"`
+	AlleleID       *AlleleIDStep       `json:"alleleID" jsonschema_description:"Generate a standardized allele hash ID"`
+	Project        *ProjectStep        `json:"project" jsonschema_description:"Run a projection mapping message"`
+	Map            *MapStep            `json:"map" jsonschema_description:"Apply a single function to all records"`
+	Reduce         *ReduceStep         `json:"reduce"`
+	Distinct       *DistinctStep       `json:"distinct"`
+	FieldProcess   *FieldProcessStep   `json:"fieldProcess" jsonschema_description:"Take an array field from a message and run in child transform"`
+	TableWrite     *TableWriteStep     `json:"tableWrite" jsonschema_description:"Write out a TSV"`
+	TableReplace   *TableReplaceStep   `json:"tableReplace" jsonschema_description:"Load in TSV to map a fields values"`
+	TableLookup    *TableLookupStep    `json:"tableLookup"`
+	JSONFileLookup *JSONFileLookupStep `json:"jsonLookup"`
+	Fork           *ForkStep           `json:"fork" jsonschema_description:"Take message stream and split into multiple child transforms"`
+	Cache          *CacheStep          `json:"cache" jsonschema_description:"Sub a child transform pipeline, caching the results in a database"`
 }
 
 type Pipe []Step
@@ -110,23 +99,6 @@ func (fm FieldMapStep) Run(i map[string]interface{}, task *pipeline.Task) map[st
 				}
 			}
 			o[fm.Column] = t
-		}
-	}
-	return o
-}
-
-func (fs FieldTypeStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-	o := map[string]interface{}{}
-	for x, y := range i {
-		o[x] = y
-	}
-	if fs.Type == "int" {
-		if val, ok := i[fs.Column]; ok {
-			if vStr, ok := val.(string); ok {
-				if d, err := strconv.ParseInt(vStr, 10, 64); err == nil {
-					o[fs.Column] = d
-				}
-			}
 		}
 	}
 	return o
@@ -202,6 +174,8 @@ func (ts Step) Init(task *pipeline.Task) error {
 		ts.Map.Init(task)
 	} else if ts.Reduce != nil {
 		ts.Reduce.Init(task)
+	} else if ts.Distinct != nil {
+		ts.Distinct.Init(task)
 	} else if ts.TableWrite != nil {
 		ts.TableWrite.Init(task)
 	} else if ts.TableReplace != nil {
@@ -212,10 +186,16 @@ func (ts Step) Init(task *pipeline.Task) error {
 		return err
 	} else if ts.Cache != nil {
 		return ts.Cache.Init(task)
-	} else if ts.TableProject != nil {
-		err := ts.TableProject.Init(task)
+	} else if ts.TableLookup != nil {
+		err := ts.TableLookup.Init(task)
 		if err != nil {
-			log.Printf("TableProject err: %s", err)
+			log.Printf("TableLookup err: %s", err)
+		}
+		return err
+	} else if ts.JSONFileLookup != nil {
+		err := ts.JSONFileLookup.Init(task)
+		if err != nil {
+			log.Printf("JSONFileLookup err: %s", err)
 		}
 		return err
 	} else if ts.Fork != nil {
@@ -235,6 +215,8 @@ func (ts Step) Close() {
 		ts.FieldProcess.Close()
 	} else if ts.Map != nil {
 		ts.Map.Close()
+	} else if ts.Distinct != nil {
+		ts.Distinct.Close()
 	} else if ts.TableWrite != nil {
 		ts.TableWrite.Close()
 	} else if ts.Cache != nil {
@@ -262,6 +244,11 @@ func (ts Step) Start(in chan map[string]interface{},
 			}
 		} else if ts.Filter != nil {
 			fOut, _ := ts.Filter.Start(in, task, wg)
+			for i := range fOut {
+				out <- i
+			}
+		} else if ts.Clean != nil {
+			fOut, _ := ts.Clean.Start(in, task, wg)
 			for i := range fOut {
 				out <- i
 			}
@@ -298,6 +285,11 @@ func (ts Step) Start(in chan map[string]interface{},
 			for o := range ts.Reduce.Run() {
 				out <- o
 			}
+		} else if ts.Distinct != nil {
+			fOut, _ := ts.Distinct.Start(in, task, wg)
+			for i := range fOut {
+				out <- i
+			}
 		} else if ts.ObjectCreate != nil {
 			for i := range in {
 				out <- ts.ObjectCreate.Run(i, task)
@@ -314,9 +306,13 @@ func (ts Step) Start(in chan map[string]interface{},
 			for i := range in {
 				out <- ts.TableReplace.Run(i, task)
 			}
-		} else if ts.TableProject != nil {
+		} else if ts.TableLookup != nil {
 			for i := range in {
-				out <- ts.TableProject.Run(i, task)
+				out <- ts.TableLookup.Run(i, task)
+			}
+		} else if ts.JSONFileLookup != nil {
+			for i := range in {
+				out <- ts.JSONFileLookup.Run(i, task)
 			}
 		} else if ts.Cache != nil {
 			outCache, err := ts.Cache.Start(in, task, wg)

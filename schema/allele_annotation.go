@@ -2,7 +2,7 @@ package schema
 
 import (
 	"github.com/bmeg/grip/gripql"
-	"github.com/bmeg/grip/protoutil"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type AlleleAnnotation struct {
@@ -14,7 +14,8 @@ type AlleleAnnotation struct {
 }
 
 func (aa *AlleleAnnotation) Render() ([]*gripql.Vertex, []*gripql.Edge) {
-	av := gripql.Vertex{Gid: aa.ID, Label: aa.Label, Data: protoutil.AsStruct(aa.Data)}
+	data, _ := structpb.NewStruct(aa.Data)
+	av := gripql.Vertex{Gid: aa.ID, Label: aa.Label, Data: data}
 	ae := gripql.Edge{Label: aa.EdgeLabel, To: aa.Allele.ID(), From: aa.ID}
 	return []*gripql.Vertex{&av}, []*gripql.Edge{&ae}
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bmeg/grip/gripql"
-	"github.com/bmeg/grip/protoutil"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type Allele struct {
@@ -50,7 +50,8 @@ func (al *Allele) Render() ([]*gripql.Vertex, []*gripql.Edge) {
 		data["dbSNP_RS"] = al.DBSNPRS
 	}
 
-	a := gripql.Vertex{Gid: al.ID(), Label: "Allele", Data: protoutil.AsStruct(data)}
+	ds, _ := structpb.NewStruct(data)
+	a := gripql.Vertex{Gid: al.ID(), Label: "Allele", Data: ds}
 	return []*gripql.Vertex{&a}, []*gripql.Edge{}
 }
 

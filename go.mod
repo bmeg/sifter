@@ -30,6 +30,7 @@ require (
 	github.com/jlaffaye/ftp v0.0.0-20200602180915-5563613968bf
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/linkedin/goavro/v2 v2.10.0
+	github.com/mattn/go-sqlite3 v1.9.0
 	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
 	github.com/spf13/cobra v1.0.0
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2

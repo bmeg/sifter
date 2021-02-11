@@ -42,6 +42,7 @@ func (s *DirLoader) NewDataEmitter(sc *schema.Schemas) (DataEmitter, error) {
 }
 
 func NewDirLoader(dir string) *DirLoader {
+	dir, _ = filepath.Abs(dir)
 	log.Printf("Emitting to %s", dir)
 	return &DirLoader{
 		jm:   protojson.MarshalOptions{},
@@ -79,6 +80,7 @@ func (s *DirLoader) EmitEdge(e *gripql.Edge) error {
 	if !ok {
 		j, err := os.Create(path.Join(s.dir, e.Label+".Edge.json.gz"))
 		if err != nil {
+			log.Printf("Error: %s", err)
 			return err
 		}
 		f = gzip.NewWriter(j)
@@ -132,6 +134,7 @@ func (s *DirDataLoader) EmitObject(prefix string, objClass string, i map[string]
 	if !ok {
 		j, err := os.Create(path.Join(s.dl.dir, name+".json.gz"))
 		if err != nil {
+			log.Printf("Error: %s", err)
 			return err
 		}
 		f = gzip.NewWriter(j)

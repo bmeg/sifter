@@ -1,0 +1,34 @@
+
+class: Playbook
+
+
+desc: >
+  This takes a Gene TSV, filters rows, selects columns and outputs a 2
+  column TSV into the working directory
+
+inputs:
+  geneTSV:
+    type: File
+    # default: ftp://ftp.ncbi.nih.gov/gene/DATA/gene2ensembl.gz
+
+steps:
+  - tableLoad:
+      input: "{{inputs.geneTSV}}"
+      columns:
+        - tax_id
+        - GeneID
+        - Ensembl_gene_identifier
+        - RNA_nucleotide_accession.version
+        - Ensembl_rna_identifier
+        - protein_accession.version
+        - Ensembl_protein_identifier
+      transform:
+        - filter:
+            field: row.tax_id
+            match: "9606"
+            steps:
+              - tableWrite:
+                  output: "gene.table"
+                  columns:
+                    - GeneID
+                    - Ensembl_gene_identifier

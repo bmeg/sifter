@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"fmt"
 	"path"
 	"strings"
 	"sync"
@@ -39,6 +40,9 @@ func (s *DomainEmitter) EmitVertex(v *gripql.Vertex) error {
 	defer s.mux.Unlock()
 
 	vDomain := s.getVertDomain(v)
+	if vDomain == "" {
+		return fmt.Errorf("Domain for %s not found", v)
+	}
 
 	prefix := vDomain + "." + v.Label
 
@@ -63,6 +67,10 @@ func (s *DomainEmitter) EmitEdge(e *gripql.Edge) error {
 	defer s.mux.Unlock()
 
 	eDomain := s.getEdgeEndDomain(e)
+	if eDomain == "" {
+		return fmt.Errorf("Edge Prefix not found for %s", e.Label)
+	}
+
 	prefix := eDomain + "." + e.Label
 
 	f, ok := s.eout[prefix]
@@ -109,6 +117,6 @@ func (s *DomainEmitter) getEdgeEndDomain(e *gripql.Edge) string {
 			return i[0] + "_" + i[1]
 		}
 	}
-	log.Printf("Can't find domain match for %s %s", e.From, e.To)
+	log.Printf("Can't find prefix match for edge (%s)-%s>(%s)", e.From, e.Label, e.To)
 	return ""
 }

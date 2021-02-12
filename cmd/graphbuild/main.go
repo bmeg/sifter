@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -34,35 +33,27 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
-		m, err := graphbuild.LoadMapping(mappingPath, inDir)
+		mapping, err := graphbuild.LoadMapping(mappingPath)
 		if err != nil {
 			return err
 		}
 		log.Printf("Loaded Mapping: %s", mappingPath)
 
-		schemas, err := schema.Load(m.Schema)
+		schemas, err := schema.Load(mapping.Schema)
 		if err != nil {
 			return err
 		}
-		log.Printf("Loaded Schema: %s", m.Schema)
+		log.Printf("Loaded Schema: %s", mapping.Schema)
 
-		emitter := NewDomainEmitter(outDir, m.GetVertexDomains(), m.GetEdgeEndDomains())
-		builder, err := graphbuild.NewBuilder(emitter, schemas, tmpDir)
-		if err != nil {
-			return err
-		}
+		emitter := NewDomainEmitter(outDir, mapping.GetVertexPrefixes(), mapping.GetEdgeEndPrefixes())
 
-		fmt.Printf("%s\n", m.GetVertexDomains())
-		fmt.Printf("%s\n", m.GetEdgeEndDomains())
+		fmt.Printf("%s\n", mapping.GetVertexPrefixes())
+		fmt.Printf("%s\n", mapping.GetEdgeEndPrefixes())
 
 		paths, _ := filepath.Glob(filepath.Join(inDir, "*.json.gz"))
 		for _, path := range paths {
-			n := filepath.Base(path)
-			log.Printf("%s", n)
-			tmp := strings.Split(n, ".")
-			prefix := tmp[0]
-			class := tmp[1]
-			if builder.HasDomain(prefix, class, m) {
+			if mapping.HasRule( path ) {
+				log.Printf("Processing: %s", path)
 				reader, err := golib.ReadGzipLines(path)
 				if err == nil {
 					objChan := make(chan map[string]interface{}, 100)
@@ -76,13 +67,10 @@ var Cmd = &cobra.Command{
 							}
 						}
 					}()
-					builder.Process(prefix, class, objChan, m, emitter)
+					mapping.Process(path, objChan, schemas, emitter)
 				}
 			}
 		}
-		builder.Close()
-
-		builder.Report(outDir)
 		os.RemoveAll(tmpDir)
 		emitter.Close()
 		return nil

@@ -1,4 +1,4 @@
-package graph
+package graphbuild
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/bmeg/golib"
-	"github.com/bmeg/sifter/graphbuild"
+	"github.com/bmeg/sifter/graphbuilder"
 	"github.com/bmeg/sifter/schema"
 )
 
@@ -18,7 +18,7 @@ var outDir string = "./out-graph"
 var workDir string = "./"
 
 func RunGraphBuild(mappingPath string, inputDir string, workdir string, outputDir string) error {
-	mapping, err := graphbuild.LoadMapping(mappingPath)
+	mapping, err := graphbuilder.LoadMapping(mappingPath)
 	if err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-package graphbuild
+package graphbuilder
 
 import (
 	//"io"

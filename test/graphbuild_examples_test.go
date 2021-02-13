@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/bmeg/sifter/cmd/graph"
+	"github.com/bmeg/sifter/cmd/graphbuild"
 	"github.com/ghodss/yaml"
 )
 
@@ -34,7 +34,7 @@ func TestGraphBuildExamples(t *testing.T) {
 		tmpDir, err := ioutil.TempDir("./", "sifterwork_")
 		outDir, err := ioutil.TempDir("./", "outdir_")
 
-		err = graph.RunGraphBuild(conf.GraphMap, conf.InputDir, tmpDir, outDir)
+		err = graphbuild.RunGraphBuild(conf.GraphMap, conf.InputDir, tmpDir, outDir)
 
 		for _, out := range conf.Outputs {
 			base := filepath.Base(out)

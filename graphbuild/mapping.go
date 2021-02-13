@@ -121,13 +121,12 @@ func prefixAdjust(id string, prefix string, sep *string, filter bool) (string, e
 	if !strings.HasPrefix(id, prefix) {
 		if filter {
 			return id, fmt.Errorf("Mismatch prefix")
-		} else {
-			s := ":"
-			if sep != nil {
-				s = *sep
-			}
-			return prefix + s + id, nil
 		}
+		s := ":"
+		if sep != nil {
+			s = *sep
+		}
+		return prefix + s + id, nil
 	}
 	return id, nil
 }

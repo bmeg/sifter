@@ -17,7 +17,6 @@ import (
 var outDir string = "./out-graph"
 var workDir string = "./"
 
-
 func RunGraphBuild(mappingPath string, inputDir string, workdir string, outputDir string) error {
 	mapping, err := graphbuild.LoadMapping(mappingPath)
 	if err != nil {
@@ -38,7 +37,7 @@ func RunGraphBuild(mappingPath string, inputDir string, workdir string, outputDi
 
 	paths, _ := filepath.Glob(filepath.Join(inputDir, "*.json.gz"))
 	for _, path := range paths {
-		if mapping.HasRule( path ) {
+		if mapping.HasRule(path) {
 			log.Printf("Processing: %s", path)
 			reader, err := golib.ReadGzipLines(path)
 			if err == nil {
@@ -60,7 +59,6 @@ func RunGraphBuild(mappingPath string, inputDir string, workdir string, outputDi
 	emitter.Close()
 	return nil
 }
-
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{

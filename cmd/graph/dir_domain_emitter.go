@@ -2,10 +2,10 @@ package graph
 
 import (
 	"compress/gzip"
+	"fmt"
 	"io"
 	"log"
 	"os"
-	"fmt"
 	"path"
 	"strings"
 	"sync"

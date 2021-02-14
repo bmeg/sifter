@@ -15,7 +15,7 @@ import (
 	"github.com/ghodss/yaml"
 )
 
-type ExampleConfig struct {
+type PlaybookExampleConfig struct {
 	Playbook string            `json:"playbook"`
 	Inputs   map[string]string `json:"inputs"`
 	Outputs  []string          `json:"outputs"`
@@ -57,8 +57,8 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-func TestExamples(t *testing.T) {
-	tests, err := filepath.Glob("test-*.yaml")
+func TestPlaybookExamples(t *testing.T) {
+	tests, err := filepath.Glob("test-playbook-*.yaml")
 	if err != nil {
 		t.Error(err)
 	}
@@ -67,7 +67,7 @@ func TestExamples(t *testing.T) {
 		if err != nil {
 			t.Error(fmt.Errorf("failed to read config %s", tPath))
 		}
-		conf := ExampleConfig{}
+		conf := PlaybookExampleConfig{}
 		if err := yaml.Unmarshal(raw, &conf); err != nil {
 			t.Error(fmt.Errorf("failed to read config %s", tPath))
 		}

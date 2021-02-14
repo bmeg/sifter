@@ -23,7 +23,7 @@ type JSONFileLookupStep struct {
 	Copy    map[string]string
 	//found it more space efficiant to store the JSON rather then keep
 	//all the unpacked values
-	table   map[string][]byte //map[string]interface{}
+	table map[string][]byte //map[string]interface{}
 }
 
 func (jf *JSONFileLookupStep) Init(task *pipeline.Task) error {

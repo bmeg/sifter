@@ -81,8 +81,15 @@ func (ss *ScriptStep) Run(task *pipeline.Task) error {
 
 	prog := baseCommand[0]
 	cmd := exec.Command(prog, baseCommand[1:]...)
-	baseDir := filepath.Dir(task.SourcePath)
-	cmd.Dir = baseDir
+	if ss.WorkDir != "" {
+		workDir, err := evaluate.ExpressionString(ss.WorkDir, task.Inputs, nil)
+		if err == nil {
+			cmd.Dir = workDir
+		}
+	} else {
+		baseDir := filepath.Dir(task.SourcePath)
+		cmd.Dir = baseDir
+	}
 	cmd.Stderr = os.Stderr
 	if ss.Stdout != "" {
 		p, _ := task.Path(ss.Stdout)

@@ -22,6 +22,7 @@ var transformOpts = map[string]string{}
 var loadOpts = map[string]string{}
 
 var workDir string = "./"
+var outDir string = "./"
 var cache string = ""
 
 // Cmd is the declaration of the command line
@@ -79,7 +80,7 @@ var Cmd = &cobra.Command{
 							ext,
 						},
 					}
-					err = pb.Execute(man, inputs, dir)
+					err = pb.Execute(man, inputs, dir, outDir)
 					return err
 				}
 			} else {

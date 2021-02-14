@@ -41,7 +41,7 @@ func runPlaybook(playbook string, inputs map[string]interface{}, outdir string) 
 	defer man.Close()
 	man.AllowLocalFiles = true
 
-	err = run.Execute(playbook, dir, inputs, man)
+	err = run.Execute(playbook, dir, outdir, inputs, man)
 	if err != nil {
 		return err
 	}

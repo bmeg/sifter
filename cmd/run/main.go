@@ -77,7 +77,7 @@ var Cmd = &cobra.Command{
 			}
 			dir = d
 		}
-		Execute(playFile, dir, inputs, man)
+		Execute(playFile, dir, outDir, inputs, man)
 		if !keep {
 			os.RemoveAll(dir)
 		}

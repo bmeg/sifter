@@ -81,7 +81,10 @@ func (jf *JSONFileLookupStep) Run(i map[string]interface{}, task *pipeline.Task)
 			for k, v := range jf.Project {
 				val, err := evaluate.ExpressionString(v, task.Inputs, row)
 				if err == nil {
-					i[k] = val
+					err = SetProjectValue(i, k, val)
+					if err != nil {
+						log.Printf("project error: %s", err)
+					}
 				}
 			}
 		}

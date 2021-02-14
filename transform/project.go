@@ -2,6 +2,7 @@ package transform
 
 import (
 	"strings"
+
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/pipeline"
 )
@@ -55,13 +56,10 @@ func (pr ProjectStep) Run(i map[string]interface{}, task *pipeline.Task) map[str
 	return o
 }
 
-
-
 func SetProjectValue(i map[string]interface{}, key string, val interface{}) error {
 	if strings.HasPrefix(key, "$.") {
-		return evaluate.SetJSONPath(key, i, val) 
-	} else {
-		i[key] = val
+		return evaluate.SetJSONPath(key, i, val)
 	}
+	i[key] = val
 	return nil
 }

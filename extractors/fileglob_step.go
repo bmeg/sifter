@@ -10,6 +10,7 @@ import (
 
 type FileGlobStep struct {
 	Files     []string    `json:"files" jsonschema_description:"Array of files (with wildcards) to scan for"`
+	Dir       string      `json:"dir"`
 	Limit     int         `json:"limit" jsonschema_description:""`
 	InputName string      `json:"inputName" jsonschema_description:"variable name the file will be stored in when calling the extraction steps"`
 	Steps     []Extractor `json:"steps" jsonschema_description:"Extraction pipeline to run"`
@@ -23,7 +24,15 @@ func (fs *FileGlobStep) Run(task *pipeline.Task) error {
 		if err != nil {
 			return err
 		}
-		globPath, err := task.Path(input)
+		var globPath string
+		if fs.Dir == "" {
+			globPath, err = task.Path(input)
+		} else {
+			dir, err := evaluate.ExpressionString(fs.Dir, task.Inputs, nil)
+			if err == nil {
+				globPath = filepath.Join(dir, input)
+			}
+		}
 		log.Printf("Finding: %s", globPath)
 		paths, _ := filepath.Glob(globPath)
 		for _, path := range paths {

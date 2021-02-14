@@ -37,7 +37,7 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir string) error {
+func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir string, outDir string) error {
 
 	for k, v := range pb.Inputs {
 		if _, ok := inputs[k]; !ok {
@@ -49,6 +49,14 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 				} else {
 					inputs[k] = v.Default
 				}
+			} else if v.Type == "CWD" {
+				path, err := os.Getwd()
+				if err == nil {
+					inputs[k] = path
+				}
+			} else if v.Type == "OUTPUT_DIR" {
+				log.Printf("Setting %s to %s", k, outDir)
+				inputs[k] = outDir
 			}
 		}
 	}
@@ -75,9 +83,10 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 		sc = &t
 	}
 
-	dir, _ = filepath.Abs(dir)
+	workDir, _ = filepath.Abs(workDir)
+	outDir, _ = filepath.Abs(outDir)
 
-	run, err := man.NewRuntime(pb.Name, dir, sc)
+	run, err := man.NewRuntime(pb.Name, workDir, sc)
 	for k, i := range pb.Inputs {
 		if v, ok := inputs[k]; ok {
 			if i.Type == "File" || i.Type == "Directory" {
@@ -122,8 +131,9 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, dir str
 		return nil
 	}
 
-	log.Printf("Playbook executing in %s", dir)
-	stepFile := path.Join(dir, ".sifter_steps")
+	log.Printf("Playbook executing in %s", workDir)
+	log.Printf("Output to %s", outDir)
+	stepFile := path.Join(workDir, ".sifter_steps")
 
 	startStep := 0
 	content, err := ioutil.ReadFile(stepFile)

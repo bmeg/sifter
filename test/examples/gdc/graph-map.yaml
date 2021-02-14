@@ -1,0 +1,40 @@
+class: GraphMap
+
+schema: ../../resources/schemas
+
+ruleMap:
+  - name: "*.case.json.gz"
+    rule: case
+  - name: "*.sample.json.gz"
+    rule: sample
+  - name: "*.aliquot.json.gz"
+    rule: aliquot
+
+rules:
+  case:
+    idPrefix: Case
+    class: case
+    outEdges:
+      member_of:
+        toPrefix: Project
+    inEdges:
+      cases:
+        fromPrefix: Project
+  sample:
+    idPrefix: Sample
+    class: sample
+    outEdges:
+      derived_from:
+        toPrefix: Case
+    inEdges:
+      samples:
+        fromPrefix: Case
+  aliquot:
+    idPrefix: Aliquot
+    class: aliquot
+    outEdges:
+      derived_from:
+        toPrefix: Sample
+    inEdges:
+      aliquots:
+        fromPrefix: Sample

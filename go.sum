@@ -103,6 +103,8 @@ github.com/bmeg/grip v0.0.0-20200411033704-d18c2a54ff34/go.mod h1:EcD+/RY7kwUvxK
 github.com/bmeg/grip v0.0.0-20201215175355-64c4ae923ae8 h1:Ob+K9m9Ghp/5PuxZ7gZ3i0N/K1DqOHv4bKZrjEmpyg0=
 github.com/bmeg/grip v0.0.0-20210107163650-b041206520b2 h1:smDEIXsek6/0GoBMN/otM0eIvUJ8glwoSPnUPDhHzCk=
 github.com/bmeg/grip v0.0.0-20210107163650-b041206520b2/go.mod h1:3xYTmx9Yw9whem9f9hqPRm5zCE3ErpAQxfAoUtY3Krc=
+github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad h1:ICgBexeLB7iv/IQz4rsP+MimOXFZUwWSPojEypuOaQ8=
+github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad/go.mod h1:ft96Irkp72C7ZrUWRenG7LrF0NKMxXdRvsypo5Njhm4=
 github.com/bmeg/protoc-gen-grcp-rest-direct v0.0.0-20190228222353-4d40e8b9d305/go.mod h1:1S3ijn0o+w7RmSdfX3EQttlrF9csSziK8dpeh0nP4LU=
 github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
 github.com/bombsimon/wsl/v2 v2.0.0/go.mod h1:mf25kr/SqFEPhhcxW1+7pxzGlW+hIl/hYTKY95VwV8U=

@@ -17,6 +17,7 @@ import (
 type DomainEmitter struct {
 	jm             jsonpb.Marshaler
 	dir            string
+	filePrefix     string
 	mux            sync.Mutex
 	vertDomains    []string
 	edgeEndDomains [][]string
@@ -24,9 +25,10 @@ type DomainEmitter struct {
 	eout           map[string]io.WriteCloser
 }
 
-func NewDomainEmitter(baseDir string, vertDomains []string, edgeEndDomains [][]string) *DomainEmitter {
+func NewDomainEmitter(baseDir string, prefix string, vertDomains []string, edgeEndDomains [][]string) *DomainEmitter {
 	return &DomainEmitter{
 		dir:            baseDir,
+		filePrefix:     prefix,
 		jm:             jsonpb.Marshaler{},
 		vertDomains:    vertDomains,
 		edgeEndDomains: edgeEndDomains,
@@ -44,7 +46,12 @@ func (s *DomainEmitter) EmitVertex(v *gripql.Vertex) error {
 		return fmt.Errorf("Domain for %s not found", v)
 	}
 
-	prefix := vDomain + "." + v.Label
+	var prefix string
+	if s.filePrefix == "" {
+		prefix = v.Label
+	} else {
+		prefix = s.filePrefix + "." + v.Label
+	}
 
 	f, ok := s.vout[prefix]
 	if !ok {
@@ -71,8 +78,12 @@ func (s *DomainEmitter) EmitEdge(e *gripql.Edge) error {
 		return fmt.Errorf("Edge Prefix not found for %s", e.Label)
 	}
 
-	prefix := eDomain + "." + e.Label
-
+	var prefix string
+	if s.filePrefix == "" {
+		prefix = eDomain + "." + e.Label
+	} else {
+		prefix = s.filePrefix + "." + eDomain + "." + e.Label		
+	}
 	f, ok := s.eout[prefix]
 	if !ok {
 		j, err := os.Create(path.Join(s.dir, prefix+".Edge.json.gz"))

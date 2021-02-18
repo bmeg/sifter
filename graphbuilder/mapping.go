@@ -42,6 +42,7 @@ type MapRule struct {
 	IDPrefix   string               `json:"idPrefix"`
 	IDTemplate string               `json:"idTemplate"`
 	IDField    string               `json:"idField"`
+	FilePrefix string               `json:"filePrefix"`
 	Sep        *string              `json:"sep"`
 	OutEdges   map[string]*EdgeRule `json:"outEdges"`
 	InEdges    map[string]*EdgeRule `json:"inEdges"`
@@ -112,6 +113,21 @@ func (m *Mapping) GetRule(path string) *MapRule {
 		}
 	}
 	return nil
+}
+
+func (m *Mapping) GetOutputFilePrefix(path string) string {
+	r := m.GetRule(path)
+	if r != nil {
+		inputs := map[string]interface{}{
+			"path" : path,
+			"basename" : filepath.Base(path),
+		}
+		val, err := evaluate.ExpressionString(r.FilePrefix, inputs, nil)
+		if err == nil {
+			return val
+		}
+	}
+	return ""
 }
 
 func prefixAdjust(id string, prefix string, sep *string, filter bool) (string, error) {

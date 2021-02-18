@@ -30,14 +30,15 @@ func RunGraphBuild(mappingPath string, inputDir string, workdir string, outputDi
 	}
 	log.Printf("Loaded Schema: %s", mapping.Schema)
 
-	emitter := NewDomainEmitter(outputDir, mapping.GetVertexPrefixes(), mapping.GetEdgeEndPrefixes())
-
 	log.Printf("Vertex Prefixes: %s\n", mapping.GetVertexPrefixes())
 	log.Printf("EdgeEdge Prefixes: %s\n", mapping.GetEdgeEndPrefixes())
 
 	paths, _ := filepath.Glob(filepath.Join(inputDir, "*.json.gz"))
 	for _, path := range paths {
 		if mapping.HasRule(path) {
+			filePrefix := mapping.GetOutputFilePrefix(path)
+			log.Printf("Prefix: %s", filePrefix)
+			emitter := NewDomainEmitter(outputDir, filePrefix, mapping.GetVertexPrefixes(), mapping.GetEdgeEndPrefixes())
 			log.Printf("Processing: %s", path)
 			reader, err := golib.ReadGzipLines(path)
 			if err == nil {
@@ -54,9 +55,9 @@ func RunGraphBuild(mappingPath string, inputDir string, workdir string, outputDi
 				}()
 				mapping.Process(path, objChan, schemas, emitter)
 			}
+			emitter.Close()
 		}
 	}
-	emitter.Close()
 	return nil
 }
 

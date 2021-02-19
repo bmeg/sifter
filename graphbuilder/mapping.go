@@ -119,8 +119,8 @@ func (m *Mapping) GetOutputFilePrefix(path string) string {
 	r := m.GetRule(path)
 	if r != nil {
 		inputs := map[string]interface{}{
-			"path" : path,
-			"basename" : filepath.Base(path),
+			"path":     path,
+			"basename": filepath.Base(path),
 		}
 		val, err := evaluate.ExpressionString(r.FilePrefix, inputs, nil)
 		if err == nil {

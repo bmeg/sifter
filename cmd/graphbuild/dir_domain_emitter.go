@@ -82,7 +82,7 @@ func (s *DomainEmitter) EmitEdge(e *gripql.Edge) error {
 	if s.filePrefix == "" {
 		prefix = eDomain + "." + e.Label
 	} else {
-		prefix = s.filePrefix + "." + eDomain + "." + e.Label		
+		prefix = s.filePrefix + "." + eDomain + "." + e.Label
 	}
 	f, ok := s.eout[prefix]
 	if !ok {

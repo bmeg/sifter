@@ -6,7 +6,7 @@ import (
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
-	Use:   "graph-manifest",
+	Use:   "graph-manifest <directory>",
 	Short: "Build manifest for graph file archive",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {

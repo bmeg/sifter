@@ -31,9 +31,9 @@ func mapKeys(s map[string]bool) []string {
 type FileInfo struct {
 	FileType string   `json:"fileType"`
 	Path     string   `json:"path"`
-	Gid      *string  `json:"gid"`
-	FromGid  *string  `json:"fromGid"`
-	ToGid    *string  `json:"toGid"`
+	Gid      *string  `json:"gid,omitempty"`
+	FromGid  *string  `json:"fromGid,omitempty"`
+	ToGid    *string  `json:"toGid,omitempty"`
 	Labels   []string `json:"labels"`
 }
 

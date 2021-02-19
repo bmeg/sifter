@@ -72,7 +72,7 @@ func fileScanner(path string) (FileInfo, error) {
 				}
 			}
 		}
-		return FileInfo{FileType: "edge", Path: path, Gid: &gidSubStr, Labels: mapKeys(labels)}, nil
+		return FileInfo{FileType: "vertex", Path: path, Gid: &gidSubStr, Labels: mapKeys(labels)}, nil
 	} else if strings.HasSuffix(path, ".Edge.json.gz") {
 		log.Printf("Scanning %s", path)
 		fr, err := os.Open(path)

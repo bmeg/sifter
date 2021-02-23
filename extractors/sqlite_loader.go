@@ -1,15 +1,15 @@
 package extractors
 
 import (
-  "os"
-  "log"
 	"database/sql"
 	"fmt"
-  "sync"
+	"log"
+	"os"
+	"sync"
 
+	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/pipeline"
 	_ "github.com/mattn/go-sqlite3"
-  "github.com/bmeg/sifter/evaluate"
-  "github.com/bmeg/sifter/pipeline"
 )
 
 type SQLiteStep struct {
@@ -40,7 +40,7 @@ func (ml *SQLiteStep) Run(task *pipeline.Task) error {
 	for t := range ml.Tables {
 		rows, err := db.Query("select * from " + ml.Tables[t].Name)
 		if err == nil {
-      log.Printf("Scanning table %s", ml.Tables[t].Name)
+			log.Printf("Scanning table %s", ml.Tables[t].Name)
 			wg := &sync.WaitGroup{}
 			procChan := make(chan map[string]interface{}, 100)
 			if err := ml.Tables[t].Transform.Init(task); err != nil {
@@ -54,29 +54,32 @@ func (ml *SQLiteStep) Run(task *pipeline.Task) error {
 				for range out {
 				}
 			}()
-      colNames, err := rows.Columns()
-      readCols := make([]interface{}, len(colNames))
-      writeCols := make([]string, len(colNames))
-      for i, _ := range writeCols {
-        readCols[i] = &writeCols[i]
-      }
+			colNames, err := rows.Columns()
+			readCols := make([]interface{}, len(colNames))
+			writeCols := make([]sql.NullString, len(colNames))
+			for i := range writeCols {
+				readCols[i] = &writeCols[i]
+			}
 			for rows.Next() {
 				err := rows.Scan(readCols...)
-        if err != nil {
-          log.Printf("scan error: %s", err)
-        } else {
-          o := map[string]interface{}{}
-          for i := range colNames {
-            o[colNames[i]] = writeCols[i]
-          }
-          fmt.Printf("%#v\n", o)
-        }
+				if err != nil {
+					log.Printf("scan error: %s", err)
+				} else {
+					o := map[string]interface{}{}
+					for i := range colNames {
+						if writeCols[i].Valid {
+							o[colNames[i]] = writeCols[i].String
+						}
+					}
+					procChan <- o
+				}
 			}
+			close(procChan)
 			ml.Tables[t].Transform.Close()
 			wg.Wait()
 		} else {
-      log.Printf("SQLite table read error: %s", err)
-    }
+			log.Printf("SQLite table read error: %s", err)
+		}
 	}
 	return nil
 }

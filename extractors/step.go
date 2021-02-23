@@ -30,7 +30,9 @@ func (step *Extractor) Run(run *pipeline.Runtime, playBookPath string, inputs ma
 		if err := step.TransposeFile.Run(task); err != nil {
 			run.Printf("Tranpose Step Error: %s", err)
 			return err
-		} /*
+		}
+		task.Close()
+		/*
 		  } else if step.ManifestLoad != nil {
 		    task := run.NewTask(inputs)
 		    log.Printf("Running ManifestLoad")
@@ -45,13 +47,16 @@ func (step *Extractor) Run(run *pipeline.Runtime, playBookPath string, inputs ma
 			run.Printf("Download Error: %s", err)
 			return err
 		}
+		task.Close()
 	} else if step.Untar != nil {
 		task := run.NewTask(playBookPath, inputs)
 		log.Printf("Running untar")
 		if err := step.Untar.Run(task); err != nil {
 			run.Printf("Untar Error: %s", err)
 			return err
-		} /*
+		}
+		task.Close()
+		/*
 		  } else if step.VCFLoad != nil {
 		    task := run.NewTask(inputs)
 		    log.Printf("Running VCFLoad")
@@ -66,6 +71,7 @@ func (step *Extractor) Run(run *pipeline.Runtime, playBookPath string, inputs ma
 			run.Printf("Table Load Error: %s", err)
 			return err
 		}
+		task.Close()
 	} else if step.GripperLoad != nil {
 		task := run.NewTask(playBookPath, inputs)
 		log.Printf("Running GripperLoad")
@@ -73,6 +79,7 @@ func (step *Extractor) Run(run *pipeline.Runtime, playBookPath string, inputs ma
 			run.Printf("Gripper Load Error: %s", err)
 			return err
 		}
+		task.Close()
 	} else if step.JSONLoad != nil {
 		task := run.NewTask(playBookPath, inputs)
 		log.Printf("Running JSONLoad")
@@ -80,6 +87,7 @@ func (step *Extractor) Run(run *pipeline.Runtime, playBookPath string, inputs ma
 			run.Printf("JSON Load Error: %s", err)
 			return err
 		}
+		task.Close()
 	} else if step.XMLLoad != nil {
 		task := run.NewTask(playBookPath, inputs)
 		log.Printf("Running XMLLoad")
@@ -88,6 +96,7 @@ func (step *Extractor) Run(run *pipeline.Runtime, playBookPath string, inputs ma
 			return err
 		}
 		log.Printf("XMLLoad Done")
+		task.Close()
 	} else if step.AvroLoad != nil {
 		task := run.NewTask(playBookPath, inputs)
 		log.Printf("Running AvroLoad")
@@ -96,6 +105,7 @@ func (step *Extractor) Run(run *pipeline.Runtime, playBookPath string, inputs ma
 			return err
 		}
 		log.Printf("AvroLoad Done")
+		task.Close()
 	} else if step.SQLDumpLoad != nil {
 		task := run.NewTask(playBookPath, inputs)
 		log.Printf("Running SQLDumpLoad")
@@ -103,6 +113,7 @@ func (step *Extractor) Run(run *pipeline.Runtime, playBookPath string, inputs ma
 			run.Printf("SQLDumpLoad Error: %s", err)
 			return err
 		}
+		task.Close()
 	} else if step.SQLiteLoad != nil {
 		task := run.NewTask(playBookPath, inputs)
 		log.Printf("Running SQLiteLoad")
@@ -110,6 +121,7 @@ func (step *Extractor) Run(run *pipeline.Runtime, playBookPath string, inputs ma
 			run.Printf("SQLiteLoad Error: %s", err)
 			return err
 		}
+		task.Close()
 	} else if step.FileGlob != nil {
 		task := run.NewTask(playBookPath, inputs)
 		log.Printf("Running FileGlob")
@@ -117,6 +129,7 @@ func (step *Extractor) Run(run *pipeline.Runtime, playBookPath string, inputs ma
 			run.Printf("FileGlob Error: %s", err)
 			return err
 		}
+		task.Close()
 	} else if step.Script != nil {
 		task := run.NewTask(playBookPath, inputs)
 		log.Printf("Running Script")
@@ -124,6 +137,7 @@ func (step *Extractor) Run(run *pipeline.Runtime, playBookPath string, inputs ma
 			run.Printf("Script Error: %s", err)
 			return err
 		}
+		task.Close()
 	} else {
 		log.Printf("Unknown Step")
 	}

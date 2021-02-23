@@ -21,9 +21,10 @@ type TableWriteStep struct {
 }
 
 type TableReplaceStep struct {
-	Input  string `json:"input"`
-	Field  string `json:"field"`
-	Target string `json:"target"`
+	Input  string            `json:"input"`
+	Table  map[string]string `json:"table"`
+	Field  string            `json:"field"`
+	Target string            `json:"target"`
 	table  map[string]string
 }
 
@@ -59,26 +60,33 @@ func (tw *TableWriteStep) Close() {
 }
 
 func (tr *TableReplaceStep) Init(task *pipeline.Task) error {
-	input, err := evaluate.ExpressionString(tr.Input, task.Inputs, nil)
-	inputPath, err := task.Path(input)
-	if err != nil {
-		return err
-	}
+	if tr.Input != "" {
+		input, err := evaluate.ExpressionString(tr.Input, task.Inputs, nil)
+		inputPath, err := task.Path(input)
+		if err != nil {
+			return err
+		}
 
-	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
-		return fmt.Errorf("File Not Found: %s", input)
-	}
-	log.Printf("Loading: %s", inputPath)
+		if _, err := os.Stat(inputPath); os.IsNotExist(err) {
+			return fmt.Errorf("File Not Found: %s", input)
+		}
+		log.Printf("Loading: %s", inputPath)
 
-	inputStream, err := golib.ReadFileLines(inputPath)
-	if err != nil {
-		return err
-	}
-	tr.table = map[string]string{}
-	for line := range inputStream {
-		if len(line) > 0 {
-			row := strings.Split(string(line), "\t")
-			tr.table[row[0]] = row[1]
+		inputStream, err := golib.ReadFileLines(inputPath)
+		if err != nil {
+			return err
+		}
+		tr.table = map[string]string{}
+		for line := range inputStream {
+			if len(line) > 0 {
+				row := strings.Split(string(line), "\t")
+				tr.table[row[0]] = row[1]
+			}
+		}
+	} else if len(tr.Table) > 0 {
+		tr.table = map[string]string{}
+		for k, v := range tr.Table {
+			tr.table[k] = v
 		}
 	}
 	return nil

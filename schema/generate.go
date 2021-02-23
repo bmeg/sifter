@@ -170,7 +170,7 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
 		}
 	} else {
 		if gid == "" {
-			log.Printf("GID not found for %s", s.ID)
+			log.Printf("GID not found for %s - %s", s.ID, s.Title)
 		}
 		ds, _ := structpb.NewStruct(outData)
 		v := gripql.Vertex{Gid: gid, Label: s.Title, Data: ds}
@@ -181,6 +181,8 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
 			lo, err := l.Generate(gid, outData)
 			if err == nil {
 				out = append(out, lo...)
+			} else {
+				log.Printf("Link error: %s", err)
 			}
 		}
 	}

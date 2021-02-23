@@ -8,6 +8,7 @@ require (
 	github.com/biogo/hts v1.2.2
 	github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50
 	github.com/bmeg/grip v0.0.0-20210107163650-b041206520b2
+	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad
 	github.com/brentp/irelate v0.0.0-20180801151701-1bf7c8f95c75 // indirect
 	github.com/brentp/vcfgo v0.0.0-20190315012323-bdb8e831fc71
 	github.com/cnf/structhash v0.0.0-20180104161610-62a607eb0224

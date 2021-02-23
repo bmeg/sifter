@@ -104,6 +104,9 @@ func (conf *Config) EditEdgeFile(srcPath, dstPath string) error {
 					e.To = d + ":" + newID
 					toFound = true
 					if dinfo.StoreOriginal != "" {
+						if e.Data == nil {
+							e.Data = &structpb.Struct{Fields: map[string]*structpb.Value{}}
+						}
 						e.Data.Fields[dinfo.StoreOriginal], _ = structpb.NewValue(toID)
 					}
 				}
@@ -114,6 +117,9 @@ func (conf *Config) EditEdgeFile(srcPath, dstPath string) error {
 					e.From = d + ":" + newID
 					fromFound = true
 					if dinfo.StoreOriginal != "" {
+						if e.Data == nil {
+							e.Data = &structpb.Struct{Fields: map[string]*structpb.Value{}}
+						}
 						e.Data.Fields[dinfo.StoreOriginal], _ = structpb.NewValue(fromID)
 					}
 				}

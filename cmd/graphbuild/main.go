@@ -1,23 +1,65 @@
-package graph
+package graphbuild
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/spf13/cobra"
 
 	"github.com/bmeg/golib"
-	"github.com/bmeg/sifter/graphbuild"
+	"github.com/bmeg/sifter/graphbuilder"
 	"github.com/bmeg/sifter/schema"
 )
 
 var outDir string = "./out-graph"
 var workDir string = "./"
+
+func RunGraphBuild(mappingPath string, inputDir string, workdir string, outputDir string) error {
+	mapping, err := graphbuilder.LoadMapping(mappingPath)
+	if err != nil {
+		return err
+	}
+	log.Printf("Loaded Mapping: %s", mappingPath)
+
+	schemas, err := schema.Load(mapping.Schema)
+	if err != nil {
+		return err
+	}
+	log.Printf("Loaded Schema: %s", mapping.Schema)
+
+	log.Printf("Vertex Prefixes: %s\n", mapping.GetVertexPrefixes())
+	log.Printf("EdgeEdge Prefixes: %s\n", mapping.GetEdgeEndPrefixes())
+
+	paths, _ := filepath.Glob(filepath.Join(inputDir, "*.json.gz"))
+	for _, path := range paths {
+		if mapping.HasRule(path) {
+			filePrefix := mapping.GetOutputFilePrefix(path)
+			log.Printf("Prefix: %s", filePrefix)
+			emitter := NewDomainEmitter(outputDir, filePrefix, mapping.GetVertexPrefixes(), mapping.GetEdgeEndPrefixes())
+			log.Printf("Processing: %s", path)
+			reader, err := golib.ReadGzipLines(path)
+			if err == nil {
+				objChan := make(chan map[string]interface{}, 100)
+				go func() {
+					defer close(objChan)
+					for line := range reader {
+						o := map[string]interface{}{}
+						if len(line) > 0 {
+							json.Unmarshal(line, &o)
+							objChan <- o
+						}
+					}
+				}()
+				mapping.Process(path, objChan, schemas, emitter)
+			}
+			emitter.Close()
+		}
+	}
+	return nil
+}
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
@@ -34,58 +76,9 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
-		m, err := graphbuild.LoadMapping(mappingPath, inDir)
-		if err != nil {
-			return err
-		}
-		log.Printf("Loaded Mapping: %s", mappingPath)
-
-		schemas, err := schema.Load(m.Schema)
-		if err != nil {
-			return err
-		}
-		log.Printf("Loaded Schema: %s", m.Schema)
-
-		emitter := NewDomainEmitter(outDir, m.GetVertexDomains(), m.GetEdgeEndDomains())
-		builder, err := graphbuild.NewBuilder(emitter, schemas, tmpDir)
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("%s\n", m.GetVertexDomains())
-		fmt.Printf("%s\n", m.GetEdgeEndDomains())
-
-		paths, _ := filepath.Glob(filepath.Join(inDir, "*.json.gz"))
-		for _, path := range paths {
-			n := filepath.Base(path)
-			log.Printf("%s", n)
-			tmp := strings.Split(n, ".")
-			prefix := tmp[0]
-			class := tmp[1]
-			if builder.HasDomain(prefix, class, m) {
-				reader, err := golib.ReadGzipLines(path)
-				if err == nil {
-					objChan := make(chan map[string]interface{}, 100)
-					go func() {
-						defer close(objChan)
-						for line := range reader {
-							o := map[string]interface{}{}
-							if len(line) > 0 {
-								json.Unmarshal(line, &o)
-								objChan <- o
-							}
-						}
-					}()
-					builder.Process(prefix, class, objChan, m, emitter)
-				}
-			}
-		}
-		builder.Close()
-
-		builder.Report(outDir)
+		err = RunGraphBuild(mappingPath, inDir, tmpDir, outDir)
 		os.RemoveAll(tmpDir)
-		emitter.Close()
-		return nil
+		return err
 	},
 }
 

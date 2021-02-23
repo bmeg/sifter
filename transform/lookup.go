@@ -20,7 +20,10 @@ type JSONFileLookupStep struct {
 	Field   string `json:"field"`
 	Key     string `json:"key"`
 	Project map[string]string
-	table   map[string]map[string]interface{}
+	Copy    map[string]string
+	//found it more space efficiant to store the JSON rather then keep
+	//all the unpacked values
+	table map[string][]byte //map[string]interface{}
 }
 
 func (jf *JSONFileLookupStep) Init(task *pipeline.Task) error {
@@ -45,7 +48,7 @@ func (jf *JSONFileLookupStep) Init(task *pipeline.Task) error {
 		return err
 	}
 
-	jf.table = map[string]map[string]interface{}{}
+	jf.table = map[string][]byte{} //map[string]interface{}{}
 
 	for line := range inputStream {
 		if len(line) > 0 {
@@ -56,7 +59,7 @@ func (jf *JSONFileLookupStep) Init(task *pipeline.Task) error {
 			}
 			if key, ok := row[jf.Key]; ok {
 				if keyStr, ok := key.(string); ok {
-					jf.table[keyStr] = row
+					jf.table[keyStr] = line
 				}
 			}
 		}
@@ -67,10 +70,21 @@ func (jf *JSONFileLookupStep) Init(task *pipeline.Task) error {
 func (jf *JSONFileLookupStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
 	field, err := evaluate.ExpressionString(jf.Field, task.Inputs, i)
 	if err == nil {
-		if pv, ok := jf.table[field]; ok {
-			for k, v := range jf.Project {
-				if ki, ok := pv[v]; ok {
+		if line, ok := jf.table[field]; ok {
+			row := map[string]interface{}{}
+			json.Unmarshal(line, &row)
+			for k, v := range jf.Copy {
+				if ki, ok := row[v]; ok {
 					i[k] = ki
+				}
+			}
+			for k, v := range jf.Project {
+				val, err := evaluate.ExpressionString(v, task.Inputs, row)
+				if err == nil {
+					err = SetProjectValue(i, k, val)
+					if err != nil {
+						log.Printf("project error: %s", err)
+					}
 				}
 			}
 		}

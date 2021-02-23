@@ -30,7 +30,7 @@ func TestProject(t *testing.T) {
 	man.AllowLocalFiles = true
 	inputs := map[string]interface{}{}
 
-	err = run.Execute("./resources/project.yaml", dir, inputs, man)
+	err = run.Execute("./resources/project.yaml", dir, "./", inputs, man)
 	if err != nil {
 		t.Error(err)
 	}

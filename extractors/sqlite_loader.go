@@ -9,13 +9,55 @@ import (
 
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/transform"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 type SQLiteStep struct {
 	Input         string           `json:"input" jsonschema_description:"Path to the SQLite file"`
 	Tables        []TableTransform `json:"tables" jsonschema_description:"Array of transforms for the different tables in the SQLite"`
+	Queries       []QueryTransform `json:"queries" jsonschema_description:"SQL select statement based input"`
 	SkipIfMissing bool             `json:"skipIfMissing" jsonschema_description:"Option to skip without fail if input file does not exist"`
+}
+
+func processQuery(rows *sql.Rows, trans transform.Pipe, task *pipeline.Task) error {
+	wg := &sync.WaitGroup{}
+	procChan := make(chan map[string]interface{}, 100)
+	if err := trans.Init(task); err != nil {
+		return err
+	}
+	out, err := trans.Start(procChan, task, wg)
+	if err != nil {
+		return err
+	}
+	go func() {
+		for range out {
+		}
+	}()
+	colNames, err := rows.Columns()
+	readCols := make([]interface{}, len(colNames))
+	writeCols := make([]sql.NullString, len(colNames))
+	for i := range writeCols {
+		readCols[i] = &writeCols[i]
+	}
+	for rows.Next() {
+		err := rows.Scan(readCols...)
+		if err != nil {
+			log.Printf("scan error: %s", err)
+		} else {
+			o := map[string]interface{}{}
+			for i := range colNames {
+				if writeCols[i].Valid {
+					o[colNames[i]] = writeCols[i].String
+				}
+			}
+			procChan <- o
+		}
+	}
+	close(procChan)
+	trans.Close()
+	wg.Wait()
+	return nil
 }
 
 func (ml *SQLiteStep) Run(task *pipeline.Task) error {
@@ -41,45 +83,21 @@ func (ml *SQLiteStep) Run(task *pipeline.Task) error {
 		rows, err := db.Query("select * from " + ml.Tables[t].Name)
 		if err == nil {
 			log.Printf("Scanning table %s", ml.Tables[t].Name)
-			wg := &sync.WaitGroup{}
-			procChan := make(chan map[string]interface{}, 100)
-			if err := ml.Tables[t].Transform.Init(task); err != nil {
-				return err
-			}
-			out, err := ml.Tables[t].Transform.Start(procChan, task, wg)
-			if err != nil {
-				return err
-			}
-			go func() {
-				for range out {
-				}
-			}()
-			colNames, err := rows.Columns()
-			readCols := make([]interface{}, len(colNames))
-			writeCols := make([]sql.NullString, len(colNames))
-			for i := range writeCols {
-				readCols[i] = &writeCols[i]
-			}
-			for rows.Next() {
-				err := rows.Scan(readCols...)
-				if err != nil {
-					log.Printf("scan error: %s", err)
-				} else {
-					o := map[string]interface{}{}
-					for i := range colNames {
-						if writeCols[i].Valid {
-							o[colNames[i]] = writeCols[i].String
-						}
-					}
-					procChan <- o
-				}
-			}
-			close(procChan)
-			ml.Tables[t].Transform.Close()
-			wg.Wait()
+			processQuery(rows, ml.Tables[t].Transform, task)
 		} else {
 			log.Printf("SQLite table read error: %s", err)
 		}
 	}
+
+	for t := range ml.Queries {
+		rows, err := db.Query(ml.Queries[t].Query)
+		if err == nil {
+			log.Printf("Scanning table %s", ml.Queries[t].Query)
+			processQuery(rows, ml.Queries[t].Transform, task)
+		} else {
+			log.Printf("SQLite table read error: %s", err)
+		}
+	}
+
 	return nil
 }

@@ -12,7 +12,7 @@ import (
 	"encoding/json"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 )
 
 var DefaultEngine = "python"
@@ -81,7 +81,7 @@ type Step struct {
 
 type Pipe []Step
 
-func (fm FieldMapStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+func (fm FieldMapStep) Run(i map[string]interface{}, task *manager.Task) map[string]interface{} {
 	o := map[string]interface{}{}
 	for x, y := range i {
 		o[x] = y
@@ -113,7 +113,7 @@ func contains(s []string, q string) bool {
 	return false
 }
 
-func (re RegexReplaceStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+func (re RegexReplaceStep) Run(i map[string]interface{}, task *manager.Task) map[string]interface{} {
 	col, _ := evaluate.ExpressionString(re.Column, task.Inputs, i)
 	replace, _ := evaluate.ExpressionString(re.Replace, task.Inputs, i)
 	dst, _ := evaluate.ExpressionString(re.Dest, task.Inputs, i)
@@ -127,7 +127,7 @@ func (re RegexReplaceStep) Run(i map[string]interface{}, task *pipeline.Task) ma
 	return z
 }
 
-func (al AlleleIDStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+func (al AlleleIDStep) Run(i map[string]interface{}, task *manager.Task) map[string]interface{} {
 
 	genome, _ := evaluate.ExpressionString(al.Genome, task.Inputs, i)
 	chromosome, _ := evaluate.ExpressionString(al.Chromosome, task.Inputs, i)
@@ -154,13 +154,13 @@ func (al AlleleIDStep) Run(i map[string]interface{}, task *pipeline.Task) map[st
 	return o
 }
 
-func (db DebugStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+func (db DebugStep) Run(i map[string]interface{}, task *manager.Task) map[string]interface{} {
 	s, _ := json.Marshal(i)
 	log.Printf("DebugData %s: %s", db.Label, s)
 	return i
 }
 
-func (ts Step) Init(task *pipeline.Task) error {
+func (ts Step) Init(task *manager.Task) error {
 	log.Printf("Doing Step Init")
 	if ts.Filter != nil {
 		ts.Filter.Init(task)
@@ -227,7 +227,7 @@ func (ts Step) Close() {
 }
 
 func (ts Step) Start(in chan map[string]interface{},
-	task *pipeline.Task, wg *sync.WaitGroup) chan map[string]interface{} {
+	task *manager.Task, wg *sync.WaitGroup) chan map[string]interface{} {
 
 	out := make(chan map[string]interface{}, PipeSize)
 	wg.Add(1)
@@ -337,7 +337,7 @@ func (ts Step) Start(in chan map[string]interface{},
 	return out
 }
 
-func (tp Pipe) Init(task *pipeline.Task) error {
+func (tp Pipe) Init(task *manager.Task) error {
 	log.Printf("Transform Pipe Init")
 	for _, s := range tp {
 		if err := s.Init(task); err != nil {
@@ -354,7 +354,7 @@ func (tp Pipe) Close() {
 }
 
 func (tp Pipe) Start(in chan map[string]interface{},
-	task *pipeline.Task,
+	task *manager.Task,
 	wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 
 	log.Printf("Starting Transform Pipe")

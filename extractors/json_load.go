@@ -10,7 +10,7 @@ import (
 
 	"github.com/bmeg/golib"
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/transform"
 )
 
@@ -20,7 +20,7 @@ type JSONLoadStep struct {
 	SkipIfMissing bool           `json:"skipIfMissing" jsonschema_description:"Skip without error if file does note exist"`
 }
 
-func (ml *JSONLoadStep) Run(task *pipeline.Task) error {
+func (ml *JSONLoadStep) Run(task *manager.Task) error {
 	log.Printf("Starting JSON Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
 	inputPath, err := task.Path(input)

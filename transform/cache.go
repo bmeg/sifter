@@ -5,16 +5,16 @@ import (
 	"log"
 	"sync"
 
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 
 	"github.com/cnf/structhash"
 )
 
-func (cs *CacheStep) Init(task *pipeline.Task) error {
+func (cs *CacheStep) Init(task *manager.Task) error {
 	return cs.Transform.Init(task)
 }
 
-func (cs *CacheStep) Start(in chan map[string]interface{}, task *pipeline.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
+func (cs *CacheStep) Start(in chan map[string]interface{}, task *manager.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 	log.Printf("Starting Cache: %s", task.Name)
 
 	ds, err := task.GetDataStore()

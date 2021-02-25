@@ -12,7 +12,7 @@ import (
 	"github.com/bmeg/golib"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 )
 
 type JSONFileLookupStep struct {
@@ -26,7 +26,7 @@ type JSONFileLookupStep struct {
 	table map[string][]byte //map[string]interface{}
 }
 
-func (jf *JSONFileLookupStep) Init(task *pipeline.Task) error {
+func (jf *JSONFileLookupStep) Init(task *manager.Task) error {
 	input, err := evaluate.ExpressionString(jf.Input, task.Inputs, nil)
 	inputPath, err := task.Path(input)
 	if err != nil {
@@ -67,7 +67,7 @@ func (jf *JSONFileLookupStep) Init(task *pipeline.Task) error {
 	return nil
 }
 
-func (jf *JSONFileLookupStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+func (jf *JSONFileLookupStep) Run(i map[string]interface{}, task *manager.Task) map[string]interface{} {
 	field, err := evaluate.ExpressionString(jf.Field, task.Inputs, i)
 	if err == nil {
 		if line, ok := jf.table[field]; ok {

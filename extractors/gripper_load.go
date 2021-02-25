@@ -9,7 +9,7 @@ import (
 	"github.com/bmeg/grip/gripper"
 	"github.com/bmeg/grip/util/rpc"
 
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/transform"
 )
 
@@ -19,7 +19,7 @@ type GripperLoadStep struct {
 	Transform  transform.Pipe `json:"transform" jsonschema_description:"The transform pipeline to run"`
 }
 
-func (ml *GripperLoadStep) Run(task *pipeline.Task) error {
+func (ml *GripperLoadStep) Run(task *manager.Task) error {
 	log.Printf("Starting GRIPPER Load")
 
 	rpcConf := rpc.ConfigWithDefaults(ml.Host)

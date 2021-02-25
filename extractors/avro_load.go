@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/transform"
 
 	"github.com/linkedin/goavro/v2"
@@ -19,7 +19,7 @@ type AvroLoadStep struct {
 	SkipIfMissing bool           `json:"skipIfMissing" jsonschema_description:"Skip without error if file does note exist"`
 }
 
-func (ml *AvroLoadStep) Run(task *pipeline.Task) error {
+func (ml *AvroLoadStep) Run(task *manager.Task) error {
 	log.Printf("Starting Avro Load")
 
 	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)

@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 )
 
 type FileGlobStep struct {
@@ -16,7 +16,7 @@ type FileGlobStep struct {
 	Steps     []Extractor `json:"steps" jsonschema_description:"Extraction pipeline to run"`
 }
 
-func (fs *FileGlobStep) Run(task *pipeline.Task) error {
+func (fs *FileGlobStep) Run(task *manager.Task) error {
 
 	log.Printf("FileGlob")
 	for _, input := range fs.Files {

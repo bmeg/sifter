@@ -3,7 +3,7 @@ package extractors
 import (
 	"log"
 
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 )
 
 type Extractor struct {
@@ -21,7 +21,7 @@ type Extractor struct {
 	AvroLoad      *AvroLoadStep      `json:"avroLoad" jsonschema_description:"Load data from avro file"`
 }
 
-func (step *Extractor) Run(run *pipeline.Runtime, playBookPath string, inputs map[string]interface{}) error {
+func (step *Extractor) Run(run *manager.Runtime, playBookPath string, inputs map[string]interface{}) error {
 
 	if step.TransposeFile != nil {
 		task := run.NewTask(playBookPath, inputs)

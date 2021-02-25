@@ -9,6 +9,7 @@ import (
 	"github.com/bmeg/sifter/datastore"
 	"github.com/bmeg/sifter/loader"
 	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/playbook"
 
 	"github.com/spf13/cobra"
 )
@@ -60,7 +61,7 @@ var Cmd = &cobra.Command{
 		inputs := map[string]interface{}{}
 		if len(args) > 1 {
 			dataFile := args[1]
-			if err := manager.ParseDataFile(dataFile, &inputs); err != nil {
+			if err := playbook.ParseDataFile(dataFile, &inputs); err != nil {
 				log.Printf("%s", err)
 				return err
 			}

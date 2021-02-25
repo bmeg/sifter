@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 	shellquote "github.com/kballard/go-shellquote"
 )
 
@@ -22,7 +22,7 @@ type ScriptStep struct {
 	WorkDir     string   `json:"workdir"`
 }
 
-func (ss *ScriptStep) Run(task *pipeline.Task) error {
+func (ss *ScriptStep) Run(task *manager.Task) error {
 
 	var baseCommand []string
 

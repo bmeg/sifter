@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 )
 
 type FilterStep struct {
@@ -19,7 +19,7 @@ type FilterStep struct {
 	proc   evaluate.Processor
 }
 
-func (fs *FilterStep) Init(task *pipeline.Task) {
+func (fs *FilterStep) Init(task *manager.Task) {
 	if fs.Python != "" && fs.Method != "" {
 		log.Printf("Starting Filter Map: %s", fs.Python)
 		e := evaluate.GetEngine(DefaultEngine, task.Workdir)
@@ -32,7 +32,7 @@ func (fs *FilterStep) Init(task *pipeline.Task) {
 	fs.Steps.Init(task)
 }
 
-func (fs FilterStep) Start(in chan map[string]interface{}, task *pipeline.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
+func (fs FilterStep) Start(in chan map[string]interface{}, task *manager.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 	out := make(chan map[string]interface{}, 10)
 	fs.inChan = make(chan map[string]interface{}, 100)
 	tout, _ := fs.Steps.Start(fs.inChan, task.Child("filter"), wg)
@@ -54,7 +54,7 @@ func (fs FilterStep) Start(in chan map[string]interface{}, task *pipeline.Task, 
 	return out, nil
 }
 
-func (fs FilterStep) run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+func (fs FilterStep) run(i map[string]interface{}, task *manager.Task) map[string]interface{} {
 	if fs.Python != "" && fs.Method != "" {
 		out, err := fs.proc.EvaluateBool(i)
 		if err != nil {

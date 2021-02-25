@@ -31,7 +31,7 @@ func RemapGraph(config *graphedit.Config, src, dst string) error {
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
-	Use:   "graph-fix",
+	Use:   "graph-fix <fix plan> <in dir> <out dir>",
 	Short: "Fix Graph by remapping edges",
 	Args:  cobra.ExactArgs(3),
 	RunE: func(cmd *cobra.Command, args []string) error {

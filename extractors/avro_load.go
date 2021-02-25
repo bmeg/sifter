@@ -23,7 +23,7 @@ func (ml *AvroLoadStep) Run(task *manager.Task) error {
 	log.Printf("Starting Avro Load")
 
 	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
-	inputPath, err := task.Path(input)
+	inputPath, err := task.AbsPath(input)
 
 	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
 		if ml.SkipIfMissing {

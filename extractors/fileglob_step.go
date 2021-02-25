@@ -26,7 +26,7 @@ func (fs *FileGlobStep) Run(task *manager.Task) error {
 		}
 		var globPath string
 		if fs.Dir == "" {
-			globPath, err = task.Path(input)
+			globPath, err = task.AbsPath(input)
 		} else {
 			dir, err := evaluate.ExpressionString(fs.Dir, task.Inputs, nil)
 			if err == nil {

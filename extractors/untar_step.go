@@ -23,7 +23,7 @@ func (us *UntarStep) Run(task *manager.Task) error {
 		return err
 	}
 	log.Printf("Reading %s", input)
-	filePath, err := task.Path(input)
+	filePath, err := task.AbsPath(input)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (us *UntarStep) Run(task *manager.Task) error {
 			return err
 		}
 		task.Printf("File: %s\n", hdr.Name)
-		outPath, err := task.Path(hdr.Name)
+		outPath, err := task.AbsPath(hdr.Name)
 		if err != nil {
 			return err
 		}

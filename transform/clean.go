@@ -21,7 +21,7 @@ func (fs CleanStep) has(name string) bool {
 	return false
 }
 
-func (fs CleanStep) Start(in chan map[string]interface{}, task *manager.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
+func (fs CleanStep) Start(in chan map[string]interface{}, task manager.RuntimeTask, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 	out := make(chan map[string]interface{}, 10)
 
 	go func() {

@@ -159,8 +159,8 @@ func (ml *TransposeFileStep) Run(task *manager.Task) error {
 	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
 	output, err := evaluate.ExpressionString(ml.Output, task.Inputs, nil)
 
-	inputPath, err := task.Path(input)
-	outputPath, err := task.Path(output)
+	inputPath, err := task.AbsPath(input)
+	outputPath, err := task.AbsPath(output)
 
 	cr := csvReader{inputPath, ml.LineSkip}
 	ohd, err := os.Create(outputPath)

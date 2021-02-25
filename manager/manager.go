@@ -18,9 +18,9 @@ type Manager struct {
 }
 
 type Config struct {
-	Loader       loader.Loader
-	WorkDir      string
-	DataStore    *datastore.Config
+	Loader    loader.Loader
+	WorkDir   string
+	DataStore *datastore.Config
 }
 
 func Init(config Config) (*Manager, error) {

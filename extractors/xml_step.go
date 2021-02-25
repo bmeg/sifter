@@ -102,7 +102,7 @@ func xmlStream(file io.Reader, out chan map[string]interface{}) {
 func (ml *XMLLoadStep) Run(task *manager.Task) error {
 	log.Printf("Starting XML Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
-	inputPath, err := task.Path(input)
+	inputPath, err := task.AbsPath(input)
 	if err != nil {
 		return err
 	}

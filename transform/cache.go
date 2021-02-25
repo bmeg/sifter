@@ -10,12 +10,12 @@ import (
 	"github.com/cnf/structhash"
 )
 
-func (cs *CacheStep) Init(task *manager.Task) error {
+func (cs *CacheStep) Init(task manager.RuntimeTask) error {
 	return cs.Transform.Init(task)
 }
 
-func (cs *CacheStep) Start(in chan map[string]interface{}, task *manager.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
-	log.Printf("Starting Cache: %s", task.Name)
+func (cs *CacheStep) Start(in chan map[string]interface{}, task manager.RuntimeTask, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
+	log.Printf("Starting Cache: %s", task.GetName())
 
 	ds, err := task.GetDataStore()
 	if err != nil {
@@ -34,8 +34,8 @@ func (cs *CacheStep) Start(in chan map[string]interface{}, task *manager.Task, w
 		for i := range in {
 			hash, err := structhash.Hash(i, 1)
 			if err == nil {
-				key := fmt.Sprintf("%s.%s", task.Name, hash)
-				log.Printf("Cache Key: %s.%s", task.Name, hash)
+				key := fmt.Sprintf("%s.%s", task.GetName(), hash)
+				log.Printf("Cache Key: %s.%s", task.GetName(), hash)
 				if ds.HasRecordStream(key) {
 					log.Printf("Cache Hit")
 					for j := range ds.GetRecordStream(key) {

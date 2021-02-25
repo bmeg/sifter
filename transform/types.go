@@ -8,7 +8,7 @@ import (
 
 type FieldTypeStep map[string]string
 
-func (fs FieldTypeStep) Run(i map[string]interface{}, task *manager.Task) map[string]interface{} {
+func (fs FieldTypeStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
 	o := map[string]interface{}{}
 	for x, y := range i {
 		o[x] = y

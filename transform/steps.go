@@ -81,7 +81,7 @@ type Step struct {
 
 type Pipe []Step
 
-func (fm FieldMapStep) Run(i map[string]interface{}, task *manager.Task) map[string]interface{} {
+func (fm FieldMapStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
 	o := map[string]interface{}{}
 	for x, y := range i {
 		o[x] = y
@@ -113,10 +113,10 @@ func contains(s []string, q string) bool {
 	return false
 }
 
-func (re RegexReplaceStep) Run(i map[string]interface{}, task *manager.Task) map[string]interface{} {
-	col, _ := evaluate.ExpressionString(re.Column, task.Inputs, i)
-	replace, _ := evaluate.ExpressionString(re.Replace, task.Inputs, i)
-	dst, _ := evaluate.ExpressionString(re.Dest, task.Inputs, i)
+func (re RegexReplaceStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
+	col, _ := evaluate.ExpressionString(re.Column, task.GetInputs(), i)
+	replace, _ := evaluate.ExpressionString(re.Replace, task.GetInputs(), i)
+	dst, _ := evaluate.ExpressionString(re.Dest, task.GetInputs(), i)
 
 	o := re.reg.ReplaceAllString(col, replace)
 	z := map[string]interface{}{}
@@ -127,14 +127,14 @@ func (re RegexReplaceStep) Run(i map[string]interface{}, task *manager.Task) map
 	return z
 }
 
-func (al AlleleIDStep) Run(i map[string]interface{}, task *manager.Task) map[string]interface{} {
+func (al AlleleIDStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
 
-	genome, _ := evaluate.ExpressionString(al.Genome, task.Inputs, i)
-	chromosome, _ := evaluate.ExpressionString(al.Chromosome, task.Inputs, i)
-	start, _ := evaluate.ExpressionString(al.Start, task.Inputs, i)
-	end, _ := evaluate.ExpressionString(al.End, task.Inputs, i)
-	ref, _ := evaluate.ExpressionString(al.ReferenceBases, task.Inputs, i)
-	alt, _ := evaluate.ExpressionString(al.AlternateBases, task.Inputs, i)
+	genome, _ := evaluate.ExpressionString(al.Genome, task.GetInputs(), i)
+	chromosome, _ := evaluate.ExpressionString(al.Chromosome, task.GetInputs(), i)
+	start, _ := evaluate.ExpressionString(al.Start, task.GetInputs(), i)
+	end, _ := evaluate.ExpressionString(al.End, task.GetInputs(), i)
+	ref, _ := evaluate.ExpressionString(al.ReferenceBases, task.GetInputs(), i)
+	alt, _ := evaluate.ExpressionString(al.AlternateBases, task.GetInputs(), i)
 
 	id := fmt.Sprintf("%s:%s:%s:%s:%s:%s",
 		genome, chromosome,
@@ -154,20 +154,20 @@ func (al AlleleIDStep) Run(i map[string]interface{}, task *manager.Task) map[str
 	return o
 }
 
-func (db DebugStep) Run(i map[string]interface{}, task *manager.Task) map[string]interface{} {
+func (db DebugStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
 	s, _ := json.Marshal(i)
 	log.Printf("DebugData %s: %s", db.Label, s)
 	return i
 }
 
-func (ts Step) Init(task *manager.Task) error {
+func (ts Step) Init(task manager.RuntimeTask) error {
 	log.Printf("Doing Step Init")
 	if ts.Filter != nil {
 		ts.Filter.Init(task)
 	} else if ts.FieldProcess != nil {
 		ts.FieldProcess.Init(task)
 	} else if ts.RegexReplace != nil {
-		re, _ := evaluate.ExpressionString(ts.RegexReplace.Regex, task.Inputs, nil)
+		re, _ := evaluate.ExpressionString(ts.RegexReplace.Regex, task.GetInputs(), nil)
 		ts.RegexReplace.reg, _ = regexp.Compile(re)
 	} else if ts.Map != nil {
 		log.Printf("About to init map")
@@ -227,7 +227,7 @@ func (ts Step) Close() {
 }
 
 func (ts Step) Start(in chan map[string]interface{},
-	task *manager.Task, wg *sync.WaitGroup) chan map[string]interface{} {
+	task manager.RuntimeTask, wg *sync.WaitGroup) chan map[string]interface{} {
 
 	out := make(chan map[string]interface{}, PipeSize)
 	wg.Add(1)
@@ -337,7 +337,7 @@ func (ts Step) Start(in chan map[string]interface{},
 	return out
 }
 
-func (tp Pipe) Init(task *manager.Task) error {
+func (tp Pipe) Init(task manager.RuntimeTask) error {
 	log.Printf("Transform Pipe Init")
 	for _, s := range tp {
 		if err := s.Init(task); err != nil {
@@ -354,7 +354,7 @@ func (tp Pipe) Close() {
 }
 
 func (tp Pipe) Start(in chan map[string]interface{},
-	task *manager.Task,
+	task manager.RuntimeTask,
 	wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 
 	log.Printf("Starting Transform Pipe")

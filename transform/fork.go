@@ -10,14 +10,14 @@ type ForkStep struct {
 	Transform []Pipe `json:"transform"`
 }
 
-func (fs *ForkStep) Init(task *manager.Task) error {
+func (fs *ForkStep) Init(task manager.RuntimeTask) error {
 	for _, t := range fs.Transform {
 		t.Init(task)
 	}
 	return nil
 }
 
-func (fs *ForkStep) Start(in chan map[string]interface{}, task *manager.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
+func (fs *ForkStep) Start(in chan map[string]interface{}, task manager.RuntimeTask, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 
 	out := make(chan map[string]interface{}, 10)
 

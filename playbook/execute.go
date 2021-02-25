@@ -9,8 +9,8 @@ import (
 
 	"path/filepath"
 
-	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/schema"
 )
 

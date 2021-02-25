@@ -68,7 +68,7 @@ func (ss *ScriptStep) Run(task *manager.Task) error {
 		cmd := exec.Command("docker", command...)
 		cmd.Stderr = os.Stderr
 		if ss.Stdout != "" {
-			p, _ := task.Path(ss.Stdout)
+			p, _ := task.AbsPath(ss.Stdout)
 			outfile, _ := os.Create(p)
 			cmd.Stdout = outfile
 			defer outfile.Close()
@@ -92,7 +92,7 @@ func (ss *ScriptStep) Run(task *manager.Task) error {
 	}
 	cmd.Stderr = os.Stderr
 	if ss.Stdout != "" {
-		p, _ := task.Path(ss.Stdout)
+		p, _ := task.AbsPath(ss.Stdout)
 		outfile, _ := os.Create(p)
 		cmd.Stdout = outfile
 		defer outfile.Close()

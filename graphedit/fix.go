@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/ghodss/yaml"
 
@@ -49,7 +50,7 @@ func (r *Rule) FixVertex(v *gripql.Vertex, out loader.GraphEmitter) {
 	out.EmitVertex(v)
 }
 
-func (r *Rule) FixEdge(e *gripql.Edge, out loader.GraphEmitter) {
+func (r *Rule) FixEdge(e *gripql.Edge, out loader.GraphEmitter, transformInput chan map[string]interface{}) {
 	if r.toMapping != nil {
 		toID := e.To
 		if len(r.IgnorePrefix) > 0 {
@@ -66,7 +67,8 @@ func (r *Rule) FixEdge(e *gripql.Edge, out loader.GraphEmitter) {
 		} else if r.MissingPrefix != "" {
 			e.To = r.MissingPrefix + toID
 		}
-	} else if r.fromMapping != nil {
+	}
+	if r.fromMapping != nil {
 		fromID := e.From
 		if len(r.IgnorePrefix) > 0 {
 			fromID = e.From[len(r.IgnorePrefix):len(e.From)]
@@ -83,7 +85,18 @@ func (r *Rule) FixEdge(e *gripql.Edge, out loader.GraphEmitter) {
 			e.From = r.MissingPrefix + fromID
 		}
 	}
-	out.EmitEdge(e)
+	if len(r.Transform) > 0 {
+		d := map[string]interface{}{
+			"gid":   e.Gid,
+			"from":  e.From,
+			"to":    e.To,
+			"label": e.Label,
+			"data":  e.Data.AsMap(),
+		}
+		transformInput <- d
+	} else {
+		out.EmitEdge(e)
+	}
 }
 
 func LoadGraphEdit(path string) (*Config, error) {
@@ -99,10 +112,10 @@ func LoadGraphEdit(path string) (*Config, error) {
 		return nil, fmt.Errorf("failed to load graph mapping %s : %s", path, err)
 	}
 
-	for _, domain := range o.Rules {
-		if domain.ToIDMap != "" {
+	for _, rule := range o.Rules {
+		if rule.ToIDMap != "" {
 			idmap := map[string]string{}
-			path := filepath.Join(baseDir, domain.ToIDMap)
+			path := filepath.Join(baseDir, rule.ToIDMap)
 			df, err := os.Open(path)
 			if err != nil {
 				return nil, err
@@ -114,11 +127,10 @@ func LoadGraphEdit(path string) (*Config, error) {
 				tmp := strings.Split(scanner.Text(), "\t")
 				idmap[tmp[0]] = tmp[1]
 			}
-			domain.toMapping = idmap
-		}
-		if domain.FromIDMap != "" {
+			rule.toMapping = idmap
+		} else if rule.FromIDMap != "" {
 			idmap := map[string]string{}
-			path := filepath.Join(baseDir, domain.FromIDMap)
+			path := filepath.Join(baseDir, rule.FromIDMap)
 			df, err := os.Open(path)
 			if err != nil {
 				return nil, err
@@ -130,7 +142,9 @@ func LoadGraphEdit(path string) (*Config, error) {
 				tmp := strings.Split(scanner.Text(), "\t")
 				idmap[tmp[0]] = tmp[1]
 			}
-			domain.fromMapping = idmap
+			rule.fromMapping = idmap
+		} else if len(rule.Transform) > 0 {
+			rule.Transform.Init(NewTask("./", false, nil))
 		}
 	}
 	return &o, nil
@@ -184,18 +198,37 @@ func (conf *Config) EditEdgeFile(srcPath, dstPath string) error {
 		return err
 	}
 
+	ruleInputs := map[string]chan map[string]interface{}{}
+	wg := &sync.WaitGroup{}
+	for ruleName, rule := range conf.Rules {
+		if len(rule.Transform) > 0 {
+			in := make(chan map[string]interface{}, 10)
+			task := NewTask("./", false, out)
+			out, _ := rule.Transform.Start(in, task, wg)
+			go func() {
+				for range out {
+				}
+			}()
+			ruleInputs[ruleName] = in
+		} else {
+			ruleInputs[ruleName] = nil
+		}
+	}
+
 	for e := range stream {
 		ruleFound := false
 		for _, rm := range conf.RuleMap {
-			if rm.ToPrefix != "" && strings.HasPrefix(e.To, rm.ToPrefix) {
-				ruleFound = true
-				if r, ok := conf.Rules[rm.Rule]; ok {
-					r.FixEdge(e, out)
-				}
-			} else if rm.FromPrefix != "" && strings.HasPrefix(e.From, rm.FromPrefix) {
-				ruleFound = true
-				if r, ok := conf.Rules[rm.Rule]; ok {
-					r.FixEdge(e, out)
+			if !ruleFound {
+				if rm.ToPrefix != "" && strings.HasPrefix(e.To, rm.ToPrefix) {
+					ruleFound = true
+					if r, ok := conf.Rules[rm.Rule]; ok {
+						r.FixEdge(e, out, ruleInputs[rm.Rule])
+					}
+				} else if rm.FromPrefix != "" && strings.HasPrefix(e.From, rm.FromPrefix) {
+					ruleFound = true
+					if r, ok := conf.Rules[rm.Rule]; ok {
+						r.FixEdge(e, out, ruleInputs[rm.Rule])
+					}
 				}
 			}
 		}
@@ -203,6 +236,14 @@ func (conf *Config) EditEdgeFile(srcPath, dstPath string) error {
 			out.EmitEdge(e)
 		}
 	}
+
+	for _, c := range ruleInputs {
+		if c != nil {
+			close(c)
+		}
+	}
+	wg.Wait()
+
 	out.Close()
 	return nil
 }

@@ -39,6 +39,9 @@ func fileExists(filename string) bool {
 
 func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir string, outDir string) error {
 
+	workDir, _ = filepath.Abs(workDir)
+	outDir, _ = filepath.Abs(outDir)
+
 	for k, v := range pb.Inputs {
 		if _, ok := inputs[k]; !ok {
 			if v.Default != "" {
@@ -82,9 +85,6 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 		log.Printf("Loaded Schema: %s", t.GetClasses())
 		sc = &t
 	}
-
-	workDir, _ = filepath.Abs(workDir)
-	outDir, _ = filepath.Abs(outDir)
 
 	run, err := man.NewRuntime(pb.Name, workDir, sc)
 	for k, i := range pb.Inputs {

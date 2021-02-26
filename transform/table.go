@@ -10,7 +10,7 @@ import (
 	"github.com/bmeg/sifter/loader"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 )
 
 type TableWriteStep struct {
@@ -39,15 +39,15 @@ type TableLookupStep struct {
 	table   map[string][]string
 }
 
-func (tw *TableWriteStep) Init(task *pipeline.Task) {
+func (tw *TableWriteStep) Init(task manager.RuntimeTask) {
 	sep := '\t'
 	if tw.Sep != "" {
 		sep = rune(tw.Sep[0])
 	}
-	tw.emit = task.Runtime.EmitTable(tw.Output, tw.Columns, sep)
+	tw.emit = task.EmitTable(tw.Output, tw.Columns, sep)
 }
 
-func (tw *TableWriteStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+func (tw *TableWriteStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
 	if err := tw.emit.EmitRow(i); err != nil {
 		log.Printf("Row Error: %s", err)
 	}
@@ -59,10 +59,10 @@ func (tw *TableWriteStep) Close() {
 	tw.emit.Close()
 }
 
-func (tr *TableReplaceStep) Init(task *pipeline.Task) error {
+func (tr *TableReplaceStep) Init(task manager.RuntimeTask) error {
 	if tr.Input != "" {
-		input, err := evaluate.ExpressionString(tr.Input, task.Inputs, nil)
-		inputPath, err := task.Path(input)
+		input, err := evaluate.ExpressionString(tr.Input, task.GetInputs(), nil)
+		inputPath, err := task.AbsPath(input)
 		if err != nil {
 			return err
 		}
@@ -92,7 +92,7 @@ func (tr *TableReplaceStep) Init(task *pipeline.Task) error {
 	return nil
 }
 
-func (tr *TableReplaceStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+func (tr *TableReplaceStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
 
 	if _, ok := i[tr.Field]; ok {
 		out := map[string]interface{}{}
@@ -132,9 +132,9 @@ func (tr *TableReplaceStep) Run(i map[string]interface{}, task *pipeline.Task) m
 	return i
 }
 
-func (tr *TableLookupStep) Init(task *pipeline.Task) error {
-	input, err := evaluate.ExpressionString(tr.Input, task.Inputs, nil)
-	inputPath, err := task.Path(input)
+func (tr *TableLookupStep) Init(task manager.RuntimeTask) error {
+	input, err := evaluate.ExpressionString(tr.Input, task.GetInputs(), nil)
+	inputPath, err := task.AbsPath(input)
 	if err != nil {
 		return err
 	}
@@ -181,8 +181,8 @@ func (tr *TableLookupStep) Init(task *pipeline.Task) error {
 	return nil
 }
 
-func (tr *TableLookupStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-	field, err := evaluate.ExpressionString(tr.Field, task.Inputs, i)
+func (tr *TableLookupStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
+	field, err := evaluate.ExpressionString(tr.Field, task.GetInputs(), i)
 	if err == nil {
 		if pv, ok := tr.table[field]; ok {
 			for k, v := range tr.Project {

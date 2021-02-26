@@ -16,7 +16,7 @@ import (
 	"path/filepath"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 
 	"github.com/dgraph-io/badger/v2"
 )
@@ -154,13 +154,13 @@ func transposeOnDisk(workdir string, c csvReader, out *csv.Writer) error {
 	return nil
 }
 
-func (ml *TransposeFileStep) Run(task *pipeline.Task) error {
+func (ml *TransposeFileStep) Run(task *manager.Task) error {
 
 	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
 	output, err := evaluate.ExpressionString(ml.Output, task.Inputs, nil)
 
-	inputPath, err := task.Path(input)
-	outputPath, err := task.Path(output)
+	inputPath, err := task.AbsPath(input)
+	outputPath, err := task.AbsPath(output)
 
 	cr := csvReader{inputPath, ml.LineSkip}
 	ohd, err := os.Create(outputPath)

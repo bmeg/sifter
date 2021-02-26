@@ -1,4 +1,4 @@
-package pipeline
+package manager
 
 import (
 	"fmt"
@@ -21,6 +21,18 @@ import (
 	"github.com/bmeg/sifter/datastore"
 )
 
+type RuntimeTask interface {
+	loader.DataEmitter
+
+	GetInputs() map[string]interface{}
+	Child(name string) RuntimeTask
+	AbsPath(p string) (string, error)
+	TempDir() string
+	WorkDir() string
+	GetName() string
+	GetDataStore() (datastore.DataStore, error)
+}
+
 type Task struct {
 	Name            string
 	Runtime         *Runtime
@@ -31,12 +43,20 @@ type Task struct {
 	AllowLocalFiles bool
 }
 
-func (m *Task) Child(name string) *Task {
+func (m *Task) GetName() string {
+	return m.Name
+}
+
+func (m *Task) GetInputs() map[string]interface{} {
+	return m.Inputs
+}
+
+func (m *Task) Child(name string) RuntimeTask {
 	cname := fmt.Sprintf("%s.%s", m.Name, name)
 	return &Task{Name: cname, Runtime: m.Runtime, Workdir: m.Workdir, Inputs: m.Inputs, AllowLocalFiles: m.AllowLocalFiles, DataStore: m.DataStore}
 }
 
-func (m *Task) Path(p string) (string, error) {
+func (m *Task) AbsPath(p string) (string, error) {
 	if !strings.HasPrefix(p, "/") {
 		p = filepath.Join(m.Workdir, p)
 	}
@@ -57,16 +77,20 @@ func (m *Task) TempDir() string {
 	return name
 }
 
+func (m *Task) WorkDir() string {
+	return m.Workdir
+}
+
 func (m *Task) DownloadFile(src string, dest string) (string, error) {
 	if dest == "" {
 		var err error
-		dest, err = m.Path(path.Base(src))
+		dest, err = m.AbsPath(path.Base(src))
 		if err != nil {
 			return "", err
 		}
 	} else {
 		var err error
-		dest, err = m.Path(dest)
+		dest, err = m.AbsPath(dest)
 		if err != nil {
 			return "", err
 		}

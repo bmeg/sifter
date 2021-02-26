@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 )
 
 type ProjectStep struct {
@@ -12,9 +12,9 @@ type ProjectStep struct {
 	Rename  map[string]string      `json:"rename" jsonschema_description:"Rename field (no template engine)"`
 }
 
-func valueRender(v interface{}, task *pipeline.Task, row map[string]interface{}) (interface{}, error) {
+func valueRender(v interface{}, task manager.RuntimeTask, row map[string]interface{}) (interface{}, error) {
 	if vStr, ok := v.(string); ok {
-		return evaluate.ExpressionString(vStr, task.Inputs, row)
+		return evaluate.ExpressionString(vStr, task.GetInputs(), row)
 	} else if vMap, ok := v.(map[string]interface{}); ok {
 		o := map[string]interface{}{}
 		for key, val := range vMap {
@@ -31,7 +31,7 @@ func valueRender(v interface{}, task *pipeline.Task, row map[string]interface{})
 	} else if vArray, ok := v.([]string); ok {
 		o := []string{}
 		for _, vStr := range vArray {
-			j, _ := evaluate.ExpressionString(vStr, task.Inputs, row)
+			j, _ := evaluate.ExpressionString(vStr, task.GetInputs(), row)
 			o = append(o, j)
 		}
 		return o, nil
@@ -39,7 +39,7 @@ func valueRender(v interface{}, task *pipeline.Task, row map[string]interface{})
 	return v, nil
 }
 
-func (pr ProjectStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+func (pr ProjectStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
 
 	o := map[string]interface{}{}
 	for k, v := range i {

@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/transform"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -20,7 +20,7 @@ type SQLiteStep struct {
 	SkipIfMissing bool             `json:"skipIfMissing" jsonschema_description:"Option to skip without fail if input file does not exist"`
 }
 
-func processQuery(rows *sql.Rows, trans transform.Pipe, task *pipeline.Task) error {
+func processQuery(rows *sql.Rows, trans transform.Pipe, task manager.RuntimeTask) error {
 	wg := &sync.WaitGroup{}
 	procChan := make(chan map[string]interface{}, 100)
 	if err := trans.Init(task); err != nil {
@@ -60,11 +60,11 @@ func processQuery(rows *sql.Rows, trans transform.Pipe, task *pipeline.Task) err
 	return nil
 }
 
-func (ml *SQLiteStep) Run(task *pipeline.Task) error {
+func (ml *SQLiteStep) Run(task manager.RuntimeTask) error {
 
 	log.Printf("Starting SQLite Load")
-	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
-	inputPath, err := task.Path(input)
+	input, err := evaluate.ExpressionString(ml.Input, task.GetInputs(), nil)
+	inputPath, err := task.AbsPath(input)
 
 	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
 		if ml.SkipIfMissing {

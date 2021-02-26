@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 )
 
 type FieldProcessStep struct {
@@ -14,11 +14,11 @@ type FieldProcessStep struct {
 	Mapping map[string]string `json:"mapping"`
 }
 
-func (fs *FieldProcessStep) Init(task *pipeline.Task) {
+func (fs *FieldProcessStep) Init(task manager.RuntimeTask) {
 	fs.Steps.Init(task)
 }
 
-func (fs FieldProcessStep) Start(in chan map[string]interface{}, task *pipeline.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
+func (fs FieldProcessStep) Start(in chan map[string]interface{}, task manager.RuntimeTask, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 	inChan := make(chan map[string]interface{}, 100)
 	tout, _ := fs.Steps.Start(inChan, task.Child("fieldProcess"), wg)
 	out := make(chan map[string]interface{}, 10)
@@ -37,7 +37,7 @@ func (fs FieldProcessStep) Start(in chan map[string]interface{}, task *pipeline.
 								r[k] = v
 							}
 							for k, v := range fs.Mapping {
-								val, _ := evaluate.ExpressionString(v, task.Inputs, i)
+								val, _ := evaluate.ExpressionString(v, task.GetInputs(), i)
 								r[k] = val
 							}
 							inChan <- r

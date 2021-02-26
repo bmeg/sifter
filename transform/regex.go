@@ -4,7 +4,7 @@ import (
 	"regexp"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 )
 
 type RegexReplaceStep struct {
@@ -15,10 +15,10 @@ type RegexReplaceStep struct {
 	reg     *regexp.Regexp
 }
 
-func (re RegexReplaceStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
-	col, _ := evaluate.ExpressionString(re.Column, task.Inputs, i)
-	replace, _ := evaluate.ExpressionString(re.Replace, task.Inputs, i)
-	dst, _ := evaluate.ExpressionString(re.Dest, task.Inputs, i)
+func (re RegexReplaceStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
+	col, _ := evaluate.ExpressionString(re.Column, task.GetInputs(), i)
+	replace, _ := evaluate.ExpressionString(re.Replace, task.GetInputs(), i)
+	dst, _ := evaluate.ExpressionString(re.Dest, task.GetInputs(), i)
 
 	o := re.reg.ReplaceAllString(col, replace)
 	z := map[string]interface{}{}

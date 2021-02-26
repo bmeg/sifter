@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/bmeg/sifter/loader"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/transform"
 )
 
@@ -56,7 +56,7 @@ func TestPipeline(t *testing.T) {
 
 	dem := &DebugEmitter{}
 
-	run := pipeline.NewRuntime(dem, "./", "test", nil)
+	run := manager.NewRuntime(dem, "./", "test", nil)
 
 	inputs := map[string]interface{}{}
 	task := run.NewTask("./", inputs)

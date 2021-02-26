@@ -176,3 +176,7 @@ func (m *Task) Printf(s string, x ...interface{}) {
 func (m *Task) GetDataStore() (datastore.DataStore, error) {
 	return m.DataStore, nil //DEBUG: fix this
 }
+
+func (m *Task) Close() {
+	m.Runtime.output.Close()
+}

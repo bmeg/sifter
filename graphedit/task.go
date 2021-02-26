@@ -118,3 +118,5 @@ func (m *FixTask) EmitObject(prefix string, objClass string, e map[string]interf
 func (m *FixTask) EmitTable(prefix string, columns []string, sep rune) loader.TableEmitter {
 	return nil
 }
+
+func (m *FixTask) Close() {}

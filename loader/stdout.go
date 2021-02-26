@@ -28,6 +28,8 @@ type StdoutEmitter struct {
 	schemas *schema.Schemas
 }
 
+func (s StdoutEmitter) Close() {}
+
 func (s StdoutEmitter) EmitVertex(v *gripql.Vertex) error {
 	o, _ := s.jm.MarshalToString(v)
 	fmt.Printf("%s\n", o)

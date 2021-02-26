@@ -67,6 +67,10 @@ func (dg *DataGraphEmitter) Emit(name string, e map[string]interface{}) error {
 	return nil
 }
 
+func (dg *DataGraphEmitter) Close() {
+
+}
+
 func (dg *DataGraphEmitter) EmitObject(prefix string, objClass string, e map[string]interface{}) error {
 	return nil
 }

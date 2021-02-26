@@ -106,6 +106,10 @@ func (s *DirLoader) Close() {
 	for _, v := range s.dout {
 		v.Close()
 	}
+	s.vout = map[string]io.WriteCloser{}
+	s.eout = map[string]io.WriteCloser{}
+	s.oout = map[string]io.WriteCloser{}
+	s.dout = map[string]io.WriteCloser{}
 }
 
 func (s *DirDataLoader) Emit(name string, v map[string]interface{}) error {
@@ -124,6 +128,10 @@ func (s *DirDataLoader) Emit(name string, v map[string]interface{}) error {
 	f.Write([]byte(o))
 	f.Write([]byte("\n"))
 	return nil
+}
+
+func (s *DirDataLoader) Close() {
+	s.dl.Close()
 }
 
 func (s *DirDataLoader) EmitObject(prefix string, objClass string, i map[string]interface{}) error {

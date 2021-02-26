@@ -30,6 +30,17 @@ func (fs FieldTypeStep) Run(i map[string]interface{}, task manager.RuntimeTask) 
 					}
 				}
 			}
+		} else if fType == "list" {
+			if val, ok := o[field]; ok {
+				switch val.(type) {
+				case []string:
+				case []interface{}:
+				case []float64:
+				case []int:
+				default:
+					o[field] = []interface{}{val}
+				}
+			}
 		}
 	}
 	return o

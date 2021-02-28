@@ -21,6 +21,8 @@ type Mapping struct {
 	Schema  string             `json:"schema" jsonschema_description:"Name of directory with library of Gen3/JSON Schema files"`
 	Rules   map[string]MapRule `json:"rules"`
 	RuleMap []RuleMapping      `json:"ruleMap"`
+
+	schemas schema.Schemas
 }
 
 type RuleMapping struct {
@@ -32,7 +34,6 @@ type EdgeRule struct {
 	PrefixFilter bool    `json:"prefixFilter"`
 	BlankFilter  bool    `json:"blankFilter"`
 	ToPrefix     string  `json:"toPrefix"`
-	FromPrefix   string  `json:"fromPrefix"`
 	Sep          *string `json:"sep"`
 	IDTemplate   string  `json:"idTemplate"`
 }
@@ -44,8 +45,7 @@ type MapRule struct {
 	IDField    string               `json:"idField"`
 	FilePrefix string               `json:"filePrefix"`
 	Sep        *string              `json:"sep"`
-	OutEdges   map[string]*EdgeRule `json:"outEdges"`
-	InEdges    map[string]*EdgeRule `json:"inEdges"`
+	Fields     map[string]*EdgeRule `json:"fields"`
 }
 
 func LoadMapping(path string) (*Mapping, error) {
@@ -61,7 +61,8 @@ func LoadMapping(path string) (*Mapping, error) {
 	dirPath := filepath.Dir(absPath)
 	schemaPath := filepath.Join(dirPath, o.Schema)
 	o.Schema = schemaPath
-	return &o, nil
+	o.schemas, err = schema.Load(schemaPath)
+	return &o, err
 }
 
 func (m *Mapping) GetVertexPrefixes() []string {
@@ -77,13 +78,7 @@ func (m *Mapping) GetVertexPrefixes() []string {
 func (m *Mapping) GetEdgeEndPrefixes() [][]string {
 	out := [][]string{}
 	for _, d := range m.Rules {
-		for _, e := range d.InEdges {
-			if e.FromPrefix != "" {
-				out = append(out, []string{d.IDPrefix, e.FromPrefix})
-				out = append(out, []string{e.FromPrefix, d.IDPrefix})
-			}
-		}
-		for _, e := range d.OutEdges {
+		for _, e := range d.Fields {
 			if e.ToPrefix != "" {
 				out = append(out, []string{d.IDPrefix, e.ToPrefix})
 				out = append(out, []string{e.ToPrefix, d.IDPrefix})
@@ -193,7 +188,7 @@ func (m *Mapping) Process(path string, in chan map[string]interface{}, sch schem
 					var edge *gripql.Edge
 					if j.OutEdge != nil {
 						edge = j.OutEdge
-						if er, ok := rule.OutEdges[edge.Label]; ok {
+						if er, ok := rule.Fields[j.Field]; ok {
 							var err error
 							if er.BlankFilter && edge.To == "" {
 								edge = nil
@@ -210,11 +205,11 @@ func (m *Mapping) Process(path string, in chan map[string]interface{}, sch schem
 					}
 					if j.InEdge != nil {
 						edge = j.InEdge
-						if er, ok := rule.InEdges[edge.Label]; ok {
+						if er, ok := rule.Fields[j.Field]; ok {
 							var err error
 							if er.BlankFilter && edge.From == "" {
 								edge = nil
-							} else if edge.From, err = prefixAdjust(edge.From, er.FromPrefix, er.Sep, er.PrefixFilter); err != nil {
+							} else if edge.From, err = prefixAdjust(edge.From, er.ToPrefix, er.Sep, er.PrefixFilter); err != nil {
 								edge = nil
 							}
 							if edge != nil && er.IDTemplate != "" {
@@ -223,7 +218,6 @@ func (m *Mapping) Process(path string, in chan map[string]interface{}, sch schem
 									edge.Gid = val
 								}
 							}
-
 						}
 					}
 					if edge != nil {

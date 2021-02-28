@@ -14,6 +14,7 @@ type GraphElement struct {
 	Vertex  *gripql.Vertex
 	InEdge  *gripql.Edge
 	OutEdge *gripql.Edge
+	Field   string
 }
 
 func (s Schemas) Generate(classID string, data map[string]interface{}) ([]GraphElement, error) {
@@ -118,10 +119,10 @@ func (l Link) Generate(gid string, data map[string]interface{}) ([]GraphElement,
 	*/
 	for _, d := range dst {
 		e := gripql.Edge{From: gid, To: d, Label: l.Label}
-		out = append(out, GraphElement{OutEdge: &e})
+		out = append(out, GraphElement{OutEdge: &e, Field: l.Name})
 		if l.Backref != "" {
 			e := gripql.Edge{To: gid, From: d, Label: l.Backref}
-			out = append(out, GraphElement{InEdge: &e})
+			out = append(out, GraphElement{InEdge: &e, Field: l.Name})
 		}
 	}
 	return out, nil

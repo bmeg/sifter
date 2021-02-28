@@ -135,6 +135,11 @@ type Schemas struct {
 	Classes map[string]Schema
 }
 
+func (s Schemas) Get(cls string) (Schema, bool) {
+	c, ok := s.Classes[cls]
+	return c, ok
+}
+
 func (s Schemas) GetClasses() []string {
 	out := []string{}
 	for k := range s.Classes {

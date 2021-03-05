@@ -50,7 +50,7 @@ func (s *DomainEmitter) EmitVertex(v *gripql.Vertex) error {
 	if s.filePrefix == "" {
 		prefix = vDomain + "." + v.Label
 	} else {
-		prefix = s.filePrefix + vDomain + "." + v.Label
+		prefix = s.filePrefix + "." + v.Label
 	}
 
 	f, ok := s.vout[prefix]

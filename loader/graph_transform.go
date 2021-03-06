@@ -24,12 +24,14 @@ func (dg *DataGraphEmitter) Emit(name string, e map[string]interface{}) error {
 			if gid, ok := ogid.(string); ok {
 				if olabel, ok := e["_label"]; ok {
 					if label, ok := olabel.(string); ok {
+						data := map[string]interface{}{}
 						if odata, ok := e["_data"]; ok {
-							if data, ok := odata.(map[string]interface{}); ok {
-								d, _ := structpb.NewStruct(data)
-								dg.gr.EmitVertex(&gripql.Vertex{Gid: gid, Label: label, Data: d})
+							if idata, ok := odata.(map[string]interface{}); ok {
+								data = idata
 							}
 						}
+						d, _ := structpb.NewStruct(data)
+						dg.gr.EmitVertex(&gripql.Vertex{Gid: gid, Label: label, Data: d})
 					}
 				}
 			}

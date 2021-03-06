@@ -17,6 +17,7 @@ import (
 var workDir string = "./"
 var outDir string = "./out"
 var resume string = ""
+var graph  string = ""
 var toStdout bool
 var keep bool
 var cmdInputs map[string]string
@@ -35,6 +36,9 @@ var Cmd = &cobra.Command{
 		driver := fmt.Sprintf("dir://%s", outDir)
 		if toStdout {
 			driver = "stdout://"
+		}
+		if graph != ""  {
+			driver = graph
 		}
 
 		//TODO: This needs to be configurable
@@ -93,6 +97,7 @@ func init() {
 	flags.BoolVarP(&keep, "keep", "k", keep, "Keep Working Directory")
 	flags.StringVarP(&outDir, "out", "o", outDir, "Output Dir")
 	flags.StringVarP(&resume, "resume", "r", resume, "Resume Directory")
+	flags.StringVarP(&graph, "graph", "g", graph, "Output to graph")
 
 	flags.StringToStringVarP(&cmdInputs, "inputs", "i", cmdInputs, "Input variables")
 }

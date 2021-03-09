@@ -1,6 +1,7 @@
 package run
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -8,33 +9,41 @@ import (
 )
 
 type LoadProxyServer struct {
-	DestURL    string
+	port       int
+	destURL    string
 	waitScreen bool
+	count      uint64
 	group      *sync.WaitGroup
 	proxy      *httputil.ReverseProxy
 }
 
-func NewLoadProxyServer(proxyURL string) *LoadProxyServer {
+func NewLoadProxyServer(port int, proxyURL string) *LoadProxyServer {
 	rpURL, _ := url.Parse(proxyURL)
 
-	return &LoadProxyServer{DestURL: proxyURL, group: &sync.WaitGroup{}, waitScreen: true, proxy: httputil.NewSingleHostReverseProxy(rpURL)}
+	return &LoadProxyServer{port: port, destURL: proxyURL, group: &sync.WaitGroup{}, waitScreen: true, proxy: httputil.NewSingleHostReverseProxy(rpURL)}
 }
 
 func (lp *LoadProxyServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	if lp.waitScreen {
 		res.Header().Set("Content-Type", "text/html; charset=utf-8")
-		data := []byte(`<html><meta http-equiv="refresh" content="5" />Sifter Loading Data</html>`)
+		page := fmt.Sprintf(`<html><meta http-equiv="refresh" content="5" />Sifter Loading Data. %d elements loaded</html>`, lp.count)
+		data := []byte(page)
 		res.Write(data)
 	} else {
 		lp.proxy.ServeHTTP(res, req)
 	}
 }
 
+func (lp *LoadProxyServer) UpdateCount(count uint64) {
+	lp.count = count
+}
+
 func (lp *LoadProxyServer) Start() error {
 	// create a new handler
 	lp.group.Add(1)
 	go func() {
-		http.ListenAndServe(":9999", lp)
+		s := fmt.Sprintf(":%d", lp.port)
+		http.ListenAndServe(s, lp)
 		lp.group.Done()
 	}()
 	return nil

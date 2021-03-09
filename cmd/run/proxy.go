@@ -26,7 +26,7 @@ func NewLoadProxyServer(port int, proxyURL string) *LoadProxyServer {
 func (lp *LoadProxyServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	if lp.waitScreen {
 		res.Header().Set("Content-Type", "text/html; charset=utf-8")
-		page := fmt.Sprintf(`<html><meta http-equiv="refresh" content="5" />Sifter Loading Data. %d elements loaded</html>`, lp.count)
+		page := fmt.Sprintf(`<html><meta http-equiv="refresh" content="5" /><div style="height: 100%%; margin: auto; text-align: center;"><div>Sifter Loading Data</div><div>%d elements loaded</div></div></html>`, lp.count)
 		data := []byte(page)
 		res.Write(data)
 	} else {

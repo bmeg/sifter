@@ -17,10 +17,13 @@ import (
 var workDir string = "./"
 var outDir string = "./out"
 var resume string = ""
-var graph  string = ""
+var graph string = ""
 var toStdout bool
 var keep bool
 var cmdInputs map[string]string
+
+var proxy = ""
+var port = 8888
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
@@ -28,6 +31,11 @@ var Cmd = &cobra.Command{
 	Short: "Run importer",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		var lps *LoadProxyServer
+		if proxy != "" {
+			lps = NewLoadProxyServer(port, proxy)
+			lps.Start()
+		}
 
 		if _, err := os.Stat(outDir); os.IsNotExist(err) {
 			os.MkdirAll(outDir, 0777)
@@ -37,7 +45,7 @@ var Cmd = &cobra.Command{
 		if toStdout {
 			driver = "stdout://"
 		}
-		if graph != ""  {
+		if graph != "" {
 			driver = graph
 		}
 
@@ -48,6 +56,9 @@ var Cmd = &cobra.Command{
 		if err != nil {
 			log.Printf("Error stating load manager: %s", err)
 			return err
+		}
+		if lps != nil {
+			ld = loader.NewLoadCounter(ld, 1000, func(i uint64) { lps.UpdateCount(i) })
 		}
 		defer ld.Close()
 
@@ -86,6 +97,9 @@ var Cmd = &cobra.Command{
 		if !keep {
 			os.RemoveAll(dir)
 		}
+		if lps != nil {
+			lps.StartProxy()
+		}
 		return nil
 	},
 }
@@ -99,5 +113,7 @@ func init() {
 	flags.StringVarP(&resume, "resume", "r", resume, "Resume Directory")
 	flags.StringVarP(&graph, "graph", "g", graph, "Output to graph")
 
+	flags.StringVar(&proxy, "proxy", proxy, "Proxy site")
+	flags.IntVar(&port, "port", port, "Proxy Port")
 	flags.StringToStringVarP(&cmdInputs, "inputs", "i", cmdInputs, "Input variables")
 }

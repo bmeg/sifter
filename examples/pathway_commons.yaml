@@ -29,7 +29,6 @@ steps:
                                   _label: "Protein"
                             - emit:
                                 name: vertex
-                            - debug: {}
               -
                 - emit:
                     name: edge

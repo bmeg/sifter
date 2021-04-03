@@ -21,6 +21,7 @@ type TableLoadStep struct {
 	RowSkip       int            `json:"rowSkip" jsonschema_description:"Number of header rows to skip"`
 	SkipIfMissing bool           `json:"skipIfMissing" jsonschema_description:"Skip without error if file missing"`
 	Columns       []string       `json:"columns" jsonschema_description:"Manually set names of columns"`
+	ExtraColumns  string         `json:"extraColumns" jsonschema_description:"Columns beyond originally declared columns will be placed in this array"`
 	Transform     transform.Pipe `json:"transform" jsonschema_description:"Transform pipelines"`
 	Sep           string         `json:"sep" jsonschema_description:"Separator \\t for TSVs or , for CSVs"`
 }
@@ -101,6 +102,11 @@ func (ml *TableLoadStep) Run(task *manager.Task) error {
 				if len(record) >= len(columns) {
 					for i, n := range columns {
 						o[n] = record[i]
+					}
+					if ml.ExtraColumns != "" {
+						if len(record) > len(columns) {
+							o[ml.ExtraColumns] = record[len(columns):len(record)]
+						}
 					}
 					procChan <- o
 				}

@@ -23,8 +23,8 @@ import (
 )
 
 type Config struct {
-	RuleMap []RuleMapping    `json:ruleMap`
-	Rules   map[string]*Rule `json:rules`
+	RuleMap []RuleMapping    `json:"ruleMap"`
+	Rules   map[string]*Rule `json:"rules"`
 }
 
 type RuleMapping struct {

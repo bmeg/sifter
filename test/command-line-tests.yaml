@@ -1,0 +1,6 @@
+
+- title: gene table
+  command: run examples/gene-table/gene-table.yaml -i geneTSV=resources/gene2ensembl.gz
+  outputs:
+    gene.table:
+      lineCount: 20

@@ -6,7 +6,7 @@ require (
 	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/biogo/hts v1.2.2
 	github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50
-	github.com/bmeg/grip v0.0.0-20210405233951-15c600e1453c
+	github.com/bmeg/grip v0.0.0-20210406002526-41080dd45d9a
 	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad
 	github.com/cnf/structhash v0.0.0-20180104161610-62a607eb0224
 	github.com/dgraph-io/badger/v2 v2.0.1
@@ -19,7 +19,7 @@ require (
 	github.com/jlaffaye/ftp v0.0.0-20200602180915-5563613968bf
 	github.com/jmoiron/sqlx v1.2.1-0.20190826204134-d7d95172beb5 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
-	github.com/klauspost/compress v1.10.5 // indirect
+	github.com/klauspost/compress v1.11.13 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/linkedin/goavro/v2 v2.10.0
 	github.com/mattn/go-sqlite3 v1.9.0
@@ -31,7 +31,6 @@ require (
 	google.golang.org/grpc v1.34.0
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
-	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
 
 go 1.15

@@ -4,3 +4,13 @@
   outputs:
     gene.table:
       lineCount: 20
+
+- title: gdc convert
+  command:  run examples/gdc/gdc-convert.yaml -i cases=resources/case.json
+  outputs:
+    GDCConvert.aliquot.json.gz:
+      lineCount: 146
+    GDCConvert.case.json.gz:
+      lineCount: 10
+    GDCConvert.sample.json.gz:
+      lineCount: 29

@@ -2,12 +2,14 @@ package test
 
 import (
 	"bytes"
+	"compress/gzip"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/ghodss/yaml"
@@ -74,8 +76,15 @@ func TestCommandLines(t *testing.T) {
 				if _, err := os.Stat(path); err == nil {
 					if chk.LineCount != 0 {
 						file, err := os.Open(path)
+						var reader io.Reader
+						if strings.HasSuffix(path, ".gz") {
+							reader, _ = gzip.NewReader(file)
+						} else {
+							reader = file
+						}
+						defer file.Close()
 						if err == nil {
-							count, _ := lineCounter(file)
+							count, _ := lineCounter(reader)
 							if count != chk.LineCount {
 								t.Errorf("Incorrect number of lines: %d != %d", count, chk.LineCount)
 							}
@@ -88,5 +97,6 @@ func TestCommandLines(t *testing.T) {
 				}
 			}
 		}
+		os.RemoveAll("./out")
 	}
 }

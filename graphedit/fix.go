@@ -235,7 +235,7 @@ func (conf *Config) EditEdgeFile(srcPath, dstPath string) error {
 						ruleFound = true
 						if r, ok := conf.Rules[rm.Rule]; ok {
 							r.FixEdge(e, out, ruleInputs[rm.Rule])
-						}	
+						}
 					}
 				}
 			}

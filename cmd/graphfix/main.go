@@ -13,6 +13,10 @@ func RemapGraph(config *graphedit.Config, src, dst string) error {
 
 	src, _ = filepath.Abs(src)
 	dst, _ = filepath.Abs(dst)
+	
+	if _, err := os.Stat(dst); os.IsNotExist(err) {
+		os.MkdirAll(dst, 0777)
+	}
 
 	err := filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if strings.HasSuffix(path, ".Vertex.json.gz") {

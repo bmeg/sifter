@@ -14,7 +14,7 @@ import (
 	"github.com/jlaffaye/ftp"
 )
 
-func DownloadFile(src string, dest string) (string, error) {
+func ToFile(src string, dest string) (string, error) {
 
 	var err error
 	dest, err = filepath.Abs(dest)

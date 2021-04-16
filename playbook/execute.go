@@ -97,7 +97,7 @@ func (pb *Playbook) Execute(man *manager.Manager, inputs map[string]interface{},
 					log.Printf("Found a URL to download: %s", path)
 					tmpTask := run.NewTask(pb.path, map[string]interface{}{})
 					dstPath, _ := tmpTask.AbsPath(filepath.Base(path))
-					newPath, err := download.DownloadFile(path, dstPath)
+					newPath, err := download.ToFile(path, dstPath)
 					if err != nil {
 						log.Printf("Download Error: %s", err)
 						return err
@@ -110,7 +110,7 @@ func (pb *Playbook) Execute(man *manager.Manager, inputs map[string]interface{},
 						inputs[k] = p
 					} else {
 						if i.Source != "" {
-							newPath, err := download.DownloadFile(i.Source, p)
+							newPath, err := download.ToFile(i.Source, p)
 							if err != nil {
 								log.Printf("Download Error: %s", err)
 								return err

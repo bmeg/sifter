@@ -14,6 +14,7 @@ type GraphElement struct {
 	Vertex  *gripql.Vertex
 	InEdge  *gripql.Edge
 	OutEdge *gripql.Edge
+	Field   string
 }
 
 func (s Schemas) Generate(classID string, data map[string]interface{}) ([]GraphElement, error) {
@@ -67,22 +68,50 @@ func (l Link) Generate(gid string, data map[string]interface{}) ([]GraphElement,
 		return out, nil
 	}
 	out := make([]GraphElement, 0, 1)
-	dst := []string{}
+
+	type dstData struct {
+		id   string
+		data map[string]interface{}
+	}
+
+	dst := []dstData{}
 	if v, ok := data[l.Name]; ok {
 		if vString, ok := v.(string); ok {
-			dst = []string{vString}
+			dst = append(dst, dstData{id: vString})
 		} else if vStringArray, ok := v.([]string); ok {
-			dst = vStringArray
+			for i := range vStringArray {
+				dst = append(dst, dstData{id: vStringArray[i]})
+			}
 		} else if vObjectArray, ok := v.([]interface{}); ok {
 			for _, x := range vObjectArray {
 				if y, ok := x.(string); ok {
-					dst = append(dst, y)
+					dst = append(dst, dstData{id: y})
+				} else if d, ok := x.(map[string]interface{}); ok {
+					//log.Printf("Found structure: %#v", d)
+					if l.TargetField != "" {
+						if t, ok := d[l.TargetField]; ok {
+							if tStr, ok := t.(string); ok {
+								td := map[string]interface{}{}
+								if l.Properties != nil {
+									for k := range l.Properties {
+										if v, ok := d[k]; ok {
+											td[k] = v
+										}
+									}
+								}
+								//log.Printf("Copy: %#v", td)
+								dst = append(dst, dstData{id: tStr, data: td})
+							}
+						}
+					}
+				} else {
+					log.Printf("Unknown list element")
 				}
 			}
 		} else if vObject, ok := v.(map[string]interface{}); ok {
 			if d, ok := vObject["submitter_id"]; ok { //BUG: this is hard coded to expect Gen3 behavior
 				if dStr, ok := d.(string); ok {
-					dst = append(dst, dStr)
+					dst = append(dst, dstData{id: dStr})
 				}
 			}
 		} else {
@@ -117,11 +146,15 @@ func (l Link) Generate(gid string, data map[string]interface{}) ([]GraphElement,
 	  }
 	*/
 	for _, d := range dst {
-		e := gripql.Edge{From: gid, To: d, Label: l.Label}
-		out = append(out, GraphElement{OutEdge: &e})
+		e := gripql.Edge{From: gid, To: d.id, Label: l.Label}
+		if d.data != nil {
+			ds, _ := structpb.NewStruct(d.data)
+			e.Data = ds
+		}
+		out = append(out, GraphElement{OutEdge: &e, Field: l.Name})
 		if l.Backref != "" {
-			e := gripql.Edge{To: gid, From: d, Label: l.Backref}
-			out = append(out, GraphElement{InEdge: &e})
+			e := gripql.Edge{To: gid, From: d.id, Label: l.Backref}
+			out = append(out, GraphElement{InEdge: &e, Field: l.Name})
 		}
 	}
 	return out, nil

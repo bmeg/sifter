@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 	"github.com/dgraph-io/badger/v2"
 )
 
@@ -16,7 +16,7 @@ type DistinctStep struct {
 	db    *badger.DB
 }
 
-func (ds *DistinctStep) Init(task *pipeline.Task) {
+func (ds *DistinctStep) Init(task manager.RuntimeTask) {
 	log.Printf("Starting Distinct: %s", ds.Field)
 	tdir := task.TempDir()
 	opts := badger.DefaultOptions(filepath.Join(tdir, "badger"))
@@ -29,7 +29,7 @@ func (ds *DistinctStep) Init(task *pipeline.Task) {
 	ds.Steps.Init(task)
 }
 
-func (ds *DistinctStep) Start(in chan map[string]interface{}, task *pipeline.Task, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
+func (ds *DistinctStep) Start(in chan map[string]interface{}, task manager.RuntimeTask, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 	out := make(chan map[string]interface{}, 10)
 
 	inChan := make(chan map[string]interface{}, 100)
@@ -47,7 +47,7 @@ func (ds *DistinctStep) Start(in chan map[string]interface{}, task *pipeline.Tas
 		ds.db.Update(func(txn *badger.Txn) error {
 			for i := range in {
 				out <- i
-				keyStr, err := evaluate.ExpressionString(ds.Field, task.Inputs, i)
+				keyStr, err := evaluate.ExpressionString(ds.Field, task.GetInputs(), i)
 				if err == nil {
 					key := []byte(keyStr)
 					_, err := txn.Get(key)

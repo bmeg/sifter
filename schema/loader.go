@@ -12,13 +12,15 @@ import (
 )
 
 type Link struct {
-	Name         string `json:"name"`
-	Backref      string `json:"backref,omitempty"`
-	Label        string `json:"label"`
-	TargetType   string `json:"target_type"`
-	Multiplicity string `json:"multiplicity"`
-	Required     bool   `json:"required"`
-	Subgroup     []Link `json:"subgroup"`
+	Name         string              `json:"name"`
+	Backref      string              `json:"backref,omitempty"`
+	Label        string              `json:"label"`
+	TargetType   string              `json:"target_type"`
+	Multiplicity string              `json:"multiplicity"`
+	Required     bool                `json:"required"`
+	Subgroup     []Link              `json:"subgroup"`
+	Properties   map[string]Property `json:"properties"`
+	TargetField  string              `json:"target_field"`
 }
 
 type Value struct {
@@ -133,6 +135,11 @@ func (w *TypeClass) UnmarshalJSON(data []byte) error {
 
 type Schemas struct {
 	Classes map[string]Schema
+}
+
+func (s Schemas) Get(cls string) (Schema, bool) {
+	c, ok := s.Classes[cls]
+	return c, ok
 }
 
 func (s Schemas) GetClasses() []string {

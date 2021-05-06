@@ -11,7 +11,7 @@ import (
 	"log"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 	"github.com/dgraph-io/badger/v2"
 )
 
@@ -21,9 +21,9 @@ type MapStep struct {
 	proc   evaluate.Processor
 }
 
-func (ms *MapStep) Init(task *pipeline.Task) {
+func (ms *MapStep) Init(task manager.RuntimeTask) {
 	log.Printf("Init Map: %s", ms.Python)
-	e := evaluate.GetEngine(DefaultEngine, task.Workdir)
+	e := evaluate.GetEngine(DefaultEngine, task.WorkDir())
 	c, err := e.Compile(ms.Python, ms.Method)
 	if err != nil {
 		log.Printf("Compile Error: %s", err)
@@ -31,7 +31,7 @@ func (ms *MapStep) Init(task *pipeline.Task) {
 	ms.proc = c
 }
 
-func (ms *MapStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+func (ms *MapStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
 	out, err := ms.proc.Evaluate(i)
 	if err != nil {
 		log.Printf("Map Step error: %s", err)
@@ -54,9 +54,9 @@ type ReduceStep struct {
 	batch    *badger.WriteBatch
 }
 
-func (ms *ReduceStep) Init(task *pipeline.Task) {
+func (ms *ReduceStep) Init(task manager.RuntimeTask) {
 	log.Printf("Starting Reduce: %s", ms.Python)
-	e := evaluate.GetEngine(DefaultEngine, task.Workdir)
+	e := evaluate.GetEngine(DefaultEngine, task.WorkDir())
 	c, err := e.Compile(ms.Python, ms.Method)
 	if err != nil {
 		log.Printf("%s", err)
@@ -79,10 +79,10 @@ func (ms *ReduceStep) Init(task *pipeline.Task) {
 	ms.batch = ms.db.NewWriteBatch()
 }
 
-func (ms *ReduceStep) Add(i map[string]interface{}, task *pipeline.Task) {
+func (ms *ReduceStep) Add(i map[string]interface{}, task manager.RuntimeTask) {
 	d, _ := json.Marshal(i)
 
-	dKey, _ := evaluate.ExpressionString(ms.Field, task.Inputs, i)
+	dKey, _ := evaluate.ExpressionString(ms.Field, task.GetInputs(), i)
 	dSize := uint64(len(d))
 	stat, _ := ms.dump.Stat()
 	dPos := uint64(stat.Size())

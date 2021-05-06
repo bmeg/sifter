@@ -11,6 +11,7 @@ import (
 	"github.com/bmeg/sifter/extractors"
 	"github.com/bmeg/sifter/loader"
 	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/playbook"
 )
 
 var extractMethod string = ""
@@ -71,9 +72,9 @@ var Cmd = &cobra.Command{
 						log.Fatal(err)
 						return err
 					}
-					pb := manager.Playbook{
+					pb := playbook.Playbook{
 						Name: fmt.Sprintf("%s:%s:%s", extractMethod, transformMethod, loadMethod),
-						Inputs: map[string]manager.Input{
+						Inputs: map[string]playbook.Input{
 							"input": {Type: "File"},
 						},
 						Steps: []extractors.Extractor{

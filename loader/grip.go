@@ -76,7 +76,7 @@ func NewGripLoader(host string, graph string) (*GripLoader, error) {
 }
 
 func (s *GripLoader) NewDataEmitter(sc *schema.Schemas) (DataEmitter, error) {
-	return nil, fmt.Errorf("GRIP data loader not implemented")
+	return GraphTransformer(s, sc), nil
 }
 
 func (s *GripLoader) NewGraphEmitter() (GraphEmitter, error) {

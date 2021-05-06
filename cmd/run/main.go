@@ -9,6 +9,7 @@ import (
 	"github.com/bmeg/sifter/datastore"
 	"github.com/bmeg/sifter/loader"
 	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/playbook"
 
 	"github.com/spf13/cobra"
 )
@@ -16,9 +17,13 @@ import (
 var workDir string = "./"
 var outDir string = "./out"
 var resume string = ""
+var graph string = ""
 var toStdout bool
 var keep bool
 var cmdInputs map[string]string
+
+var proxy = ""
+var port = 8888
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
@@ -26,6 +31,11 @@ var Cmd = &cobra.Command{
 	Short: "Run importer",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		var lps *LoadProxyServer
+		if proxy != "" {
+			lps = NewLoadProxyServer(port, proxy)
+			lps.Start()
+		}
 
 		if _, err := os.Stat(outDir); os.IsNotExist(err) {
 			os.MkdirAll(outDir, 0777)
@@ -35,6 +45,9 @@ var Cmd = &cobra.Command{
 		if toStdout {
 			driver = "stdout://"
 		}
+		if graph != "" {
+			driver = graph
+		}
 
 		//TODO: This needs to be configurable
 		dsConfig := datastore.Config{URL: "mongodb://localhost:27017", Database: "sifter", Collection: "cache"}
@@ -43,6 +56,9 @@ var Cmd = &cobra.Command{
 		if err != nil {
 			log.Printf("Error stating load manager: %s", err)
 			return err
+		}
+		if lps != nil {
+			ld = loader.NewLoadCounter(ld, 1000, func(i uint64) { lps.UpdateCount(i) })
 		}
 		defer ld.Close()
 
@@ -60,7 +76,7 @@ var Cmd = &cobra.Command{
 		inputs := map[string]interface{}{}
 		if len(args) > 1 {
 			dataFile := args[1]
-			if err := manager.ParseDataFile(dataFile, &inputs); err != nil {
+			if err := playbook.ParseDataFile(dataFile, &inputs); err != nil {
 				log.Printf("%s", err)
 				return err
 			}
@@ -81,6 +97,9 @@ var Cmd = &cobra.Command{
 		if !keep {
 			os.RemoveAll(dir)
 		}
+		if lps != nil {
+			lps.StartProxy()
+		}
 		return nil
 	},
 }
@@ -92,6 +111,9 @@ func init() {
 	flags.BoolVarP(&keep, "keep", "k", keep, "Keep Working Directory")
 	flags.StringVarP(&outDir, "out", "o", outDir, "Output Dir")
 	flags.StringVarP(&resume, "resume", "r", resume, "Resume Directory")
+	flags.StringVarP(&graph, "graph", "g", graph, "Output to graph")
 
+	flags.StringVar(&proxy, "proxy", proxy, "Proxy site")
+	flags.IntVar(&port, "port", port, "Proxy Port")
 	flags.StringToStringVarP(&cmdInputs, "inputs", "i", cmdInputs, "Input variables")
 }

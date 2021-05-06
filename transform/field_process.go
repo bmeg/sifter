@@ -9,10 +9,10 @@ import (
 )
 
 type FieldProcessStep struct {
-	Field   string            `json:"field"`
-	Steps   Pipe              `json:"steps"`
-	Mapping map[string]string `json:"mapping"`
-	ItemField string          `json:"itemField" jsonschema_description:"If processing an array of non-dict elements, create a dict as {itemField:element}"`
+	Field     string            `json:"field"`
+	Steps     Pipe              `json:"steps"`
+	Mapping   map[string]string `json:"mapping"`
+	ItemField string            `json:"itemField" jsonschema_description:"If processing an array of non-dict elements, create a dict as {itemField:element}"`
 }
 
 func (fs *FieldProcessStep) Init(task manager.RuntimeTask) {

@@ -105,7 +105,7 @@ func (ml *TableLoadStep) Run(task *manager.Task) error {
 					}
 					if ml.ExtraColumns != "" {
 						if len(record) > len(columns) {
-							o[ml.ExtraColumns] = record[len(columns):len(record)]
+							o[ml.ExtraColumns] = record[len(columns):]
 						}
 					}
 					procChan <- o

@@ -23,8 +23,8 @@ import (
 )
 
 type Config struct {
-	RuleMap []RuleMapping    `json:ruleMap`
-	Rules   map[string]*Rule `json:rules`
+	RuleMap []RuleMapping    `json:"ruleMap"`
+	Rules   map[string]*Rule `json:"rules"`
 }
 
 type RuleMapping struct {
@@ -228,6 +228,14 @@ func (conf *Config) EditEdgeFile(srcPath, dstPath string) error {
 					ruleFound = true
 					if r, ok := conf.Rules[rm.Rule]; ok {
 						r.FixEdge(e, out, ruleInputs[rm.Rule])
+					}
+				} else if rm.Path != "" {
+					if matched, _ := regexp.Match(rm.Path, []byte(srcPath)); matched {
+						log.Printf("File rule: %s", rm.Path)
+						ruleFound = true
+						if r, ok := conf.Rules[rm.Rule]; ok {
+							r.FixEdge(e, out, ruleInputs[rm.Rule])
+						}
 					}
 				}
 			}

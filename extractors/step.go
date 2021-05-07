@@ -8,7 +8,6 @@ import (
 
 type Extractor struct {
 	Description   string             `json:"description"  jsonschema_description:"Human Readable description of step"`
-	Download      *DownloadStep      `json:"download" jsonschema_description:"Download a File"`
 	Untar         *UntarStep         `json:"untar" jsonschema_description:"Untar a file"`
 	XMLLoad       *XMLLoadStep       `json:"xmlLoad"`
 	TransposeFile *TransposeFileStep `json:"transposeFile" jsonschema_description:"Take a matrix TSV and transpose it (row become columns)"`
@@ -32,22 +31,6 @@ func (step *Extractor) Run(run *manager.Runtime, playBookPath string, inputs map
 			return err
 		}
 		task.Close()
-		/*
-		  } else if step.ManifestLoad != nil {
-		    task := run.NewTask(inputs)
-		    log.Printf("Running ManifestLoad")
-		    if err := step.ManifestLoad.Run(task); err != nil {
-		      run.Printf("ManifestLoad Error: %s", err)
-		      return err
-		    } */
-	} else if step.Download != nil {
-		task := run.NewTask(playBookPath, inputs)
-		log.Printf("Running Download")
-		if err := step.Download.Run(task); err != nil {
-			run.Printf("Download Error: %s", err)
-			return err
-		}
-		task.Close()
 	} else if step.Untar != nil {
 		task := run.NewTask(playBookPath, inputs)
 		log.Printf("Running untar")
@@ -56,14 +39,6 @@ func (step *Extractor) Run(run *manager.Runtime, playBookPath string, inputs map
 			return err
 		}
 		task.Close()
-		/*
-		  } else if step.VCFLoad != nil {
-		    task := run.NewTask(inputs)
-		    log.Printf("Running VCFLoad")
-		    if err := step.VCFLoad.Run(task); err != nil {
-		      run.Printf("VCF Load Error: %s", err)
-		      return err
-		    } */
 	} else if step.TableLoad != nil {
 		task := run.NewTask(playBookPath, inputs)
 		log.Printf("Running TableLoad")

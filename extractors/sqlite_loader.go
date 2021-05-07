@@ -10,7 +10,7 @@ import (
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/transform"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3" // Adding sqlite3 to the SQL driver list
 )
 
 type SQLiteStep struct {

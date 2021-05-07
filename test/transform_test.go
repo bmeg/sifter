@@ -16,6 +16,8 @@ func (d *DebugEmitter) Emit(name string, e map[string]interface{}) error {
 	return nil
 }
 
+func (d *DebugEmitter) Close() {}
+
 func (d *DebugEmitter) EmitObject(prefix string, objClass string, e map[string]interface{}) error {
 	return nil
 }

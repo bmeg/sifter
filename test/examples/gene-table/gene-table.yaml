@@ -24,7 +24,7 @@ steps:
         - Ensembl_protein_identifier
       transform:
         - filter:
-            field: row.tax_id
+            field: "{{row.tax_id}}"
             match: "9606"
             steps:
               - tableWrite:

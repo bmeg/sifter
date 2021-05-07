@@ -20,13 +20,13 @@ tidy:
 
 # Run code style and other checks
 lint:
-	@golangci-lint run --disable-all -E gofmt
-	@golangci-lint run --disable-all -E goimports
-	@golangci-lint run --disable-all -E misspell
-	@golangci-lint run --disable-all -E typecheck
-	@golangci-lint run --disable-all -E golint
-	@golangci-lint run --disable-all -E gosimple
-	@golangci-lint run --disable-all -E govet
+	@golangci-lint run --timeout 2m --disable-all -E gofmt
+	@golangci-lint run --timeout 2m --disable-all -E goimports
+	@golangci-lint run --timeout 2m --disable-all -E misspell
+	@golangci-lint run --timeout 2m --disable-all -E typecheck
+	@golangci-lint run --timeout 2m --disable-all -E golint
+	@golangci-lint run --timeout 2m --disable-all -E gosimple
+	@golangci-lint run --timeout 2m --disable-all -E govet
 
 lint-depends:
 	@go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.35.2

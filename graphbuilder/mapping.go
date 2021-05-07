@@ -201,6 +201,8 @@ func (m *Mapping) Process(path string, in chan map[string]interface{}, sch schem
 									edge.Gid = val
 								}
 							}
+						} else {
+							log.Printf("Rule for %s field %s not found", rule.Class, j.Field)
 						}
 					}
 					if j.InEdge != nil {
@@ -218,6 +220,8 @@ func (m *Mapping) Process(path string, in chan map[string]interface{}, sch schem
 									edge.Gid = val
 								}
 							}
+						} else {
+							log.Printf("Rule for %s field %s not found", rule.Class, j.Field)
 						}
 					}
 					if edge != nil {

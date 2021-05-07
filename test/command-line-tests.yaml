@@ -1,0 +1,59 @@
+
+- title: gene table
+  command: run examples/gene-table/gene-table.yaml -i geneTSV=resources/gene2ensembl.gz
+  outputs:
+    gene.table:
+      lineCount: 20
+
+- title: gdc convert
+  command:  run examples/gdc/gdc-convert.yaml -i cases=resources/case.json
+  outputs:
+    GDCConvert.aliquot.json.gz:
+      lineCount: 146
+    GDCConvert.case.json.gz:
+      lineCount: 10
+    GDCConvert.sample.json.gz:
+      lineCount: 29
+
+- title: GDC Graph build
+  command: graph-build examples/gdc/graph-map.yaml examples/gdc/out -o out
+  outputs:
+    Aliquot.Aliquot.Vertex.json.gz:
+      lineCount: 146
+    Aliquot_Sample.derived_from.Edge.json.gz:
+      lineCount: 146
+    Case.Case.Vertex.json.gz:
+      lineCount: 10
+    Case_Project.member_of.Edge.json.gz:
+      lineCount: 10
+    Case_Sample.samples.Edge.json.gz:
+      lineCount: 29
+    Project_Case.cases.Edge.json.gz:
+      lineCount: 10
+    Sample.Sample.Vertex.json.gz:
+      lineCount: 29
+    Sample_Aliquot.aliquots.Edge.json.gz:
+      lineCount: 146
+    Sample_Case.derived_from.Edge.json.gz:
+      lineCount: 29
+- title: GDC Graph Fix
+  command: graph-fix examples/gdc/graph-fix.yaml examples/gdc/out-graph out
+  outputs:
+    Aliquot.Aliquot.Vertex.json.gz:
+      lineCount: 146
+    Aliquot_Sample.derived_from.Edge.json.gz:
+      lineCount: 146
+    Case.Case.Vertex.json.gz:
+      lineCount: 10
+    Case_Project.member_of.Edge.json.gz:
+      lineCount: 10
+    Case_Sample.samples.Edge.json.gz:
+      lineCount: 29
+    Project_Case.cases.Edge.json.gz:
+      lineCount: 10
+    Sample.Sample.Vertex.json.gz:
+      lineCount: 29
+    Sample_Aliquot.aliquots.Edge.json.gz:
+      lineCount: 146
+    Sample_Case.derived_from.Edge.json.gz:
+      lineCount: 29

@@ -70,8 +70,6 @@ var Cmd = &cobra.Command{
 		}
 		defer man.Close()
 
-		man.AllowLocalFiles = true
-
 		inputs := map[string]interface{}{}
 		if inputFile != "" {
 			if err := playbook.ParseDataFile(inputFile, &inputs); err != nil {

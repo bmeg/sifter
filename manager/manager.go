@@ -13,7 +13,6 @@ import (
 type Manager struct {
 	Config          Config
 	Runtimes        sync.Map
-	AllowLocalFiles bool
 	DataStore       datastore.DataStore
 }
 
@@ -25,7 +24,7 @@ type Config struct {
 
 func Init(config Config) (*Manager, error) {
 
-	man := &Manager{config, sync.Map{}, false, nil}
+	man := &Manager{config, sync.Map{}, nil}
 
 	if config.DataStore != nil {
 		d, err := datastore.GetMongoStore(*config.DataStore)

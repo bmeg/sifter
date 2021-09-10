@@ -27,7 +27,6 @@ func TestProject(t *testing.T) {
 		t.Error(err)
 	}
 	defer man.Close()
-	man.AllowLocalFiles = true
 	inputs := map[string]interface{}{}
 
 	err = run.Execute("./resources/project.yaml", dir, "./", inputs, man)

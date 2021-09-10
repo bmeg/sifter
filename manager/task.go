@@ -100,5 +100,5 @@ func (m *Task) GetDataStore() (datastore.DataStore, error) {
 }
 
 func (m *Task) Close() {
-	m.Runtime.output.Close()
+	//m.Runtime.output.Close()
 }

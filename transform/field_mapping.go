@@ -18,17 +18,28 @@ import (
 type MapStep struct {
 	Method string `json:"method" jsonschema_description:"Name of function to call"`
 	Python string `json:"python" jsonschema_description:"Python code to be run"`
+	GPython string `json:"gpython" jsonschema_description:"Python code to be run using GPython"`
 	proc   evaluate.Processor
 }
 
 func (ms *MapStep) Init(task manager.RuntimeTask) {
-	log.Printf("Init Map: %s", ms.Python)
-	e := evaluate.GetEngine(DefaultEngine, task.WorkDir())
-	c, err := e.Compile(ms.Python, ms.Method)
-	if err != nil {
-		log.Printf("Compile Error: %s", err)
+	if ms.Python != "" {
+		log.Printf("Init Map: %s", ms.Python)
+		e := evaluate.GetEngine("python", task.WorkDir())
+		c, err := e.Compile(ms.Python, ms.Method)
+		if err != nil {
+			log.Printf("Compile Error: %s", err)
+		}
+		ms.proc = c
+	} else if ms.GPython != "" {
+		log.Printf("Init Map: %s", ms.GPython)
+		e := evaluate.GetEngine("gpython", task.WorkDir())
+		c, err := e.Compile(ms.GPython, ms.Method)
+		if err != nil {
+			log.Printf("Compile Error: %s", err)
+		}
+		ms.proc = c
 	}
-	ms.proc = c
 }
 
 func (ms *MapStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {

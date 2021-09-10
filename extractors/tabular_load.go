@@ -37,7 +37,7 @@ func (ml *TableLoadStep) Run(task *manager.Task) error {
 		}
 		return fmt.Errorf("File Not Found: %s", input)
 	}
-	log.Printf("Loading: %s", inputPath)
+	log.Printf("Loading table: %s", inputPath)
 	fhd, err := os.Open(inputPath)
 	if err != nil {
 		return err

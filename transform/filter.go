@@ -14,6 +14,7 @@ type FilterStep struct {
 	Check  string `json:"check" jsonschema_description:"How to check value, 'exists' or 'hasValue'"`
 	Method string `json:"method"`
 	Python string `json:"python"`
+	GPython string `json:"gpython"`
 	Steps  Pipe   `json:"steps"`
 	inChan chan map[string]interface{}
 	proc   evaluate.Processor
@@ -22,8 +23,16 @@ type FilterStep struct {
 func (fs *FilterStep) Init(task manager.RuntimeTask) {
 	if fs.Python != "" && fs.Method != "" {
 		log.Printf("Starting Filter Map: %s", fs.Python)
-		e := evaluate.GetEngine(DefaultEngine, task.WorkDir())
+		e := evaluate.GetEngine("python", task.WorkDir())
 		c, err := e.Compile(fs.Python, fs.Method)
+		if err != nil {
+			log.Printf("Compile Error: %s", err)
+		}
+		fs.proc = c
+	} else if fs.GPython != "" && fs.Method != "" {
+		log.Printf("Starting Filter Map: %s", fs.GPython)
+		e := evaluate.GetEngine("gpython", task.WorkDir())
+		c, err := e.Compile(fs.GPython, fs.Method)
 		if err != nil {
 			log.Printf("Compile Error: %s", err)
 		}
@@ -55,7 +64,7 @@ func (fs FilterStep) Start(in chan map[string]interface{}, task manager.RuntimeT
 }
 
 func (fs FilterStep) run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
-	if fs.Python != "" && fs.Method != "" {
+	if fs.proc != nil {
 		out, err := fs.proc.EvaluateBool(i)
 		if err != nil {
 			log.Printf("Filter Error: %s", err)

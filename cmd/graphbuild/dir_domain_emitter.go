@@ -26,6 +26,10 @@ type DomainEmitter struct {
 }
 
 func NewDomainEmitter(baseDir string, prefix string, vertDomains []string, edgeEndDomains [][]string) *DomainEmitter {
+	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
+		os.Mkdir(baseDir, 0700)
+	}
+
 	return &DomainEmitter{
 		dir:            baseDir,
 		filePrefix:     prefix,
@@ -75,7 +79,7 @@ func (s *DomainEmitter) EmitEdge(e *gripql.Edge) error {
 
 	eDomain := s.getEdgeEndDomain(e)
 	if eDomain == "" {
-		return fmt.Errorf("Edge Prefix not found for %s", e.Label)
+		return fmt.Errorf("Edge Prefix not found for %s->%s->%s", e.From, e.Label, e.To)
 	}
 
 	var prefix string

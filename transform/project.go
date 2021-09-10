@@ -51,7 +51,8 @@ func (pr ProjectStep) Run(i map[string]interface{}, task manager.RuntimeTask) ma
 	}
 
 	for k, v := range pr.Mapping {
-		o[k], _ = valueRender(v, task, i)
+		t, _ := valueRender(v, task, i)
+		SetProjectValue(o, k, t)
 	}
 	return o
 }

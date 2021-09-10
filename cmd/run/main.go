@@ -18,6 +18,7 @@ var workDir string = "./"
 var outDir string = "./out"
 var resume string = ""
 var graph string = ""
+var inputFile string = ""
 var toStdout bool
 var keep bool
 var cmdInputs map[string]string
@@ -71,12 +72,9 @@ var Cmd = &cobra.Command{
 
 		man.AllowLocalFiles = true
 
-		playFile := args[0]
-
 		inputs := map[string]interface{}{}
-		if len(args) > 1 {
-			dataFile := args[1]
-			if err := playbook.ParseDataFile(dataFile, &inputs); err != nil {
+		if inputFile != "" {
+			if err := playbook.ParseDataFile(inputFile, &inputs); err != nil {
 				log.Printf("%s", err)
 				return err
 			}
@@ -93,7 +91,9 @@ var Cmd = &cobra.Command{
 			}
 			dir = d
 		}
-		Execute(playFile, dir, outDir, inputs, man)
+		for _, playFile := range args {
+			Execute(playFile, dir, outDir, inputs, man)
+		}
 		if !keep {
 			os.RemoveAll(dir)
 		}
@@ -116,4 +116,5 @@ func init() {
 	flags.StringVar(&proxy, "proxy", proxy, "Proxy site")
 	flags.IntVar(&port, "port", port, "Proxy Port")
 	flags.StringToStringVarP(&cmdInputs, "inputs", "i", cmdInputs, "Input variables")
+	flags.StringVarP(&inputFile, "inputfile", "f", inputFile, "Input variables file")
 }

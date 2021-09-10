@@ -13,8 +13,8 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-func NewTask(workdir string, vertexEmit bool, graph_out loader.GraphEmitter) manager.RuntimeTask {
-	return &FixTask{name: "graph-fix", workdir: workdir, out: graph_out, vertexEmit: vertexEmit}
+func NewTask(workdir string, vertexEmit bool, graphOut loader.GraphEmitter) manager.RuntimeTask {
+	return &FixTask{name: "graph-fix", workdir: workdir, out: graphOut, vertexEmit: vertexEmit}
 }
 
 type FixTask struct {

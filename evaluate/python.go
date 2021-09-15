@@ -20,10 +20,6 @@ import (
 
 type PythonEngine struct{ Workdir string }
 
-var (
-	PROC_COUNT = 8
-)
-
 type PythonProcessor struct {
 	runner Runner
 	fNum   uint32

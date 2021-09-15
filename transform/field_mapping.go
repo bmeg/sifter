@@ -12,7 +12,7 @@ import (
 
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/manager"
-	"github.com/dgraph-io/badger/v2"
+	badger "github.com/dgraph-io/badger/v2"
 )
 
 type MapStep struct {

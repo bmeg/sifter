@@ -11,27 +11,38 @@ import (
 	"log"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
-	"github.com/dgraph-io/badger/v2"
+	"github.com/bmeg/sifter/manager"
+	badger "github.com/dgraph-io/badger/v2"
 )
 
 type MapStep struct {
-	Method string `json:"method" jsonschema_description:"Name of function to call"`
-	Python string `json:"python" jsonschema_description:"Python code to be run"`
-	proc   evaluate.Processor
+	Method  string `json:"method" jsonschema_description:"Name of function to call"`
+	Python  string `json:"python" jsonschema_description:"Python code to be run"`
+	GPython string `json:"gpython" jsonschema_description:"Python code to be run using GPython"`
+	proc    evaluate.Processor
 }
 
-func (ms *MapStep) Init(task *pipeline.Task) {
-	log.Printf("Init Map: %s", ms.Python)
-	e := evaluate.GetEngine(DefaultEngine, task.Workdir)
-	c, err := e.Compile(ms.Python, ms.Method)
-	if err != nil {
-		log.Printf("Compile Error: %s", err)
+func (ms *MapStep) Init(task manager.RuntimeTask) {
+	if ms.Python != "" {
+		log.Printf("Init Map: %s", ms.Python)
+		e := evaluate.GetEngine("python", task.WorkDir())
+		c, err := e.Compile(ms.Python, ms.Method)
+		if err != nil {
+			log.Printf("Compile Error: %s", err)
+		}
+		ms.proc = c
+	} else if ms.GPython != "" {
+		log.Printf("Init Map: %s", ms.GPython)
+		e := evaluate.GetEngine("gpython", task.WorkDir())
+		c, err := e.Compile(ms.GPython, ms.Method)
+		if err != nil {
+			log.Printf("Compile Error: %s", err)
+		}
+		ms.proc = c
 	}
-	ms.proc = c
 }
 
-func (ms *MapStep) Run(i map[string]interface{}, task *pipeline.Task) map[string]interface{} {
+func (ms *MapStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
 	out, err := ms.proc.Evaluate(i)
 	if err != nil {
 		log.Printf("Map Step error: %s", err)
@@ -54,9 +65,9 @@ type ReduceStep struct {
 	batch    *badger.WriteBatch
 }
 
-func (ms *ReduceStep) Init(task *pipeline.Task) {
+func (ms *ReduceStep) Init(task manager.RuntimeTask) {
 	log.Printf("Starting Reduce: %s", ms.Python)
-	e := evaluate.GetEngine(DefaultEngine, task.Workdir)
+	e := evaluate.GetEngine(DefaultEngine, task.WorkDir())
 	c, err := e.Compile(ms.Python, ms.Method)
 	if err != nil {
 		log.Printf("%s", err)
@@ -79,10 +90,10 @@ func (ms *ReduceStep) Init(task *pipeline.Task) {
 	ms.batch = ms.db.NewWriteBatch()
 }
 
-func (ms *ReduceStep) Add(i map[string]interface{}, task *pipeline.Task) {
+func (ms *ReduceStep) Add(i map[string]interface{}, task manager.RuntimeTask) {
 	d, _ := json.Marshal(i)
 
-	dKey, _ := evaluate.ExpressionString(ms.Field, task.Inputs, i)
+	dKey, _ := evaluate.ExpressionString(ms.Field, task.GetInputs(), i)
 	dSize := uint64(len(d))
 	stat, _ := ms.dump.Stat()
 	dPos := uint64(stat.Size())

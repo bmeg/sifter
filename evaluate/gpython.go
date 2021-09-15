@@ -96,6 +96,8 @@ type PyCode struct {
 
 func PyCompile(codeStr string) (*PyCode, error) {
 
+	log.Printf("Gpython compile: %s", codeStr)
+
 	obj, err := compile.Compile(codeStr, "test.py", "exec", 0, true)
 	if err != nil {
 		log.Fatalf("Can't compile %q: %v", codeStr, err)

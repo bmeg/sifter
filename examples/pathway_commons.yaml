@@ -1,0 +1,34 @@
+
+class: Playbook
+
+inputs:
+  sifFile:
+    type: File
+    default: https://www.pathwaycommons.org/archives/PC2/v12/PathwayCommons12.All.hgnc.sif.gz
+
+steps:
+  - tableLoad:
+      input: "{{inputs.sifFile}}"
+      sep: "\t"
+      columns: [_from, _label, _to]
+      transform:
+        - fork:
+            transform:
+              -
+                - project:
+                    mapping:
+                      nodes: [{"_gid":"{{row._from}}"}, {"_gid":"{{row._to}}"}]
+                - fieldProcess:
+                    field: nodes
+                    steps:
+                      - distinct:
+                          field: "{{row._gid}}"
+                          steps:
+                            - project:
+                                mapping:
+                                  _label: "Protein"
+                            - emit:
+                                name: vertex
+              -
+                - emit:
+                    name: edge

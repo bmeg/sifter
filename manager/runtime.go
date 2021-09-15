@@ -1,4 +1,4 @@
-package pipeline
+package manager
 
 import (
 	"fmt"
@@ -11,7 +11,6 @@ import (
 )
 
 type Runtime struct {
-	//man         *Manager
 	output         loader.DataEmitter
 	dir            string
 	name           string
@@ -32,7 +31,7 @@ func (run *Runtime) NewTask(sourcePath string, inputs map[string]interface{}) *T
 
 func (run *Runtime) Close() {
 	log.Printf("Runtime closing")
-	//run.man.DropRuntime(run.name)
+	run.output.Close()
 }
 
 func (run *Runtime) Emit(name string, o map[string]interface{}) error {

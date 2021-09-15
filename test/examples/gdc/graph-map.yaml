@@ -14,17 +14,14 @@ rules:
   case:
     idPrefix: Case
     class: case
-    outEdges:
-      member_of:
+    fields:
+      experiments:
         toPrefix: Project
-    inEdges:
-      cases:
-        fromPrefix: Project
   sample:
     idPrefix: Sample
     class: sample
-    outEdges:
-      derived_from:
+    fields:
+      cases:
         toPrefix: Case
     inEdges:
       samples:
@@ -32,9 +29,6 @@ rules:
   aliquot:
     idPrefix: Aliquot
     class: aliquot
-    outEdges:
-      derived_from:
+    fields:
+      samples:
         toPrefix: Sample
-    inEdges:
-      aliquots:
-        fromPrefix: Sample

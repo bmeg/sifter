@@ -11,7 +11,7 @@ import (
 	"compress/gzip"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/pipeline"
+	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/readers"
 	"github.com/bmeg/sifter/transform"
 )
@@ -21,14 +21,15 @@ type TableLoadStep struct {
 	RowSkip       int            `json:"rowSkip" jsonschema_description:"Number of header rows to skip"`
 	SkipIfMissing bool           `json:"skipIfMissing" jsonschema_description:"Skip without error if file missing"`
 	Columns       []string       `json:"columns" jsonschema_description:"Manually set names of columns"`
+	ExtraColumns  string         `json:"extraColumns" jsonschema_description:"Columns beyond originally declared columns will be placed in this array"`
 	Transform     transform.Pipe `json:"transform" jsonschema_description:"Transform pipelines"`
 	Sep           string         `json:"sep" jsonschema_description:"Separator \\t for TSVs or , for CSVs"`
 }
 
-func (ml *TableLoadStep) Run(task *pipeline.Task) error {
+func (ml *TableLoadStep) Run(task *manager.Task) error {
 	log.Printf("Starting Table Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
-	inputPath, err := task.Path(input)
+	inputPath, err := task.AbsPath(input)
 
 	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
 		if ml.SkipIfMissing {
@@ -36,7 +37,7 @@ func (ml *TableLoadStep) Run(task *pipeline.Task) error {
 		}
 		return fmt.Errorf("File Not Found: %s", input)
 	}
-	log.Printf("Loading: %s", inputPath)
+	log.Printf("Loading table: %s", inputPath)
 	fhd, err := os.Open(inputPath)
 	if err != nil {
 		return err
@@ -101,6 +102,11 @@ func (ml *TableLoadStep) Run(task *pipeline.Task) error {
 				if len(record) >= len(columns) {
 					for i, n := range columns {
 						o[n] = record[i]
+					}
+					if ml.ExtraColumns != "" {
+						if len(record) > len(columns) {
+							o[ml.ExtraColumns] = record[len(columns):]
+						}
 					}
 					procChan <- o
 				}

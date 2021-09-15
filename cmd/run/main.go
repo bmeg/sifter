@@ -9,6 +9,7 @@ import (
 	"github.com/bmeg/sifter/datastore"
 	"github.com/bmeg/sifter/loader"
 	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/playbook"
 
 	"github.com/spf13/cobra"
 )
@@ -16,9 +17,14 @@ import (
 var workDir string = "./"
 var outDir string = "./out"
 var resume string = ""
+var graph string = ""
+var inputFile string = ""
 var toStdout bool
 var keep bool
 var cmdInputs map[string]string
+
+var proxy = ""
+var port = 8888
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
@@ -26,6 +32,11 @@ var Cmd = &cobra.Command{
 	Short: "Run importer",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		var lps *LoadProxyServer
+		if proxy != "" {
+			lps = NewLoadProxyServer(port, proxy)
+			lps.Start()
+		}
 
 		if _, err := os.Stat(outDir); os.IsNotExist(err) {
 			os.MkdirAll(outDir, 0777)
@@ -34,6 +45,9 @@ var Cmd = &cobra.Command{
 		driver := fmt.Sprintf("dir://%s", outDir)
 		if toStdout {
 			driver = "stdout://"
+		}
+		if graph != "" {
+			driver = graph
 		}
 
 		//TODO: This needs to be configurable
@@ -44,6 +58,9 @@ var Cmd = &cobra.Command{
 			log.Printf("Error stating load manager: %s", err)
 			return err
 		}
+		if lps != nil {
+			ld = loader.NewLoadCounter(ld, 1000, func(i uint64) { lps.UpdateCount(i) })
+		}
 		defer ld.Close()
 
 		man, err := manager.Init(manager.Config{Loader: ld, WorkDir: workDir, DataStore: &dsConfig})
@@ -53,14 +70,9 @@ var Cmd = &cobra.Command{
 		}
 		defer man.Close()
 
-		man.AllowLocalFiles = true
-
-		playFile := args[0]
-
 		inputs := map[string]interface{}{}
-		if len(args) > 1 {
-			dataFile := args[1]
-			if err := manager.ParseDataFile(dataFile, &inputs); err != nil {
+		if inputFile != "" {
+			if err := playbook.ParseDataFile(inputFile, &inputs); err != nil {
 				log.Printf("%s", err)
 				return err
 			}
@@ -77,9 +89,14 @@ var Cmd = &cobra.Command{
 			}
 			dir = d
 		}
-		Execute(playFile, dir, outDir, inputs, man)
+		for _, playFile := range args {
+			Execute(playFile, dir, outDir, inputs, man)
+		}
 		if !keep {
 			os.RemoveAll(dir)
+		}
+		if lps != nil {
+			lps.StartProxy()
 		}
 		return nil
 	},
@@ -92,6 +109,10 @@ func init() {
 	flags.BoolVarP(&keep, "keep", "k", keep, "Keep Working Directory")
 	flags.StringVarP(&outDir, "out", "o", outDir, "Output Dir")
 	flags.StringVarP(&resume, "resume", "r", resume, "Resume Directory")
+	flags.StringVarP(&graph, "graph", "g", graph, "Output to graph")
 
+	flags.StringVar(&proxy, "proxy", proxy, "Proxy site")
+	flags.IntVar(&port, "port", port, "Proxy Port")
 	flags.StringToStringVarP(&cmdInputs, "inputs", "i", cmdInputs, "Input variables")
+	flags.StringVarP(&inputFile, "inputfile", "f", inputFile, "Input variables file")
 }

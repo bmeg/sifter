@@ -1,4 +1,4 @@
-package manager
+package playbook
 
 import (
 	"io/ioutil"
@@ -9,7 +9,9 @@ import (
 
 	"path/filepath"
 
+	"github.com/bmeg/sifter/download"
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/schema"
 )
 
@@ -37,7 +39,10 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir string, outDir string) error {
+func (pb *Playbook) Execute(man *manager.Manager, inputs map[string]interface{}, workDir string, outDir string) error {
+
+	workDir, _ = filepath.Abs(workDir)
+	outDir, _ = filepath.Abs(outDir)
 
 	for k, v := range pb.Inputs {
 		if _, ok := inputs[k]; !ok {
@@ -83,9 +88,6 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 		sc = &t
 	}
 
-	workDir, _ = filepath.Abs(workDir)
-	outDir, _ = filepath.Abs(outDir)
-
 	run, err := man.NewRuntime(pb.Name, workDir, sc)
 	for k, i := range pb.Inputs {
 		if v, ok := inputs[k]; ok {
@@ -94,7 +96,8 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 				if isURL(path) {
 					log.Printf("Found a URL to download: %s", path)
 					tmpTask := run.NewTask(pb.path, map[string]interface{}{})
-					newPath, err := tmpTask.DownloadFile(path, filepath.Base(path))
+					dstPath, _ := tmpTask.AbsPath(filepath.Base(path))
+					newPath, err := download.ToFile(path, dstPath)
 					if err != nil {
 						log.Printf("Download Error: %s", err)
 						return err
@@ -107,8 +110,7 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 						inputs[k] = p
 					} else {
 						if i.Source != "" {
-							tmpTask := run.NewTask(pb.path, map[string]interface{}{})
-							newPath, err := tmpTask.DownloadFile(i.Source, p)
+							newPath, err := download.ToFile(i.Source, p)
 							if err != nil {
 								log.Printf("Download Error: %s", err)
 								return err

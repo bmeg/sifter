@@ -14,6 +14,10 @@ func RemapGraph(config *graphedit.Config, src, dst string) error {
 	src, _ = filepath.Abs(src)
 	dst, _ = filepath.Abs(dst)
 
+	if _, err := os.Stat(dst); os.IsNotExist(err) {
+		os.MkdirAll(dst, 0777)
+	}
+
 	err := filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if strings.HasSuffix(path, ".Vertex.json.gz") {
 			rel, _ := filepath.Rel(src, path)
@@ -31,7 +35,7 @@ func RemapGraph(config *graphedit.Config, src, dst string) error {
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
-	Use:   "graph-fix",
+	Use:   "graph-fix <fix plan> <in dir> <out dir>",
 	Short: "Fix Graph by remapping edges",
 	Args:  cobra.ExactArgs(3),
 	RunE: func(cmd *cobra.Command, args []string) error {

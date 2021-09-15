@@ -13,11 +13,11 @@ type DataGraphEmitter struct {
 }
 
 const (
-	FIELD_GID = "gid"
+	FIELD_GID   = "gid"
 	FIELD_LABEL = "label"
-	FIELD_TO = "to"
-	FIELD_FROM = "from"
-	FIELD_DATA = "data"
+	FIELD_TO    = "to"
+	FIELD_FROM  = "from"
+	FIELD_DATA  = "data"
 )
 
 // GraphTransformer creates a DataEmitter object that translates raw objects

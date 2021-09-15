@@ -21,7 +21,7 @@ import (
 type PythonEngine struct{ Workdir string }
 
 var (
-  PROC_COUNT = 8
+	PROC_COUNT = 8
 )
 
 type PythonProcessor struct {
@@ -71,7 +71,6 @@ func (d PythonProcessor) EvaluateBool(inputs ...map[string]interface{}) (bool, e
 	return o, nil
 }
 
-
 func (d PythonEngine) Compile(code string, method string) (Processor, error) {
 	r, err := StartLocalExecutor(d.Workdir)
 	if err != nil {
@@ -117,8 +116,6 @@ func StartLocalExecutor(workdir string) (Runner, error) {
 	cmd := exec.Command(path)
 	cmd.Stderr = os.Stderr
 	log.Printf("Launching %#v", cmd)
-
-
 
 	stdout, _ := cmd.StdoutPipe()
 	err = cmd.Start()

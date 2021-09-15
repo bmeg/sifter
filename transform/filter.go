@@ -9,15 +9,15 @@ import (
 )
 
 type FilterStep struct {
-	Field  string `json:"field"`
-	Match  string `json:"match"`
-	Check  string `json:"check" jsonschema_description:"How to check value, 'exists' or 'hasValue'"`
-	Method string `json:"method"`
-	Python string `json:"python"`
+	Field   string `json:"field"`
+	Match   string `json:"match"`
+	Check   string `json:"check" jsonschema_description:"How to check value, 'exists' or 'hasValue'"`
+	Method  string `json:"method"`
+	Python  string `json:"python"`
 	GPython string `json:"gpython"`
-	Steps  Pipe   `json:"steps"`
-	inChan chan map[string]interface{}
-	proc   evaluate.Processor
+	Steps   Pipe   `json:"steps"`
+	inChan  chan map[string]interface{}
+	proc    evaluate.Processor
 }
 
 func (fs *FilterStep) Init(task manager.RuntimeTask) {

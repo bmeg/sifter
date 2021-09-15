@@ -16,10 +16,10 @@ import (
 )
 
 type MapStep struct {
-	Method string `json:"method" jsonschema_description:"Name of function to call"`
-	Python string `json:"python" jsonschema_description:"Python code to be run"`
+	Method  string `json:"method" jsonschema_description:"Name of function to call"`
+	Python  string `json:"python" jsonschema_description:"Python code to be run"`
 	GPython string `json:"gpython" jsonschema_description:"Python code to be run using GPython"`
-	proc   evaluate.Processor
+	proc    evaluate.Processor
 }
 
 func (ms *MapStep) Init(task manager.RuntimeTask) {

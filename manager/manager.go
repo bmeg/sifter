@@ -11,9 +11,9 @@ import (
 )
 
 type Manager struct {
-	Config          Config
-	Runtimes        sync.Map
-	DataStore       datastore.DataStore
+	Config    Config
+	Runtimes  sync.Map
+	DataStore datastore.DataStore
 }
 
 type Config struct {

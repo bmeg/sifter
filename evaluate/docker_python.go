@@ -15,14 +15,12 @@ import (
 
 type DockerPythonEngine struct{ Workdir string }
 
-
 type Runner interface {
 	Compile(code *Code) (*CompileResult, error)
 	Call(in *Input) (*Result, error)
 	//Process(in chan *Input) (chan *Result, error)
 	Close()
 }
-
 
 func (d DockerPythonEngine) Compile(code string, method string) (Processor, error) {
 	r, err := StartDockerExecutor("bmeg/sifter-exec-python")
@@ -36,8 +34,6 @@ func (d DockerPythonEngine) Compile(code string, method string) (Processor, erro
 	}
 	return PythonProcessor{r, out.Id}, nil
 }
-
-
 
 type DockerRunner struct {
 	containerID string

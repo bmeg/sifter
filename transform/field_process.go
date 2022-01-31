@@ -66,7 +66,7 @@ func (fs FieldProcessStep) Start(in chan map[string]interface{}, task manager.Ru
 					log.Printf("Field list incorrect type: %s", v)
 				}
 			} else {
-				log.Printf("Field %s missing", fs.Field)
+				//log.Printf("Field %s missing", fs.Field)
 			}
 		}
 	}()

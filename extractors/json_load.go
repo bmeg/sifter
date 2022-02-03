@@ -18,6 +18,7 @@ type JSONLoadStep struct {
 	Input         string         `json:"input" jsonschema_description:"Path of multiline JSON file to transform"`
 	Transform     transform.Pipe `json:"transform" jsonschema_description:"Transformation Pipeline"`
 	SkipIfMissing bool           `json:"skipIfMissing" jsonschema_description:"Skip without error if file does note exist"`
+	Multiline     bool           `json:"multiline" jsonschema_description:"Load file as a single multiline JSON object"`
 }
 
 func (ml *JSONLoadStep) Run(task *manager.Task) error {
@@ -34,13 +35,23 @@ func (ml *JSONLoadStep) Run(task *manager.Task) error {
 	log.Printf("Loading: %s", inputPath)
 
 	var reader chan []byte
-	if strings.HasSuffix(inputPath, ".gz") {
-		reader, err = golib.ReadGzipLines(inputPath)
+	if ml.Multiline {
+		reader = make(chan []byte, 1)
+		dat, err := os.ReadFile(inputPath)
+		if err != nil {
+			return err
+		}
+		reader <- dat
+		close(reader)
 	} else {
-		reader, err = golib.ReadFileLines(inputPath)
-	}
-	if err != nil {
-		return err
+		if strings.HasSuffix(inputPath, ".gz") {
+			reader, err = golib.ReadGzipLines(inputPath)
+		} else {
+			reader, err = golib.ReadFileLines(inputPath)
+		}
+		if err != nil {
+			return err
+		}
 	}
 	procChan := make(chan map[string]interface{}, 100)
 	wg := &sync.WaitGroup{}

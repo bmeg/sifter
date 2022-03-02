@@ -5,7 +5,6 @@ import (
 	//"log"
 	//"io/ioutil"
 
-	//"github.com/bmeg/sifter/manager"
 	//"github.com/bmeg/sifter/steps"
 	"github.com/bmeg/sifter/manifest"
 

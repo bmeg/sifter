@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/task"
 	"github.com/bmeg/sifter/transform"
 	_ "github.com/mattn/go-sqlite3" // Adding sqlite3 to the SQL driver list
 )
@@ -20,7 +20,7 @@ type SQLiteStep struct {
 	SkipIfMissing bool             `json:"skipIfMissing" jsonschema_description:"Option to skip without fail if input file does not exist"`
 }
 
-func processQuery(rows *sql.Rows, trans transform.Pipe, task manager.RuntimeTask) error {
+func processQuery(rows *sql.Rows, trans transform.Pipe, task task.RuntimeTask) error {
 	wg := &sync.WaitGroup{}
 	procChan := make(chan map[string]interface{}, 100)
 	if err := trans.Init(task); err != nil {
@@ -35,7 +35,7 @@ func processQuery(rows *sql.Rows, trans transform.Pipe, task manager.RuntimeTask
 		}
 	}()
 	colNames, err := rows.Columns()
-	readCols := make([]interface{}, len(colNames))
+	readCols := make([]any, len(colNames))
 	writeCols := make([]sql.NullString, len(colNames))
 	for i := range writeCols {
 		readCols[i] = &writeCols[i]
@@ -60,7 +60,7 @@ func processQuery(rows *sql.Rows, trans transform.Pipe, task manager.RuntimeTask
 	return nil
 }
 
-func (ml *SQLiteStep) Run(task manager.RuntimeTask) error {
+func (ml *SQLiteStep) Run(task task.RuntimeTask) error {
 
 	log.Printf("Starting SQLite Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.GetInputs(), nil)

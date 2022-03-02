@@ -10,7 +10,7 @@ import (
 	"sync"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/task"
 	"github.com/bmeg/sifter/transform"
 	"github.com/xwb1989/sqlparser"
 )
@@ -31,7 +31,7 @@ type SQLDumpStep struct {
 	SkipIfMissing bool             `json:"skipIfMissing" jsonschema_description:"Option to skip without fail if input file does not exist"`
 }
 
-func (ml *SQLDumpStep) Run(task *manager.Task) error {
+func (ml *SQLDumpStep) Run(task *task.Task) error {
 
 	log.Printf("Starting SQLDump Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)

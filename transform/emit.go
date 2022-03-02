@@ -2,7 +2,7 @@ package transform
 
 import (
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/task"
 )
 
 type ObjectCreateStep struct {
@@ -14,7 +14,7 @@ type EmitStep struct {
 	Name string `json:"name"`
 }
 
-func (ts ObjectCreateStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
+func (ts ObjectCreateStep) Run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
 	name, err := evaluate.ExpressionString(ts.Name, task.GetInputs(), i)
 	if err == nil {
 		task.EmitObject(name, ts.Class, i)
@@ -22,7 +22,7 @@ func (ts ObjectCreateStep) Run(i map[string]interface{}, task manager.RuntimeTas
 	return i
 }
 
-func (ts EmitStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
+func (ts EmitStep) Run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
 	name, err := evaluate.ExpressionString(ts.Name, task.GetInputs(), i)
 	if err == nil {
 		task.Emit(name, i)

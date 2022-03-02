@@ -8,7 +8,6 @@ import (
 
 	"github.com/bmeg/sifter/cmd/run"
 	"github.com/bmeg/sifter/loader"
-	"github.com/bmeg/sifter/manager"
 
 	"path/filepath"
 
@@ -34,13 +33,7 @@ func runPlaybook(playbook string, inputs map[string]interface{}, outdir string) 
 	dir, err := ioutil.TempDir(workDir, "sifterwork_")
 	defer os.RemoveAll(dir)
 
-	man, err := manager.Init(manager.Config{Loader: ld, WorkDir: workDir, DataStore: nil})
-	if err != nil {
-		return err
-	}
-	defer man.Close()
-
-	err = run.Execute(playbook, dir, outdir, inputs, man)
+	err = run.Execute(playbook, dir, outdir, inputs)
 	if err != nil {
 		return err
 	}

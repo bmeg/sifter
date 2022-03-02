@@ -3,21 +3,21 @@ package transform
 import (
 	"sync"
 
-	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/task"
 )
 
 type ForkStep struct {
 	Transform []Pipe `json:"transform"`
 }
 
-func (fs *ForkStep) Init(task manager.RuntimeTask) error {
+func (fs *ForkStep) Init(task task.RuntimeTask) error {
 	for _, t := range fs.Transform {
 		t.Init(task)
 	}
 	return nil
 }
 
-func (fs *ForkStep) Start(in chan map[string]interface{}, task manager.RuntimeTask, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
+func (fs *ForkStep) Start(in chan map[string]interface{}, task task.RuntimeTask, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 
 	out := make(chan map[string]interface{}, 10)
 

@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/task"
 	badger "github.com/dgraph-io/badger/v2"
 )
 
@@ -16,7 +16,7 @@ type DistinctStep struct {
 	db    *badger.DB
 }
 
-func (ds *DistinctStep) Init(task manager.RuntimeTask) {
+func (ds *DistinctStep) Init(task task.RuntimeTask) {
 	log.Printf("Starting Distinct: %s", ds.Field)
 	tdir := task.TempDir()
 	opts := badger.DefaultOptions(filepath.Join(tdir, "badger"))
@@ -29,7 +29,7 @@ func (ds *DistinctStep) Init(task manager.RuntimeTask) {
 	ds.Steps.Init(task)
 }
 
-func (ds *DistinctStep) Start(in chan map[string]interface{}, task manager.RuntimeTask, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
+func (ds *DistinctStep) Start(in chan map[string]interface{}, task task.RuntimeTask, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 	out := make(chan map[string]interface{}, 10)
 
 	inChan := make(chan map[string]interface{}, 100)

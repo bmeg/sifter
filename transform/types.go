@@ -3,12 +3,12 @@ package transform
 import (
 	"strconv"
 
-	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/task"
 )
 
 type FieldTypeStep map[string]string
 
-func (fs FieldTypeStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
+func (fs FieldTypeStep) Run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
 	o := map[string]interface{}{}
 	for x, y := range i {
 		o[x] = y

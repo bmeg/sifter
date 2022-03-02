@@ -1,17 +1,9 @@
 package template
 
 import (
-	"fmt"
-	"io/ioutil"
-	"log"
-
 	"github.com/spf13/cobra"
 
-	"github.com/bmeg/sifter/datastore"
-	"github.com/bmeg/sifter/extractors"
 	"github.com/bmeg/sifter/loader"
-	"github.com/bmeg/sifter/manager"
-	"github.com/bmeg/sifter/playbook"
 )
 
 var extractMethod string = ""
@@ -33,12 +25,6 @@ var Cmd = &cobra.Command{
 	Args:  cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		//TODO: This needs to be configurable
-		var dsConfig *datastore.Config
-		if cache != "" {
-			dsConfig = &datastore.Config{URL: cache, Database: "sifter", Collection: "cache"}
-		}
-
 		var ld loader.Loader
 		if lm, ok := LoadTemplates[loadMethod]; ok {
 			var err error
@@ -49,11 +35,6 @@ var Cmd = &cobra.Command{
 		}
 		defer ld.Close()
 
-		man, err := manager.Init(manager.Config{Loader: ld, WorkDir: workDir, DataStore: dsConfig})
-		if err != nil {
-			return err
-		}
-
 		inputs := map[string]interface{}{}
 		for k, v := range extractOpts {
 			inputs[k] = v
@@ -61,35 +42,36 @@ var Cmd = &cobra.Command{
 		for k, v := range transformOpts {
 			inputs[k] = v
 		}
+		/*
+			if ext, ok := ExtractTemplates[extractMethod]; ok {
+				if trans, ok := TransformTemplates[transformMethod]; ok {
+					if dec, ok := ExtractorDecorate[extractMethod]; ok {
+						ext = dec(ext, trans)
 
-		if ext, ok := ExtractTemplates[extractMethod]; ok {
-			if trans, ok := TransformTemplates[transformMethod]; ok {
-				if dec, ok := ExtractorDecorate[extractMethod]; ok {
-					ext = dec(ext, trans)
-
-					dir, err := ioutil.TempDir(workDir, "sifterwork_")
-					if err != nil {
-						log.Fatal(err)
+						dir, err := ioutil.TempDir(workDir, "sifterwork_")
+						if err != nil {
+							log.Fatal(err)
+							return err
+						}
+						pb := playbook.Playbook{
+							Name: fmt.Sprintf("%s:%s:%s", extractMethod, transformMethod, loadMethod),
+							Inputs: map[string]playbook.Input{
+								"input": {Type: "File"},
+							},
+							Steps: []extractors.Extractor{
+								ext,
+							},
+						}
+						err = pb.Execute(man, inputs, dir, outDir)
 						return err
 					}
-					pb := playbook.Playbook{
-						Name: fmt.Sprintf("%s:%s:%s", extractMethod, transformMethod, loadMethod),
-						Inputs: map[string]playbook.Input{
-							"input": {Type: "File"},
-						},
-						Steps: []extractors.Extractor{
-							ext,
-						},
-					}
-					err = pb.Execute(man, inputs, dir, outDir)
-					return err
+				} else {
+					return fmt.Errorf("Transformer %s not found", transformMethod)
 				}
 			} else {
-				return fmt.Errorf("Transformer %s not found", transformMethod)
+				return fmt.Errorf("Extractor %s not found", extractMethod)
 			}
-		} else {
-			return fmt.Errorf("Extractor %s not found", extractMethod)
-		}
+		*/
 		return nil
 	},
 }

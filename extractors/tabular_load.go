@@ -11,8 +11,8 @@ import (
 	"compress/gzip"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/readers"
+	"github.com/bmeg/sifter/task"
 	"github.com/bmeg/sifter/transform"
 )
 
@@ -26,7 +26,7 @@ type TableLoadStep struct {
 	Sep           string         `json:"sep" jsonschema_description:"Separator \\t for TSVs or , for CSVs"`
 }
 
-func (ml *TableLoadStep) Run(task *manager.Task) error {
+func (ml *TableLoadStep) Run(task *task.Task) error {
 	log.Printf("Starting Table Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
 	inputPath, err := task.AbsPath(input)

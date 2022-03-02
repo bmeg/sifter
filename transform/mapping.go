@@ -11,7 +11,7 @@ import (
 	"log"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/task"
 	badger "github.com/dgraph-io/badger/v2"
 )
 
@@ -22,7 +22,7 @@ type MapStep struct {
 	proc    evaluate.Processor
 }
 
-func (ms *MapStep) Init(task manager.RuntimeTask) {
+func (ms *MapStep) Init(task task.RuntimeTask) {
 	if ms.Python != "" {
 		log.Printf("Init Map: %s", ms.Python)
 		e := evaluate.GetEngine("python", task.WorkDir())
@@ -42,7 +42,7 @@ func (ms *MapStep) Init(task manager.RuntimeTask) {
 	}
 }
 
-func (ms *MapStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
+func (ms *MapStep) Run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
 	out, err := ms.proc.Evaluate(i)
 	if err != nil {
 		log.Printf("Map Step error: %s", err)
@@ -65,7 +65,7 @@ type ReduceStep struct {
 	batch    *badger.WriteBatch
 }
 
-func (ms *ReduceStep) Init(task manager.RuntimeTask) {
+func (ms *ReduceStep) Init(task task.RuntimeTask) {
 	log.Printf("Starting Reduce: %s", ms.Python)
 	e := evaluate.GetEngine(DefaultEngine, task.WorkDir())
 	c, err := e.Compile(ms.Python, ms.Method)
@@ -90,7 +90,7 @@ func (ms *ReduceStep) Init(task manager.RuntimeTask) {
 	ms.batch = ms.db.NewWriteBatch()
 }
 
-func (ms *ReduceStep) Add(i map[string]interface{}, task manager.RuntimeTask) {
+func (ms *ReduceStep) Add(i map[string]interface{}, task task.RuntimeTask) {
 	d, _ := json.Marshal(i)
 
 	dKey, _ := evaluate.ExpressionString(ms.Field, task.GetInputs(), i)

@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/task"
 )
 
 type ProjectStep struct {
@@ -12,7 +12,7 @@ type ProjectStep struct {
 	Rename  map[string]string      `json:"rename" jsonschema_description:"Rename field (no template engine)"`
 }
 
-func valueRender(v interface{}, task manager.RuntimeTask, row map[string]interface{}) (interface{}, error) {
+func valueRender(v interface{}, task task.RuntimeTask, row map[string]interface{}) (interface{}, error) {
 	if vStr, ok := v.(string); ok {
 		return evaluate.ExpressionString(vStr, task.GetInputs(), row)
 	} else if vMap, ok := v.(map[string]interface{}); ok {
@@ -39,7 +39,7 @@ func valueRender(v interface{}, task manager.RuntimeTask, row map[string]interfa
 	return v, nil
 }
 
-func (pr ProjectStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
+func (pr ProjectStep) Run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
 
 	o := map[string]interface{}{}
 	for k, v := range i {

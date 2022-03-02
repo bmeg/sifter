@@ -6,9 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/bmeg/sifter/datastore"
 	"github.com/bmeg/sifter/loader"
-	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/playbook"
 
 	"github.com/spf13/cobra"
@@ -50,9 +48,6 @@ var Cmd = &cobra.Command{
 			driver = graph
 		}
 
-		//TODO: This needs to be configurable
-		dsConfig := datastore.Config{URL: "mongodb://localhost:27017", Database: "sifter", Collection: "cache"}
-
 		ld, err := loader.NewLoader(driver)
 		if err != nil {
 			log.Printf("Error stating load manager: %s", err)
@@ -62,13 +57,6 @@ var Cmd = &cobra.Command{
 			ld = loader.NewLoadCounter(ld, 1000, func(i uint64) { lps.UpdateCount(i) })
 		}
 		defer ld.Close()
-
-		man, err := manager.Init(manager.Config{Loader: ld, WorkDir: workDir, DataStore: &dsConfig})
-		if err != nil {
-			log.Printf("Error stating load manager: %s", err)
-			return err
-		}
-		defer man.Close()
 
 		inputs := map[string]interface{}{}
 		if inputFile != "" {
@@ -90,7 +78,7 @@ var Cmd = &cobra.Command{
 			dir = d
 		}
 		for _, playFile := range args {
-			Execute(playFile, dir, outDir, inputs, man)
+			Execute(playFile, dir, outDir, inputs)
 		}
 		if !keep {
 			os.RemoveAll(dir)

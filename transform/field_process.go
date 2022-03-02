@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/task"
 )
 
 type FieldProcessStep struct {
@@ -15,11 +15,11 @@ type FieldProcessStep struct {
 	ItemField string            `json:"itemField" jsonschema_description:"If processing an array of non-dict elements, create a dict as {itemField:element}"`
 }
 
-func (fs *FieldProcessStep) Init(task manager.RuntimeTask) {
+func (fs *FieldProcessStep) Init(task task.RuntimeTask) {
 	fs.Steps.Init(task)
 }
 
-func (fs FieldProcessStep) Start(in chan map[string]interface{}, task manager.RuntimeTask, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
+func (fs FieldProcessStep) Start(in chan map[string]interface{}, task task.RuntimeTask, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 	inChan := make(chan map[string]interface{}, 100)
 	tout, _ := fs.Steps.Start(inChan, task.Child("fieldProcess"), wg)
 	out := make(chan map[string]interface{}, 10)

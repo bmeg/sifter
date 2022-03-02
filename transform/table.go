@@ -8,9 +8,9 @@ import (
 
 	"github.com/bmeg/golib"
 	"github.com/bmeg/sifter/loader"
+	"github.com/bmeg/sifter/task"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
 )
 
 type TableWriteStep struct {
@@ -39,7 +39,7 @@ type TableLookupStep struct {
 	table   map[string][]string
 }
 
-func (tw *TableWriteStep) Init(task manager.RuntimeTask) {
+func (tw *TableWriteStep) Init(task task.RuntimeTask) {
 	sep := '\t'
 	if tw.Sep != "" {
 		sep = rune(tw.Sep[0])
@@ -47,7 +47,7 @@ func (tw *TableWriteStep) Init(task manager.RuntimeTask) {
 	tw.emit = task.EmitTable(tw.Output, tw.Columns, sep)
 }
 
-func (tw *TableWriteStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
+func (tw *TableWriteStep) Run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
 	if err := tw.emit.EmitRow(i); err != nil {
 		log.Printf("Row Error: %s", err)
 	}
@@ -59,7 +59,7 @@ func (tw *TableWriteStep) Close() {
 	tw.emit.Close()
 }
 
-func (tr *TableReplaceStep) Init(task manager.RuntimeTask) error {
+func (tr *TableReplaceStep) Init(task task.RuntimeTask) error {
 	if tr.Input != "" {
 		input, err := evaluate.ExpressionString(tr.Input, task.GetInputs(), nil)
 		inputPath, err := task.AbsPath(input)
@@ -92,7 +92,7 @@ func (tr *TableReplaceStep) Init(task manager.RuntimeTask) error {
 	return nil
 }
 
-func (tr *TableReplaceStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
+func (tr *TableReplaceStep) Run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
 
 	if _, ok := i[tr.Field]; ok {
 		out := map[string]interface{}{}
@@ -132,7 +132,7 @@ func (tr *TableReplaceStep) Run(i map[string]interface{}, task manager.RuntimeTa
 	return i
 }
 
-func (tr *TableLookupStep) Init(task manager.RuntimeTask) error {
+func (tr *TableLookupStep) Init(task task.RuntimeTask) error {
 	input, err := evaluate.ExpressionString(tr.Input, task.GetInputs(), nil)
 	inputPath, err := task.AbsPath(input)
 	if err != nil {
@@ -181,7 +181,7 @@ func (tr *TableLookupStep) Init(task manager.RuntimeTask) error {
 	return nil
 }
 
-func (tr *TableLookupStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
+func (tr *TableLookupStep) Run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
 	field, err := evaluate.ExpressionString(tr.Field, task.GetInputs(), i)
 	if err == nil {
 		if pv, ok := tr.table[field]; ok {

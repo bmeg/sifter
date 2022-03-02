@@ -10,7 +10,7 @@ import (
 
 	"github.com/bmeg/golib"
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/task"
 	"github.com/bmeg/sifter/transform"
 )
 
@@ -21,7 +21,7 @@ type JSONLoadStep struct {
 	Multiline     bool           `json:"multiline" jsonschema_description:"Load file as a single multiline JSON object"`
 }
 
-func (ml *JSONLoadStep) Run(task *manager.Task) error {
+func (ml *JSONLoadStep) Run(task *task.Task) error {
 	log.Printf("Starting JSON Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
 	inputPath, err := task.AbsPath(input)

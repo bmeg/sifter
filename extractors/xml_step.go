@@ -10,7 +10,7 @@ import (
 	"sync"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/task"
 	"github.com/bmeg/sifter/transform"
 )
 
@@ -99,7 +99,7 @@ func xmlStream(file io.Reader, out chan map[string]interface{}) {
 	}
 }
 
-func (ml *XMLLoadStep) Run(task *manager.Task) error {
+func (ml *XMLLoadStep) Run(task *task.Task) error {
 	log.Printf("Starting XML Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
 	inputPath, err := task.AbsPath(input)

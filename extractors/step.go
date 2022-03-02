@@ -1,11 +1,5 @@
 package extractors
 
-import (
-	"log"
-
-	"github.com/bmeg/sifter/manager"
-)
-
 type Extractor struct {
 	Description   string             `json:"description"  jsonschema_description:"Human Readable description of step"`
 	Untar         *UntarStep         `json:"untar" jsonschema_description:"Untar a file"`
@@ -21,7 +15,8 @@ type Extractor struct {
 	AvroLoad      *AvroLoadStep      `json:"avroLoad" jsonschema_description:"Load data from avro file"`
 }
 
-func (step *Extractor) Run(run *manager.Runtime, playBookPath string, inputs map[string]interface{}) error {
+/*
+func (step *Extractor) Run(run *task.Runtime, playBookPath string, inputs map[string]interface{}) error {
 
 	if step.TransposeFile != nil {
 		task := run.NewTask(playBookPath, inputs)
@@ -118,3 +113,4 @@ func (step *Extractor) Run(run *manager.Runtime, playBookPath string, inputs map
 	}
 	return nil
 }
+*/

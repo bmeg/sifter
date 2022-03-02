@@ -8,12 +8,12 @@ import (
 	"github.com/bmeg/grip/gripql"
 	"github.com/bmeg/sifter/datastore"
 	"github.com/bmeg/sifter/loader"
-	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/task"
 
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-func NewTask(workdir string, vertexEmit bool, graphOut loader.GraphEmitter) manager.RuntimeTask {
+func NewTask(workdir string, vertexEmit bool, graphOut loader.GraphEmitter) task.RuntimeTask {
 	return &FixTask{name: "graph-fix", workdir: workdir, out: graphOut, vertexEmit: vertexEmit}
 }
 
@@ -35,7 +35,7 @@ func (m *FixTask) AbsPath(p string) (string, error) {
 	return a, nil
 }
 
-func (m *FixTask) Child(name string) manager.RuntimeTask {
+func (m *FixTask) Child(name string) task.RuntimeTask {
 	return &FixTask{workdir: m.workdir, name: m.name + ":" + name, out: m.out, vertexEmit: m.vertexEmit}
 }
 

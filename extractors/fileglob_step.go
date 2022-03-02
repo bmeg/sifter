@@ -5,18 +5,17 @@ import (
 	"path/filepath"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/task"
 )
 
 type FileGlobStep struct {
-	Files     []string    `json:"files" jsonschema_description:"Array of files (with wildcards) to scan for"`
-	Dir       string      `json:"dir"`
-	Limit     int         `json:"limit" jsonschema_description:""`
-	InputName string      `json:"inputName" jsonschema_description:"variable name the file will be stored in when calling the extraction steps"`
-	Steps     []Extractor `json:"steps" jsonschema_description:"Extraction pipeline to run"`
+	Files     []string `json:"files" jsonschema_description:"Array of files (with wildcards) to scan for"`
+	Dir       string   `json:"dir"`
+	Limit     int      `json:"limit" jsonschema_description:""`
+	InputName string   `json:"inputName" jsonschema_description:"variable name the file will be stored in when calling the extraction steps"`
 }
 
-func (fs *FileGlobStep) Run(task *manager.Task) error {
+func (fs *FileGlobStep) Run(task *task.Task) error {
 
 	log.Printf("FileGlob")
 	for _, input := range fs.Files {
@@ -42,9 +41,11 @@ func (fs *FileGlobStep) Run(task *manager.Task) error {
 				newInputs[k] = v
 			}
 			newInputs[fs.InputName] = path
-			for _, s := range fs.Steps {
-				s.Run(task.Runtime, task.SourcePath, newInputs)
-			}
+			/*
+				for _, s := range fs.Steps {
+					s.Run(task.Runtime, task.SourcePath, newInputs)
+				}
+			*/
 		}
 	}
 	return nil

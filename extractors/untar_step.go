@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/task"
 )
 
 type UntarStep struct {
@@ -17,7 +17,7 @@ type UntarStep struct {
 	Strip int    `json:"strip" jsonschema_description:"Number of base directories to strip with untaring"`
 }
 
-func (us *UntarStep) Run(task *manager.Task) error {
+func (us *UntarStep) Run(task *task.Task) error {
 	input, err := evaluate.ExpressionString(us.Input, task.Inputs, nil)
 	if err != nil {
 		return err
@@ -53,7 +53,7 @@ func (us *UntarStep) Run(task *manager.Task) error {
 		if err != nil {
 			return err
 		}
-		task.Printf("File: %s\n", hdr.Name)
+		//task.Printf("File: %s\n", hdr.Name)
 		outPath, err := task.AbsPath(hdr.Name)
 		if err != nil {
 			return err
@@ -63,7 +63,8 @@ func (us *UntarStep) Run(task *manager.Task) error {
 		} else if hdr.Typeflag == tar.TypeReg {
 			out, err := os.Create(outPath)
 			if _, err := io.Copy(out, tr); err != nil {
-				task.Printf("Failed: %s", err)
+				//task.Printf("Failed: %s", err)
+				log.Printf("Failed: %s", err)
 			}
 			if err != nil {
 				return err

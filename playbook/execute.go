@@ -1,10 +1,11 @@
 package playbook
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/bmeg/flame"
+	"github.com/bmeg/sifter/task"
 )
 
 func fileExists(filename string) bool {
@@ -110,14 +111,22 @@ func prepStepLog() {
 
 func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir string, outDir string) error {
 
-	fmt.Printf("Running playbook")
+	log.Printf("Running playbook")
 
 	wf := flame.NewWorkflow()
 
 	wf.Init()
 
-	for _, v := range pb.Sources {
-		flame.AddSourceChan(v.Start())
+	task := &task.Task{Inputs: inputs, Workdir: workDir}
+
+	for n, v := range pb.Sources {
+		log.Printf("Setting up %s", n)
+		s, err := v.Start(task)
+		if err == nil {
+			flame.AddSourceChan(wf, s)
+		} else {
+			log.Printf("Source error: %s", err)
+		}
 	}
 
 	wf.Wait()

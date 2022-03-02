@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/bmeg/sifter/cmd/graphbuild"
-	"github.com/bmeg/sifter/cmd/graphfix"
 	"github.com/bmeg/sifter/cmd/graphmanifest"
 	"github.com/bmeg/sifter/cmd/manifest"
 	"github.com/bmeg/sifter/cmd/run"
@@ -25,7 +24,6 @@ func init() {
 	RootCmd.AddCommand(graphbuild.Cmd)
 	RootCmd.AddCommand(template.Cmd)
 	RootCmd.AddCommand(graphmanifest.Cmd)
-	RootCmd.AddCommand(graphfix.Cmd)
 }
 
 var genBashCompletionCmd = &cobra.Command{

@@ -26,29 +26,24 @@ type QueryTransform struct {
 }
 
 type SQLDumpStep struct {
-	Input         string           `json:"input" jsonschema_description:"Path to the SQL dump file"`
-	Tables        []TableTransform `json:"tables" jsonschema_description:"Array of transforms for the different tables in the SQL dump"`
-	SkipIfMissing bool             `json:"skipIfMissing" jsonschema_description:"Option to skip without fail if input file does not exist"`
+	Input  string           `json:"input" jsonschema_description:"Path to the SQL dump file"`
+	Tables []TableTransform `json:"tables" jsonschema_description:"Array of transforms for the different tables in the SQL dump"`
 }
 
-func (ml *SQLDumpStep) Run(task *task.Task) error {
+func (ml *SQLDumpStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 
 	log.Printf("Starting SQLDump Load")
-	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
+	input, err := evaluate.ExpressionString(ml.Input, task.GetInputs(), nil)
 	inputPath, err := task.AbsPath(input)
 
 	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
-		if ml.SkipIfMissing {
-			return nil
-		}
-		return fmt.Errorf("File Not Found: %s", input)
+		return nil, fmt.Errorf("File Not Found: %s", input)
 	}
 	log.Printf("Loading: %s", inputPath)
 	fhd, err := os.Open(inputPath)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer fhd.Close()
 
 	var hd io.Reader
 	if strings.HasSuffix(input, ".gz") || strings.HasSuffix(input, ".tgz") {
@@ -59,6 +54,8 @@ func (ml *SQLDumpStep) Run(task *task.Task) error {
 	} else {
 		hd = fhd
 	}
+
+	defer fhd.Close()
 
 	wg := &sync.WaitGroup{}
 	chanMap := map[string][]chan map[string]interface{}{}

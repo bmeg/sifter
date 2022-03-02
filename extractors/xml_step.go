@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"sync"
 
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/task"
@@ -99,49 +98,31 @@ func xmlStream(file io.Reader, out chan map[string]interface{}) {
 	}
 }
 
-func (ml *XMLLoadStep) Run(task *task.Task) error {
+func (ml *XMLLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 	log.Printf("Starting XML Load")
-	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
+	input, err := evaluate.ExpressionString(ml.Input, task.GetInputs(), nil)
 	inputPath, err := task.AbsPath(input)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
-		if ml.SkipIfMissing {
-			return nil
-		}
-		return fmt.Errorf("File Not Found: %s", input)
+		return nil, fmt.Errorf("File Not Found: %s", input)
 	}
 	log.Printf("Loading: %s", inputPath)
 
 	file, err := os.Open(inputPath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	wg := &sync.WaitGroup{}
 	procChan := make(chan map[string]interface{}, 100)
-
-	if err := ml.Transform.Init(task); err != nil {
-		return err
-	}
-
-	out, err := ml.Transform.Start(procChan, task, wg)
-	if err != nil {
-		log.Printf("Got error: %s", err)
-		return err
-	}
 	go func() {
-		for range out {
-		}
+		log.Printf("Starting XML Read")
+		xmlStream(file, procChan)
+		log.Printf("Yes Done")
+		log.Printf("Done Loading")
+		close(procChan)
 	}()
-	log.Printf("Starting XML Read")
-	xmlStream(file, procChan)
-	log.Printf("Yes Done")
-	log.Printf("Done Loading")
-	close(procChan)
-	wg.Wait()
-	ml.Transform.Close()
-	return nil
+	return procChan, nil
 }

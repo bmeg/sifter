@@ -7,18 +7,19 @@ import (
 	"strings"
 
 	"github.com/bmeg/golib"
-	"github.com/bmeg/sifter/loader"
 	"github.com/bmeg/sifter/task"
 
 	"github.com/bmeg/sifter/evaluate"
 )
 
+/*
 type TableWriteStep struct {
 	Output  string   `json:"output" jsonschema_description:"Name of file to create"`
 	Columns []string `json:"columns" jsonschema_description:"Columns to be written into table file"`
 	Sep     string   `json:"sep"`
 	emit    loader.TableEmitter
 }
+*/
 
 type TableReplaceStep struct {
 	Input  string            `json:"input"`
@@ -39,6 +40,7 @@ type TableLookupStep struct {
 	table   map[string][]string
 }
 
+/*
 func (tw *TableWriteStep) Init(task task.RuntimeTask) {
 	sep := '\t'
 	if tw.Sep != "" {
@@ -58,6 +60,7 @@ func (tw *TableWriteStep) Close() {
 	log.Printf("Closing tableWriter: %s", tw.Output)
 	tw.emit.Close()
 }
+*/
 
 func (tr *TableReplaceStep) Init(task task.RuntimeTask) error {
 	if tr.Input != "" {

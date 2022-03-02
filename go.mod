@@ -7,10 +7,11 @@ require (
 	github.com/alecthomas/jsonschema v0.0.0-20200514014646-0366d1034a17
 	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/biogo/hts v1.2.2
-	github.com/bmeg/flame v0.0.0-00010101000000-000000000000
+	github.com/bmeg/flame v0.0.0-20220302075815-776f30421f20
 	github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50
 	github.com/bmeg/grip v0.0.0-20210910231938-94d69d94ff65
 	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad
+	github.com/clbanning/mxj v1.8.4
 	github.com/dgraph-io/badger/v2 v2.0.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-python/gpython v0.0.3-0.20191118123038-4c28217f7422

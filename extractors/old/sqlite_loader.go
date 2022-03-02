@@ -60,7 +60,7 @@ func processQuery(rows *sql.Rows, trans transform.Pipe, task task.RuntimeTask) e
 	return nil
 }
 
-func (ml *SQLiteStep) Run(task task.RuntimeTask) error {
+func (ml *SQLiteStep) Start(task.RuntimeTask) (chan map[string]interface{}, error) {
 
 	log.Printf("Starting SQLite Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.GetInputs(), nil)

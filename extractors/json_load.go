@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"sync"
 
 	"github.com/bmeg/golib"
 	"github.com/bmeg/sifter/evaluate"
@@ -15,22 +14,18 @@ import (
 )
 
 type JSONLoadStep struct {
-	Input         string         `json:"input" jsonschema_description:"Path of multiline JSON file to transform"`
-	Transform     transform.Pipe `json:"transform" jsonschema_description:"Transformation Pipeline"`
-	SkipIfMissing bool           `json:"skipIfMissing" jsonschema_description:"Skip without error if file does note exist"`
-	Multiline     bool           `json:"multiline" jsonschema_description:"Load file as a single multiline JSON object"`
+	Input     string         `json:"input" jsonschema_description:"Path of multiline JSON file to transform"`
+	Transform transform.Pipe `json:"transform" jsonschema_description:"Transformation Pipeline"`
+	Multiline bool           `json:"multiline" jsonschema_description:"Load file as a single multiline JSON object"`
 }
 
-func (ml *JSONLoadStep) Run(task *task.Task) error {
+func (ml *JSONLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 	log.Printf("Starting JSON Load")
-	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
+	input, err := evaluate.ExpressionString(ml.Input, task.GetInputs(), nil)
 	inputPath, err := task.AbsPath(input)
 
 	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
-		if ml.SkipIfMissing {
-			return nil
-		}
-		return fmt.Errorf("File Not Found: %s", input)
+		return nil, fmt.Errorf("File Not Found: %s", input)
 	}
 	log.Printf("Loading: %s", inputPath)
 
@@ -39,7 +34,7 @@ func (ml *JSONLoadStep) Run(task *task.Task) error {
 		reader = make(chan []byte, 1)
 		dat, err := os.ReadFile(inputPath)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		reader <- dat
 		close(reader)
@@ -50,37 +45,20 @@ func (ml *JSONLoadStep) Run(task *task.Task) error {
 			reader, err = golib.ReadFileLines(inputPath)
 		}
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
+
 	procChan := make(chan map[string]interface{}, 100)
-	wg := &sync.WaitGroup{}
-
-	if err := ml.Transform.Init(task); err != nil {
-		return err
-	}
-
-	out, err := ml.Transform.Start(procChan, task, wg)
-	if err != nil {
-		return err
-	}
 	go func() {
-		for range out {
+		for line := range reader {
+			o := map[string]interface{}{}
+			if len(line) > 0 {
+				json.Unmarshal(line, &o)
+				procChan <- o
+			}
 		}
+		close(procChan)
 	}()
-
-	for line := range reader {
-		o := map[string]interface{}{}
-		if len(line) > 0 {
-			json.Unmarshal(line, &o)
-			procChan <- o
-		}
-	}
-
-	log.Printf("Done Loading")
-	close(procChan)
-	wg.Wait()
-	ml.Transform.Close()
-
-	return nil
+	return procChan, nil
 }

@@ -26,33 +26,21 @@ func (ds *DistinctStep) Init(task task.RuntimeTask) {
 	if err != nil {
 		log.Printf("%s", err)
 	}
-	ds.Steps.Init(task)
 }
 
 func (ds *DistinctStep) Start(in chan map[string]interface{}, task task.RuntimeTask, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 	out := make(chan map[string]interface{}, 10)
 
-	inChan := make(chan map[string]interface{}, 100)
-	tout, _ := ds.Steps.Start(inChan, task.Child("distinct"), wg)
-	go func() {
-		//Distinct does not emit the output of its sub pipeline, but it has to digest it
-		for range tout {
-		}
-	}()
-
 	go func() {
 		defer close(out)
-		defer close(inChan)
-
 		ds.db.Update(func(txn *badger.Txn) error {
 			for i := range in {
-				out <- i
 				keyStr, err := evaluate.ExpressionString(ds.Field, task.GetInputs(), i)
 				if err == nil {
 					key := []byte(keyStr)
 					_, err := txn.Get(key)
 					if err == badger.ErrKeyNotFound {
-						inChan <- i
+						out <- i
 						txn.Set(key, []byte{})
 					}
 				} else {

@@ -15,7 +15,7 @@ type FileGlobStep struct {
 	InputName string   `json:"inputName" jsonschema_description:"variable name the file will be stored in when calling the extraction steps"`
 }
 
-func (fs *FileGlobStep) Run(task *task.Task) error {
+func (fs *FileGlobStep) Start(task.RuntimeTask) (chan map[string]interface{}, error) {
 
 	log.Printf("FileGlob")
 	for _, input := range fs.Files {

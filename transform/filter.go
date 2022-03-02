@@ -16,7 +16,6 @@ type FilterStep struct {
 	Python  string `json:"python"`
 	GPython string `json:"gpython"`
 	Steps   Pipe   `json:"steps"`
-	inChan  chan map[string]interface{}
 	proc    evaluate.Processor
 }
 
@@ -38,65 +37,53 @@ func (fs *FilterStep) Init(task task.RuntimeTask) {
 		}
 		fs.proc = c
 	}
-	fs.Steps.Init(task)
 }
 
 func (fs FilterStep) Start(in chan map[string]interface{}, task task.RuntimeTask, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
 	out := make(chan map[string]interface{}, 10)
-	fs.inChan = make(chan map[string]interface{}, 100)
-	tout, _ := fs.Steps.Start(fs.inChan, task.Child("filter"), wg)
-	go func() {
-		//Filter does not emit the output of its sub pipeline, but it has to digest it
-		for range tout {
-		}
-	}()
 
 	go func() {
 		//Filter emits a copy of its input, without changing it
 		defer close(out)
-		defer close(fs.inChan)
 		for i := range in {
-			fs.run(i, task)
-			out <- i
+			if fs.run(i, task) {
+				out <- i
+			}
 		}
 	}()
 	return out, nil
 }
 
-func (fs FilterStep) run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
+func (fs FilterStep) run(i map[string]interface{}, task task.RuntimeTask) bool {
 	if fs.proc != nil {
 		out, err := fs.proc.EvaluateBool(i)
 		if err != nil {
 			log.Printf("Filter Error: %s", err)
 		}
-		if out {
-			fs.inChan <- i
-		}
-		return i
+		return out
 	}
 	col, err := evaluate.ExpressionString(fs.Field, task.GetInputs(), i)
 	if (fs.Check == "" && fs.Match == "") || fs.Check == "exists" {
 		if err == nil {
-			fs.inChan <- i
+			return true
 		}
-		return i
+		return false
 	} else if fs.Check == "hasValue" {
 		if err == nil && col != "" {
-			fs.inChan <- i
+			return true
 		}
-		return i
+		return false
 	}
 
 	match, _ := evaluate.ExpressionString(fs.Match, task.GetInputs(), i)
 	if col == match {
-		fs.inChan <- i
+		return true
 	}
-	return i
+	return false
 }
 
 func (fs FilterStep) Close() {
 	if fs.proc != nil {
 		fs.proc.Close()
 	}
-	fs.Steps.Close()
 }

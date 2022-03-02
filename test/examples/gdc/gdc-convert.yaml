@@ -1,58 +1,52 @@
 
-
-class: Playbook
-name: GDCConvert
-
 inputs: {}
-
-schema: ../../resources/schemas
 
 inputs:
   cases:
     type: File
 
-steps:
-  - desc: Loading CaseData
+sources:
+  caseData:
     jsonLoad:
       input: "{{inputs.cases}}"
-      transform:
-        - project:
-            mapping:
-              studies: "{{row.project.project_id}}"
-              experiments: "exp:{{row.project.project_id}}"
-              type: case
-        - objectCreate:
-            class: case
-        - fieldProcess:
-            field: samples
-            mapping:
-              cases: "{{row.id}}"
-            steps:
-              #- debug: {}
-              - project:
-                  mapping:
-                    type: sample
-                    id: "{{row.sample_id}}"
-              - objectCreate:
-                  class: sample
-              - fieldProcess:
-                  field: portions
-                  mapping:
-                    samples: "{{row.id}}"
-                  steps:
-                    - fieldProcess:
-                        field: analytes
-                        mapping:
-                          samples: "{{row.samples}}"
-                        steps:
-                          - fieldProcess:
-                              field: aliquots
-                              mapping:
-                                samples: "{{row.samples}}"
-                              steps:
-                                - project:
-                                    mapping:
-                                      type: aliquot
-                                      id: "{{row.aliquot_id}}"
-                                - objectCreate:
-                                    class: aliquot
+
+
+pipelines:
+  caseMapping:
+    - project:
+        mapping:
+          studies: "{{row.project.project_id}}"
+          experiments: "exp:{{row.project.project_id}}"
+          type: case
+    - objectCreate:
+        class: case
+  
+  samplesMapping:
+    - fieldProcess:
+        field: samples
+        mapping:
+          cases: "{{row.id}}"
+    - project:
+        mapping:
+          type: sample
+          id: "{{row.sample_id}}"
+    - objectCreate:
+        class: sample
+    - fieldProcess:
+        field: portions
+        mapping:
+          samples: "{{row.id}}"
+    - fieldProcess:
+        field: analytes
+        mapping:
+          samples: "{{row.samples}}"
+    - fieldProcess:
+        field: aliquots
+        mapping:
+          samples: "{{row.samples}}"
+    - project:
+        mapping:
+          type: aliquot
+          id: "{{row.aliquot_id}}"
+    - objectCreate:
+        class: aliquot

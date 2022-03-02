@@ -1,7 +1,6 @@
 package playbook
 
 import (
-	"path/filepath"
 	"sync"
 
 	"github.com/bmeg/sifter/datastore"
@@ -33,11 +32,4 @@ func (m *Manager) Close() {
 func (m *Manager) DropRuntime(name string) error {
 	m.Runtimes.Delete(name)
 	return nil
-}
-
-func (m *Manager) NewRuntime(name string, dir string) (*Runtime, error) {
-	dir, _ = filepath.Abs(dir)
-	r := NewRuntime(dir, name)
-	m.Runtimes.Store(name, r)
-	return r, nil
 }

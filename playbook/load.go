@@ -37,9 +37,9 @@ type Playbook struct {
 	Inputs    Inputs                          `json:"inputs,omitempty" jsonschema_description:"Optional inputs to Playbook"`
 	Outputs   Outputs                         `json:"outputs,omitempty" jsonschema_description:"Additional file created by Playbook"`
 	Sources   map[string]extractors.Extractor `json:"sources" jsonschema_description:"Steps of the transformation"`
-	Pipelines map[string]transform.Pipeline   `json:"pipelines"`
-	Sinks     map[string]Sink                 `json:"sinks"`
-	path      string
+	Pipelines map[string]transform.Pipe       `json:"pipelines"`
+	//Sinks     map[string]Sink                 `json:"sinks"`
+	path string
 }
 
 // Parse parses a YAML doc into the given Config instance.

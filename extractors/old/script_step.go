@@ -22,7 +22,7 @@ type ScriptStep struct {
 	WorkDir     string   `json:"workdir"`
 }
 
-func (ss *ScriptStep) Run(task *task.Task) error {
+func (ss *ScriptStep) Start(task.RuntimeTask) (chan map[string]interface{}, error) {
 
 	var baseCommand []string
 

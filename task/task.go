@@ -9,7 +9,7 @@ import (
 )
 
 type RuntimeTask interface {
-	loader.DataEmitter
+	Emit(name string, e map[string]interface{}) error
 
 	GetInputs() map[string]interface{}
 	AbsPath(p string) (string, error)
@@ -19,10 +19,10 @@ type RuntimeTask interface {
 }
 
 type Task struct {
-	Name       string
-	Workdir    string
-	SourcePath string
-	Inputs     map[string]interface{}
+	Name    string
+	Workdir string
+	Inputs  map[string]interface{}
+	Emitter loader.DataEmitter
 }
 
 func (m *Task) GetName() string {
@@ -51,4 +51,8 @@ func (m *Task) TempDir() string {
 
 func (m *Task) WorkDir() string {
 	return m.Workdir
+}
+
+func (m *Task) Emit(n string, e map[string]interface{}) error {
+	return m.Emitter.Emit(n, e)
 }

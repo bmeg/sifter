@@ -116,19 +116,42 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 
 	wf := flame.NewWorkflow()
 
-	wf.Init()
-
 	task := &task.Task{Inputs: inputs, Workdir: workDir}
+
+	nodes := map[string]flame.Emitter[map[string]any]{}
 
 	for n, v := range pb.Sources {
 		log.Printf("Setting up %s", n)
 		s, err := v.Start(task)
 		if err == nil {
-			flame.AddSourceChan(wf, s)
+			c := flame.AddSourceChan(wf, s)
+			nodes[n] = c
 		} else {
 			log.Printf("Source error: %s", err)
 		}
 	}
+
+	for k, v := range pb.Pipelines {
+		var lastStep flame.Emitter[map[string]any]
+		if src, ok := pb.Links[k]; ok {
+			lastStep = nodes[src]
+		}
+		for _, s := range v {
+			b, err := s.Init(task)
+			if err != nil {
+				log.Printf("Pipeline error: %s", err)
+			} else {
+				c := flame.AddFlatMapper(wf, b.Process)
+				if lastStep != nil {
+					c.Connect(lastStep)
+					lastStep = c
+				}
+			}
+		}
+		//nodes[k] = c
+	}
+
+	wf.Start()
 
 	wf.Wait()
 	return nil

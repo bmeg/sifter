@@ -1,25 +1,22 @@
 package transform
 
 import (
-	"log"
-	"regexp"
+	"fmt"
+	"reflect"
 
-	"sync"
-
-	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/task"
 )
 
 var DefaultEngine = "python"
 var PipeSize = 20
 
-type Process interface {
-	Start(in chan map[string]interface{}) map[string]interface{}
+type Processor interface {
+	Process(map[string]any) []map[string]any
 	Close()
 }
 
 type Transform interface {
-	Init(task.RuntimeTask) Process
+	Init(t task.RuntimeTask) (Processor, error)
 }
 
 type Step struct {
@@ -45,160 +42,16 @@ type Step struct {
 
 type Pipe []Step
 
-func contains(s []string, q string) bool {
-	for _, i := range s {
-		if i == q {
-			return true
+func (ts Step) Init(t task.RuntimeTask) (Processor, error) {
+	v := reflect.ValueOf(ts)
+	for i := 0; i < v.NumField(); i++ {
+		f := v.Field(i)
+		x := f.Interface()
+		if z, ok := x.(Transform); ok {
+			if !f.IsNil() {
+				return z.Init(t)
+			}
 		}
 	}
-	return false
-}
-
-func (ts Step) Init(task task.RuntimeTask) error {
-	log.Printf("Doing Step Init")
-	if ts.Filter != nil {
-		ts.Filter.Init(task)
-	} else if ts.FieldProcess != nil {
-		ts.FieldProcess.Init(task)
-	} else if ts.RegexReplace != nil {
-		re, _ := evaluate.ExpressionString(ts.RegexReplace.Regex, task.GetInputs(), nil)
-		ts.RegexReplace.reg, _ = regexp.Compile(re)
-	} else if ts.Map != nil {
-		log.Printf("About to init map")
-		ts.Map.Init(task)
-	} else if ts.Reduce != nil {
-		ts.Reduce.Init(task)
-	} else if ts.Distinct != nil {
-		ts.Distinct.Init(task)
-		//} else if ts.TableWrite != nil {
-		//	ts.TableWrite.Init(task)
-	} else if ts.TableReplace != nil {
-		err := ts.TableReplace.Init(task)
-		if err != nil {
-			log.Printf("TableReplace err: %s", err)
-		}
-		return err
-	} else if ts.TableLookup != nil {
-		err := ts.TableLookup.Init(task)
-		if err != nil {
-			log.Printf("TableLookup err: %s", err)
-		}
-		return err
-	} else if ts.JSONFileLookup != nil {
-		err := ts.JSONFileLookup.Init(task)
-		if err != nil {
-			log.Printf("JSONFileLookup err: %s", err)
-		}
-		return err
-	}
-	return nil
-}
-
-func (ts Step) Close() {
-	if ts.Filter != nil {
-		ts.Filter.Close()
-	} else if ts.FieldProcess != nil {
-		ts.FieldProcess.Close()
-	} else if ts.Map != nil {
-		ts.Map.Close()
-	} else if ts.Distinct != nil {
-		ts.Distinct.Close()
-		//} else if ts.TableWrite != nil {
-		//	ts.TableWrite.Close()
-	}
-}
-
-func (ts Step) Start(in chan map[string]interface{},
-	task task.RuntimeTask, wg *sync.WaitGroup) chan map[string]interface{} {
-
-	out := make(chan map[string]interface{}, PipeSize)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		defer close(out)
-		if ts.FieldMap != nil {
-			for i := range in {
-				out <- ts.FieldMap.Run(i, task)
-			}
-		} else if ts.FieldType != nil {
-			for i := range in {
-				out <- ts.FieldType.Run(i, task)
-			}
-		} else if ts.Filter != nil {
-			fOut, _ := ts.Filter.Start(in, task, wg)
-			for i := range fOut {
-				out <- i
-			}
-		} else if ts.Clean != nil {
-			fOut, _ := ts.Clean.Start(in, task, wg)
-			for i := range fOut {
-				out <- i
-			}
-		} else if ts.FieldProcess != nil {
-			fOut, _ := ts.FieldProcess.Start(in, task, wg)
-			for i := range fOut {
-				out <- i
-			}
-		} else if ts.Debug != nil {
-			for i := range in {
-				out <- ts.Debug.Run(i, task)
-			}
-		} else if ts.RegexReplace != nil {
-			for i := range in {
-				out <- ts.RegexReplace.Run(i, task)
-			}
-		} else if ts.AlleleID != nil {
-			for i := range in {
-				out <- ts.AlleleID.Run(i, task)
-			}
-		} else if ts.Project != nil {
-			for i := range in {
-				out <- ts.Project.Run(i, task)
-			}
-		} else if ts.Map != nil {
-			for i := range in {
-				o := ts.Map.Run(i, task)
-				out <- o
-			}
-		} else if ts.Reduce != nil {
-			for i := range in {
-				ts.Reduce.Add(i, task)
-			}
-			for o := range ts.Reduce.Run() {
-				out <- o
-			}
-		} else if ts.Distinct != nil {
-			fOut, _ := ts.Distinct.Start(in, task, wg)
-			for i := range fOut {
-				out <- i
-			}
-			//} else if ts.ObjectCreate != nil {
-			//	for i := range in {
-			//		out <- ts.ObjectCreate.Run(i, task)
-			//	}
-		} else if ts.Emit != nil {
-			for i := range in {
-				out <- ts.Emit.Run(i, task)
-			}
-			//} else if ts.TableWrite != nil {
-			//	for i := range in {
-			//		out <- ts.TableWrite.Run(i, task)
-			//	}
-		} else if ts.TableReplace != nil {
-			for i := range in {
-				out <- ts.TableReplace.Run(i, task)
-			}
-		} else if ts.TableLookup != nil {
-			for i := range in {
-				out <- ts.TableLookup.Run(i, task)
-			}
-		} else if ts.JSONFileLookup != nil {
-			for i := range in {
-				out <- ts.JSONFileLookup.Run(i, task)
-			}
-		} else {
-			log.Printf("Unknown field step")
-		}
-	}()
-	return out
+	return nil, fmt.Errorf(("Extractor not defined"))
 }

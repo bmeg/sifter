@@ -3,7 +3,6 @@ package task
 import (
 	"io/ioutil"
 	"path/filepath"
-	"strings"
 
 	"github.com/bmeg/sifter/loader"
 )
@@ -34,9 +33,9 @@ func (m *Task) GetInputs() map[string]interface{} {
 }
 
 func (m *Task) AbsPath(p string) (string, error) {
-	if !strings.HasPrefix(p, "/") {
-		p = filepath.Join(m.Workdir, p)
-	}
+	//if !strings.HasPrefix(p, "/") {
+	//	p = filepath.Join(m.Workdir, p)
+	//}
 	a, err := filepath.Abs(p)
 	if err != nil {
 		return "", err

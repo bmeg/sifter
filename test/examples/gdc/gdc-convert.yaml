@@ -1,6 +1,4 @@
 
-inputs: {}
-
 inputs:
   cases:
     type: File
@@ -10,6 +8,12 @@ sources:
     jsonLoad:
       input: "{{inputs.cases}}"
 
+
+links:
+  - from: caseData
+    to: caseMapping
+  - from: caseData
+    to: samplesMapping
 
 pipelines:
   caseMapping:

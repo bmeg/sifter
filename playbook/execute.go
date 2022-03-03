@@ -112,6 +112,7 @@ func prepStepLog() {
 func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir string, outDir string) error {
 
 	log.Printf("Running playbook")
+	log.Printf("Inputs: %#v", inputs)
 
 	wf := flame.NewWorkflow()
 

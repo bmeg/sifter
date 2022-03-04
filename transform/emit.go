@@ -1,6 +1,8 @@
 package transform
 
 import (
+	"log"
+
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/task"
 )
@@ -16,6 +18,11 @@ type EmitStep struct {
 	Name string `json:"name"`
 }
 
+type emitProcess struct {
+	config EmitStep
+	task   task.RuntimeTask
+}
+
 /*
 func (ts ObjectCreateStep) Run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
 	name, err := evaluate.ExpressionString(ts.Name, task.GetInputs(), i)
@@ -26,10 +33,17 @@ func (ts ObjectCreateStep) Run(i map[string]interface{}, task task.RuntimeTask) 
 }
 */
 
-func (ts EmitStep) Run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
-	name, err := evaluate.ExpressionString(ts.Name, task.GetInputs(), i)
+func (ts EmitStep) Init(t task.RuntimeTask) (Processor, error) {
+	return &emitProcess{ts, t}, nil
+}
+
+func (ts *emitProcess) Close() {}
+
+func (ts *emitProcess) Process(i map[string]interface{}) []map[string]interface{} {
+	name, err := evaluate.ExpressionString(ts.config.Name, ts.task.GetInputs(), i)
 	if err == nil {
-		task.Emit(name, i)
+		log.Printf("Emitting: %s", i)
+		ts.task.Emit(name, i)
 	}
-	return i
+	return []map[string]any{i}
 }

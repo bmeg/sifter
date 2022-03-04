@@ -35,7 +35,6 @@ func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface
 	if err != nil {
 		return nil, err
 	}
-	defer fhd.Close()
 
 	var hd io.Reader
 	if strings.HasSuffix(input, ".gz") || strings.HasSuffix(input, ".tgz") {
@@ -71,6 +70,8 @@ func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface
 	}
 
 	go func() {
+		defer fhd.Close()
+		log.Printf("STARTING READ: %#v %#v", r, inputStream)
 		for record := range r.Read(inputStream) {
 			if rowSkip > 0 {
 				rowSkip--
@@ -93,7 +94,6 @@ func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface
 				}
 			}
 		}
-
 		log.Printf("Done Loading")
 		close(procChan)
 	}()

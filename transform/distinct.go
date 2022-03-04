@@ -3,7 +3,6 @@ package transform
 import (
 	"log"
 	"path/filepath"
-	"sync"
 
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/task"
@@ -13,46 +12,46 @@ import (
 type DistinctStep struct {
 	Field string `json:"field"`
 	Steps Pipe   `json:"steps"`
-	db    *badger.DB
 }
 
-func (ds *DistinctStep) Init(task task.RuntimeTask) {
+type distinctProcess struct {
+	config DistinctStep
+	task   task.RuntimeTask
+	db     *badger.DB
+}
+
+func (ds DistinctStep) Init(task task.RuntimeTask) (Processor, error) {
 	log.Printf("Starting Distinct: %s", ds.Field)
 	tdir := task.TempDir()
 	opts := badger.DefaultOptions(filepath.Join(tdir, "badger"))
 	opts.ValueDir = filepath.Join(tdir, "badger")
-	var err error
-	ds.db, err = badger.Open(opts)
+	db, err := badger.Open(opts)
 	if err != nil {
-		log.Printf("%s", err)
+		return nil, err
 	}
+	return &distinctProcess{ds, task, db}, nil
 }
 
-func (ds *DistinctStep) Start(in chan map[string]interface{}, task task.RuntimeTask, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
-	out := make(chan map[string]interface{}, 10)
+func (ds *distinctProcess) Process(i map[string]any) []map[string]any {
+	out := []map[string]any{}
 
-	go func() {
-		defer close(out)
+	keyStr, err := evaluate.ExpressionString(ds.config.Field, ds.task.GetInputs(), i)
+	if err == nil {
 		ds.db.Update(func(txn *badger.Txn) error {
-			for i := range in {
-				keyStr, err := evaluate.ExpressionString(ds.Field, task.GetInputs(), i)
-				if err == nil {
-					key := []byte(keyStr)
-					_, err := txn.Get(key)
-					if err == badger.ErrKeyNotFound {
-						out <- i
-						txn.Set(key, []byte{})
-					}
-				} else {
-					log.Printf("Distinct field error %s", err)
-				}
+			key := []byte(keyStr)
+			_, err := txn.Get(key)
+			if err == badger.ErrKeyNotFound {
+				out = append(out, i)
+				txn.Set(key, []byte{})
 			}
 			return nil
 		})
-	}()
-	return out, nil
+	} else {
+		log.Printf("Distinct field error %s", err)
+	}
+	return out
 }
 
-func (ds *DistinctStep) Close() {
+func (ds *distinctProcess) Close() {
 	ds.db.Close()
 }

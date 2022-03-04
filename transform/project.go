@@ -12,6 +12,15 @@ type ProjectStep struct {
 	Rename  map[string]string      `json:"rename" jsonschema_description:"Rename field (no template engine)"`
 }
 
+type projectStepProcess struct {
+	project ProjectStep
+	task    task.RuntimeTask
+}
+
+func (pr ProjectStep) Init(t task.RuntimeTask) (Processor, error) {
+	return &projectStepProcess{pr, t}, nil
+}
+
 func valueRender(v interface{}, task task.RuntimeTask, row map[string]interface{}) (interface{}, error) {
 	if vStr, ok := v.(string); ok {
 		return evaluate.ExpressionString(vStr, task.GetInputs(), row)
@@ -39,28 +48,32 @@ func valueRender(v interface{}, task task.RuntimeTask, row map[string]interface{
 	return v, nil
 }
 
-func (pr ProjectStep) Run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
-
-	o := map[string]interface{}{}
-	for k, v := range i {
-		if r, ok := pr.Rename[k]; ok {
-			o[r] = v
-		} else {
-			o[k] = v
-		}
-	}
-
-	for k, v := range pr.Mapping {
-		t, _ := valueRender(v, task, i)
-		SetProjectValue(o, k, t)
-	}
-	return o
-}
-
-func SetProjectValue(i map[string]interface{}, key string, val interface{}) error {
+func setProjectValue(i map[string]interface{}, key string, val interface{}) error {
 	if strings.HasPrefix(key, "$.") {
 		return evaluate.SetJSONPath(key, i, val)
 	}
 	i[key] = val
 	return nil
+}
+
+func (pr *projectStepProcess) Process(i map[string]interface{}) []map[string]interface{} {
+
+	o := map[string]interface{}{}
+	for k, v := range i {
+		if r, ok := pr.project.Rename[k]; ok {
+			o[r] = v
+		} else {
+			o[k] = v
+		}
+	}
+	for k, v := range pr.project.Mapping {
+		t, _ := valueRender(v, pr.task, i)
+		setProjectValue(o, k, t)
+	}
+	return []map[string]any{o}
+
+}
+
+func (pr *projectStepProcess) Close() {
+
 }

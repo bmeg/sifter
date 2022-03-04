@@ -53,5 +53,5 @@ func (ts Step) Init(t task.RuntimeTask) (Processor, error) {
 			}
 		}
 	}
-	return nil, fmt.Errorf(("Extractor not defined"))
+	return nil, fmt.Errorf(("Transform not defined"))
 }

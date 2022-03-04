@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/bmeg/flame"
+	"github.com/bmeg/sifter/loader"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -116,7 +117,10 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 
 	wf := flame.NewWorkflow()
 
-	task := &task.Task{Inputs: inputs, Workdir: workDir}
+	ld := loader.NewDirLoader(outDir)
+	em, _ := ld.NewDataEmitter(nil)
+
+	task := &task.Task{Inputs: inputs, Workdir: workDir, Emitter: em}
 
 	nodes := map[string]flame.Emitter[map[string]any]{}
 
@@ -134,13 +138,17 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 	for k, v := range pb.Pipelines {
 		var lastStep flame.Emitter[map[string]any]
 		if src, ok := pb.Links[k]; ok {
+			log.Printf("Connecting %s to %s", src, k)
 			lastStep = nodes[src]
+		} else {
+			log.Printf("Input %s not found", src)
 		}
 		for _, s := range v {
 			b, err := s.Init(task)
 			if err != nil {
 				log.Printf("Pipeline error: %s", err)
 			} else {
+				log.Printf("Pipeline step: %#v", b)
 				c := flame.AddFlatMapper(wf, b.Process)
 				if lastStep != nil {
 					c.Connect(lastStep)
@@ -151,8 +159,12 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 		//nodes[k] = c
 	}
 
+	log.Printf("WF: %#v", wf)
+
 	wf.Start()
 
 	wf.Wait()
+
+	em.Close()
 	return nil
 }

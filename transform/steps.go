@@ -20,9 +20,9 @@ type Transform interface {
 }
 
 type Step struct {
-	FieldMap  *FieldMapStep  `json:"fieldMap" jsonschema_description:"fieldMap to run"`
-	FieldType *FieldTypeStep `json:"fieldType" jsonschema_description:"Change type of a field (ie string -> integer)"`
-	//ObjectCreate   *ObjectCreateStep   `json:"objectCreate" jsonschema_description:"Create a JSON schema based object"`
+	FieldMap     *FieldMapStep     `json:"fieldMap" jsonschema_description:"fieldMap to run"`
+	FieldType    *FieldTypeStep    `json:"fieldType" jsonschema_description:"Change type of a field (ie string -> integer)"`
+	ObjectCreate *ObjectCreateStep `json:"objectCreate" jsonschema_description:"Create a JSON schema based object"`
 	Emit         *EmitStep         `json:"emit" jsonschema_description:"Write to unstructured JSON file"`
 	Filter       *FilterStep       `json:"filter"`
 	Clean        *CleanStep        `json:"clean"`

@@ -148,7 +148,7 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 			if err != nil {
 				log.Printf("Pipeline error: %s", err)
 			} else {
-				log.Printf("Pipeline step: %#v", b)
+				log.Printf("Pipeline step: %T", b)
 				c := flame.AddFlatMapper(wf, b.Process)
 				if lastStep != nil {
 					c.Connect(lastStep)
@@ -156,12 +156,13 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 				}
 			}
 		}
-		//nodes[k] = c
+		nodes[k] = lastStep
 	}
 
 	log.Printf("WF: %#v", wf)
 
 	wf.Start()
+	log.Printf("Workflow Started")
 
 	wf.Wait()
 

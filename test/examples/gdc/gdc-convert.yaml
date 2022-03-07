@@ -28,6 +28,8 @@ pipelines:
     - objectCreate:
         class: case
         schema: "{{inputs.schema}}"
+    - emit:
+        name: case
   
   sampleData:
     - fieldProcess:
@@ -43,6 +45,8 @@ pipelines:
     - objectCreate:
         class: sample
         schema: "{{inputs.schema}}"
+    - emit:
+        name: sample
 
   aliquotMapping:
     - fieldProcess:
@@ -64,3 +68,5 @@ pipelines:
     - objectCreate:
         class: aliquot
         schema: "{{inputs.schema}}"
+    - emit:
+        name: aliquot

@@ -122,14 +122,15 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 
 	task := &task.Task{Inputs: inputs, Workdir: workDir, Emitter: em}
 
-	nodes := map[string]flame.Emitter[map[string]any]{}
+	outNodes := map[string]flame.Emitter[map[string]any]{}
+	inNodes := map[string]flame.Receiver[map[string]any]{}
 
 	for n, v := range pb.Sources {
 		log.Printf("Setting up %s", n)
 		s, err := v.Start(task)
 		if err == nil {
 			c := flame.AddSourceChan(wf, s)
-			nodes[n] = c
+			outNodes[n] = c
 		} else {
 			log.Printf("Source error: %s", err)
 		}
@@ -137,26 +138,38 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 
 	for k, v := range pb.Pipelines {
 		var lastStep flame.Emitter[map[string]any]
-		if src, ok := pb.Links[k]; ok {
-			log.Printf("Connecting %s to %s", src, k)
-			lastStep = nodes[src]
-		} else {
-			log.Printf("Input %s not found", src)
-		}
+		var firstStep flame.Receiver[map[string]any]
 		for _, s := range v {
 			b, err := s.Init(task)
 			if err != nil {
 				log.Printf("Pipeline error: %s", err)
 			} else {
-				log.Printf("Pipeline step: %T", b)
+				log.Printf("Pipeline %s step: %T", k, b)
 				c := flame.AddFlatMapper(wf, b.Process)
 				if lastStep != nil {
 					c.Connect(lastStep)
-					lastStep = c
+				}
+				lastStep = c
+				if firstStep == nil {
+					firstStep = c
 				}
 			}
 		}
-		nodes[k] = lastStep
+		outNodes[k] = lastStep
+		inNodes[k] = firstStep
+	}
+
+	for dst, src := range pb.Links {
+		if srcNode, ok := outNodes[src]; ok {
+			if dstNode, ok := inNodes[dst]; ok {
+				log.Printf("Connecting %s (%#v) to %s (%#v)", src, srcNode, dst, dstNode)
+				dstNode.Connect(srcNode)
+			} else {
+				log.Printf("Dest %s not found", dst)
+			}
+		} else {
+			log.Printf("Source %s not found", src)
+		}
 	}
 
 	log.Printf("WF: %#v", wf)

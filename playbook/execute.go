@@ -120,7 +120,11 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 	ld := loader.NewDirLoader(outDir)
 	em, _ := ld.NewDataEmitter(nil)
 
-	task := &task.Task{Inputs: inputs, Workdir: workDir, Emitter: em}
+	if pb.Name == "" {
+		pb.Name = "sifter"
+	}
+
+	task := &task.Task{Name: pb.Name, Inputs: inputs, Workdir: workDir, Emitter: em}
 
 	outNodes := map[string]flame.Emitter[map[string]any]{}
 	inNodes := map[string]flame.Receiver[map[string]any]{}
@@ -137,10 +141,11 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 	}
 
 	for k, v := range pb.Pipelines {
+		sub := task.SubTask(k)
 		var lastStep flame.Emitter[map[string]any]
 		var firstStep flame.Receiver[map[string]any]
 		for _, s := range v {
-			b, err := s.Init(task)
+			b, err := s.Init(sub)
 			if err != nil {
 				log.Printf("Pipeline error: %s", err)
 			} else {

@@ -18,6 +18,7 @@ type RuntimeTask interface {
 }
 
 type Task struct {
+	Prefix  string
 	Name    string
 	Workdir string
 	Inputs  map[string]interface{}
@@ -25,7 +26,20 @@ type Task struct {
 }
 
 func (m *Task) GetName() string {
-	return m.Name
+	if m.Prefix == "" {
+		return m.Name
+	}
+	return m.Prefix + "." + m.Name
+}
+
+func (m *Task) SubTask(ext string) *Task {
+	return &Task{
+		Prefix:  m.GetName(),
+		Name:    ext,
+		Workdir: m.Workdir,
+		Inputs:  m.Inputs,
+		Emitter: m.Emitter,
+	}
 }
 
 func (m *Task) GetInputs() map[string]interface{} {
@@ -53,5 +67,5 @@ func (m *Task) WorkDir() string {
 }
 
 func (m *Task) Emit(n string, e map[string]interface{}) error {
-	return m.Emitter.Emit(n, e)
+	return m.Emitter.Emit(m.GetName()+"."+n, e)
 }

@@ -1,4 +1,6 @@
 
+name: gdc
+
 inputs:
   cases:
     type: File
@@ -12,14 +14,16 @@ sources:
 
 
 links:
-  caseMapping: caseData
+  caseObject: caseData
   sampleData: caseData
-  sampleMapping: sampleData
-  aliquotMapping: sampleData
+  sampleObject: sampleData
+  aliquotObject: sampleData
+
+  sampleGraph: sampleObject
 
 
 pipelines:
-  caseMapping:
+  caseObject:
     - project:
         mapping:
           studies: "{{row.project.project_id}}"
@@ -37,7 +41,7 @@ pipelines:
         mapping:
           cases: "{{row.id}}"
 
-  sampleMapping:
+  sampleObject:
     - project:
         mapping:
           type: sample
@@ -48,7 +52,19 @@ pipelines:
     - emit:
         name: sample
 
-  aliquotMapping:
+  sampleGraph:
+    - graphBuild:
+        schema: "{{inputs.schema}}"
+        idPrefix: Sample
+        class: sample
+        fields:
+          cases:
+            toPrefix: Case
+        inEdges:
+          samples:
+            fromPrefix: Case
+
+  aliquotObject:
     - fieldProcess:
         field: portions
         mapping:

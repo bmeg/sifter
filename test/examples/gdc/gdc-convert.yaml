@@ -12,15 +12,15 @@ sources:
     jsonLoad:
       input: "{{inputs.cases}}"
 
-
 links:
   caseObject: caseData
   sampleData: caseData
   sampleObject: sampleData
   aliquotObject: sampleData
 
+  caseGraph: caseObject
   sampleGraph: sampleObject
-
+  aliquotGraph: aliquotObject
 
 pipelines:
   caseObject:
@@ -34,6 +34,15 @@ pipelines:
         schema: "{{inputs.schema}}"
     - emit:
         name: case
+  
+  caseGraph:
+    - graphBuild:
+        schema: "{{inputs.schema}}"
+        idPrefix: Case
+        class: case
+        fields:
+          experiments:
+            toPrefix: Project
   
   sampleData:
     - fieldProcess:
@@ -86,3 +95,12 @@ pipelines:
         schema: "{{inputs.schema}}"
     - emit:
         name: aliquot
+
+  aliquotGraph:
+    - graphBuild:
+        schema: "{{inputs.schema}}"
+        idPrefix: Aliquot
+        class: aliquot
+        fields:
+          samples:
+            toPrefix: Sample

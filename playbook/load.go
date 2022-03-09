@@ -8,6 +8,7 @@ import (
 	"github.com/bmeg/grip/gripql"
 	"github.com/bmeg/sifter/extractors"
 	"github.com/bmeg/sifter/transform"
+	"github.com/bmeg/sifter/writers"
 	"github.com/ghodss/yaml"
 )
 
@@ -37,6 +38,7 @@ type Playbook struct {
 	Inputs    Inputs                          `json:"inputs,omitempty" jsonschema_description:"Optional inputs to Playbook"`
 	Outputs   Outputs                         `json:"outputs,omitempty" jsonschema_description:"Additional file created by Playbook"`
 	Sources   map[string]extractors.Extractor `json:"sources" jsonschema_description:"Steps of the transformation"`
+	Sinks     map[string]writers.WriteConfig  `json:"sinks"`
 	Pipelines map[string]transform.Pipe       `json:"pipelines"`
 	Links     map[string]string               `json:"links"`
 	path      string

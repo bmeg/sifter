@@ -2,7 +2,6 @@ package transform
 
 import (
 	"log"
-	"sync"
 
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/task"
@@ -10,16 +9,23 @@ import (
 
 type FilterStep struct {
 	Field   string `json:"field"`
+	Value   string `json:"value"`
 	Match   string `json:"match"`
 	Check   string `json:"check" jsonschema_description:"How to check value, 'exists' or 'hasValue'"`
 	Method  string `json:"method"`
 	Python  string `json:"python"`
 	GPython string `json:"gpython"`
 	Steps   Pipe   `json:"steps"`
-	proc    evaluate.Processor
 }
 
-func (fs *FilterStep) Init(task task.RuntimeTask) {
+type filterProcessor struct {
+	config FilterStep
+	proc   evaluate.Processor
+	task   task.RuntimeTask
+}
+
+func (fs FilterStep) Init(task task.RuntimeTask) (Processor, error) {
+
 	if fs.Python != "" && fs.Method != "" {
 		log.Printf("Starting Filter Map: %s", fs.Python)
 		e := evaluate.GetEngine("python", task.WorkDir())
@@ -27,7 +33,7 @@ func (fs *FilterStep) Init(task task.RuntimeTask) {
 		if err != nil {
 			log.Printf("Compile Error: %s", err)
 		}
-		fs.proc = c
+		return &filterProcessor{fs, c, task}, nil
 	} else if fs.GPython != "" && fs.Method != "" {
 		log.Printf("Starting Filter Map: %s", fs.GPython)
 		e := evaluate.GetEngine("gpython", task.WorkDir())
@@ -35,54 +41,53 @@ func (fs *FilterStep) Init(task task.RuntimeTask) {
 		if err != nil {
 			log.Printf("Compile Error: %s", err)
 		}
-		fs.proc = c
+		return &filterProcessor{fs, c, task}, nil
 	}
+	return &filterProcessor{fs, nil, task}, nil
 }
 
-func (fs FilterStep) Start(in chan map[string]interface{}, task task.RuntimeTask, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
-	out := make(chan map[string]interface{}, 10)
-
-	go func() {
-		//Filter emits a copy of its input, without changing it
-		defer close(out)
-		for i := range in {
-			if fs.run(i, task) {
-				out <- i
-			}
-		}
-	}()
-	return out, nil
-}
-
-func (fs FilterStep) run(i map[string]interface{}, task task.RuntimeTask) bool {
+func (fs *filterProcessor) Process(i map[string]interface{}) []map[string]any {
 	if fs.proc != nil {
 		out, err := fs.proc.EvaluateBool(i)
 		if err != nil {
 			log.Printf("Filter Error: %s", err)
 		}
-		return out
+		if out {
+			return []map[string]any{i}
+		}
+		return []map[string]any{}
 	}
-	col, err := evaluate.ExpressionString(fs.Field, task.GetInputs(), i)
-	if (fs.Check == "" && fs.Match == "") || fs.Check == "exists" {
+	value := ""
+	var err error
+	if fs.config.Value != "" {
+		value, err = evaluate.ExpressionString(fs.config.Value, fs.task.GetInputs(), i)
+	} else if fs.config.Field != "" {
+		i, e := evaluate.GetJSONPath(fs.config.Field, i)
+		err = e
+		if vstr, ok := i.(string); ok {
+			value = vstr
+		}
+	}
+	if (fs.config.Check == "" && fs.config.Match == "") || fs.config.Check == "exists" {
 		if err == nil {
-			return true
+			return []map[string]any{i}
 		}
-		return false
-	} else if fs.Check == "hasValue" {
-		if err == nil && col != "" {
-			return true
+		return []map[string]any{}
+	} else if fs.config.Check == "hasValue" {
+		if err == nil && value != "" {
+			return []map[string]any{i}
 		}
-		return false
+		return []map[string]any{}
 	}
 
-	match, _ := evaluate.ExpressionString(fs.Match, task.GetInputs(), i)
-	if col == match {
-		return true
+	match, _ := evaluate.ExpressionString(fs.config.Match, fs.task.GetInputs(), i)
+	if value == match {
+		return []map[string]any{i}
 	}
-	return false
+	return []map[string]any{}
 }
 
-func (fs FilterStep) Close() {
+func (fs *filterProcessor) Close() {
 	if fs.proc != nil {
 		fs.proc.Close()
 	}

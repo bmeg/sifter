@@ -164,6 +164,15 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 		inNodes[k] = firstStep
 	}
 
+	for k, v := range pb.Sinks {
+		sub := task.SubTask(k)
+		s, err := v.Init(sub)
+		if err == nil {
+			c := flame.AddSink(wf, s.Write)
+			inNodes[k] = c
+		}
+	}
+
 	for dst, src := range pb.Links {
 		if srcNode, ok := outNodes[src]; ok {
 			if dstNode, ok := inNodes[dst]; ok {

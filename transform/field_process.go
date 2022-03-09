@@ -60,6 +60,12 @@ func (fs *fieldProcess) Process(i map[string]any) []map[string]any {
 				}
 				out = append(out, r)
 			}
+		} else if vMap, ok := v.(map[string]any); ok {
+			for k, v := range fs.config.Mapping {
+				val, _ := evaluate.ExpressionString(v, fs.task.GetInputs(), i)
+				vMap[k] = val
+			}
+			out = append(out, vMap)
 		} else {
 			log.Printf("Field list incorrect type: %s", v)
 		}

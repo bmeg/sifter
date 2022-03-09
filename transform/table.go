@@ -12,15 +12,6 @@ import (
 	"github.com/bmeg/sifter/evaluate"
 )
 
-/*
-type TableWriteStep struct {
-	Output  string   `json:"output" jsonschema_description:"Name of file to create"`
-	Columns []string `json:"columns" jsonschema_description:"Columns to be written into table file"`
-	Sep     string   `json:"sep"`
-	emit    loader.TableEmitter
-}
-*/
-
 type TableReplaceStep struct {
 	Input  string            `json:"input"`
 	Table  map[string]string `json:"table"`

@@ -3,7 +3,6 @@ package cmd
 import (
 	"os"
 
-	"github.com/bmeg/sifter/cmd/graphbuild"
 	"github.com/bmeg/sifter/cmd/graphmanifest"
 	"github.com/bmeg/sifter/cmd/inspect"
 	"github.com/bmeg/sifter/cmd/manifest"
@@ -23,7 +22,6 @@ func init() {
 	RootCmd.AddCommand(run.Cmd)
 	RootCmd.AddCommand(inspect.Cmd)
 	RootCmd.AddCommand(manifest.Cmd)
-	RootCmd.AddCommand(graphbuild.Cmd)
 	RootCmd.AddCommand(template.Cmd)
 	RootCmd.AddCommand(graphmanifest.Cmd)
 }

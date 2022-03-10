@@ -119,7 +119,7 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 	wf := flame.NewWorkflow()
 
 	ld := loader.NewDirLoader(outDir)
-	em, _ := ld.NewDataEmitter(nil)
+	em, _ := ld.NewDataEmitter()
 
 	if pb.Name == "" {
 		pb.Name = "sifter"

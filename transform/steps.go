@@ -20,7 +20,7 @@ type Transform interface {
 }
 
 type Step struct {
-	FieldMap       *FieldMapStep       `json:"fieldMap" jsonschema_description:"fieldMap to run"`
+	FieldParse     *FieldParseStep     `json:"fieldParse" jsonschema_description:"fieldParse to run"`
 	FieldType      *FieldTypeStep      `json:"fieldType" jsonschema_description:"Change type of a field (ie string -> integer)"`
 	ObjectCreate   *ObjectCreateStep   `json:"objectCreate" jsonschema_description:"Create a JSON schema based object"`
 	Emit           *EmitStep           `json:"emit" jsonschema_description:"Write to unstructured JSON file"`
@@ -38,7 +38,6 @@ type Step struct {
 	TableLookup    *TableLookupStep    `json:"tableLookup"`
 	JSONFileLookup *JSONFileLookupStep `json:"jsonLookup"`
 	GraphBuild     *GraphBuildStep     `json:"graphBuild"`
-	//TableWrite     *TableWriteStep     `json:"tableWrite" jsonschema_description:"Write out a TSV"`
 }
 
 type Pipe []Step

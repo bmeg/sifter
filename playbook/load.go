@@ -35,6 +35,7 @@ type Outputs []Output
 
 type Playbook struct {
 	Name      string                          `json:"name" jsonschema_description:"Unique name of the playbook"`
+	Outdir    string                          `json:"outdir"`
 	Inputs    Inputs                          `json:"inputs,omitempty" jsonschema_description:"Optional inputs to Playbook"`
 	Outputs   Outputs                         `json:"outputs,omitempty" jsonschema_description:"Additional file created by Playbook"`
 	Sources   map[string]extractors.Extractor `json:"sources" jsonschema_description:"Steps of the transformation"`

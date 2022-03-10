@@ -1,7 +1,5 @@
 package test
 
-import "github.com/bmeg/sifter/loader"
-
 //"github.com/bmeg/sifter/loader"
 
 type DebugEmitter struct {
@@ -14,10 +12,6 @@ func (d *DebugEmitter) Emit(name string, e map[string]interface{}) error {
 func (d *DebugEmitter) Close() {}
 
 func (d *DebugEmitter) EmitObject(prefix string, objClass string, e map[string]interface{}) error {
-	return nil
-}
-
-func (d *DebugEmitter) EmitTable(prefix string, columns []string, sep rune) loader.TableEmitter {
 	return nil
 }
 

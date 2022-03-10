@@ -1,19 +1,15 @@
 package run
 
 import (
-	"fmt"
-	"io/ioutil"
 	"log"
-	"os"
 
-	"github.com/bmeg/sifter/loader"
 	"github.com/bmeg/sifter/playbook"
 
 	"github.com/spf13/cobra"
 )
 
 var workDir string = "./"
-var outDir string = "./out"
+var outDir string = ""
 var resume string = ""
 var graph string = ""
 var inputFile string = ""
@@ -30,34 +26,6 @@ var Cmd = &cobra.Command{
 	Short: "Run importer",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var lps *LoadProxyServer
-		if proxy != "" {
-			lps = NewLoadProxyServer(port, proxy)
-			lps.Start()
-		}
-
-		if _, err := os.Stat(outDir); os.IsNotExist(err) {
-			os.MkdirAll(outDir, 0777)
-		}
-
-		driver := fmt.Sprintf("dir://%s", outDir)
-		if toStdout {
-			driver = "stdout://"
-		}
-		if graph != "" {
-			driver = graph
-		}
-
-		ld, err := loader.NewLoader(driver)
-		if err != nil {
-			log.Printf("Error stating load manager: %s", err)
-			return err
-		}
-		if lps != nil {
-			ld = loader.NewLoadCounter(ld, 1000, func(i uint64) { lps.UpdateCount(i) })
-		}
-		defer ld.Close()
-
 		inputs := map[string]interface{}{}
 		if inputFile != "" {
 			if err := playbook.ParseDataFile(inputFile, &inputs); err != nil {
@@ -68,23 +36,8 @@ var Cmd = &cobra.Command{
 		for k, v := range cmdInputs {
 			inputs[k] = v
 		}
-		dir := resume
-		if dir == "" {
-			d, err := ioutil.TempDir(workDir, "sifterwork_")
-			if err != nil {
-				log.Fatal(err)
-				return err
-			}
-			dir = d
-		}
 		for _, playFile := range args {
-			Execute(playFile, dir, outDir, inputs)
-		}
-		if !keep {
-			os.RemoveAll(dir)
-		}
-		if lps != nil {
-			lps.StartProxy()
+			Execute(playFile, "./", outDir, inputs)
 		}
 		return nil
 	},

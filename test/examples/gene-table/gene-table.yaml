@@ -24,15 +24,20 @@ sources:
         - protein_accession.version
         - Ensembl_protein_identifier
 
+links:
+  translate: genes
+  tableWrite: translate
 
+sinks:
+  geneTable:
+    tableWrite:
+      output: "gene.table"
+      columns:
+        - GeneID
+        - Ensembl_gene_identifier
 
 pipelines:
   translate:
     - filter:
         field: "{{row.tax_id}}"
         match: "9606"
-    - tableWrite:
-        output: "gene.table"
-        columns:
-          - GeneID
-          - Ensembl_gene_identifier

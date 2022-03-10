@@ -6,19 +6,25 @@ import (
 	"github.com/bmeg/sifter/task"
 )
 
-type FieldMapStep struct {
-	Column string `json:"col"`
+type FieldParseStep struct {
+	Field  string `json:"field"`
 	Sep    string `json:"sep"`
 	Assign string `json:"assign"`
 }
 
-func (fm FieldMapStep) Run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
+func (fp *FieldParseStep) Init(t task.RuntimeTask) (Processor, error) {
+	return fp, nil
+}
 
-	sep := fm.Sep
+func (fp *FieldParseStep) Close() {}
+
+func (fp *FieldParseStep) Process(i map[string]interface{}) []map[string]interface{} {
+
+	sep := fp.Sep
 	if sep == "" {
 		sep = ";"
 	}
-	assign := fm.Assign
+	assign := fp.Assign
 	if assign == "" {
 		assign = "="
 	}
@@ -27,7 +33,7 @@ func (fm FieldMapStep) Run(i map[string]interface{}, task task.RuntimeTask) map[
 	for x, y := range i {
 		o[x] = y
 	}
-	if v, ok := i[fm.Column]; ok {
+	if v, ok := i[fp.Field]; ok {
 		if vStr, ok := v.(string); ok {
 			a := strings.Split(vStr, sep)
 			t := map[string]interface{}{}
@@ -39,8 +45,8 @@ func (fm FieldMapStep) Run(i map[string]interface{}, task task.RuntimeTask) map[
 					t[kv[0]] = true
 				}
 			}
-			o[fm.Column] = t
+			o[fp.Field] = t
 		}
 	}
-	return o
+	return []map[string]any{o}
 }

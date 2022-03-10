@@ -2,6 +2,7 @@ package playbook
 
 import (
 	"log"
+	"path/filepath"
 
 	"github.com/bmeg/sifter/task"
 )
@@ -31,6 +32,13 @@ func (in *Input) IsFile() bool {
 	return false
 }
 
+func (in *Input) IsDir() bool {
+	if in.Type == "Dir" || in.Type == "dir" || in.Type == "Directory" || in.Type == "directory" {
+		return true
+	}
+	return false
+}
+
 func (pb *Playbook) GetSinks(task task.RuntimeTask) (map[string][]string, error) {
 	out := map[string][]string{}
 	//inputs := task.GetInputs()
@@ -54,4 +62,13 @@ func (pb *Playbook) GetEmitters(task task.RuntimeTask) (map[string]string, error
 		}
 	}
 	return out, nil
+}
+
+func (pb *Playbook) GetOutdir() string {
+	if pb.Outdir == "" {
+		return ""
+	}
+	path := filepath.Join(filepath.Dir(pb.path), pb.Outdir)
+	out, _ := filepath.Abs(path)
+	return out
 }

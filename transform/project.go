@@ -71,7 +71,6 @@ func (pr *projectStepProcess) Process(i map[string]interface{}) []map[string]int
 		setProjectValue(o, k, t)
 	}
 	return []map[string]any{o}
-
 }
 
 func (pr *projectStepProcess) Close() {

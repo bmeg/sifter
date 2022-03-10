@@ -39,6 +39,8 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
+		inputs = pb.PrepInputs(inputs, "./")
+
 		task := &task.Task{Name: pb.Name, Inputs: inputs, Workdir: "./", Emitter: nil}
 
 		out := map[string]any{}

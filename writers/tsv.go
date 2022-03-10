@@ -28,7 +28,6 @@ type tableWriteProcess struct {
 }
 
 func (tw *TableWriter) Init(task task.RuntimeTask) (WriteProcess, error) {
-	log.Printf("Starting TableWriter")
 	sep := '\t'
 	if tw.Sep != "" {
 		sep = rune(tw.Sep[0])
@@ -39,6 +38,7 @@ func (tw *TableWriter) Init(task task.RuntimeTask) (WriteProcess, error) {
 		return nil, err
 	}
 	outputPath, err := task.AbsPath(output)
+	log.Printf("Starting TableWriter to %s", outputPath)
 
 	te := tableWriteProcess{}
 	te.handle, _ = os.Create(outputPath)
@@ -50,6 +50,7 @@ func (tw *TableWriter) Init(task task.RuntimeTask) (WriteProcess, error) {
 	te.writer = csv.NewWriter(te.out)
 	te.writer.Comma = sep
 	te.columns = tw.Columns
+	te.config = tw
 	te.writer.Write(te.columns)
 	return &te, nil
 }

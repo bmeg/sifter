@@ -56,3 +56,13 @@ func (ts Step) Init(t task.RuntimeTask) (Processor, error) {
 	}
 	return nil, fmt.Errorf(("Transform not defined"))
 }
+
+func (ts Step) GetEmitters() []string {
+	if ts.Emit != nil {
+		return []string{ts.Emit.Name}
+	}
+	if ts.GraphBuild != nil {
+		return []string{"vertex", "edge"}
+	}
+	return []string{}
+}

@@ -7,6 +7,7 @@ import (
 	"github.com/bmeg/flame"
 	"github.com/bmeg/sifter/loader"
 	"github.com/bmeg/sifter/task"
+	"github.com/bmeg/sifter/writers"
 )
 
 func fileExists(filename string) bool {
@@ -128,6 +129,7 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 
 	outNodes := map[string]flame.Emitter[map[string]any]{}
 	inNodes := map[string]flame.Receiver[map[string]any]{}
+	writers := map[string]writers.WriteProcess{}
 
 	for n, v := range pb.Sources {
 		log.Printf("Setting up %s", n)
@@ -170,6 +172,7 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 		if err == nil {
 			c := flame.AddSink(wf, s.Write)
 			inNodes[k] = c
+			writers[k] = s
 		}
 	}
 
@@ -192,6 +195,10 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 	log.Printf("Workflow Started")
 
 	wf.Wait()
+
+	for k := range writers {
+		writers[k].Close()
+	}
 
 	em.Close()
 	return nil

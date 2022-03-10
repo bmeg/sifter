@@ -63,10 +63,6 @@ func (cd *CountDataEmitter) EmitObject(prefix string, objClass string, e map[str
 	return cd.d.EmitObject(prefix, objClass, e)
 }
 
-func (cd *CountDataEmitter) EmitTable(prefix string, columns []string, sep rune) TableEmitter {
-	return cd.d.EmitTable(prefix, columns, sep)
-}
-
 func (cg *CountGraphEmitter) EmitVertex(v *gripql.Vertex) error {
 	cg.cl.increment()
 	return cg.g.EmitVertex(v)

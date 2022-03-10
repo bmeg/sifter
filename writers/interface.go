@@ -13,6 +13,7 @@ type WriteProcess interface {
 }
 type Writer interface {
 	Init(task.RuntimeTask) (WriteProcess, error)
+	GetOutputs(task.RuntimeTask) []string
 }
 
 type WriteConfig struct {
@@ -31,4 +32,18 @@ func (wc *WriteConfig) Init(t task.RuntimeTask) (WriteProcess, error) {
 		}
 	}
 	return nil, fmt.Errorf(("Writer not defined"))
+}
+
+func (wc *WriteConfig) GetOutputs(t task.RuntimeTask) []string {
+	v := reflect.ValueOf(wc).Elem()
+	for i := 0; i < v.NumField(); i++ {
+		f := v.Field(i)
+		x := f.Interface()
+		if z, ok := x.(Writer); ok {
+			if !f.IsNil() {
+				return z.GetOutputs(t)
+			}
+		}
+	}
+	return []string{}
 }

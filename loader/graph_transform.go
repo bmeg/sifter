@@ -84,7 +84,3 @@ func (dg *DataGraphEmitter) Close() {
 func (dg *DataGraphEmitter) EmitObject(prefix string, objClass string, e map[string]interface{}) error {
 	return nil
 }
-
-func (dg *DataGraphEmitter) EmitTable(prefix string, columns []string, sep rune) TableEmitter {
-	return nil
-}

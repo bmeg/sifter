@@ -2,7 +2,6 @@ package loader
 
 import (
 	"compress/gzip"
-	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,7 +9,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 	"sync"
 
 	"github.com/bmeg/grip/gripql"
@@ -157,46 +155,4 @@ func (s *DirDataLoader) EmitObject(prefix string, objClass string, i map[string]
 	f.Write([]byte(o))
 	f.Write([]byte("\n"))
 	return nil
-}
-
-type dirTableEmitter struct {
-	columns []string
-	out     io.WriteCloser
-	handle  io.WriteCloser
-	writer  *csv.Writer
-}
-
-func (s *dirTableEmitter) EmitRow(i map[string]interface{}) error {
-	o := make([]string, len(s.columns))
-	for j, k := range s.columns {
-		if v, ok := i[k]; ok {
-			if vStr, ok := v.(string); ok {
-				o[j] = vStr
-			}
-		}
-	}
-	return s.writer.Write(o)
-}
-
-func (s *dirTableEmitter) Close() {
-	log.Printf("Closing Table Writer")
-	s.writer.Flush()
-	s.out.Close()
-	s.handle.Close()
-}
-
-func (s *DirDataLoader) EmitTable(name string, columns []string, sep rune) TableEmitter {
-	path := filepath.Join(s.dl.dir, name)
-	te := dirTableEmitter{}
-	te.handle, _ = os.Create(path)
-	if strings.HasSuffix(name, ".gz") {
-		te.out = gzip.NewWriter(te.handle)
-	} else {
-		te.out = te.handle
-	}
-	te.writer = csv.NewWriter(te.out)
-	te.writer.Comma = sep
-	te.columns = columns
-	te.writer.Write(te.columns)
-	return &te
 }

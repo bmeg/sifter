@@ -16,6 +16,7 @@ import (
 
 var inputFile string = ""
 var cmdInputs map[string]string
+var changeDir = ""
 
 type Step struct {
 	Name    string
@@ -66,6 +67,10 @@ var Cmd = &cobra.Command{
 
 		steps := []Step{}
 
+		if changeDir != "" {
+			changeDir, _ = filepath.Abs(changeDir)
+		}
+
 		filepath.Walk(baseDir,
 			func(path string, info fs.FileInfo, err error) error {
 				if strings.HasSuffix(path, ".yaml") {
@@ -115,9 +120,14 @@ var Cmd = &cobra.Command{
 								}
 							}
 
+							cmdPath := path
+							if changeDir != "" {
+								cmdPath, _ = filepath.Rel(changeDir, cmdPath)
+							}
+
 							steps = append(steps, Step{
 								Name:    pb.Name,
-								Command: fmt.Sprintf("sifter run %s", path),
+								Command: fmt.Sprintf("sifter run %s", cmdPath),
 								Inputs:  inputs,
 								Outputs: outputs,
 							})
@@ -153,6 +163,24 @@ var Cmd = &cobra.Command{
 			}
 		}
 		steps = append([]Step{allStep}, steps...)
+
+		if changeDir != "" {
+			for i := range steps {
+				for j := range steps[i].Inputs {
+					if k, err := filepath.Rel(changeDir, steps[i].Inputs[j]); err == nil {
+						steps[i].Inputs[j] = k
+					} else {
+						log.Printf("rel error: %s", err)
+					}
+				}
+				for j := range steps[i].Outputs {
+					if k, err := filepath.Rel(changeDir, steps[i].Outputs[j]); err == nil {
+						steps[i].Outputs[j] = k
+					}
+				}
+			}
+		}
+
 		tmpl, err := template.New("snakefile").Parse(snakeFile)
 		if err != nil {
 			panic(err)
@@ -166,4 +194,5 @@ func init() {
 	flags := Cmd.Flags()
 	flags.StringToStringVarP(&cmdInputs, "inputs", "i", cmdInputs, "Input variables")
 	flags.StringVarP(&inputFile, "inputfile", "f", inputFile, "Input variables file")
+	flags.StringVarP(&changeDir, "dir", "C", changeDir, "Change Directory for script base")
 }

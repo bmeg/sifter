@@ -2,7 +2,6 @@ package playbook
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
 
 	"github.com/bmeg/sifter/task"
@@ -57,7 +56,6 @@ func (pb *Playbook) GetEmitters(task task.RuntimeTask) (map[string]string, error
 	for k, v := range pb.Pipelines {
 		for _, s := range v {
 			for _, e := range s.GetEmitters() {
-				log.Printf("Inspecting: %s %s", k, e)
 				fileName := fmt.Sprintf("%s.%s.%s.json.gz", pb.Name, k, e)
 				filePath := filepath.Join(pb.GetOutdir(), fileName)
 				out[k+"."+e] = filePath

@@ -48,11 +48,19 @@ var Cmd = &cobra.Command{
 		ins, _ := pb.GetInputs(task)
 		out["inputs"] = ins
 
+		outputs := map[string]any{}
+
 		sinks, _ := pb.GetSinks(task)
-		out["outputs"] = sinks
+		for k, v := range sinks {
+			outputs[k] = v
+		}
 
 		emitters, _ := pb.GetEmitters(task)
-		out["emitters"] = emitters
+		for k, v := range emitters {
+			outputs[k] = v
+		}
+
+		out["outputs"] = outputs
 
 		jsonOut, _ := json.MarshalIndent(out, "", "    ")
 		fmt.Printf("%s\n", string(jsonOut))

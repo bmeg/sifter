@@ -1,6 +1,7 @@
 package playbook
 
 import (
+	"fmt"
 	"log"
 	"path/filepath"
 
@@ -57,7 +58,9 @@ func (pb *Playbook) GetEmitters(task task.RuntimeTask) (map[string]string, error
 		for _, s := range v {
 			for _, e := range s.GetEmitters() {
 				log.Printf("Inspecting: %s %s", k, e)
-				out[k+"."+e] = e
+				fileName := fmt.Sprintf("%s.%s.%s.json.gz", pb.Name, k, e)
+				filePath := filepath.Join(pb.GetOutdir(), fileName)
+				out[k+"."+e] = filePath
 			}
 		}
 	}

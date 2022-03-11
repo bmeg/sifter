@@ -38,6 +38,7 @@ type Script struct {
 	Inputs      []string `json:"inputs"`
 	Outputs     []string `json:"outputs"`
 	Workdir     string   `json:"workdir"`
+	Order       int      `json:"order"`
 }
 
 type Playbook struct {

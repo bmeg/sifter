@@ -3,6 +3,7 @@ package plan
 import (
 	"fmt"
 	"io/fs"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -71,7 +72,9 @@ var Cmd = &cobra.Command{
 						if len(pb.Pipelines) > 0 || len(pb.Sources) > 0 || len(pb.Scripts) > 0 {
 
 							localInputs := pb.PrepInputs(userInputs, "./")
-							task := &task.Task{Name: pb.Name, Inputs: localInputs, Workdir: "./", Emitter: nil}
+							task := task.NewTask(pb.Name, "./", pb.GetDefaultOutDir(), localInputs)
+
+							log.Printf("pb outdir %s", task.OutDir())
 
 							taskInputs, _ := pb.GetInputs(task)
 

@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/bmeg/sifter/playbook"
+	"github.com/bmeg/sifter/task"
 )
 
 func Execute(playFile string, workDir string, outDir string, inputs map[string]interface{}) error {
@@ -18,7 +19,7 @@ func Execute(playFile string, workDir string, outDir string, inputs map[string]i
 	}
 
 	if outDir == "" {
-		outDir = pb.GetOutdir()
+		outDir = pb.GetDefaultOutDir()
 	}
 
 	if _, err := os.Stat(outDir); os.IsNotExist(err) {
@@ -26,7 +27,7 @@ func Execute(playFile string, workDir string, outDir string, inputs map[string]i
 	}
 
 	nInputs := pb.PrepInputs(inputs, workDir)
-	m := playbook.Manager{}
-	err := pb.Execute(&m, nInputs, workDir, outDir)
+	t := task.NewTask(pb.Name, workDir, outDir, nInputs)
+	err := pb.Execute(t)
 	return err
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var outDir string = ""
 var inputFile string = ""
 var cmdInputs map[string]string
 
@@ -41,7 +42,13 @@ var Cmd = &cobra.Command{
 
 		inputs = pb.PrepInputs(inputs, "./")
 
-		task := &task.Task{Name: pb.Name, Inputs: inputs, Workdir: "./", Emitter: nil}
+		if outDir == "" {
+			outDir = pb.GetDefaultOutDir()
+		}
+
+		log.Printf("outdir: %s", outDir)
+
+		task := task.NewTask(pb.Name, "./", outDir, inputs)
 
 		out := map[string]any{}
 

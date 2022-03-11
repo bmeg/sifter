@@ -2,6 +2,7 @@ package playbook
 
 import (
 	"fmt"
+	"log"
 	"path/filepath"
 
 	"github.com/bmeg/sifter/task"
@@ -57,7 +58,7 @@ func (pb *Playbook) GetEmitters(task task.RuntimeTask) (map[string]string, error
 		for _, s := range v {
 			for _, e := range s.GetEmitters() {
 				fileName := fmt.Sprintf("%s.%s.%s.json.gz", pb.Name, k, e)
-				filePath := filepath.Join(pb.GetOutdir(), fileName)
+				filePath := filepath.Join(pb.GetOutDir(task), fileName)
 				out[k+"."+e] = filePath
 			}
 		}
@@ -65,9 +66,20 @@ func (pb *Playbook) GetEmitters(task task.RuntimeTask) (map[string]string, error
 	return out, nil
 }
 
-func (pb *Playbook) GetOutdir() string {
+func (pb *Playbook) GetDefaultOutDir() string {
 	if pb.Outdir == "" {
-		return ""
+		out, _ := filepath.Abs("./")
+		return out
+	}
+	path := filepath.Join(filepath.Dir(pb.path), pb.Outdir)
+	out, _ := filepath.Abs(path)
+	log.Printf("default: %s %s %s", pb.path, pb.Outdir, out)
+	return out
+}
+
+func (pb *Playbook) GetOutDir(task task.RuntimeTask) string {
+	if pb.Outdir == "" {
+		return task.OutDir()
 	}
 	path := filepath.Join(filepath.Dir(pb.path), pb.Outdir)
 	out, _ := filepath.Abs(path)

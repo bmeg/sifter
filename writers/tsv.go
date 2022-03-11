@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/bmeg/sifter/evaluate"
@@ -37,7 +38,7 @@ func (tw *TableWriter) Init(task task.RuntimeTask) (WriteProcess, error) {
 	if err != nil {
 		return nil, err
 	}
-	outputPath, err := task.AbsPath(output)
+	outputPath := filepath.Join(task.OutDir(), output)
 	log.Printf("Starting TableWriter to %s", outputPath)
 
 	te := tableWriteProcess{}
@@ -60,7 +61,8 @@ func (tw *TableWriter) GetOutputs(task task.RuntimeTask) []string {
 	if err != nil {
 		return []string{}
 	}
-	outputPath, err := task.AbsPath(output)
+	outputPath := filepath.Join(task.OutDir(), output)
+	log.Printf("table output %s %s", task.OutDir(), output)
 	return []string{outputPath}
 }
 

@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/bmeg/flame"
-	"github.com/bmeg/sifter/loader"
 	"github.com/bmeg/sifter/task"
 	"github.com/bmeg/sifter/writers"
 )
@@ -54,10 +54,17 @@ func (pb *Playbook) PrepInputs(inputs map[string]any, workdir string) map[string
 	return out
 }
 
-func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir string, outDir string) error {
+func (pb *Playbook) Execute(task task.RuntimeTask) error {
 	log.Printf("Running playbook")
 
-	for s := range pb.Scripts {
+	scripts := []string{}
+	for k := range pb.Scripts {
+		scripts = append(scripts, k)
+	}
+
+	sort.Slice(scripts, func(x, y int) bool { return pb.Scripts[scripts[x]].Order < pb.Scripts[scripts[y]].Order })
+
+	for _, s := range scripts {
 		log.Printf("Running script %s", s)
 		err := pb.RunScript(s)
 		if err != nil {
@@ -66,18 +73,14 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 		}
 	}
 
-	log.Printf("Inputs: %#v", inputs)
+	log.Printf("Inputs: %#v", task.GetInputs())
 
 	wf := flame.NewWorkflow()
-
-	ld := loader.NewDirLoader(outDir)
-	em, _ := ld.NewDataEmitter()
 
 	if pb.Name == "" {
 		pb.Name = "sifter"
 	}
-
-	task := &task.Task{Name: pb.Name, Inputs: inputs, Workdir: workDir, Emitter: em}
+	task.SetName(pb.Name)
 
 	outNodes := map[string]flame.Emitter[map[string]any]{}
 	inNodes := map[string]flame.Receiver[map[string]any]{}
@@ -152,6 +155,6 @@ func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir
 		writers[k].Close()
 	}
 
-	em.Close()
+	task.Close()
 	return nil
 }

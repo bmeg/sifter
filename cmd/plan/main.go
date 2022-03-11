@@ -26,13 +26,15 @@ var snakeFile string = `
 
 {{range $key, $val := .}}
 rule {{$key}}:
-	inputs:
+{{- if $val.Inputs }}
+	input:
 		{{range $index, $file := $val.Inputs -}}
 			{{- if $index -}},
 			{{- end -}}
 			"{{- $file -}}"
 		{{- end}}
-	outputs:
+{{- end}}
+	output:
 		{{range $index, $file := $val.Outputs -}}
 			{{- if $index -}},
 			{{- end -}}
@@ -66,7 +68,7 @@ var Cmd = &cobra.Command{
 					pb := playbook.Playbook{}
 					if err := playbook.ParseFile(path, &pb); err == nil {
 
-						if len(pb.Pipelines) > 0 || len(pb.Sources) > 0 {
+						if len(pb.Pipelines) > 0 || len(pb.Sources) > 0 || len(pb.Scripts) > 0 {
 
 							localInputs := pb.PrepInputs(userInputs, "./")
 							task := &task.Task{Name: pb.Name, Inputs: localInputs, Workdir: "./", Emitter: nil}
@@ -89,6 +91,20 @@ var Cmd = &cobra.Command{
 							emitters, _ := pb.GetEmitters(task)
 							for _, v := range emitters {
 								outputs = append(outputs, v)
+							}
+
+							scriptInputs := pb.GetScriptInputs(task)
+							for _, v := range scriptInputs {
+								for _, p := range v {
+									inputs = append(inputs, p)
+								}
+							}
+
+							scriptOutputs := pb.GetScriptOutputs(task)
+							for _, v := range scriptOutputs {
+								for _, p := range v {
+									outputs = append(outputs, p)
+								}
 							}
 
 							steps[pb.Name] = Step{

@@ -33,6 +33,13 @@ type Inputs map[string]Input
 
 type Outputs []Output
 
+type Script struct {
+	CommandLine string   `json:"commandLine"`
+	Inputs      []string `json:"inputs"`
+	Outputs     []string `json:"outputs"`
+	Workdir     string   `json:"workdir"`
+}
+
 type Playbook struct {
 	Name      string                          `json:"name" jsonschema_description:"Unique name of the playbook"`
 	Outdir    string                          `json:"outdir"`
@@ -42,6 +49,7 @@ type Playbook struct {
 	Sinks     map[string]writers.WriteConfig  `json:"sinks"`
 	Pipelines map[string]transform.Pipe       `json:"pipelines"`
 	Links     map[string]string               `json:"links"`
+	Scripts   map[string]Script               `json:"scripts"`
 	path      string
 }
 

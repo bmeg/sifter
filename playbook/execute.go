@@ -55,8 +55,17 @@ func (pb *Playbook) PrepInputs(inputs map[string]any, workdir string) map[string
 }
 
 func (pb *Playbook) Execute(man *Manager, inputs map[string]interface{}, workDir string, outDir string) error {
-
 	log.Printf("Running playbook")
+
+	for s := range pb.Scripts {
+		log.Printf("Running script %s", s)
+		err := pb.RunScript(s)
+		if err != nil {
+			log.Printf("Scripting error: %s", err)
+			return err
+		}
+	}
+
 	log.Printf("Inputs: %#v", inputs)
 
 	wf := flame.NewWorkflow()

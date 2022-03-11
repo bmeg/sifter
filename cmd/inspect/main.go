@@ -60,6 +60,16 @@ var Cmd = &cobra.Command{
 			outputs[k] = v
 		}
 
+		scriptInputs := pb.GetScriptInputs(task)
+		for k, v := range scriptInputs {
+			inputs[k] = v
+		}
+
+		scriptOutputs := pb.GetScriptOutputs(task)
+		for k, v := range scriptOutputs {
+			outputs[k] = v
+		}
+
 		out["outputs"] = outputs
 
 		jsonOut, _ := json.MarshalIndent(out, "", "    ")

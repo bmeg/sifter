@@ -18,6 +18,7 @@ var inputFile string = ""
 var cmdInputs map[string]string
 
 type Step struct {
+	Name    string
 	Command string
 	Inputs  []string
 	Outputs []string
@@ -25,24 +26,28 @@ type Step struct {
 
 var snakeFile string = `
 
-{{range $key, $val := .}}
-rule {{$key}}:
-{{- if $val.Inputs }}
+{{range .}}
+rule {{.Name}}:
+{{- if .Inputs }}
 	input:
-		{{range $index, $file := $val.Inputs -}}
+		{{range $index, $file := .Inputs -}}
 			{{- if $index -}},
 			{{- end -}}
 			"{{- $file -}}"
 		{{- end}}
 {{- end}}
+{{- if .Outputs }}
 	output:
-		{{range $index, $file := $val.Outputs -}}
+		{{range $index, $file := .Outputs -}}
 			{{- if $index -}},
 			{{- end -}}
 			"{{- $file -}}"
 		{{- end}}
+{{- end}}
+{{- if .Command }}
 	shell:
-		"{{$val.Command}}"
+		"{{.Command}}"
+{{- end}}
 {{end}}
 
 
@@ -59,7 +64,7 @@ var Cmd = &cobra.Command{
 
 		userInputs := map[string]any{}
 
-		steps := map[string]Step{}
+		steps := []Step{}
 
 		filepath.Walk(baseDir,
 			func(path string, info fs.FileInfo, err error) error {
@@ -110,17 +115,44 @@ var Cmd = &cobra.Command{
 								}
 							}
 
-							steps[pb.Name] = Step{
+							steps = append(steps, Step{
+								Name:    pb.Name,
 								Command: fmt.Sprintf("sifter run %s", path),
 								Inputs:  inputs,
 								Outputs: outputs,
-							}
+							})
 						}
 					}
 				}
 				return nil
 			})
 
+		//find all final outputs
+		outputs := map[string]int{}
+		for _, s := range steps {
+			for _, f := range s.Outputs {
+				outputs[f] = 0
+			}
+		}
+
+		for _, s := range steps {
+			for _, f := range s.Inputs {
+				if x, ok := outputs[f]; ok {
+					outputs[f] = x + 1
+				}
+			}
+		}
+
+		allStep := Step{
+			Name:   "all",
+			Inputs: []string{},
+		}
+		for k, v := range outputs {
+			if v == 0 {
+				allStep.Inputs = append(allStep.Inputs, k)
+			}
+		}
+		steps = append([]Step{allStep}, steps...)
 		tmpl, err := template.New("snakefile").Parse(snakeFile)
 		if err != nil {
 			panic(err)

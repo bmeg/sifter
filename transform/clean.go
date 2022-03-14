@@ -1,8 +1,6 @@
 package transform
 
 import (
-	"sync"
-
 	"github.com/bmeg/sifter/task"
 )
 
@@ -12,8 +10,8 @@ type CleanStep struct {
 	StoreExtra  string   `json:"storeExtra"`
 }
 
-func (fs CleanStep) has(name string) bool {
-	for _, s := range fs.Fields {
+func (cs *CleanStep) has(name string) bool {
+	for _, s := range cs.Fields {
 		if s == name {
 			return true
 		}
@@ -21,41 +19,38 @@ func (fs CleanStep) has(name string) bool {
 	return false
 }
 
-func (fs CleanStep) Start(in chan map[string]interface{}, task task.RuntimeTask, wg *sync.WaitGroup) (chan map[string]interface{}, error) {
-	out := make(chan map[string]interface{}, 10)
+func (cs *CleanStep) Init(task task.RuntimeTask) (Processor, error) {
+	return cs, nil
+}
 
-	go func() {
-		defer close(out)
-		for i := range in {
-			o := map[string]interface{}{}
-			if len(fs.Fields) > 0 {
-				extra := map[string]interface{}{}
-				for k, v := range i {
-					if fs.has(k) {
-						o[k] = v
-					} else if fs.StoreExtra != "" {
-						extra[k] = v
-					}
-				}
-				if fs.StoreExtra != "" {
-					o[fs.StoreExtra] = extra
-				}
-			} else if fs.RemoveEmpty {
-				for k, v := range i {
-					copy := true
-					if vs, ok := v.(string); ok {
-						if len(vs) == 0 {
-							copy = false
-						}
-					}
-					if copy {
-						o[k] = v
-					}
+func (fs *CleanStep) Close() {}
+
+func (fs *CleanStep) Process(i map[string]interface{}) []map[string]interface{} {
+	o := map[string]interface{}{}
+	if len(fs.Fields) > 0 {
+		extra := map[string]interface{}{}
+		for k, v := range i {
+			if fs.has(k) {
+				o[k] = v
+			} else if fs.StoreExtra != "" {
+				extra[k] = v
+			}
+		}
+		if fs.StoreExtra != "" {
+			o[fs.StoreExtra] = extra
+		}
+	} else if fs.RemoveEmpty {
+		for k, v := range i {
+			copy := true
+			if vs, ok := v.(string); ok {
+				if len(vs) == 0 {
+					copy = false
 				}
 			}
-			out <- o
+			if copy {
+				o[k] = v
+			}
 		}
-	}()
-
-	return out, nil
+	}
+	return []map[string]any{o}
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/bmeg/flame"
 	"github.com/bmeg/sifter/task"
+	"github.com/bmeg/sifter/transform"
 	"github.com/bmeg/sifter/writers"
 )
 
@@ -52,6 +53,18 @@ func (pb *Playbook) PrepInputs(inputs map[string]any, workdir string) map[string
 		}
 	}
 	return out
+}
+
+type reduceWrapper struct {
+	reducer transform.ReduceProcessor
+}
+
+func (rw *reduceWrapper) addKeyValue(x map[string]any) flame.KeyValue[string, map[string]any] {
+	return flame.KeyValue[string, map[string]any]{rw.reducer.GetKey(x), x}
+}
+
+func (rw *reduceWrapper) removeKeyValue(x flame.KeyValue[string, map[string]any]) []map[string]any {
+	return []map[string]any{x.Value}
 }
 
 func (pb *Playbook) Execute(task task.RuntimeTask) error {
@@ -104,17 +117,40 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 		for _, s := range v {
 			b, err := s.Init(sub)
 			if err != nil {
-				log.Printf("Pipeline error: %s", err)
+				log.Printf("Pipeline %s error: %s", k, err)
+				return err
 			} else {
-				log.Printf("Pipeline %s step: %T", k, b)
-				c := flame.AddFlatMapper(wf, b.Process)
-				if lastStep != nil {
-					c.Connect(lastStep)
+				if mProcess, ok := b.(transform.MapProcessor); ok {
+					log.Printf("Pipeline %s step: %T", k, b)
+					c := flame.AddFlatMapper(wf, mProcess.Process)
+					if lastStep != nil {
+						c.Connect(lastStep)
+					}
+					if c != nil {
+						lastStep = c
+						if firstStep == nil {
+							firstStep = c
+						}
+					} else {
+						//throw error?
+					}
+				} else if rProcess, ok := b.(transform.ReduceProcessor); ok {
+					log.Printf("Pipeline %s step: %T", k, b)
+					wrap := reduceWrapper{rProcess}
+					k := flame.AddMapper(wf, wrap.addKeyValue)
+					r := flame.AddReduceKey(wf, rProcess.Reduce, rProcess.GetInit())
+					c := flame.AddFlatMapper(wf, wrap.removeKeyValue)
+					if lastStep != nil {
+						k.Connect(lastStep)
+					}
+					r.Connect(k)
+					c.Connect(r)
+					lastStep = c
+					if firstStep == nil {
+						firstStep = k
+					}
 				}
-				lastStep = c
-				if firstStep == nil {
-					firstStep = c
-				}
+
 			}
 		}
 		outNodes[k] = lastStep

@@ -10,8 +10,17 @@ import (
 var DefaultEngine = "python"
 var PipeSize = 20
 
-type Processor interface {
+type ReduceProcessor interface {
+	GetInit() map[string]any
+	GetKey(map[string]any) string
+	Reduce(key string, a map[string]any, b map[string]any) map[string]any
+}
+
+type MapProcessor interface {
 	Process(map[string]any) []map[string]any
+}
+
+type Processor interface {
 	Close()
 }
 

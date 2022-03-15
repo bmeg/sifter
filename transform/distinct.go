@@ -10,7 +10,7 @@ import (
 )
 
 type DistinctStep struct {
-	Field string `json:"field"`
+	Value string `json:"value"`
 	Steps Pipe   `json:"steps"`
 }
 
@@ -21,7 +21,7 @@ type distinctProcess struct {
 }
 
 func (ds DistinctStep) Init(task task.RuntimeTask) (Processor, error) {
-	log.Printf("Starting Distinct: %s", ds.Field)
+	log.Printf("Starting Distinct: %s", ds.Value)
 	tdir := task.TempDir()
 	opts := badger.DefaultOptions(filepath.Join(tdir, "badger"))
 	opts.ValueDir = filepath.Join(tdir, "badger")
@@ -35,7 +35,7 @@ func (ds DistinctStep) Init(task task.RuntimeTask) (Processor, error) {
 func (ds *distinctProcess) Process(i map[string]any) []map[string]any {
 	out := []map[string]any{}
 
-	keyStr, err := evaluate.ExpressionString(ds.config.Field, ds.task.GetInputs(), i)
+	keyStr, err := evaluate.ExpressionString(ds.config.Value, ds.task.GetInputs(), i)
 	if err == nil {
 		ds.db.Update(func(txn *badger.Txn) error {
 			key := []byte(keyStr)

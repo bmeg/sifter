@@ -8,12 +8,22 @@ import (
 
 type FieldTypeStep map[string]string
 
-func (fs FieldTypeStep) Run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
+type fieldTypeProcess struct {
+	config FieldTypeStep
+}
+
+func (fs FieldTypeStep) Init(task task.RuntimeTask) (Processor, error) {
+	return &fieldTypeProcess{fs}, nil
+}
+
+func (fp *fieldTypeProcess) Close() {}
+
+func (fp *fieldTypeProcess) Process(i map[string]interface{}) []map[string]interface{} {
 	o := map[string]interface{}{}
 	for x, y := range i {
 		o[x] = y
 	}
-	for field, fType := range fs {
+	for field, fType := range fp.config {
 		if fType == "int" {
 			if val, ok := i[field]; ok {
 				if vStr, ok := val.(string); ok {
@@ -43,5 +53,5 @@ func (fs FieldTypeStep) Run(i map[string]interface{}, task task.RuntimeTask) map
 			}
 		}
 	}
-	return o
+	return []map[string]any{o}
 }

@@ -17,24 +17,30 @@ import (
 
 type JSONFileLookupStep struct {
 	Input   string `json:"input"`
-	Field   string `json:"field"`
+	Value   string `json:"value"`
 	Key     string `json:"key"`
 	Project map[string]string
 	Copy    map[string]string
+}
+
+type jsonLookupProcess struct {
+	config *JSONFileLookupStep
+	inputs map[string]any
 	//found it more space efficiant to store the JSON rather then keep
 	//all the unpacked values
 	table map[string][]byte //map[string]interface{}
 }
 
-func (jf *JSONFileLookupStep) Init(task task.RuntimeTask) error {
-	input, err := evaluate.ExpressionString(jf.Input, task.GetInputs(), nil)
-	inputPath, err := task.AbsPath(input)
+func (jf *JSONFileLookupStep) Init(task task.RuntimeTask) (Processor, error) {
+	inputPath, err := evaluate.ExpressionString(jf.Input, task.GetInputs(), nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
-		return fmt.Errorf("File Not Found: %s", input)
+	if s, err := os.Stat(inputPath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("File Not Found: %s", inputPath)
+	} else if s.IsDir() {
+		return nil, fmt.Errorf("File Not Found: %s", inputPath)
 	}
 	log.Printf("Loading Translation file: %s", inputPath)
 
@@ -45,41 +51,45 @@ func (jf *JSONFileLookupStep) Init(task task.RuntimeTask) error {
 		inputStream, err = golib.ReadFileLines(inputPath)
 	}
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	jf.table = map[string][]byte{} //map[string]interface{}{}
+	jp := &jsonLookupProcess{jf, task.GetInputs(), map[string][]byte{}}
 
 	for line := range inputStream {
 		if len(line) > 0 {
 			row := map[string]interface{}{}
 			err := json.Unmarshal(line, &row)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			if key, ok := row[jf.Key]; ok {
 				if keyStr, ok := key.(string); ok {
-					jf.table[keyStr] = line
+					jp.table[keyStr] = line
 				}
 			}
 		}
 	}
-	return nil
+	log.Printf("jsonLookup loaded %d values from %s", len(jp.table), inputPath)
+
+	return jp, nil
 }
 
-func (jf *JSONFileLookupStep) Run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
-	field, err := evaluate.ExpressionString(jf.Field, task.GetInputs(), i)
+func (jp *jsonLookupProcess) Close() {}
+
+func (jp *jsonLookupProcess) Process(i map[string]interface{}) []map[string]interface{} {
+	field, err := evaluate.ExpressionString(jp.config.Value, jp.inputs, i)
 	if err == nil {
-		if line, ok := jf.table[field]; ok {
+		if line, ok := jp.table[field]; ok {
 			row := map[string]interface{}{}
 			json.Unmarshal(line, &row)
-			for k, v := range jf.Copy {
+			for k, v := range jp.config.Copy {
 				if ki, ok := row[v]; ok {
 					i[k] = ki
 				}
 			}
-			for k, v := range jf.Project {
-				val, err := evaluate.ExpressionString(v, task.GetInputs(), row)
+			for k, v := range jp.config.Project {
+				val, err := evaluate.ExpressionString(v, jp.inputs, row)
 				if err == nil {
 					err = setProjectValue(i, k, val)
 					if err != nil {
@@ -89,5 +99,5 @@ func (jf *JSONFileLookupStep) Run(i map[string]interface{}, task task.RuntimeTas
 			}
 		}
 	}
-	return i
+	return []map[string]any{i}
 }

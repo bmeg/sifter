@@ -3,6 +3,7 @@ package transform
 import (
 
 	//"sync"
+	"fmt"
 	"log"
 
 	"github.com/bmeg/sifter/evaluate"
@@ -13,10 +14,14 @@ type MapStep struct {
 	Method  string `json:"method" jsonschema_description:"Name of function to call"`
 	Python  string `json:"python" jsonschema_description:"Python code to be run"`
 	GPython string `json:"gpython" jsonschema_description:"Python code to be run using GPython"`
-	proc    evaluate.Processor
 }
 
-func (ms *MapStep) Init(task task.RuntimeTask) {
+type mapProcess struct {
+	config *MapStep
+	proc   evaluate.Processor
+}
+
+func (ms *MapStep) Init(task task.RuntimeTask) (Processor, error) {
 	if ms.Python != "" {
 		log.Printf("Init Map: %s", ms.Python)
 		e := evaluate.GetEngine("python", task.WorkDir())
@@ -24,7 +29,7 @@ func (ms *MapStep) Init(task task.RuntimeTask) {
 		if err != nil {
 			log.Printf("Compile Error: %s", err)
 		}
-		ms.proc = c
+		return &mapProcess{ms, c}, nil
 	} else if ms.GPython != "" {
 		log.Printf("Init Map: %s", ms.GPython)
 		e := evaluate.GetEngine("gpython", task.WorkDir())
@@ -32,18 +37,19 @@ func (ms *MapStep) Init(task task.RuntimeTask) {
 		if err != nil {
 			log.Printf("Compile Error: %s", err)
 		}
-		ms.proc = c
+		return &mapProcess{ms, c}, nil
 	}
+	return nil, fmt.Errorf("Script not found")
 }
 
-func (ms *MapStep) Run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
-	out, err := ms.proc.Evaluate(i)
+func (mp *mapProcess) Process(i map[string]interface{}) []map[string]interface{} {
+	out, err := mp.proc.Evaluate(i)
 	if err != nil {
 		log.Printf("Map Step error: %s", err)
 	}
-	return out
+	return []map[string]any{out}
 }
 
-func (ms *MapStep) Close() {
-	ms.proc.Close()
+func (mp *mapProcess) Close() {
+	mp.proc.Close()
 }

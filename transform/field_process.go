@@ -67,7 +67,7 @@ func (fs *fieldProcess) Process(i map[string]any) []map[string]any {
 			}
 			out = append(out, vMap)
 		} else {
-			log.Printf("Field list incorrect type: %s", v)
+			log.Printf("Field list incorrect type: %T", v)
 		}
 	} else {
 		//log.Printf("Field %s missing", fs.Field)

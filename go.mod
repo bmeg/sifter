@@ -13,7 +13,7 @@ require (
 	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad
 	github.com/dgraph-io/badger/v2 v2.0.1
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-python/gpython v0.0.3-0.20191118123038-4c28217f7422
+	github.com/go-python/gpython v0.1.0
 	github.com/golang/protobuf v1.5.2
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-getter v1.5.1-0.20201023004527-0a9843813fd8
@@ -97,7 +97,7 @@ require (
 	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
 	golang.org/x/oauth2 v0.0.0-20210615190721-d04028783cf1 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20211019181941-9d821ace8654 // indirect
+	golang.org/x/sys v0.0.0-20211117180635-dee7805ff2e1 // indirect
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.8-0.20211029000441-d6a9af8af023 // indirect

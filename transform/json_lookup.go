@@ -21,14 +21,13 @@ type JSONFileLookupStep struct {
 	Key     string `json:"key"`
 	Project map[string]string
 	Copy    map[string]string
+	Replace *TableReplace
 }
 
 type jsonLookupProcess struct {
 	config *JSONFileLookupStep
 	inputs map[string]any
-	//found it more space efficiant to store the JSON rather then keep
-	//all the unpacked values
-	table map[string][]byte //map[string]interface{}
+	table  map[string][]byte //found it more space efficiant to store the JSON rather then keep all the unpacked values
 }
 
 func (jf *JSONFileLookupStep) Init(task task.RuntimeTask) (Processor, error) {
@@ -54,8 +53,28 @@ func (jf *JSONFileLookupStep) Init(task task.RuntimeTask) (Processor, error) {
 		return nil, err
 	}
 
-	jp := &jsonLookupProcess{jf, task.GetInputs(), map[string][]byte{}}
+	//finish this
+	//do a table based value replacement
+	if jf.Replace != nil {
+		table := map[string]string{}
+		for line := range inputStream {
+			if len(line) > 0 {
+				row := map[string]interface{}{}
+				err := json.Unmarshal(line, &row)
+				if err != nil {
+					return nil, err
+				}
+				if key, ok := row[jf.Key]; ok {
+					if keyStr, ok := key.(string); ok {
+						table[keyStr] = "" // row[jf.]
+					}
+				}
+			}
+		}
+		return &tableReplaceInst{jf.Replace, table}, nil
+	}
 
+	jp := &jsonLookupProcess{jf, task.GetInputs(), map[string][]byte{}}
 	for line := range inputStream {
 		if len(line) > 0 {
 			row := map[string]interface{}{}

@@ -10,13 +10,10 @@ import (
 
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/task"
-	"github.com/bmeg/sifter/transform"
 )
 
 type XMLLoadStep struct {
-	Input         string         `json:"input"`
-	Transform     transform.Pipe `json:"transform"`
-	SkipIfMissing bool           `json:"skipIfMissing"`
+	Input string `json:"input"`
 }
 
 func xmlStream(file io.Reader, out chan map[string]interface{}) {
@@ -36,6 +33,19 @@ func xmlStream(file io.Reader, out chan map[string]interface{}) {
 			nameStack = append(nameStack, se.Name.Local)
 			mapStack = append(mapStack, map[string]interface{}{})
 			curString = []byte{}
+			attributes := map[string][]string{}
+			for _, a := range se.Attr {
+				if x, ok := attributes[a.Name.Local]; ok {
+					attributes[a.Name.Local] = append(x, a.Value)
+				} else {
+					attributes[a.Name.Local] = []string{a.Value}
+				}
+			}
+			mattributes := map[string]any{}
+			for k, v := range attributes {
+				mattributes[k] = v
+			}
+			mapStack[len(mapStack)-1]["_attr"] = mattributes
 		case xml.EndElement:
 			cMap := mapStack[len(mapStack)-1]
 			nameStack = nameStack[0 : len(nameStack)-1]
@@ -101,17 +111,17 @@ func xmlStream(file io.Reader, out chan map[string]interface{}) {
 func (ml *XMLLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 	log.Printf("Starting XML Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.GetInputs(), nil)
-	inputPath, err := task.AbsPath(input)
 	if err != nil {
+		log.Printf("Error: %s", err)
 		return nil, err
 	}
 
-	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
+	if _, err := os.Stat(input); os.IsNotExist(err) {
 		return nil, fmt.Errorf("File Not Found: %s", input)
 	}
-	log.Printf("Loading: %s", inputPath)
+	log.Printf("Loading: %s", input)
 
-	file, err := os.Open(inputPath)
+	file, err := os.Open(input)
 	if err != nil {
 		return nil, err
 	}

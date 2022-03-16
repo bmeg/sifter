@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	_ "github.com/go-python/gpython/builtin" // initialize builing gpython functions
-	"github.com/go-python/gpython/compile"
+	_ "github.com/go-python/gpython/modules"
 	"github.com/go-python/gpython/py"
-	"github.com/go-python/gpython/vm"
 )
 
 type GPythonEngine struct{}
@@ -98,22 +96,18 @@ func PyCompile(codeStr string) (*PyCode, error) {
 
 	log.Printf("Gpython compile: %s", codeStr)
 
-	obj, err := compile.Compile(codeStr, "test.py", "exec", 0, true)
-	if err != nil {
-		log.Fatalf("Can't compile %q: %v", codeStr, err)
-	}
+	opts := py.ContextOpts{SysArgs: []string{}, SysPaths: []string{}}
+	ctx := py.NewContext(opts)
 
-	code := obj.(*py.Code)
-	//log.Printf("Code: %s", code)
-	module := py.NewModule("__main__", "", nil, nil)
-	//res, err := vm.EvalCode(code, module.Globals, module.Globals)
-	_, err = vm.Run(module.Globals, module.Globals, code, nil)
+	mainImpl := py.ModuleImpl{
+		CodeSrc: codeStr,
+	}
+	module, err := ctx.ModuleInit(&mainImpl)
 	if err != nil {
 		py.TracebackDump(err)
-		log.Fatal(err)
 		return nil, err
 	}
-	//log.Printf("Module: %s", module.Globals)
+
 	return &PyCode{module: module}, nil
 }
 

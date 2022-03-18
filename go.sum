@@ -84,6 +84,8 @@ github.com/biogo/boom v0.0.0-20150317015657-28119bc1ffc1/go.mod h1:fwtxkutinkQcM
 github.com/biogo/hts v1.2.2 h1:n+o6v+oWMfPR4oksDJndEDxgL7ee53Pltn7V9PxqXzc=
 github.com/biogo/hts v1.2.2/go.mod h1:6C9MdMt9ALD5PsluK5n0B0svHOpmVse3UjQQx/cTgOw=
 github.com/bketelsen/crypt v0.0.3-0.20200106085610-5cbc8cc4026c/go.mod h1:MKsuJmJgSg28kpZDP6UIiPt0e0Oz0kqKNGyRaWEPv84=
+github.com/bmeg/flame v0.0.0-20220315061525-89da71b2c32e h1:RDIbiKvFQfs7a2f6TF5GZdP8pehjBcQ5gnsoPfpmBiI=
+github.com/bmeg/flame v0.0.0-20220315061525-89da71b2c32e/go.mod h1:W59Ikapd0tGKtwJpw4CVDxzzDTkDKX2VRZLkMP3J3Is=
 github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50 h1:zg0pjw8ZUufzIo7iEr0811OZ1UkcjEL8579AdUL8ISU=
 github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50/go.mod h1:hoSeuZtqe58ANXHuWpeODx4bDHGV36QXlCs1yrUvK6M=
 github.com/bmeg/grip v0.0.0-20210910231938-94d69d94ff65 h1:ngj395aMDI4GZaN77fwjtr1jdFf/3fwg8vNabskFpSw=

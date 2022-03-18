@@ -1,13 +1,11 @@
 module github.com/bmeg/sifter
 
-replace github.com/bmeg/flame => /home/kellrott/workspaces/flame
-
 require (
 	github.com/akrylysov/pogreb v0.9.1
 	github.com/alecthomas/jsonschema v0.0.0-20200514014646-0366d1034a17
 	github.com/aymerick/raymond v2.0.3-0.20180322193309-b565731e1464+incompatible
 	github.com/biogo/hts v1.2.2
-	github.com/bmeg/flame v0.0.0-20220314055753-e7eaf60f5f14
+	github.com/bmeg/flame v0.0.0-20220315061525-89da71b2c32e
 	github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50
 	github.com/bmeg/grip v0.0.0-20210910231938-94d69d94ff65
 	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad
@@ -18,7 +16,6 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-getter v1.5.1-0.20201023004527-0a9843813fd8
 	github.com/hashicorp/go-multierror v1.0.0
-	github.com/hashicorp/go-plugin v1.4.3
 	github.com/jlaffaye/ftp v0.0.0-20200602180915-5563613968bf
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/linkedin/goavro/v2 v2.10.0
@@ -58,6 +55,7 @@ require (
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
 	github.com/hashicorp/go-hclog v0.14.1 // indirect
+	github.com/hashicorp/go-plugin v1.4.3 // indirect
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
 	github.com/hashicorp/go-version v1.2.0 // indirect
 	github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb // indirect

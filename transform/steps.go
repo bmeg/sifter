@@ -43,7 +43,7 @@ type Step struct {
 	Reduce         *ReduceStep         `json:"reduce"`
 	Distinct       *DistinctStep       `json:"distinct"`
 	FieldProcess   *FieldProcessStep   `json:"fieldProcess" jsonschema_description:"Take an array field from a message and run in child transform"`
-	TableReplace   *TableReplaceStep   `json:"tableReplace" jsonschema_description:"Load in TSV to map a fields values"`
+	//TableReplace   *TableReplaceStep   `json:"tableReplace" jsonschema_description:"Load in TSV to map a fields values"`
 	TableLookup    *TableLookupStep    `json:"tableLookup"`
 	JSONFileLookup *JSONFileLookupStep `json:"jsonLookup"`
 	GraphBuild     *GraphBuildStep     `json:"graphBuild"`

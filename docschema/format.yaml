@@ -267,43 +267,7 @@
           ...
     ```
 
- - class: TransposeFileStep
-   example: |
-
-    ```
-      - desc: Transpose RNA file
-        transposeFile:
-          input: "{{inputs.rnaFile}}"
-          output: data_RNA_Seq_expression_median_transpose.txt
-    ```
-
- - class: DownloadStep
-
- - class: UntarStep
-   example: |
-
-    ```
-      - desc: Untar
-        untar:
-          input: "{{inputs.tar}}"
-    ```
-
  - class: SQLDumpStep
-
- - class: TableTransform
-
- - class: ScriptStep
-   example: |
-    ```
-      - desc: Scrape GDC Projects
-        script:
-          dockerImage: bmeg/sifter-gdc-scan
-          command: [/opt/gdc-scan.py, projects]
-      - desc: Scrape GDC Cases
-        script:
-          dockerImage: bmeg/sifter-gdc-scan
-          command: [/opt/gdc-scan.py, cases]
-    ```
 
  - class: TableLoadStep
 
@@ -317,10 +281,8 @@
           ...
     ```
 
- - class: FileGlobStep
-
- - class: DigLoadStep
-   description: Use a GRIP DIG server to obtain data
+ - class: GripperLoadStep
+   description: Use a GRIPPER server to obtain data
 
  - title: Transform Pipelines
    text: |
@@ -358,8 +320,7 @@
           type: experiment
     ```
 
- - class: TableWriteStep
- - class: TableReplaceStep
+ - class: TableLookupStep
    description: Use a two column file to make values from one value to another.
    example: |
     Starting with a table that maps state names to the two character state code:
@@ -445,34 +406,6 @@
               class: summary_report
     ```
 
- - class: ForkStep
-   example: |
-    ```
-      - desc: Loading ProjectData
-        jsonLoad:
-          input: out.projects.json
-          transform:
-            - fork:
-                transform:
-                  -
-                    - project:
-                        mapping:
-                          code: "{{row.project_id}}"
-                          programs: "{{row.program.name}}"
-                    - objectCreate:
-                        class: project
-                  -
-                    - project:
-                        mapping:
-                          code: "{{row.project_id}}"
-                          programs: "{{row.program.name}}"
-                          submitter_id: "{{row.program.name}}"
-                          projects: "{{row.project_id}}"
-                          type: experiment
-                    - objectCreate:
-                        class: experiment
-    ```
-
  - class: DebugStep
    description: Print out messages
    example: |
@@ -492,12 +425,9 @@
         col: portions
         mapping:
           samples: "{{row.id}}"
-        steps:
-          - fieldProcess:
-              ...
     ```
 
- - class: FieldMapStep
+ - class: FieldParseStep
    description: Take a param style string and parse it into independent elements in the message
    example: |
 
@@ -510,7 +440,7 @@
     After the transform:
 
     ```
-      - fieldMap:
+      - fieldParse:
           col: attributes
           sep: ";"
     ```
@@ -526,37 +456,4 @@
     ```
 
 
- - class: CacheStep
-   description: |
-      The results of long running functions can be stored in a database and only
-      calculated as needed.
-
-   example: |
-     The address lookup function provided by the Census bureau is takes time to
-     run, so we use the `cache` step to define a subsection of the pipeline
-     that should be cached in a database, and if the transform is run again,
-     the results would be pulled out of the database.
-
-     ```
-      - cache:
-          transform:
-            - map:
-                method: addressLookup
-                python: >
-
-                  import json
-
-                  from urllib import request, parse
-
-                  def addressLookup(x):
-                    try:
-                      address = x['query']
-                      baseUrl = "https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?format=json&benchmark=9&address="
-                      out = request.urlopen(baseUrl + parse.quote(address))
-                      data = json.loads(out.read())
-                      x['addressLookup'] = data
-                    except:
-                      pass
-                    return x
-     ```
  - class: AlleleIDStep

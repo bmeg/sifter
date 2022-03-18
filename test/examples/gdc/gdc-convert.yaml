@@ -4,8 +4,10 @@ name: gdc
 inputs:
   cases:
     type: File
+    default: ../../resources/case.json
   schema: 
     type: Directory
+    default: ../../resources/schemas
 
 sources:
   caseData:

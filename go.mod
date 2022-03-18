@@ -25,6 +25,7 @@ require (
 	go.mongodb.org/mongo-driver v1.5.1
 	google.golang.org/grpc v1.38.0
 	google.golang.org/protobuf v1.27.1
+	sigs.k8s.io/yaml v1.3.0
 )
 
 require (

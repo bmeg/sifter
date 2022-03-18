@@ -9,7 +9,7 @@ import (
 	"github.com/bmeg/sifter/extractors"
 	"github.com/bmeg/sifter/transform"
 	"github.com/bmeg/sifter/writers"
-	"github.com/ghodss/yaml"
+	"sigs.k8s.io/yaml"
 )
 
 type StepConfig interface{}
@@ -100,5 +100,5 @@ func ParseDataFile(path string, data *map[string]interface{}) error {
 
 // ParseDataString parses input string
 func ParseDataString(raw string, data *map[string]interface{}) error {
-	return yaml.Unmarshal([]byte(raw), data)
+	return yaml.UnmarshalStrict([]byte(raw), data)
 }

@@ -242,40 +242,34 @@ then run a sequential set of extraction steps.
 
 : Unique name of the playbook
 
+ -  docs
+
+> Type: *string* 
+
  -  outdir
 
 > Type: *string* 
 
+ -  config
+
+> Type: *object*  of [ConfigVar](#configvar)
+
+
+: Configuration for Playbook
+
  -  inputs
-
-> Type: *object*  of [Input](#input)
-
-
-: Optional inputs to Playbook
-
- -  outputs
-
-> Type: *array*  of [Output](#output)
-
-: Additional file created by Playbook
-
- -  sources
 
 > Type: *object*  of [Extractor](#extractor)
 
 
 : Steps of the transformation
 
- -  sinks
+ -  outputs
 
 > Type: *object*  of [WriteConfig](#writeconfig)
 
 
  -  pipelines
-
-> Type: *object* 
-
- -  links
 
 > Type: *object* 
 
@@ -286,7 +280,7 @@ then run a sequential set of extraction steps.
 
 
 ***
-## Input
+## ConfigVar
 
  -  type
 
@@ -844,42 +838,6 @@ Becomes:
 
 
 ***
-## AlleleIDStep
-
- -  prefix
-
-> Type: *string* 
-
- -  genome
-
-> Type: *string* 
-
- -  chromosome
-
-> Type: *string* 
-
- -  start
-
-> Type: *string* 
-
- -  end
-
-> Type: *string* 
-
- -  reference_bases
-
-> Type: *string* 
-
- -  alternate_bases
-
-> Type: *string* 
-
- -  dst
-
-> Type: *string* 
-
-
-***
 ## AvroLoadStep
 
  -  input
@@ -1009,18 +967,6 @@ Becomes:
 
  of [TableReplace](#tablereplace)
 
-## Output
-
- -  type
-
-> Type: *string* 
-
-: File type: File, ObjectFile, VertexFile, EdgeFile
-
- -  path
-
-> Type: *string* 
-
 ## Script
 
  -  commandLine
@@ -1044,6 +990,10 @@ Becomes:
 > Type: *integer* 
 
 ## Step
+
+ -  from
+
+> Type: *string* 
 
  -  fieldParse
 
@@ -1086,12 +1036,6 @@ Becomes:
  -  regexReplace
 
  of [RegexReplaceStep](#regexreplacestep)
-
- -  alleleID
-
- of [AlleleIDStep](#alleleidstep)
-
-: Generate a standardized allele hash ID
 
  -  project
 
@@ -1142,6 +1086,10 @@ Becomes:
 > Type: *string* 
 
 ## TableWriter
+
+ -  from
+
+> Type: *string* 
 
  -  output
 

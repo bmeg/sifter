@@ -232,7 +232,7 @@
     and turns them into multiple output streams. It can take a set of inputs
     then run a sequential set of extraction steps.
 
- - class: Input
+ - class: ConfigVar
 
  - title: Extraction Steps
    text: |
@@ -454,6 +454,3 @@
       "protein_id" : "ENSP00000419345"
     }
     ```
-
-
- - class: AlleleIDStep

@@ -14,9 +14,10 @@ import (
 )
 
 type TableWriter struct {
-	Output  string   `json:"output" jsonschema_description:"Name of file to create"`
-	Columns []string `json:"columns" jsonschema_description:"Columns to be written into table file"`
-	Sep     string   `json:"sep"`
+	FromName string   `json:"from"`
+	Output   string   `json:"output" jsonschema_description:"Name of file to create"`
+	Columns  []string `json:"columns" jsonschema_description:"Columns to be written into table file"`
+	Sep      string   `json:"sep"`
 }
 
 type tableWriteProcess struct {
@@ -28,13 +29,17 @@ type tableWriteProcess struct {
 	writer  *csv.Writer
 }
 
+func (tw *TableWriter) From() string {
+	return tw.FromName
+}
+
 func (tw *TableWriter) Init(task task.RuntimeTask) (WriteProcess, error) {
 	sep := '\t'
 	if tw.Sep != "" {
 		sep = rune(tw.Sep[0])
 	}
 
-	output, err := evaluate.ExpressionString(tw.Output, task.GetInputs(), nil)
+	output, err := evaluate.ExpressionString(tw.Output, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +62,7 @@ func (tw *TableWriter) Init(task task.RuntimeTask) (WriteProcess, error) {
 }
 
 func (tw *TableWriter) GetOutputs(task task.RuntimeTask) []string {
-	output, err := evaluate.ExpressionString(tw.Output, task.GetInputs(), nil)
+	output, err := evaluate.ExpressionString(tw.Output, task.GetConfig(), nil)
 	if err != nil {
 		return []string{}
 	}

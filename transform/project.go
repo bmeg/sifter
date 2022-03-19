@@ -23,7 +23,7 @@ func (pr ProjectStep) Init(t task.RuntimeTask) (Processor, error) {
 
 func valueRender(v interface{}, task task.RuntimeTask, row map[string]interface{}) (interface{}, error) {
 	if vStr, ok := v.(string); ok {
-		return evaluate.ExpressionString(vStr, task.GetInputs(), row)
+		return evaluate.ExpressionString(vStr, task.GetConfig(), row)
 	} else if vMap, ok := v.(map[string]interface{}); ok {
 		o := map[string]interface{}{}
 		for key, val := range vMap {
@@ -40,7 +40,7 @@ func valueRender(v interface{}, task task.RuntimeTask, row map[string]interface{
 	} else if vArray, ok := v.([]string); ok {
 		o := []string{}
 		for _, vStr := range vArray {
-			j, _ := evaluate.ExpressionString(vStr, task.GetInputs(), row)
+			j, _ := evaluate.ExpressionString(vStr, task.GetConfig(), row)
 			o = append(o, j)
 		}
 		return o, nil

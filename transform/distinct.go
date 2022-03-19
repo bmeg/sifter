@@ -35,7 +35,7 @@ func (ds DistinctStep) Init(task task.RuntimeTask) (Processor, error) {
 func (ds *distinctProcess) Process(i map[string]any) []map[string]any {
 	out := []map[string]any{}
 
-	keyStr, err := evaluate.ExpressionString(ds.config.Value, ds.task.GetInputs(), i)
+	keyStr, err := evaluate.ExpressionString(ds.config.Value, ds.task.GetConfig(), i)
 	if err == nil {
 		ds.db.Update(func(txn *badger.Txn) error {
 			key := []byte(keyStr)

@@ -20,7 +20,7 @@ type SQLDumpStep struct {
 
 func (ml *SQLDumpStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 
-	input, err := evaluate.ExpressionString(ml.Input, task.GetInputs(), nil)
+	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
 	inputPath, err := task.AbsPath(input)
 	log.Printf("Starting SQLDump Load: %s", inputPath)
 

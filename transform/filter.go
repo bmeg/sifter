@@ -60,7 +60,7 @@ func (fs *filterProcessor) Process(i map[string]interface{}) []map[string]any {
 	value := ""
 	var err error
 	if fs.config.Value != "" {
-		value, err = evaluate.ExpressionString(fs.config.Value, fs.task.GetInputs(), i)
+		value, err = evaluate.ExpressionString(fs.config.Value, fs.task.GetConfig(), i)
 	} else if fs.config.Field != "" {
 		i, e := evaluate.GetJSONPath(fs.config.Field, i)
 		err = e
@@ -80,7 +80,7 @@ func (fs *filterProcessor) Process(i map[string]interface{}) []map[string]any {
 		return []map[string]any{}
 	}
 
-	match, _ := evaluate.ExpressionString(fs.config.Match, fs.task.GetInputs(), i)
+	match, _ := evaluate.ExpressionString(fs.config.Match, fs.task.GetConfig(), i)
 	if value == match {
 		return []map[string]any{i}
 	}

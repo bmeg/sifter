@@ -18,8 +18,8 @@ func init() {
 	})
 }
 
-func ExpressionString(expression string, inputs map[string]interface{}, row map[string]interface{}) (string, error) {
-	d := map[string]interface{}{"inputs": inputs}
+func ExpressionString(expression string, config map[string]interface{}, row map[string]interface{}) (string, error) {
+	d := map[string]interface{}{"config": config}
 	if row != nil {
 		d["row"] = row
 	}

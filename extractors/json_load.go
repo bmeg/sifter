@@ -21,7 +21,7 @@ type JSONLoadStep struct {
 
 func (ml *JSONLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 	log.Printf("Starting JSON Load")
-	input, err := evaluate.ExpressionString(ml.Input, task.GetInputs(), nil)
+	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
 	inputPath, err := task.AbsPath(input)
 
 	if _, err := os.Stat(inputPath); os.IsNotExist(err) {

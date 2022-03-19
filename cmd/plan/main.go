@@ -79,14 +79,14 @@ var Cmd = &cobra.Command{
 					pb := playbook.Playbook{}
 					if err := playbook.ParseFile(path, &pb); err == nil {
 
-						if len(pb.Pipelines) > 0 || len(pb.Sources) > 0 || len(pb.Scripts) > 0 {
+						if len(pb.Pipelines) > 0 || len(pb.Inputs) > 0 || len(pb.Scripts) > 0 {
 
 							localInputs := pb.PrepInputs(userInputs, "./")
 							task := task.NewTask(pb.Name, "./", pb.GetDefaultOutDir(), localInputs)
 
 							log.Printf("pb outdir %s", task.OutDir())
 
-							taskInputs, _ := pb.GetInputs(task)
+							taskInputs, _ := pb.GetConfig(task)
 
 							inputs := []string{}
 							outputs := []string{}

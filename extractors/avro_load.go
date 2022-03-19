@@ -21,7 +21,7 @@ type AvroLoadStep struct {
 func (ml *AvroLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 	log.Printf("Starting Avro Load")
 
-	input, err := evaluate.ExpressionString(ml.Input, task.GetInputs(), nil)
+	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
 
 	if _, err := os.Stat(input); os.IsNotExist(err) {
 		return nil, fmt.Errorf("File Not Found: %s", input)

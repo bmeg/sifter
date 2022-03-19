@@ -1,7 +1,7 @@
 
 name: gdc
 
-inputs:
+config:
   cases:
     type: File
     default: ../../resources/case.json
@@ -9,10 +9,10 @@ inputs:
     type: Directory
     default: ../../resources/schemas
 
-sources:
+inputs:
   caseData:
     jsonLoad:
-      input: "{{inputs.cases}}"
+      input: "{{config.cases}}"
 
 pipelines:
   caseObject:
@@ -24,14 +24,14 @@ pipelines:
           type: case
     - objectCreate:
         class: case
-        schema: "{{inputs.schema}}"
+        schema: "{{config.schema}}"
     - emit:
         name: case
   
   caseGraph:
     - from: caseObject
     - graphBuild:
-        schema: "{{inputs.schema}}"
+        schema: "{{config.schema}}"
         idPrefix: Case
         class: case
         fields:
@@ -53,14 +53,14 @@ pipelines:
           id: "{{row.sample_id}}"
     - objectCreate:
         class: sample
-        schema: "{{inputs.schema}}"
+        schema: "{{config.schema}}"
     - emit:
         name: sample
 
   sampleGraph:
     - from: sampleObject
     - graphBuild:
-        schema: "{{inputs.schema}}"
+        schema: "{{config.schema}}"
         idPrefix: Sample
         class: sample
         fields:
@@ -90,14 +90,14 @@ pipelines:
           id: "{{row.aliquot_id}}"
     - objectCreate:
         class: aliquot
-        schema: "{{inputs.schema}}"
+        schema: "{{config.schema}}"
     - emit:
         name: aliquot
 
   aliquotGraph:
     - from: aliquotObject
     - graphBuild:
-        schema: "{{inputs.schema}}"
+        schema: "{{config.schema}}"
         idPrefix: Aliquot
         class: aliquot
         fields:

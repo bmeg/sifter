@@ -18,20 +18,13 @@ type Loader interface {
 	Load() chan gripql.GraphElement
 }
 
-type Input struct {
+type ConfigVar struct {
 	Type    string `json:"type"`
 	Default string `json:"default"`
 	Source  string `json:"source"`
 }
 
-type Output struct {
-	Type string `json:"type" jsonschema_description:"File type: File, ObjectFile, VertexFile, EdgeFile"`
-	Path string `json:"path"`
-}
-
-type Inputs map[string]Input
-
-type Outputs []Output
+type Config map[string]ConfigVar
 
 type Script struct {
 	CommandLine string   `json:"commandLine"`
@@ -43,11 +36,11 @@ type Script struct {
 
 type Playbook struct {
 	Name      string                          `json:"name" jsonschema_description:"Unique name of the playbook"`
+	Docs      string                          `json:"docs"`
 	Outdir    string                          `json:"outdir"`
-	Inputs    Inputs                          `json:"inputs,omitempty" jsonschema_description:"Optional inputs to Playbook"`
-	Outputs   Outputs                         `json:"outputs,omitempty" jsonschema_description:"Additional file created by Playbook"`
-	Sources   map[string]extractors.Extractor `json:"sources" jsonschema_description:"Steps of the transformation"`
-	Sinks     map[string]writers.WriteConfig  `json:"sinks"`
+	Config    Config                          `json:"config,omitempty" jsonschema_description:"Configuration for Playbook"`
+	Inputs    map[string]extractors.Extractor `json:"inputs" jsonschema_description:"Steps of the transformation"`
+	Outputs   map[string]writers.WriteConfig  `json:"outputs"`
 	Pipelines map[string]transform.Pipe       `json:"pipelines"`
 	Scripts   map[string]Script               `json:"scripts"`
 	path      string

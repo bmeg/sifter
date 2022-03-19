@@ -28,7 +28,7 @@ func (pb *Playbook) PrepInputs(inputs map[string]any, workdir string) map[string
 	out := map[string]any{}
 
 	//fill in missing values with default values
-	for k, v := range pb.Inputs {
+	for k, v := range pb.Config {
 		if _, ok := inputs[k]; !ok {
 			if v.Default != "" {
 				if v.IsFile() || v.IsDir() {
@@ -87,7 +87,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 		}
 	}
 
-	log.Printf("Inputs: %#v", task.GetInputs())
+	log.Printf("Inputs: %#v", task.GetConfig())
 
 	wf := flame.NewWorkflow()
 
@@ -100,7 +100,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 	inNodes := map[string]flame.Receiver[map[string]any]{}
 	writers := map[string]writers.WriteProcess{}
 
-	for n, v := range pb.Sources {
+	for n, v := range pb.Inputs {
 		log.Printf("Setting up %s", n)
 		s, err := v.Start(task)
 		if err == nil {
@@ -161,7 +161,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 		inNodes[k] = firstStep
 	}
 
-	for k, v := range pb.Sinks {
+	for k, v := range pb.Outputs {
 		sub := task.SubTask(k)
 		s, err := v.Init(sub)
 		if err == nil {
@@ -195,6 +195,25 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 			}
 		} else {
 			log.Printf("Pipeline %s is empty", dst)
+		}
+	}
+
+	for dst, v := range pb.Outputs {
+		src := v.From()
+		if src == dst {
+			//TODO: more loop detection
+			log.Printf("Pipeline Loop detected in %s", dst)
+			return fmt.Errorf("Pipeline Loop detected")
+		}
+		if srcNode, ok := outNodes[src]; ok {
+			if dstNode, ok := inNodes[dst]; ok {
+				log.Printf("Connecting %s to %s ", src, dst)
+				dstNode.Connect(srcNode)
+			} else {
+				log.Printf("Dest %s not found", dst)
+			}
+		} else {
+			log.Printf("Source %s not found", src)
 		}
 	}
 

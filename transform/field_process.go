@@ -41,7 +41,7 @@ func (fs *fieldProcess) Process(i map[string]any) []map[string]any {
 					r[k] = v
 				}
 				for k, v := range fs.config.Mapping {
-					val, _ := evaluate.ExpressionString(v, fs.task.GetInputs(), i)
+					val, _ := evaluate.ExpressionString(v, fs.task.GetConfig(), i)
 					r[k] = val
 				}
 				out = append(out, r)
@@ -55,14 +55,14 @@ func (fs *fieldProcess) Process(i map[string]any) []map[string]any {
 					r[k] = v
 				}
 				for k, v := range fs.config.Mapping {
-					val, _ := evaluate.ExpressionString(v, fs.task.GetInputs(), i)
+					val, _ := evaluate.ExpressionString(v, fs.task.GetConfig(), i)
 					r[k] = val
 				}
 				out = append(out, r)
 			}
 		} else if vMap, ok := v.(map[string]any); ok {
 			for k, v := range fs.config.Mapping {
-				val, _ := evaluate.ExpressionString(v, fs.task.GetInputs(), i)
+				val, _ := evaluate.ExpressionString(v, fs.task.GetConfig(), i)
 				vMap[k] = val
 			}
 			out = append(out, vMap)

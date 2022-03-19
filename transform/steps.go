@@ -38,7 +38,6 @@ type Step struct {
 	Clean        *CleanStep        `json:"clean"`
 	Debug        *DebugStep        `json:"debug" jsonschema_description:"Print message contents to stdout"`
 	RegexReplace *RegexReplaceStep `json:"regexReplace"`
-	AlleleID     *AlleleIDStep     `json:"alleleID" jsonschema_description:"Generate a standardized allele hash ID"`
 	Project      *ProjectStep      `json:"project" jsonschema_description:"Run a projection mapping message"`
 	Map          *MapStep          `json:"map" jsonschema_description:"Apply a single function to all records"`
 	Reduce       *ReduceStep       `json:"reduce"`

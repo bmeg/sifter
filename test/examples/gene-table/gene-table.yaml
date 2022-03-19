@@ -1,20 +1,19 @@
 
-class: Playbook
+name: geneTable
 
-
-desc: >
+docs: >
   This takes a Gene TSV, filters rows, selects columns and outputs a 2
   column TSV into the working directory
 
-inputs:
+config:
   geneTSV:
     type: File
-    # default: ftp://ftp.ncbi.nih.gov/gene/DATA/gene2ensembl.gz
+    default: ../../resources/gene2ensembl.gz
 
-sources:
+inputs:
   genes:
     tableLoad:
-      input: "{{inputs.geneTSV}}"
+      input: "{{config.geneTSV}}"
       columns:
         - tax_id
         - GeneID
@@ -24,13 +23,10 @@ sources:
         - protein_accession.version
         - Ensembl_protein_identifier
 
-links:
-  translate: genes
-  tableWrite: translate
-
-sinks:
+outputs:
   geneTable:
     tableWrite:
+      from: translate
       output: "gene.table"
       columns:
         - GeneID
@@ -38,6 +34,7 @@ sinks:
 
 pipelines:
   translate:
+    - from: genes
     - filter:
-        field: "{{row.tax_id}}"
+        field: tax_id
         match: "9606"

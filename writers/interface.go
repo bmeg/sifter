@@ -12,12 +12,27 @@ type WriteProcess interface {
 	Close()
 }
 type Writer interface {
+	From() string
 	Init(task.RuntimeTask) (WriteProcess, error)
 	GetOutputs(task.RuntimeTask) []string
 }
 
 type WriteConfig struct {
 	TableWriter *TableWriter `json:"tableWrite"`
+}
+
+func (wc *WriteConfig) From() string {
+	v := reflect.ValueOf(wc).Elem()
+	for i := 0; i < v.NumField(); i++ {
+		f := v.Field(i)
+		x := f.Interface()
+		if z, ok := x.(Writer); ok {
+			if !f.IsNil() {
+				return z.From()
+			}
+		}
+	}
+	return ""
 }
 
 func (wc *WriteConfig) Init(t task.RuntimeTask) (WriteProcess, error) {

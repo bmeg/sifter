@@ -24,7 +24,7 @@ type TableLoadStep struct {
 
 func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 	log.Printf("Starting Table Load")
-	input, err := evaluate.ExpressionString(ml.Input, task.GetInputs(), nil)
+	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
 	inputPath, err := task.AbsPath(input)
 
 	if s, err := os.Stat(inputPath); os.IsNotExist(err) {

@@ -20,11 +20,11 @@ type objectProcess struct {
 }
 
 func (ts ObjectCreateStep) Init(task task.RuntimeTask) (Processor, error) {
-	className, err := evaluate.ExpressionString(ts.Class, task.GetInputs(), nil)
+	className, err := evaluate.ExpressionString(ts.Class, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
-	path, err := evaluate.ExpressionString(ts.Schema, task.GetInputs(), nil)
+	path, err := evaluate.ExpressionString(ts.Schema, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}

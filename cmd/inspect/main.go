@@ -52,8 +52,8 @@ var Cmd = &cobra.Command{
 
 		out := map[string]any{}
 
-		ins, _ := pb.GetInputs(task)
-		out["inputs"] = ins
+		ins, _ := pb.GetConfig(task)
+		out["config"] = ins
 
 		outputs := map[string]any{}
 

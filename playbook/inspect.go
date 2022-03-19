@@ -8,11 +8,11 @@ import (
 	"github.com/bmeg/sifter/task"
 )
 
-func (pb *Playbook) GetInputs(task task.RuntimeTask) (map[string]string, error) {
+func (pb *Playbook) GetConfig(task task.RuntimeTask) (map[string]string, error) {
 	out := map[string]string{}
-	inputs := task.GetInputs()
+	inputs := task.GetConfig()
 
-	for k, v := range pb.Inputs {
+	for k, v := range pb.Config {
 		if v.IsFile() {
 			if iv, ok := inputs[k]; ok {
 				if ivStr, ok := iv.(string); ok {
@@ -26,14 +26,14 @@ func (pb *Playbook) GetInputs(task task.RuntimeTask) (map[string]string, error) 
 	return out, nil
 }
 
-func (in *Input) IsFile() bool {
+func (in *ConfigVar) IsFile() bool {
 	if in.Type == "File" || in.Type == "file" {
 		return true
 	}
 	return false
 }
 
-func (in *Input) IsDir() bool {
+func (in *ConfigVar) IsDir() bool {
 	if in.Type == "Dir" || in.Type == "dir" || in.Type == "Directory" || in.Type == "directory" {
 		return true
 	}
@@ -44,7 +44,7 @@ func (pb *Playbook) GetSinks(task task.RuntimeTask) (map[string][]string, error)
 	out := map[string][]string{}
 	//inputs := task.GetInputs()
 
-	for k, v := range pb.Sinks {
+	for k, v := range pb.Outputs {
 		out[k] = v.GetOutputs(task)
 	}
 

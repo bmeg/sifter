@@ -31,7 +31,7 @@ type jsonLookupProcess struct {
 }
 
 func (jf *JSONFileLookupStep) Init(task task.RuntimeTask) (Processor, error) {
-	inputPath, err := evaluate.ExpressionString(jf.Input, task.GetInputs(), nil)
+	inputPath, err := evaluate.ExpressionString(jf.Input, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (jf *JSONFileLookupStep) Init(task task.RuntimeTask) (Processor, error) {
 		return &tableReplaceInst{jf.Replace, table}, nil
 	}
 
-	jp := &jsonLookupProcess{jf, task.GetInputs(), map[string][]byte{}}
+	jp := &jsonLookupProcess{jf, task.GetConfig(), map[string][]byte{}}
 	for line := range inputStream {
 		if len(line) > 0 {
 			row := map[string]interface{}{}

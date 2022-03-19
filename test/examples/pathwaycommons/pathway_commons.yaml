@@ -1,15 +1,15 @@
 
 name: pathway_commons
 
-inputs:
+config:
   sifFile:
     type: File
     default: ../../resources/pathways.sif
 
-sources:
+inputs:
   sifFile:
     tableLoad:
-      input: "{{inputs.sifFile}}"
+      input: "{{config.sifFile}}"
       sep: "\t"
       columns: [_from, _label, _to]
 

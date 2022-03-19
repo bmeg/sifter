@@ -16,9 +16,9 @@ type RegexReplaceStep struct {
 }
 
 func (re RegexReplaceStep) Run(i map[string]interface{}, task task.RuntimeTask) map[string]interface{} {
-	col, _ := evaluate.ExpressionString(re.Column, task.GetInputs(), i)
-	replace, _ := evaluate.ExpressionString(re.Replace, task.GetInputs(), i)
-	dst, _ := evaluate.ExpressionString(re.Dest, task.GetInputs(), i)
+	col, _ := evaluate.ExpressionString(re.Column, task.GetConfig(), i)
+	replace, _ := evaluate.ExpressionString(re.Replace, task.GetConfig(), i)
+	dst, _ := evaluate.ExpressionString(re.Dest, task.GetConfig(), i)
 
 	o := re.reg.ReplaceAllString(col, replace)
 	z := map[string]interface{}{}

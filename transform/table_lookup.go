@@ -29,7 +29,7 @@ type tableLookupProcess struct {
 }
 
 func (tr *TableLookupStep) Init(task task.RuntimeTask) (Processor, error) {
-	inputPath, err := evaluate.ExpressionString(tr.Input, task.GetInputs(), nil)
+	inputPath, err := evaluate.ExpressionString(tr.Input, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (tr *TableLookupStep) Init(task task.RuntimeTask) (Processor, error) {
 		tr.Sep = "\t"
 	}
 
-	tp := &tableLookupProcess{config: tr, inputs: task.GetInputs()}
+	tp := &tableLookupProcess{config: tr, inputs: task.GetConfig()}
 
 	tp.colmap = nil
 	if len(tr.Header) > 0 {

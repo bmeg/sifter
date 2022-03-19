@@ -14,18 +14,9 @@ sources:
     jsonLoad:
       input: "{{inputs.cases}}"
 
-links:
-  caseObject: caseData
-  sampleData: caseData
-  sampleObject: sampleData
-  aliquotObject: sampleData
-
-  caseGraph: caseObject
-  sampleGraph: sampleObject
-  aliquotGraph: aliquotObject
-
 pipelines:
   caseObject:
+    - from: caseData
     - project:
         mapping:
           studies: "{{row.project.project_id}}"
@@ -38,6 +29,7 @@ pipelines:
         name: case
   
   caseGraph:
+    - from: caseObject
     - graphBuild:
         schema: "{{inputs.schema}}"
         idPrefix: Case
@@ -47,12 +39,14 @@ pipelines:
             toPrefix: Project
   
   sampleData:
+    - from: caseData
     - fieldProcess:
         field: samples
         mapping:
           cases: "{{row.id}}"
 
   sampleObject:
+    - from: sampleData
     - project:
         mapping:
           type: sample
@@ -64,6 +58,7 @@ pipelines:
         name: sample
 
   sampleGraph:
+    - from: sampleObject
     - graphBuild:
         schema: "{{inputs.schema}}"
         idPrefix: Sample
@@ -71,11 +66,12 @@ pipelines:
         fields:
           cases:
             toPrefix: Case
-        inEdges:
-          samples:
-            fromPrefix: Case
+        #inEdges:
+        #  samples:
+        #   fromPrefix: Case
 
   aliquotObject:
+    - from: sampleData
     - fieldProcess:
         field: portions
         mapping:
@@ -99,6 +95,7 @@ pipelines:
         name: aliquot
 
   aliquotGraph:
+    - from: aliquotObject
     - graphBuild:
         schema: "{{inputs.schema}}"
         idPrefix: Aliquot

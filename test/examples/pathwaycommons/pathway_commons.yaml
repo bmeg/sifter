@@ -1,9 +1,10 @@
 
+name: pathway_commons
 
 inputs:
   sifFile:
     type: File
-    #default: https://www.pathwaycommons.org/archives/PC2/v12/PathwayCommons12.All.hgnc.sif.gz
+    default: ../../resources/pathways.sif
 
 sources:
   sifFile:
@@ -12,12 +13,9 @@ sources:
       sep: "\t"
       columns: [_from, _label, _to]
 
-links:
-  nodes: sifFile
-  edges: sifFile
-
 pipelines:
   nodes:
+    - from: sifFile
     - project:
         mapping:
           nodes: 
@@ -26,7 +24,7 @@ pipelines:
     - fieldProcess:
         field: nodes
     - distinct:
-        field: "{{row._gid}}"
+        value: "{{row._gid}}"
     - project:
         mapping:
           _label: "Protein"
@@ -34,5 +32,6 @@ pipelines:
         name: node
 
   edges:
+    - from: sifFile
     - emit:
         name: edge

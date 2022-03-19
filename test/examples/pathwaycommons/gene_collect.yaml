@@ -11,11 +11,9 @@ sources:
       sep: "\t"
       columns: [_from, _label, _to]
 
-links:
-  geneReduce: sifFile
-
 pipelines:
   geneReduce:
+    - from: sifFile
     - reduce:
         field: _from
         init: { "_to" : [] }

@@ -49,14 +49,13 @@ type Playbook struct {
 	Sources   map[string]extractors.Extractor `json:"sources" jsonschema_description:"Steps of the transformation"`
 	Sinks     map[string]writers.WriteConfig  `json:"sinks"`
 	Pipelines map[string]transform.Pipe       `json:"pipelines"`
-	Links     map[string]string               `json:"links"`
 	Scripts   map[string]Script               `json:"scripts"`
 	path      string
 }
 
 // Parse parses a YAML doc into the given Config instance.
 func parse(raw []byte, conf *Playbook) error {
-	return yaml.Unmarshal(raw, conf)
+	return yaml.UnmarshalStrict(raw, conf)
 }
 
 // ParseFile parses a Sifter playbook file, which is formatted in YAML,
@@ -100,5 +99,5 @@ func ParseDataFile(path string, data *map[string]interface{}) error {
 
 // ParseDataString parses input string
 func ParseDataString(raw string, data *map[string]interface{}) error {
-	return yaml.UnmarshalStrict([]byte(raw), data)
+	return yaml.Unmarshal([]byte(raw), data)
 }

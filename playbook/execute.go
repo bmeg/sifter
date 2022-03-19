@@ -1,6 +1,7 @@
 package playbook
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -107,6 +108,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 			outNodes[n] = c
 		} else {
 			log.Printf("Source error: %s", err)
+			return err
 		}
 	}
 
@@ -114,14 +116,14 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 		sub := task.SubTask(k)
 		var lastStep flame.Emitter[map[string]any]
 		var firstStep flame.Receiver[map[string]any]
-		for _, s := range v {
+		for i, s := range v {
 			b, err := s.Init(sub)
 			if err != nil {
 				log.Printf("Pipeline %s error: %s", k, err)
 				return err
 			} else {
 				if mProcess, ok := b.(transform.MapProcessor); ok {
-					log.Printf("Pipeline %s step: %T", k, b)
+					log.Printf("Pipeline %s step %d: %T", k, i, b)
 					c := flame.AddFlatMapper(wf, mProcess.Process)
 					if lastStep != nil {
 						c.Connect(lastStep)
@@ -132,10 +134,11 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 							firstStep = c
 						}
 					} else {
+						log.Printf("Error setting up step")
 						//throw error?
 					}
 				} else if rProcess, ok := b.(transform.ReduceProcessor); ok {
-					log.Printf("Pipeline %s step: %T", k, b)
+					log.Printf("Pipeline %s step %d: %T", k, i, b)
 					wrap := reduceWrapper{rProcess}
 					k := flame.AddMapper(wf, wrap.addKeyValue)
 					r := flame.AddReduceKey(wf, rProcess.Reduce, rProcess.GetInit())
@@ -149,8 +152,9 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 					if firstStep == nil {
 						firstStep = k
 					}
+				} else {
+					log.Printf("Unknown processor type")
 				}
-
 			}
 		}
 		outNodes[k] = lastStep
@@ -167,20 +171,34 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 		}
 	}
 
-	for dst, src := range pb.Links {
-		if srcNode, ok := outNodes[src]; ok {
-			if dstNode, ok := inNodes[dst]; ok {
-				log.Printf("Connecting %s (%T) to %s (%T)", src, srcNode, dst, dstNode)
-				dstNode.Connect(srcNode)
+	for dst, p := range pb.Pipelines {
+		if len(p) > 0 {
+			if p[0].From != nil {
+				src := string(*p[0].From)
+				if src == dst {
+					//TODO: more loop detection
+					log.Printf("Pipeline Loop detected in %s", dst)
+					return fmt.Errorf("Pipeline Loop detected")
+				}
+				if srcNode, ok := outNodes[src]; ok {
+					if dstNode, ok := inNodes[dst]; ok {
+						log.Printf("Connecting %s to %s ", src, dst)
+						dstNode.Connect(srcNode)
+					} else {
+						log.Printf("Dest %s not found", dst)
+					}
+				} else {
+					log.Printf("Source %s not found", src)
+				}
 			} else {
-				log.Printf("Dest %s not found", dst)
+				log.Printf("First step of pipelines %s not from", dst)
 			}
 		} else {
-			log.Printf("Source %s not found", src)
+			log.Printf("Pipeline %s is empty", dst)
 		}
 	}
 
-	log.Printf("WF: %#v", wf)
+	//log.Printf("WF: %#v", wf)
 
 	wf.Start()
 	log.Printf("Workflow Started")

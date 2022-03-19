@@ -49,51 +49,45 @@ ZIP,COUNTYNAME,STATE,STCOUNTYFP,CLASSFP
 36091,Autauga County,AL,01001,H1
 ```
 
-First is the header of the Playbook. This declared that is a playbook, the
-unique name of the playbook and the directory where the target schema files
-can be found.
+First is the header of the Playbook. This declares the
+unique name of the playbook and it's output directory.
 
 ```
-class: Playbook
-
 name: zipcode_map
-schema: ../covid19_datadictionary/gdcdictionary/schemas/
-
+outdir: ./
+docs: Converts zipcode TSV into graph elements
 ```
 
-Next the inputs are declared. In this case the only input is the zipcode TSV.
+Next the configuration is declared. In this case the only input is the zipcode TSV.
 There is a default value, so the playbook can be invoked without passing in
 any parameters. However, to apply this playbook to a new input file, the
 input parameter `zipcode` could be used to define the source file.
 
 ```
-
-inputs:
+config:
+  schema:
+    type: Dir
+    default: ../covid19_datadictionary/gdcdictionary/schemas/
   zipcode:
     type: File
     default: ../data/ZIP-COUNTY-FIPS_2017-06.csv
 ```
 
-The `steps` section defines the sequence extraction steps that can be taken.
-In this program, there is only one extraction step, which is to run the table
-loader. The table loader then has a transform pipeline that is applied to the
-data extracted from the file.
+The `inputs` section declares data input sources. In this playbook, there is 
+only one input, which is to run the table loader. 
+```
+inputs:
+  tableLoad:
+    input: "{{config.zipcode}}"
+    sep: ","
+```
 
 Tableload operaters of the input file that was originally passed in using the
 `inputs` stanza. SIFTER string parsing is based on mustache template system.
-To access the string passed in the template is `{{inputs.zipcode}}`.
+To access the string passed in the template is `{{config.zipcode}}`.
 The seperator in the file input file is a `,` so that is also passed in as a
 parameter to the extractor.
 
-```
-steps:
-  - desc: Convert ZIP code File
-    tableLoad:
-      input: "{{inputs.zipcode}}"
-      sep: ","
-      transform:
-        .......
-```
 
 The `tableLoad` extractor opens up the TSV and generates a one message for
 every row in the file. It uses the header of the file to map the column values
@@ -111,19 +105,6 @@ into a dictionary. The first row would produce the message:
 
 The stream of messages are then passed into the steps listed in the `transform`
 section of the tableLoad extractor.
-
-The first step is to create an output table, with two columns connecting
-`ZIP` values to `STCOUNTYFP` values. The `STCOUNTYFP` is a county level FIPS
-code, used by the census office. A single FIPS code my contain many ZIP codes,
-and we can use this table later for mapping ids when loading the data into a database.
-
-```
-        - tableWrite:
-            output: zip2fips
-            columns:
-              - ZIP
-              - STCOUNTYFP
-```
 
 For the current tranform, we want to produce a single entry per `STCOUNTYFP`,
 however, the file has a line per `ZIP`. We need to run a `reduce` transform,
@@ -149,15 +130,17 @@ The `method` field names the function, in this case `merge` that will be used
 as the reduce function.
 
 ```
-        - reduce:
-            field: "{{row.STCOUNTYFP}}"
-            method: merge
-            python: >
-              def merge(x,y):
-                a = x.get('zipcodes', []) + [x['ZIP']]
-                b = y.get('zipcodes', []) + [y['ZIP']]
-                x['zipcodes'] = a + b
-                return x
+  zipReduce:
+    - from: zipcode
+    - reduce:
+        field: STCOUNTYFP
+        method: merge
+        python: >
+          def merge(x,y):
+            a = x.get('zipcodes', []) + [x['ZIP']]
+            b = y.get('zipcodes', []) + [y['ZIP']]
+            x['zipcodes'] = a + b
+            return x
 ```
 
 The original messages produced by the loader have all of the information required
@@ -169,15 +152,15 @@ message data in the value `row`. So the value
 `FIPS:{{row.STCOUNTYFP}}` is mapped into the field `id`.
 
 ```
-        - project:
-            mapping:
-              id: "FIPS:{{row.STCOUNTYFP}}"
-              province_state: "{{row.STATE}}"
-              summary_locations: "{{row.STCOUNTYFP}}"
-              county: "{{row.COUNTYNAME}}"
-              submitter_id: "{{row.STCOUNTYFP}}"
-              type: summary_location
-              projects: []
+  - project:
+      mapping:
+        id: "FIPS:{{row.STCOUNTYFP}}"
+        province_state: "{{row.STATE}}"
+        summary_locations: "{{row.STCOUNTYFP}}"
+        county: "{{row.COUNTYNAME}}"
+        submitter_id: "{{row.STCOUNTYFP}}"
+        type: summary_location
+        projects: []
 ```
 
 Using this projection, the message:
@@ -216,8 +199,27 @@ transformation, which will read in the schema for `summary_location`, check the
 message to make sure it matches and then output it.
 
 ```
-        - objectCreate:
-              class: summary_location
+  - objectCreate:
+        class: summary_location
+```
+
+
+Outputs
+
+To create an output table, with two columns connecting
+`ZIP` values to `STCOUNTYFP` values. The `STCOUNTYFP` is a county level FIPS
+code, used by the census office. A single FIPS code my contain many ZIP codes,
+and we can use this table later for mapping ids when loading the data into a database.
+
+```
+outputs:
+  zip2fips:
+    tableWrite:
+      from: 
+      output: zip2fips
+      columns:
+        - ZIP
+        - STCOUNTYFP
 ```
 
 

@@ -11,7 +11,7 @@ require (
 	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad
 	github.com/dgraph-io/badger/v2 v2.0.1
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-python/gpython v0.1.0
+	github.com/go-python/gpython v0.1.1-0.20220322084537-7da1de05fdb7
 	github.com/golang/protobuf v1.5.2
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-getter v1.5.1-0.20201023004527-0a9843813fd8
@@ -19,7 +19,6 @@ require (
 	github.com/jlaffaye/ftp v0.0.0-20200602180915-5563613968bf
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/linkedin/goavro/v2 v2.10.0
-	github.com/mattn/go-sqlite3 v1.9.0
 	github.com/spf13/cobra v1.0.1-0.20201006035406-b97b5ead31f7
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
 	go.mongodb.org/mongo-driver v1.5.1

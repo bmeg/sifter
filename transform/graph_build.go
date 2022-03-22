@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/bmeg/grip/gripql"
+	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/schema"
 	"github.com/bmeg/sifter/task"
@@ -54,6 +55,16 @@ func (ts GraphBuildStep) Init(task task.RuntimeTask) (Processor, error) {
 	}
 
 	return &graphBuildProcess{ts, task, sc, className}, nil
+}
+
+func (ts GraphBuildStep) GetConfigFields() []config.ConfigVar {
+	out := []config.ConfigVar{}
+	if ts.Schema != "" {
+		for _, s := range evaluate.ExpressionIDs(ts.Schema) {
+			out = append(out, config.ConfigVar{Type: "Dir", Name: config.TrimPrefix(s)})
+		}
+	}
+	return out
 }
 
 func (ts *graphBuildProcess) Close() {}

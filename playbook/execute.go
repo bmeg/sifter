@@ -21,7 +21,7 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-func (pb *Playbook) PrepInputs(inputs map[string]any, workdir string) map[string]any {
+func (pb *Playbook) PrepConfig(inputs map[string]any, workdir string) map[string]any {
 
 	workdir, _ = filepath.Abs(workdir)
 

@@ -20,7 +20,6 @@ type fieldProcess struct {
 
 func (fs FieldProcessStep) Init(task task.RuntimeTask) (Processor, error) {
 	return &fieldProcess{fs, task}, nil
-
 }
 
 func (fs *fieldProcess) Close() {}

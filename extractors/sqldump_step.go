@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/task"
 	"github.com/xwb1989/sqlparser"
@@ -97,4 +98,12 @@ func (ml *SQLDumpStep) Start(task task.RuntimeTask) (chan map[string]interface{}
 	}()
 
 	return out, nil
+}
+
+func (ml *SQLDumpStep) GetConfigFields() []config.ConfigVar {
+	out := []config.ConfigVar{}
+	for _, s := range evaluate.ExpressionIDs(ml.Input) {
+		out = append(out, config.ConfigVar{Type: "File", Name: config.TrimPrefix(s)})
+	}
+	return out
 }

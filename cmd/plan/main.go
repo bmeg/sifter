@@ -81,7 +81,7 @@ var Cmd = &cobra.Command{
 
 						if len(pb.Pipelines) > 0 || len(pb.Inputs) > 0 || len(pb.Scripts) > 0 {
 
-							localInputs := pb.PrepInputs(userInputs, "./")
+							localInputs := pb.PrepConfig(userInputs, "./")
 							task := task.NewTask(pb.Name, "./", pb.GetDefaultOutDir(), localInputs)
 
 							log.Printf("pb outdir %s", task.OutDir())
@@ -94,7 +94,7 @@ var Cmd = &cobra.Command{
 								inputs = append(inputs, p)
 							}
 
-							sinks, _ := pb.GetSinks(task)
+							sinks, _ := pb.GetOutputs(task)
 							for _, v := range sinks {
 								for _, p := range v {
 									outputs = append(outputs, p)

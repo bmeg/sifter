@@ -3,6 +3,7 @@ package transform
 import (
 	"fmt"
 
+	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/schema"
 	"github.com/bmeg/sifter/task"
@@ -38,6 +39,16 @@ func (ts ObjectCreateStep) Init(task task.RuntimeTask) (Processor, error) {
 	} else {
 		return &objectProcess{ts, task, c}, nil
 	}
+}
+
+func (ts ObjectCreateStep) GetConfigFields() []config.ConfigVar {
+	out := []config.ConfigVar{}
+	if ts.Schema != "" {
+		for _, s := range evaluate.ExpressionIDs(ts.Schema) {
+			out = append(out, config.ConfigVar{Type: "Dir", Name: config.TrimPrefix(s)})
+		}
+	}
+	return out
 }
 
 func (ts *objectProcess) Process(i map[string]interface{}) []map[string]interface{} {

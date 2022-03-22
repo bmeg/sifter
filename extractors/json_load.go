@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/bmeg/golib"
+	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/task"
 	"github.com/bmeg/sifter/transform"
@@ -61,4 +62,12 @@ func (ml *JSONLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 		close(procChan)
 	}()
 	return procChan, nil
+}
+
+func (ml *JSONLoadStep) GetConfigFields() []config.ConfigVar {
+	out := []config.ConfigVar{}
+	for _, s := range evaluate.ExpressionIDs(ml.Input) {
+		out = append(out, config.ConfigVar{Type: "File", Name: config.TrimPrefix(s)})
+	}
+	return out
 }

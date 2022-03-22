@@ -24,7 +24,7 @@ func Execute(playFile string, workDir string, outDir string, inputs map[string]i
 		os.MkdirAll(outDir, 0777)
 	}
 
-	nInputs := pb.PrepInputs(inputs, workDir)
+	nInputs := pb.PrepConfig(inputs, workDir)
 	t := task.NewTask(pb.Name, workDir, outDir, nInputs)
 	err := pb.Execute(t)
 	return err

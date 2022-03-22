@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -39,4 +40,19 @@ func (ex *Extractor) Start(t task.RuntimeTask) (chan map[string]interface{}, err
 		}
 	}
 	return nil, fmt.Errorf(("Extractor not defined"))
+}
+
+func (ex *Extractor) GetConfigFields() []config.ConfigVar {
+	out := []config.ConfigVar{}
+	v := reflect.ValueOf(ex).Elem()
+	for i := 0; i < v.NumField(); i++ {
+		f := v.Field(i)
+		x := f.Interface()
+		if z, ok := x.(config.Configurable); ok {
+			if !f.IsNil() {
+				out = append(out, z.GetConfigFields()...)
+			}
+		}
+	}
+	return out
 }

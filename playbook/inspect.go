@@ -5,6 +5,7 @@ import (
 	"log"
 	"path/filepath"
 
+	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -13,7 +14,7 @@ func (pb *Playbook) GetConfig(task task.RuntimeTask) (map[string]string, error) 
 	inputs := task.GetConfig()
 
 	for k, v := range pb.Config {
-		if v.IsFile() {
+		if v.IsFile() || v.IsDir() {
 			if iv, ok := inputs[k]; ok {
 				if ivStr, ok := iv.(string); ok {
 					out[k], _ = task.AbsPath(ivStr)
@@ -26,21 +27,23 @@ func (pb *Playbook) GetConfig(task task.RuntimeTask) (map[string]string, error) 
 	return out, nil
 }
 
-func (in *ConfigVar) IsFile() bool {
-	if in.Type == "File" || in.Type == "file" {
-		return true
+func (pb *Playbook) GetConfigFields() []config.ConfigVar {
+	out := []config.ConfigVar{}
+
+	for _, v := range pb.Inputs {
+		out = append(out, v.GetConfigFields()...)
 	}
-	return false
+
+	for _, v := range pb.Pipelines {
+		for _, s := range v {
+			out = append(out, s.GetConfigFields()...)
+		}
+	}
+
+	return out
 }
 
-func (in *ConfigVar) IsDir() bool {
-	if in.Type == "Dir" || in.Type == "dir" || in.Type == "Directory" || in.Type == "directory" {
-		return true
-	}
-	return false
-}
-
-func (pb *Playbook) GetSinks(task task.RuntimeTask) (map[string][]string, error) {
+func (pb *Playbook) GetOutputs(task task.RuntimeTask) (map[string][]string, error) {
 	out := map[string][]string{}
 	//inputs := task.GetInputs()
 

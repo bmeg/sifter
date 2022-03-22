@@ -40,7 +40,7 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
-		inputs = pb.PrepInputs(inputs, "./")
+		inputs = pb.PrepConfig(inputs, "./")
 
 		if outDir == "" {
 			outDir = pb.GetDefaultOutDir()
@@ -52,12 +52,18 @@ var Cmd = &cobra.Command{
 
 		out := map[string]any{}
 
+		cf := map[string]string{}
+		for _, f := range pb.GetConfigFields() {
+			cf[f.Name] = f.Type
+		}
+		out["configFields"] = cf
+
 		ins, _ := pb.GetConfig(task)
 		out["config"] = ins
 
 		outputs := map[string]any{}
 
-		sinks, _ := pb.GetSinks(task)
+		sinks, _ := pb.GetOutputs(task)
 		for k, v := range sinks {
 			outputs[k] = v
 		}

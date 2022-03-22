@@ -3,6 +3,7 @@ package transform
 import (
 	"strings"
 
+	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/task"
 )
@@ -19,6 +20,40 @@ type projectStepProcess struct {
 
 func (pr ProjectStep) Init(t task.RuntimeTask) (Processor, error) {
 	return &projectStepProcess{pr, t}, nil
+}
+
+func (pr ProjectStep) GetConfigFields() []config.ConfigVar {
+	out := []config.ConfigVar{}
+	for _, v := range pr.Mapping {
+		t := scanIds(v)
+		for i := range t {
+			if strings.HasPrefix(t[i], "config.") {
+				out = append(out, config.ConfigVar{Name: config.TrimPrefix(t[i])})
+			}
+		}
+	}
+	return out
+}
+
+func scanIds(v interface{}) []string {
+	out := []string{}
+	if vStr, ok := v.(string); ok {
+		for _, s := range evaluate.ExpressionIDs(vStr) {
+			out = append(out, s)
+		}
+	} else if vArray, ok := v.([]interface{}); ok {
+		for _, val := range vArray {
+			j := scanIds(val)
+			out = append(out, j...)
+		}
+	} else if vArray, ok := v.([]string); ok {
+		for _, vStr := range vArray {
+			j := evaluate.ExpressionIDs(vStr)
+			out = append(out, j...)
+		}
+	}
+
+	return out
 }
 
 func valueRender(v interface{}, task task.RuntimeTask, row map[string]interface{}) (interface{}, error) {

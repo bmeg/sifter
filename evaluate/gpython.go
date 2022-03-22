@@ -57,8 +57,12 @@ func PyObject(i interface{}) py.Object {
 		return py.Int(xInt)
 	} else if xFloat, ok := i.(float64); ok {
 		return py.Float(xFloat)
+	} else if xFloat, ok := i.(float32); ok {
+		return py.Float(xFloat)
 	} else if xBool, ok := i.(bool); ok {
 		return py.Bool(xBool)
+	} else if i == nil {
+		return py.None
 	}
 	return nil
 }
@@ -84,6 +88,8 @@ func FromPyObject(i py.Object) interface{} {
 		return bool(xBool)
 	} else if xInt, ok := i.(py.Int); ok {
 		return int64(xInt)
+	} else if i == py.None {
+		return nil
 	}
 	return nil
 }
@@ -100,6 +106,7 @@ func PyCompile(codeStr string) (*PyCode, error) {
 	ctx := py.NewContext(opts)
 
 	mainImpl := py.ModuleImpl{
+		Info:    py.ModuleInfo{Name: "user", FileDesc: "<user>"},
 		CodeSrc: codeStr,
 	}
 	module, err := ctx.ModuleInit(&mainImpl)
@@ -122,6 +129,7 @@ func (p *PyCode) Evaluate(method string, inputs ...map[string]interface{}) (map[
 	if err != nil {
 		py.TracebackDump(err)
 		log.Printf("Inputs: %#v", inputs)
+		log.Printf("Inputs: %#v", in)
 		log.Printf("Map Error: %s", err)
 		return nil, err
 	}

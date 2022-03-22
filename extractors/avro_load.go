@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/task"
 
@@ -54,4 +55,12 @@ func (ml *AvroLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 	}()
 
 	return procChan, nil
+}
+
+func (ml *AvroLoadStep) GetConfigFields() []config.ConfigVar {
+	out := []config.ConfigVar{}
+	for _, s := range evaluate.ExpressionIDs(ml.Input) {
+		out = append(out, config.ConfigVar{Type: "File", Name: config.TrimPrefix(s)})
+	}
+	return out
 }

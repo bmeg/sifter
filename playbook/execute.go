@@ -191,7 +191,8 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 					log.Printf("Source %s not found", src)
 				}
 			} else {
-				log.Printf("First step of pipelines %s not from", dst)
+				log.Printf("First step of pipelines %s not 'from'", dst)
+				return fmt.Errorf("First step of pipelines %s not 'from'", dst)
 			}
 		} else {
 			log.Printf("Pipeline %s is empty", dst)

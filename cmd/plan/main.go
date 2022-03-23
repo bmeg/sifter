@@ -74,7 +74,7 @@ var Cmd = &cobra.Command{
 		filepath.Walk(baseDir,
 			func(path string, info fs.FileInfo, err error) error {
 				if strings.HasSuffix(path, ".yaml") {
-					fmt.Printf("%s\n", path)
+					log.Printf("Checking %s\n", path)
 
 					pb := playbook.Playbook{}
 					if err := playbook.ParseFile(path, &pb); err == nil {
@@ -132,6 +132,8 @@ var Cmd = &cobra.Command{
 								Outputs: outputs,
 							})
 						}
+					} else {
+						log.Printf("Skipping %s : %s\n", path, err)
 					}
 				}
 				return nil

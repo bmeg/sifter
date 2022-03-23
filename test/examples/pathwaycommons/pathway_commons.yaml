@@ -1,5 +1,6 @@
 
 name: pathway_commons
+outdir: ../../out
 
 config:
   sifFile:

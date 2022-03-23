@@ -4,6 +4,8 @@ config:
     type: File
     default: ../../resources/1000G.pfb.avro
 
+outdir: ../../out
+
 inputs:
   pfb:
     avroLoad:

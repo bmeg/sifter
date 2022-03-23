@@ -37,7 +37,9 @@ var Cmd = &cobra.Command{
 			inputs[k] = v
 		}
 		for _, playFile := range args {
-			Execute(playFile, "./", outDir, inputs)
+			if err := Execute(playFile, "./", outDir, inputs); err != nil {
+				return err
+			}
 		}
 		return nil
 	},

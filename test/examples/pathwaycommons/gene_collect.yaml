@@ -1,4 +1,6 @@
 
+outdir: ../../out
+
 config:
   sifFile:
     type: File

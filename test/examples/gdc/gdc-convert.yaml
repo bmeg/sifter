@@ -1,5 +1,6 @@
 
 name: gdc
+outdir: ../../out
 
 config:
   cases:

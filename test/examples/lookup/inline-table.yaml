@@ -1,0 +1,25 @@
+
+outdir: ../../out
+
+config:
+  json:
+    type: File
+    default: 
+    
+
+inputs:
+  jsonData:
+    jsonLoad:
+      input: "{{config.json}}"
+
+
+pipelines:
+  transform:
+    - from: jsonData
+    - lookup:
+        replace: id
+        table:
+          TCGA-KIRC: 1
+          TCGA-SARC: 2
+    - emit:
+        name: test

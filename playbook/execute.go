@@ -61,7 +61,7 @@ type reduceWrapper struct {
 }
 
 func (rw *reduceWrapper) addKeyValue(x map[string]any) flame.KeyValue[string, map[string]any] {
-	return flame.KeyValue[string, map[string]any]{rw.reducer.GetKey(x), x}
+	return flame.KeyValue[string, map[string]any]{Key: rw.reducer.GetKey(x), Value: x}
 }
 
 func (rw *reduceWrapper) removeKeyValue(x flame.KeyValue[string, map[string]any]) []map[string]any {
@@ -168,6 +168,8 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 			c := flame.AddSink(wf, s.Write)
 			inNodes[k] = c
 			writers[k] = s
+		} else {
+			log.Printf("output error: %s", err)
 		}
 	}
 
@@ -188,7 +190,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 						log.Printf("Dest %s not found", dst)
 					}
 				} else {
-					log.Printf("Source %s not found", src)
+					log.Printf("%s source %s not found", dst, src)
 				}
 			} else {
 				log.Printf("First step of pipelines %s not 'from'", dst)
@@ -214,7 +216,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 				log.Printf("Dest %s not found", dst)
 			}
 		} else {
-			log.Printf("Source %s not found", src)
+			log.Printf("%s source %s not found", dst, src)
 		}
 	}
 

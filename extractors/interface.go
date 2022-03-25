@@ -20,6 +20,7 @@ type Extractor struct {
 	SQLDumpLoad *SQLDumpStep     `json:"sqldumpLoad" jsonschema_description:"Parse the content of a SQL dump to find insert and run a transform pipeline"`
 	GripperLoad *GripperLoadStep `json:"gripperLoad" jsonschema_description:"Use a GRIPPER server to get data and run a transform pipeline"`
 	AvroLoad    *AvroLoadStep    `json:"avroLoad" jsonschema_description:"Load data from avro file"`
+	Embedded    *EmbeddedLoader  `json:"embedded"`
 	//Untar         *UntarStep         `json:"untar" jsonschema_description:"Untar a file"`
 	//SQLiteLoad  *SQLiteStep    `json:"sqliteLoad"`
 	//FileGlob      *FileGlobStep      `json:"fileGlob" jsonschema_description:"Scan a directory and run a ETL pipeline on each of the files"`

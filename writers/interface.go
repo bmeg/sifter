@@ -11,6 +11,7 @@ type WriteProcess interface {
 	Write(map[string]any)
 	Close()
 }
+
 type Writer interface {
 	From() string
 	Init(task.RuntimeTask) (WriteProcess, error)
@@ -18,7 +19,8 @@ type Writer interface {
 }
 
 type WriteConfig struct {
-	TableWriter *TableWriter `json:"tableWrite"`
+	TableWrite     *TableWriter     `json:"tableWrite"`
+	SnakeFileWrite *SnakeFileWriter `json:"snakefile"`
 }
 
 func (wc *WriteConfig) From() string {

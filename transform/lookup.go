@@ -71,6 +71,12 @@ func (tr *LookupStep) Init(task task.RuntimeTask) (Processor, error) {
 		} else {
 			return nil, err
 		}
+	} else if tr.JSON != nil {
+		if table, err := tr.JSON.Open(task); err == nil {
+			return &lookupProcess{tr, table, task.GetConfig()}, nil
+		} else {
+			return nil, err
+		}
 	}
 	return nil, fmt.Errorf("Table input not defined")
 }

@@ -9,14 +9,11 @@ import (
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/task"
 
-	"github.com/bmeg/sifter/transform"
-
 	"github.com/linkedin/goavro/v2"
 )
 
 type AvroLoadStep struct {
-	Input     string         `json:"input" jsonschema_description:"Path of avro object file to transform"`
-	Transform transform.Pipe `json:"transform" jsonschema_description:"Transformation Pipeline"`
+	Input string `json:"input" jsonschema_description:"Path of avro object file to transform"`
 }
 
 func (ml *AvroLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {

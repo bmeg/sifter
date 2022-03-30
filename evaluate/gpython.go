@@ -49,6 +49,12 @@ func PyObject(i interface{}) py.Object {
 			o.Append(PyObject(v))
 		}
 		return o
+	} else if xList, ok := i.([]string); ok {
+		o := py.NewList()
+		for _, v := range xList {
+			o.Append(PyObject(v))
+		}
+		return o
 	} else if xString, ok := i.(string); ok {
 		return py.String(xString)
 	} else if xInt, ok := i.(int); ok {
@@ -63,6 +69,8 @@ func PyObject(i interface{}) py.Object {
 		return py.Bool(xBool)
 	} else if i == nil {
 		return py.None
+	} else {
+		log.Printf("gpython conversion Not found: %T", i)
 	}
 	return nil
 }
@@ -90,6 +98,8 @@ func FromPyObject(i py.Object) interface{} {
 		return int64(xInt)
 	} else if i == py.None {
 		return nil
+	} else {
+		log.Printf("gpython conversion Not found: %T", i)
 	}
 	return nil
 }

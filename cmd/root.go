@@ -8,7 +8,6 @@ import (
 	"github.com/bmeg/sifter/cmd/manifest"
 	"github.com/bmeg/sifter/cmd/plan"
 	"github.com/bmeg/sifter/cmd/run"
-	"github.com/bmeg/sifter/cmd/template"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +23,6 @@ func init() {
 	RootCmd.AddCommand(inspect.Cmd)
 	RootCmd.AddCommand(plan.Cmd)
 	RootCmd.AddCommand(manifest.Cmd)
-	RootCmd.AddCommand(template.Cmd)
 	RootCmd.AddCommand(graphmanifest.Cmd)
 }
 

@@ -46,7 +46,9 @@ func xmlStream(file io.Reader, out chan map[string]interface{}) {
 			for k, v := range attributes {
 				mattributes[k] = v
 			}
-			mapStack[len(mapStack)-1]["_attr"] = mattributes
+			if len(mattributes) > 0 {
+				mapStack[len(mapStack)-1]["_attr"] = mattributes
+			}
 		case xml.EndElement:
 			cMap := mapStack[len(mapStack)-1]
 			nameStack = nameStack[0 : len(nameStack)-1]
@@ -67,6 +69,7 @@ func xmlStream(file io.Reader, out chan map[string]interface{}) {
 							}
 						}
 					} else {
+						cMap["_contents"] = string(curString)
 						mapStack[len(mapStack)-1][se.Name.Local] = cMap
 					}
 				} else {
@@ -103,14 +106,14 @@ func xmlStream(file io.Reader, out chan map[string]interface{}) {
 
 		case xml.CharData:
 			curString = append(curString, se...)
-		default:
-			log.Printf("Unknown Element: %#v\n", se)
+			//default:
+			//	log.Printf("Unknown Element: %#v\n", se)
 		}
 	}
 }
 
 func (ml *XMLLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
-	log.Printf("Starting XML Load")
+	//log.Printf("Starting XML Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
 	if err != nil {
 		log.Printf("Error: %s", err)
@@ -129,10 +132,10 @@ func (ml *XMLLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}
 
 	procChan := make(chan map[string]interface{}, 100)
 	go func() {
-		log.Printf("Starting XML Read")
+		//log.Printf("Starting XML Read")
 		xmlStream(file, procChan)
-		log.Printf("Yes Done")
-		log.Printf("Done Loading")
+		//log.Printf("Yes Done")
+		//log.Printf("Done Loading")
 		close(procChan)
 	}()
 	return procChan, nil

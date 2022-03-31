@@ -2,15 +2,20 @@ package extractors
 
 import (
 	"bufio"
+	"compress/gzip"
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/task"
+
+	xj "github.com/basgys/goxml2json"
 )
 
 type XMLLoadStep struct {
@@ -65,7 +70,7 @@ func xmlStream(file io.Reader, out chan map[string]interface{}) {
 								aa := []interface{}{am, cMap}
 								mapStack[len(mapStack)-1][se.Name.Local] = aa
 							} else {
-								log.Printf("Typing Error")
+								log.Printf("Typing Error: %T", a)
 							}
 						}
 					} else {
@@ -83,7 +88,7 @@ func xmlStream(file io.Reader, out chan map[string]interface{}) {
 								aa := []string{as, string(curString)}
 								mapStack[len(mapStack)-1][se.Name.Local] = aa
 							} else {
-								log.Printf("Typing Error")
+								log.Printf("Typing Error %T", a)
 							}
 						}
 					} else {
@@ -125,15 +130,32 @@ func (ml *XMLLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}
 	}
 	log.Printf("Loading: %s", input)
 
-	file, err := os.Open(input)
+	fhd, err := os.Open(input)
 	if err != nil {
 		return nil, err
 	}
 
+	var hd io.Reader
+	if strings.HasSuffix(input, ".gz") || strings.HasSuffix(input, ".tgz") {
+		hd, err = gzip.NewReader(fhd)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		hd = fhd
+	}
+
 	procChan := make(chan map[string]interface{}, 100)
 	go func() {
+		jStr, err := xj.Convert(hd)
+		if err == nil {
+			data := map[string]any{}
+			if err = json.Unmarshal(jStr.Bytes(), &data); err == nil {
+				procChan <- data
+			}
+		}
 		//log.Printf("Starting XML Read")
-		xmlStream(file, procChan)
+		//xmlStream(hd, procChan)
 		//log.Printf("Yes Done")
 		//log.Printf("Done Loading")
 		close(procChan)

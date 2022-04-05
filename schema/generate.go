@@ -48,7 +48,7 @@ func (s Schema) Validate(data map[string]interface{}) (map[string]interface{}, e
 
 	for _, r := range s.Required {
 		if _, ok := out[r]; !ok {
-			log.Printf("Not Found %s in %s ", r, data)
+			log.Printf("%s field %s not found in %s ", s.ID, r, data)
 			return nil, fmt.Errorf("Required field '%s' in '%s' not found", r, s.ID)
 		}
 	}

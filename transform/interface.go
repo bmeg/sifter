@@ -45,6 +45,7 @@ type Step struct {
 	Distinct     *DistinctStep     `json:"distinct"`
 	FieldProcess *FieldProcessStep `json:"fieldProcess" jsonschema_description:"Take an array field from a message and run in child transform"`
 	Lookup       *LookupStep       `json:"lookup"`
+	Hash         *HashStep         `json:"hash"`
 	GraphBuild   *GraphBuildStep   `json:"graphBuild"`
 }
 

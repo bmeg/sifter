@@ -3,6 +3,7 @@ package playbook
 import (
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -20,6 +21,8 @@ func (pb *Playbook) RunScript(name string) error {
 		}
 		cmd := exec.Command(cmdLine[0], cmdLine[1:len(cmdLine)]...)
 		cmd.Dir = workdir
+		cmd.Stdout = os.Stderr
+		cmd.Stderr = os.Stderr
 		log.Printf("(%s) %s %s", cmd.Dir, cmd.Path, strings.Join(cmd.Args, " "))
 		return cmd.Run()
 	}

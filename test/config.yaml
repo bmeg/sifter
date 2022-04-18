@@ -13,6 +13,6 @@
 
 - playbook: examples/gene-table/gene-table.yaml
 - playbook: examples/lookup/inline-table.yaml
-- playbook: examples/lookup/json-table-replace.yaml
+- playbook: examples/lookup/tsv-table-replace.yaml
 - playbook: examples/gdc/gdc-convert.yaml
 - playbook: examples/pfb/transform.yaml

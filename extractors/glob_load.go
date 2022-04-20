@@ -44,6 +44,26 @@ func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 			}
 		}()
 		return out, nil
+	} else if gl.JSONLoad != nil {
+		flist, err := filepath.Glob(input)
+		if err != nil {
+			return nil, err
+		}
+		out := make(chan map[string]any, 10)
+		go func() {
+			defer close(out)
+			for _, f := range flist {
+				a := *gl.JSONLoad
+				a.Input = f
+				o, err := a.Start(task)
+				if err == nil {
+					for i := range o {
+						out <- i
+					}
+				}
+			}
+		}()
+		return out, nil
 	}
 	return nil, fmt.Errorf("Not found")
 }

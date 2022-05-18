@@ -11,11 +11,12 @@ import (
 )
 
 type GlobLoadStep struct {
-	Input     string         `json:"input" jsonschema_description:"Path of avro object file to transform"`
-	XMLLoad   *XMLLoadStep   `json:"xmlLoad"`
-	TableLoad *TableLoadStep `json:"tableLoad" jsonschema_description:"Run transform pipeline on a TSV or CSV"`
-	JSONLoad  *JSONLoadStep  `json:"jsonLoad" jsonschema_description:"Run a transform pipeline on a multi line json file"`
-	AvroLoad  *AvroLoadStep  `json:"avroLoad" jsonschema_description:"Load data from avro file"`
+	StoreFilename string         `json:"storeFilename"`
+	Input         string         `json:"input" jsonschema_description:"Path of avro object file to transform"`
+	XMLLoad       *XMLLoadStep   `json:"xmlLoad"`
+	TableLoad     *TableLoadStep `json:"tableLoad" jsonschema_description:"Run transform pipeline on a TSV or CSV"`
+	JSONLoad      *JSONLoadStep  `json:"jsonLoad" jsonschema_description:"Run a transform pipeline on a multi line json file"`
+	AvroLoad      *AvroLoadStep  `json:"avroLoad" jsonschema_description:"Load data from avro file"`
 }
 
 func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
@@ -38,6 +39,9 @@ func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 				o, err := a.Start(task)
 				if err == nil {
 					for i := range o {
+						if gl.StoreFilename != "" {
+							i[gl.StoreFilename] = f
+						}
 						out <- i
 					}
 				}
@@ -58,6 +62,32 @@ func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 				o, err := a.Start(task)
 				if err == nil {
 					for i := range o {
+						if gl.StoreFilename != "" {
+							i[gl.StoreFilename] = f
+						}
+						out <- i
+					}
+				}
+			}
+		}()
+		return out, nil
+	} else if gl.TableLoad != nil {
+		flist, err := filepath.Glob(input)
+		if err != nil {
+			return nil, err
+		}
+		out := make(chan map[string]any, 10)
+		go func() {
+			defer close(out)
+			for _, f := range flist {
+				a := *gl.TableLoad
+				a.Input = f
+				o, err := a.Start(task)
+				if err == nil {
+					for i := range o {
+						if gl.StoreFilename != "" {
+							i[gl.StoreFilename] = f
+						}
 						out <- i
 					}
 				}

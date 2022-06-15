@@ -17,14 +17,6 @@ type Loader interface {
 	Load() chan gripql.GraphElement
 }
 
-type Script struct {
-	CommandLine string   `json:"commandLine"`
-	Inputs      []string `json:"inputs"`
-	Outputs     []string `json:"outputs"`
-	Workdir     string   `json:"workdir"`
-	Order       int      `json:"order"`
-}
-
 type Playbook struct {
 	Name      string                          `json:"name" jsonschema_description:"Unique name of the playbook"`
 	Docs      string                          `json:"docs"`
@@ -33,7 +25,6 @@ type Playbook struct {
 	Inputs    map[string]extractors.Extractor `json:"inputs" jsonschema_description:"Steps of the transformation"`
 	Outputs   map[string]writers.WriteConfig  `json:"outputs"`
 	Pipelines map[string]transform.Pipe       `json:"pipelines"`
-	Scripts   map[string]Script               `json:"scripts"`
 	path      string
 }
 

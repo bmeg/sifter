@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sort"
 
 	"github.com/bmeg/flame"
 	"github.com/bmeg/sifter/task"
@@ -70,22 +69,6 @@ func (rw *reduceWrapper) removeKeyValue(x flame.KeyValue[string, map[string]any]
 
 func (pb *Playbook) Execute(task task.RuntimeTask) error {
 	log.Printf("Running playbook")
-
-	scripts := []string{}
-	for k := range pb.Scripts {
-		scripts = append(scripts, k)
-	}
-
-	sort.Slice(scripts, func(x, y int) bool { return pb.Scripts[scripts[x]].Order < pb.Scripts[scripts[y]].Order })
-
-	for _, s := range scripts {
-		log.Printf("Running script %s", s)
-		err := pb.RunScript(s)
-		if err != nil {
-			log.Printf("Scripting error: %s", err)
-			return err
-		}
-	}
 
 	log.Printf("Inputs: %#v", task.GetConfig())
 

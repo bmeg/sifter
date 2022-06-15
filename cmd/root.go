@@ -6,7 +6,6 @@ import (
 	"github.com/bmeg/sifter/cmd/graphmanifest"
 	"github.com/bmeg/sifter/cmd/inspect"
 	"github.com/bmeg/sifter/cmd/manifest"
-	"github.com/bmeg/sifter/cmd/plan"
 	"github.com/bmeg/sifter/cmd/run"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +20,6 @@ var RootCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(run.Cmd)
 	RootCmd.AddCommand(inspect.Cmd)
-	RootCmd.AddCommand(plan.Cmd)
 	RootCmd.AddCommand(manifest.Cmd)
 	RootCmd.AddCommand(graphmanifest.Cmd)
 }

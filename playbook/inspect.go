@@ -88,31 +88,3 @@ func (pb *Playbook) GetOutDir(task task.RuntimeTask) string {
 	out, _ := filepath.Abs(path)
 	return out
 }
-
-func (pb *Playbook) GetScriptInputs(task task.RuntimeTask) map[string][]string {
-	out := map[string][]string{}
-	for k, v := range pb.Scripts {
-		o := []string{}
-		for _, p := range v.Inputs {
-			path := filepath.Join(filepath.Dir(pb.path), p)
-			npath, _ := filepath.Abs(path)
-			o = append(o, npath)
-		}
-		out[k] = o
-	}
-	return out
-}
-
-func (pb *Playbook) GetScriptOutputs(task task.RuntimeTask) map[string][]string {
-	out := map[string][]string{}
-	for k, v := range pb.Scripts {
-		o := []string{}
-		for _, p := range v.Outputs {
-			path := filepath.Join(filepath.Dir(pb.path), p)
-			npath, _ := filepath.Abs(path)
-			o = append(o, npath)
-		}
-		out[k] = o
-	}
-	return out
-}

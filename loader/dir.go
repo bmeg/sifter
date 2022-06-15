@@ -4,7 +4,6 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"io"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -33,7 +32,7 @@ func (s *DirLoader) NewDataEmitter() (DataEmitter, error) {
 
 func NewDirLoader(dir string) *DirLoader {
 	dir, _ = filepath.Abs(dir)
-	log.Printf("Emitting to %s", dir)
+	//log.Printf("Emitting to %s", dir)
 	return &DirLoader{
 		jm:   protojson.MarshalOptions{},
 		dir:  dir,
@@ -45,7 +44,7 @@ func NewDirLoader(dir string) *DirLoader {
 }
 
 func (s *DirLoader) Close() {
-	log.Printf("Closing emitter")
+	//log.Printf("Closing emitter")
 	for _, v := range s.vout {
 		v.Close()
 	}

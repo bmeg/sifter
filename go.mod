@@ -4,20 +4,22 @@ require (
 	github.com/akrylysov/pogreb v0.9.1
 	github.com/alecthomas/jsonschema v0.0.0-20200514014646-0366d1034a17
 	github.com/aymerick/raymond v2.0.3-0.20180322193309-b565731e1464+incompatible
+	github.com/basgys/goxml2json v1.1.0
 	github.com/biogo/hts v1.2.2
 	github.com/bmeg/flame v0.0.0-20220315061525-89da71b2c32e
 	github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50
 	github.com/bmeg/grip v0.0.0-20210910231938-94d69d94ff65
 	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad
+	github.com/clbanning/mxj v1.8.4
 	github.com/dgraph-io/badger/v2 v2.0.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-python/gpython v0.1.1-0.20220322084537-7da1de05fdb7
 	github.com/golang/protobuf v1.5.2
-	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-getter v1.5.1-0.20201023004527-0a9843813fd8
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/jlaffaye/ftp v0.0.0-20200602180915-5563613968bf
 	github.com/linkedin/goavro/v2 v2.10.0
+	github.com/mattn/go-sqlite3 v1.9.0
 	github.com/spf13/cobra v1.0.1-0.20201006035406-b97b5ead31f7
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
 	go.mongodb.org/mongo-driver v1.5.1
@@ -32,8 +34,8 @@ require (
 	github.com/DataDog/zstd v1.4.5 // indirect
 	github.com/Workiva/go-datastructures v1.0.52 // indirect
 	github.com/aws/aws-sdk-go v1.34.28 // indirect
-	github.com/basgys/goxml2json v1.1.0 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
+	github.com/bitly/go-simplejson v0.5.0 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/cockroachdb/errors v1.8.1 // indirect

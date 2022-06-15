@@ -22,8 +22,8 @@ type Extractor struct {
 	AvroLoad    *AvroLoadStep    `json:"avroLoad" jsonschema_description:"Load data from avro file"`
 	Embedded    *EmbeddedLoader  `json:"embedded"`
 	Glob        *GlobLoadStep    `json:"glob"`
+	SQLiteLoad  *SQLiteStep      `json:"sqliteLoad"`
 	//Untar         *UntarStep         `json:"untar" jsonschema_description:"Untar a file"`
-	//SQLiteLoad  *SQLiteStep    `json:"sqliteLoad"`
 	//FileGlob      *FileGlobStep      `json:"fileGlob" jsonschema_description:"Scan a directory and run a ETL pipeline on each of the files"`
 	//Script        *ScriptStep        `json:"script" jsonschema_description:"Execute a script"`
 	//TransposeFile *TransposeFileStep `json:"transposeFile" jsonschema_description:"Take a matrix TSV and transpose it (row become columns)"`

@@ -49,6 +49,12 @@ func PyObject(i interface{}) py.Object {
 			o.Append(PyObject(v))
 		}
 		return o
+	} else if xList, ok := i.([]map[string]any); ok {
+		o := py.NewList()
+		for _, v := range xList {
+			o.Append(PyObject(v))
+		}
+		return o
 	} else if xList, ok := i.([]string); ok {
 		o := py.NewList()
 		for _, v := range xList {

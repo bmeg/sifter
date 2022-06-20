@@ -21,6 +21,11 @@ type MapProcessor interface {
 	Process(map[string]any) []map[string]any
 }
 
+type AccumulateProcessor interface {
+	GetKey(map[string]any) string
+	Accumulate(key string, value []map[string]any) map[string]any
+}
+
 type Processor interface {
 	Close()
 }
@@ -47,6 +52,7 @@ type Step struct {
 	Lookup       *LookupStep       `json:"lookup"`
 	Hash         *HashStep         `json:"hash"`
 	GraphBuild   *GraphBuildStep   `json:"graphBuild"`
+	Accumulate   *AccumulateStep   `json:"accumulate"`
 }
 
 type Pipe []Step

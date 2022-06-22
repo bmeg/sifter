@@ -67,6 +67,18 @@ func (rw *reduceWrapper) removeKeyValue(x flame.KeyValue[string, map[string]any]
 	return []map[string]any{x.Value}
 }
 
+type accumulateWrapper struct {
+	accumulator transform.AccumulateProcessor
+}
+
+func (rw *accumulateWrapper) addKeyValue(x map[string]any) flame.KeyValue[string, map[string]any] {
+	return flame.KeyValue[string, map[string]any]{Key: rw.accumulator.GetKey(x), Value: x}
+}
+
+func (rw *accumulateWrapper) removeKeyValue(x flame.KeyValue[string, map[string]any]) []map[string]any {
+	return []map[string]any{x.Value}
+}
+
 func (pb *Playbook) Execute(task task.RuntimeTask) error {
 	log.Printf("Running playbook")
 
@@ -121,7 +133,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 						//throw error?
 					}
 				} else if rProcess, ok := b.(transform.ReduceProcessor); ok {
-					log.Printf("Pipeline %s step %d: %T", k, i, b)
+					log.Printf("Pipeline reduce %s step %d: %T", k, i, b)
 					wrap := reduceWrapper{rProcess}
 					k := flame.AddMapper(wf, wrap.addKeyValue)
 					r := flame.AddReduceKey(wf, rProcess.Reduce, rProcess.GetInit())
@@ -135,6 +147,23 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 					if firstStep == nil {
 						firstStep = k
 					}
+				} else if rProcess, ok := b.(transform.AccumulateProcessor); ok {
+					log.Printf("Pipeline accumulate %s step %d: %T", k, i, b)
+
+					wrap := accumulateWrapper{rProcess}
+					k := flame.AddMapper(wf, wrap.addKeyValue)
+					r := flame.AddAccumulate(wf, rProcess.Accumulate)
+					c := flame.AddFlatMapper(wf, wrap.removeKeyValue)
+					if lastStep != nil {
+						k.Connect(lastStep)
+					}
+					r.Connect(k)
+					c.Connect(r)
+					lastStep = c
+					if firstStep == nil {
+						firstStep = k
+					}
+
 				} else {
 					log.Printf("Unknown processor type")
 				}

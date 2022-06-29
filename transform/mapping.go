@@ -42,12 +42,16 @@ func (ms *MapStep) Init(task task.RuntimeTask) (Processor, error) {
 	return nil, fmt.Errorf("Script not found")
 }
 
-func (mp *mapProcess) Process(i map[string]interface{}) []map[string]interface{} {
+func (mp *mapProcess) PoolReady() bool {
+	return true
+}
+
+func (mp *mapProcess) Process(i map[string]interface{}) map[string]interface{} {
 	out, err := mp.proc.Evaluate(i)
 	if err != nil {
 		log.Printf("Map Step error: %s", err)
 	}
-	return []map[string]any{out}
+	return out
 }
 
 func (mp *mapProcess) Close() {

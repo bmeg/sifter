@@ -11,13 +11,18 @@ import (
 var DefaultEngine = "python"
 var PipeSize = 20
 
+type MapProcessor interface {
+	PoolReady() bool
+	Process(map[string]any) map[string]any
+}
+
 type ReduceProcessor interface {
 	GetInit() map[string]any
 	GetKey(map[string]any) string
 	Reduce(key string, a map[string]any, b map[string]any) map[string]any
 }
 
-type MapProcessor interface {
+type NodeProcessor interface {
 	Process(map[string]any) []map[string]any
 }
 

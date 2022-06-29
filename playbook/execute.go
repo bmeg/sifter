@@ -117,9 +117,30 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 				log.Printf("Pipeline %s error: %s", k, err)
 				return err
 			} else {
-				if mProcess, ok := b.(transform.MapProcessor); ok {
+				if mProcess, ok := b.(transform.NodeProcessor); ok {
 					log.Printf("Pipeline %s step %d: %T", k, i, b)
 					c := flame.AddFlatMapper(wf, mProcess.Process)
+					if lastStep != nil {
+						c.Connect(lastStep)
+					}
+					if c != nil {
+						lastStep = c
+						if firstStep == nil {
+							firstStep = c
+						}
+					} else {
+						log.Printf("Error setting up step")
+						//throw error?
+					}
+				} else if mProcess, ok := b.(transform.MapProcessor); ok {
+					log.Printf("Pipeline Pool %s step %d: %T", k, i, b)
+					var c flame.Node[map[string]any, map[string]any]
+					if mProcess.PoolReady() {
+						log.Printf("Starting pool worker")
+						c = flame.AddMapperPool(wf, mProcess.Process, 4) // TODO: config pool count
+					} else {
+						c = flame.AddMapper(wf, mProcess.Process)
+					}
 					if lastStep != nil {
 						c.Connect(lastStep)
 					}

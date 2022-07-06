@@ -29,6 +29,7 @@ type GraphBuildStep struct {
 	FilePrefix string               `json:"filePrefix"`
 	Sep        *string              `json:"sep"`
 	Fields     map[string]*EdgeRule `json:"fields"`
+	Flat       bool                 `json:"flat"`
 }
 
 type graphBuildProcess struct {
@@ -77,7 +78,15 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 		for _, j := range o {
 			if j.Vertex != nil {
 				j.Vertex.Gid, _ = prefixAdjust(j.Vertex.Gid, ts.config.IDPrefix, ts.config.Sep, false)
-				err := ts.task.Emit("vertex", vertexToMap(j.Vertex))
+				if j.Vertex.Gid == "" {
+					//default behavior if GID is not configured
+					if x, ok := j.Vertex.Data.AsMap()["id"]; ok {
+						if xStr, ok := x.(string); ok {
+							j.Vertex.Gid = xStr
+						}
+					}
+				}
+				err := ts.task.Emit("vertex", ts.vertexToMap(j.Vertex))
 				if err != nil {
 					log.Printf("Emit Error: %s", err)
 				}
@@ -94,13 +103,13 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 							edge = nil
 						}
 						if edge != nil && er.IDTemplate != "" {
-							val, err := evaluate.ExpressionString(er.IDTemplate, nil, edgeToMap(edge))
+							val, err := evaluate.ExpressionString(er.IDTemplate, nil, ts.edgeToMap(edge))
 							if err == nil {
 								edge.Gid = val
 							}
 						}
 					} else {
-						log.Printf("Rule for %s field %s not found", ts.class, j.Field)
+						//default rules
 					}
 				}
 				if j.InEdge != nil {
@@ -114,17 +123,17 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 							edge = nil
 						}
 						if edge != nil && er.IDTemplate != "" {
-							val, err := evaluate.ExpressionString(er.IDTemplate, nil, edgeToMap(edge))
+							val, err := evaluate.ExpressionString(er.IDTemplate, nil, ts.edgeToMap(edge))
 							if err == nil {
 								edge.Gid = val
 							}
 						}
 					} else {
-						log.Printf("Rule for %s field %s not found", ts.class, j.Field)
+						//default rules
 					}
 				}
 				if edge != nil {
-					err := ts.task.Emit("edge", edgeToMap(edge))
+					err := ts.task.Emit("edge", ts.edgeToMap(edge))
 					if err != nil {
 						log.Printf("Emit Error: %s", err)
 					}
@@ -154,24 +163,49 @@ func prefixAdjust(id string, prefix string, sep *string, filter bool) (string, e
 	return id, nil
 }
 
-func edgeToMap(e *gripql.Edge) map[string]interface{} {
+func (ts *graphBuildProcess) edgeToMap(e *gripql.Edge) map[string]interface{} {
 	d := e.Data.AsMap()
 	if d == nil {
 		d = map[string]interface{}{}
 	}
-	d["_id"] = e.Gid
-	d["_to"] = e.To
-	d["_from"] = e.From
-	d["_label"] = e.Label
-	return d
+	if ts.config.Flat {
+		if e.Gid != "" {
+			d["_id"] = e.Gid
+		}
+		d["_to"] = e.To
+		d["_from"] = e.From
+		d["_label"] = e.Label
+		return d
+	}
+
+	out := map[string]any{}
+	if e.Gid != "" {
+		out["gid"] = e.Gid
+	}
+	out["to"] = e.To
+	out["from"] = e.From
+	out["label"] = e.Label
+	out["data"] = d
+	return out
 }
 
-func vertexToMap(v *gripql.Vertex) map[string]interface{} {
+func (ts *graphBuildProcess) vertexToMap(v *gripql.Vertex) map[string]interface{} {
 	d := v.Data.AsMap()
 	if d == nil {
 		d = map[string]interface{}{}
 	}
-	d["_id"] = v.Gid
-	d["_label"] = v.Label
-	return d
+	if ts.config.Flat {
+		if v.Gid != "" {
+			d["_id"] = v.Gid
+		}
+		d["_label"] = v.Label
+		return d
+	}
+	out := map[string]any{}
+	if v.Gid != "" {
+		out["gid"] = v.Gid
+	}
+	out["label"] = v.Label
+	out["data"] = d
+	return out
 }

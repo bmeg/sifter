@@ -75,9 +75,11 @@ func (s *DirDataLoader) Emit(name string, v map[string]interface{}) error {
 		f = gzip.NewWriter(j)
 		s.dl.dout[name] = f
 	}
-	o, _ := json.Marshal(v)
-	f.Write([]byte(o))
-	f.Write([]byte("\n"))
+	if v != nil {
+		o, _ := json.Marshal(v)
+		f.Write([]byte(o))
+		f.Write([]byte("\n"))
+	}
 	return nil
 }
 

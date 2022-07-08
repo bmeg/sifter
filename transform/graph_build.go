@@ -54,6 +54,10 @@ func (ts GraphBuildStep) Init(task task.RuntimeTask) (Processor, error) {
 	if err != nil {
 		return nil, err
 	}
+	//force the two emitters to be created. nil messages don't get emitted
+	//but the output file will be created
+	task.Emit("vertex", nil)
+	task.Emit("edge", nil)
 
 	return &graphBuildProcess{ts, task, sc, className}, nil
 }

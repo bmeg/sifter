@@ -6,49 +6,44 @@ import (
 	"log"
 	"os"
 	"strings"
-	"sync"
 
 	"compress/gzip"
 
+	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
 	"github.com/bmeg/sifter/readers"
-	"github.com/bmeg/sifter/transform"
+	"github.com/bmeg/sifter/task"
 )
 
 type TableLoadStep struct {
-	Input         string         `json:"input" jsonschema_description:"TSV to be transformed"`
-	RowSkip       int            `json:"rowSkip" jsonschema_description:"Number of header rows to skip"`
-	SkipIfMissing bool           `json:"skipIfMissing" jsonschema_description:"Skip without error if file missing"`
-	Columns       []string       `json:"columns" jsonschema_description:"Manually set names of columns"`
-	ExtraColumns  string         `json:"extraColumns" jsonschema_description:"Columns beyond originally declared columns will be placed in this array"`
-	Transform     transform.Pipe `json:"transform" jsonschema_description:"Transform pipelines"`
-	Sep           string         `json:"sep" jsonschema_description:"Separator \\t for TSVs or , for CSVs"`
+	Input        string   `json:"input" jsonschema_description:"TSV to be transformed"`
+	RowSkip      int      `json:"rowSkip" jsonschema_description:"Number of header rows to skip"`
+	Columns      []string `json:"columns" jsonschema_description:"Manually set names of columns"`
+	ExtraColumns string   `json:"extraColumns" jsonschema_description:"Columns beyond originally declared columns will be placed in this array"`
+	Sep          string   `json:"sep" jsonschema_description:"Separator \\t for TSVs or , for CSVs"`
 }
 
-func (ml *TableLoadStep) Run(task *manager.Task) error {
+func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 	log.Printf("Starting Table Load")
-	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
+	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
 	inputPath, err := task.AbsPath(input)
 
-	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
-		if ml.SkipIfMissing {
-			return nil
-		}
-		return fmt.Errorf("File Not Found: %s", input)
+	if s, err := os.Stat(inputPath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("File Not Found: %s", inputPath)
+	} else if s.IsDir() {
+		return nil, fmt.Errorf("Input not a file: %s", inputPath)
 	}
 	log.Printf("Loading table: %s", inputPath)
 	fhd, err := os.Open(inputPath)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer fhd.Close()
 
 	var hd io.Reader
 	if strings.HasSuffix(input, ".gz") || strings.HasSuffix(input, ".tgz") {
 		hd, err = gzip.NewReader(fhd)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	} else {
 		hd = fhd
@@ -68,56 +63,51 @@ func (ml *TableLoadStep) Run(task *manager.Task) error {
 	}
 
 	procChan := make(chan map[string]interface{}, 25)
-	wg := &sync.WaitGroup{}
-
-	if err := ml.Transform.Init(task); err != nil {
-		return err
-	}
-
-	out, err := ml.Transform.Start(procChan, task, wg)
-	if err != nil {
-		return err
-	}
-	go func() {
-		for range out {
-		}
-	}()
 
 	rowSkip := ml.RowSkip
 
 	inputStream, err := readers.ReadLines(hd)
 	if err != nil {
 		log.Printf("Error %s", err)
-		return err
+		return nil, err
 	}
 
-	for record := range r.Read(inputStream) {
-		if rowSkip > 0 {
-			rowSkip--
-		} else {
-			if columns == nil {
-				columns = record
+	go func() {
+		defer fhd.Close()
+		log.Printf("STARTING READ: %#v %#v", r, inputStream)
+		for record := range r.Read(inputStream) {
+			if rowSkip > 0 {
+				rowSkip--
 			} else {
-				o := map[string]interface{}{}
-				if len(record) >= len(columns) {
-					for i, n := range columns {
-						o[n] = record[i]
-					}
-					if ml.ExtraColumns != "" {
-						if len(record) > len(columns) {
-							o[ml.ExtraColumns] = record[len(columns):]
+				if columns == nil {
+					columns = record
+				} else {
+					o := map[string]interface{}{}
+					if len(record) >= len(columns) {
+						for i, n := range columns {
+							o[n] = record[i]
 						}
+						if ml.ExtraColumns != "" {
+							if len(record) > len(columns) {
+								o[ml.ExtraColumns] = record[len(columns):]
+							}
+						}
+						procChan <- o
 					}
-					procChan <- o
 				}
 			}
 		}
+		log.Printf("Done Loading")
+		close(procChan)
+	}()
+
+	return procChan, nil
+}
+
+func (ml *TableLoadStep) GetConfigFields() []config.ConfigVar {
+	out := []config.ConfigVar{}
+	for _, s := range evaluate.ExpressionIDs(ml.Input) {
+		out = append(out, config.ConfigVar{Type: "File", Name: config.TrimPrefix(s)})
 	}
-
-	log.Printf("Done Loading")
-	close(procChan)
-	wg.Wait()
-	ml.Transform.Close()
-
-	return nil
+	return out
 }

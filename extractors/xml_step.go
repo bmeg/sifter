@@ -1,147 +1,72 @@
 package extractors
 
 import (
-	"bufio"
-	"encoding/xml"
+	"compress/gzip"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"os"
-	"sync"
+	"strings"
 
+	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
-	"github.com/bmeg/sifter/transform"
+	"github.com/bmeg/sifter/task"
+
+	xj "github.com/basgys/goxml2json"
 )
 
 type XMLLoadStep struct {
-	Input         string         `json:"input"`
-	Transform     transform.Pipe `json:"transform"`
-	SkipIfMissing bool           `json:"skipIfMissing"`
+	Input string `json:"input"`
 }
 
-func xmlStream(file io.Reader, out chan map[string]interface{}) {
-	buffer := bufio.NewReaderSize(file, 1024*1024*256) // 33554432
-	decoder := xml.NewDecoder(buffer)
-
-	nameStack := []string{}
-	mapStack := []map[string]interface{}{}
-	curString := []byte{}
-	for {
-		t, _ := decoder.Token()
-		if t == nil {
-			break
-		}
-		switch se := t.(type) {
-		case xml.StartElement:
-			nameStack = append(nameStack, se.Name.Local)
-			mapStack = append(mapStack, map[string]interface{}{})
-			curString = []byte{}
-		case xml.EndElement:
-			cMap := mapStack[len(mapStack)-1]
-			nameStack = nameStack[0 : len(nameStack)-1]
-			mapStack = mapStack[0 : len(mapStack)-1]
-			if len(mapStack) > 0 {
-				if len(cMap) > 0 {
-					//the child structure contained substructures
-					if a, ok := mapStack[len(mapStack)-1][se.Name.Local]; ok {
-						if aa, ok := a.([]interface{}); ok {
-							aa = append(aa, cMap)
-							mapStack[len(mapStack)-1][se.Name.Local] = aa
-						} else {
-							if am, ok := a.(map[string]interface{}); ok {
-								aa := []interface{}{am, cMap}
-								mapStack[len(mapStack)-1][se.Name.Local] = aa
-							} else {
-								log.Printf("Typing Error")
-							}
-						}
-					} else {
-						mapStack[len(mapStack)-1][se.Name.Local] = cMap
-					}
-				} else {
-					//the child structure has no substructures, so we'll be treating it like string
-					if a, ok := mapStack[len(mapStack)-1][se.Name.Local]; ok {
-						if aa, ok := a.([]string); ok {
-							aa = append(aa, string(curString))
-							mapStack[len(mapStack)-1][se.Name.Local] = aa
-						} else {
-							if as, ok := a.(string); ok {
-								aa := []string{as, string(curString)}
-								mapStack[len(mapStack)-1][se.Name.Local] = aa
-							} else {
-								log.Printf("Typing Error")
-							}
-						}
-					} else {
-						mapStack[len(mapStack)-1][se.Name.Local] = string(curString)
-					}
-				}
-			}
-
-			if len(mapStack) == 1 {
-				c := mapStack[0]
-				if len(c) > 0 {
-					t := map[string]interface{}{}
-					for k := range c {
-						t[k] = c[k]
-					}
-					out <- t
-				}
-				mapStack[0] = map[string]interface{}{}
-			}
-
-		case xml.CharData:
-			curString = append(curString, se...)
-		default:
-			log.Printf("Unknown Element: %#v\n", se)
-		}
-	}
-}
-
-func (ml *XMLLoadStep) Run(task *manager.Task) error {
-	log.Printf("Starting XML Load")
-	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
-	inputPath, err := task.AbsPath(input)
+func (ml *XMLLoadStep) Start(task task.RuntimeTask) (chan map[string]any, error) {
+	//log.Printf("Starting XML Load")
+	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
 	if err != nil {
-		return err
+		log.Printf("Error: %s", err)
+		return nil, err
 	}
 
-	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
-		if ml.SkipIfMissing {
-			return nil
+	if _, err := os.Stat(input); os.IsNotExist(err) {
+		return nil, fmt.Errorf("File Not Found: %s", input)
+	}
+	log.Printf("Loading: %s", input)
+
+	fhd, err := os.Open(input)
+	if err != nil {
+		return nil, err
+	}
+
+	var hd io.Reader
+	if strings.HasSuffix(input, ".gz") || strings.HasSuffix(input, ".tgz") {
+		hd, err = gzip.NewReader(fhd)
+		if err != nil {
+			return nil, err
 		}
-		return fmt.Errorf("File Not Found: %s", input)
-	}
-	log.Printf("Loading: %s", inputPath)
-
-	file, err := os.Open(inputPath)
-	if err != nil {
-		return err
+	} else {
+		hd = fhd
 	}
 
-	wg := &sync.WaitGroup{}
-	procChan := make(chan map[string]interface{}, 100)
+	procChan := make(chan map[string]any, 100)
 
-	if err := ml.Transform.Init(task); err != nil {
-		return err
-	}
-
-	out, err := ml.Transform.Start(procChan, task, wg)
-	if err != nil {
-		log.Printf("Got error: %s", err)
-		return err
-	}
 	go func() {
-		for range out {
+		jStr, err := xj.Convert(hd)
+		if err == nil {
+			data := map[string]any{}
+			if err = json.Unmarshal(jStr.Bytes(), &data); err == nil {
+				procChan <- data
+			}
 		}
+		close(procChan)
 	}()
-	log.Printf("Starting XML Read")
-	xmlStream(file, procChan)
-	log.Printf("Yes Done")
-	log.Printf("Done Loading")
-	close(procChan)
-	wg.Wait()
-	ml.Transform.Close()
-	return nil
+	return procChan, nil
+}
+
+func (ml *XMLLoadStep) GetConfigFields() []config.ConfigVar {
+	out := []config.ConfigVar{}
+	for _, s := range evaluate.ExpressionIDs(ml.Input) {
+		out = append(out, config.ConfigVar{Type: "File", Name: config.TrimPrefix(s)})
+	}
+	return out
 }

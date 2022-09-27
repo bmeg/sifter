@@ -1,35 +1,16 @@
 package playbook
 
 import (
-	"io/ioutil"
+	"fmt"
 	"log"
 	"os"
-	"path"
-	"strings"
-
 	"path/filepath"
 
-	"github.com/bmeg/sifter/download"
-	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
-	"github.com/bmeg/sifter/schema"
+	"github.com/bmeg/flame"
+	"github.com/bmeg/sifter/task"
+	"github.com/bmeg/sifter/transform"
+	"github.com/bmeg/sifter/writers"
 )
-
-func isURL(s string) bool {
-	if strings.HasPrefix(s, "http://") {
-		return true
-	}
-	if strings.HasPrefix(s, "https://") {
-		return true
-	}
-	if strings.HasPrefix(s, "s3://") {
-		return true
-	}
-	if strings.HasPrefix(s, "ftp://") {
-		return true
-	}
-	return false
-}
 
 func fileExists(filename string) bool {
 	info, err := os.Stat(filename)
@@ -39,138 +20,250 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-func (pb *Playbook) Execute(man *manager.Manager, inputs map[string]interface{}, workDir string, outDir string) error {
+func (pb *Playbook) PrepConfig(inputs map[string]any, workdir string) map[string]any {
 
-	workDir, _ = filepath.Abs(workDir)
-	outDir, _ = filepath.Abs(outDir)
+	workdir, _ = filepath.Abs(workdir)
 
-	for k, v := range pb.Inputs {
+	out := map[string]any{}
+
+	//fill in missing values with default values
+	for k, v := range pb.Config {
 		if _, ok := inputs[k]; !ok {
 			if v.Default != "" {
-				if (v.Type == "File" || v.Type == "Directory") && !isURL(v.Default) {
-					log.Printf("Setting input: %s %s", filepath.Dir(pb.path), v.Default)
+				if v.IsFile() || v.IsDir() {
 					defaultPath := filepath.Join(filepath.Dir(pb.path), v.Default)
-					inputs[k], _ = filepath.Abs(defaultPath)
+					out[k], _ = filepath.Abs(defaultPath)
 				} else {
-					inputs[k] = v.Default
+					out[k] = v.Default
 				}
-			} else if v.Type == "CWD" {
-				path, err := os.Getwd()
-				if err == nil {
-					inputs[k] = path
+			}
+		} else {
+			if v.IsFile() || v.IsDir() {
+				if i, ok := inputs[k]; ok {
+					if iStr, ok := i.(string); ok {
+						newPath := filepath.Join(workdir, iStr)
+						out[k], _ = filepath.Abs(newPath)
+					}
 				}
-			} else if v.Type == "OUTPUT_DIR" {
-				log.Printf("Setting %s to %s", k, outDir)
-				inputs[k] = outDir
+			} else {
+				if i, ok := inputs[k]; ok {
+					out[k] = i
+				}
 			}
 		}
 	}
+	return out
+}
 
-	if pb.Schema != "" {
-		log.Printf("Schema eval inputs: %s %s", pb.Schema, inputs)
-		schema, _ := evaluate.ExpressionString(pb.Schema, inputs, nil)
-		if !filepath.IsAbs(schema) {
-			schema = filepath.Join(filepath.Dir(pb.path), schema)
-		}
-		pb.Schema = schema
-		log.Printf("Schema eval Path: %s", schema)
+type reduceWrapper struct {
+	reducer transform.ReduceProcessor
+}
+
+func (rw *reduceWrapper) addKeyValue(x map[string]any) flame.KeyValue[string, map[string]any] {
+	return flame.KeyValue[string, map[string]any]{Key: rw.reducer.GetKey(x), Value: x}
+}
+
+func (rw *reduceWrapper) removeKeyValue(x flame.KeyValue[string, map[string]any]) []map[string]any {
+	return []map[string]any{x.Value}
+}
+
+type accumulateWrapper struct {
+	accumulator transform.AccumulateProcessor
+}
+
+func (rw *accumulateWrapper) addKeyValue(x map[string]any) flame.KeyValue[string, map[string]any] {
+	return flame.KeyValue[string, map[string]any]{Key: rw.accumulator.GetKey(x), Value: x}
+}
+
+func (rw *accumulateWrapper) removeKeyValue(x flame.KeyValue[string, map[string]any]) []map[string]any {
+	return []map[string]any{x.Value}
+}
+
+func (pb *Playbook) Execute(task task.RuntimeTask) error {
+	log.Printf("Running playbook")
+
+	log.Printf("Inputs: %#v", task.GetConfig())
+
+	wf := flame.NewWorkflow()
+
+	if pb.Name == "" {
+		pb.Name = "sifter"
 	}
+	task.SetName(pb.Name)
 
-	var sc *schema.Schemas
-	if pb.Schema != "" {
-		log.Printf("Loading Schema: %s", pb.Schema)
-		t, err := schema.Load(pb.Schema)
-		if err != nil {
-			log.Printf("Error: %s", err)
+	outNodes := map[string]flame.Emitter[map[string]any]{}
+	inNodes := map[string]flame.Receiver[map[string]any]{}
+	writers := map[string]writers.WriteProcess{}
+
+	for n, v := range pb.Inputs {
+		log.Printf("Setting up %s", n)
+		s, err := v.Start(task)
+		if err == nil {
+			c := flame.AddSourceChan(wf, s)
+			outNodes[n] = c
+		} else {
+			log.Printf("Source error: %s", err)
 			return err
 		}
-		log.Printf("Loaded Schema: %s", t.GetClasses())
-		sc = &t
 	}
 
-	run, err := man.NewRuntime(pb.Name, workDir, sc)
-	for k, i := range pb.Inputs {
-		if v, ok := inputs[k]; ok {
-			if i.Type == "File" || i.Type == "Directory" {
-				path := v.(string)
-				if isURL(path) {
-					log.Printf("Found a URL to download: %s", path)
-					tmpTask := run.NewTask(pb.path, map[string]interface{}{})
-					dstPath, _ := tmpTask.AbsPath(filepath.Base(path))
-					newPath, err := download.ToFile(path, dstPath)
-					if err != nil {
-						log.Printf("Download Error: %s", err)
-						return err
+	for k, v := range pb.Pipelines {
+		sub := task.SubTask(k)
+		var lastStep flame.Emitter[map[string]any]
+		var firstStep flame.Receiver[map[string]any]
+		for i, s := range v {
+			b, err := s.Init(sub)
+			if err != nil {
+				log.Printf("Pipeline %s error: %s", k, err)
+				return err
+			} else {
+				if mProcess, ok := b.(transform.NodeProcessor); ok {
+					log.Printf("Pipeline %s step %d: %T", k, i, b)
+					c := flame.AddFlatMapper(wf, mProcess.Process)
+					if lastStep != nil {
+						c.Connect(lastStep)
 					}
-					inputs[k] = newPath
-				} else {
-					p, _ := filepath.Abs(path)
-					if fileExists(p) {
-						log.Printf("Using file: %s", p)
-						inputs[k] = p
-					} else {
-						if i.Source != "" {
-							newPath, err := download.ToFile(i.Source, p)
-							if err != nil {
-								log.Printf("Download Error: %s", err)
-								return err
-							}
-							inputs[k] = newPath
+					if c != nil {
+						lastStep = c
+						if firstStep == nil {
+							firstStep = c
 						}
+					} else {
+						log.Printf("Error setting up step")
+						//throw error?
 					}
+				} else if mProcess, ok := b.(transform.MapProcessor); ok {
+					log.Printf("Pipeline Pool %s step %d: %T", k, i, b)
+					var c flame.Node[map[string]any, map[string]any]
+					if mProcess.PoolReady() {
+						log.Printf("Starting pool worker")
+						c = flame.AddMapperPool(wf, mProcess.Process, 4) // TODO: config pool count
+					} else {
+						c = flame.AddMapper(wf, mProcess.Process)
+					}
+					if lastStep != nil {
+						c.Connect(lastStep)
+					}
+					if c != nil {
+						lastStep = c
+						if firstStep == nil {
+							firstStep = c
+						}
+					} else {
+						log.Printf("Error setting up step")
+						//throw error?
+					}
+				} else if rProcess, ok := b.(transform.ReduceProcessor); ok {
+					log.Printf("Pipeline reduce %s step %d: %T", k, i, b)
+					wrap := reduceWrapper{rProcess}
+					k := flame.AddMapper(wf, wrap.addKeyValue)
+					r := flame.AddReduceKey(wf, rProcess.Reduce, rProcess.GetInit())
+					c := flame.AddFlatMapper(wf, wrap.removeKeyValue)
+					if lastStep != nil {
+						k.Connect(lastStep)
+					}
+					r.Connect(k)
+					c.Connect(r)
+					lastStep = c
+					if firstStep == nil {
+						firstStep = k
+					}
+				} else if rProcess, ok := b.(transform.AccumulateProcessor); ok {
+					log.Printf("Pipeline accumulate %s step %d: %T", k, i, b)
+
+					wrap := accumulateWrapper{rProcess}
+					k := flame.AddMapper(wf, wrap.addKeyValue)
+					r := flame.AddAccumulate(wf, rProcess.Accumulate)
+					c := flame.AddFlatMapper(wf, wrap.removeKeyValue)
+					if lastStep != nil {
+						k.Connect(lastStep)
+					}
+					r.Connect(k)
+					c.Connect(r)
+					lastStep = c
+					if firstStep == nil {
+						firstStep = k
+					}
+
+				} else {
+					log.Printf("Unknown processor type")
 				}
 			}
 		}
+		outNodes[k] = lastStep
+		inNodes[k] = firstStep
 	}
 
-	//run.Printf("Starting Playbook")
-	//defer run.Printf("Playbook done")
-
-	//run.LoadSchema(pb.Schema)
-
-	run.OutputCallback = func(name, value string) error {
-		inputs[name] = value
-		return nil
-	}
-
-	log.Printf("Playbook executing in %s", workDir)
-	log.Printf("Output to %s", outDir)
-	stepFile := path.Join(workDir, ".sifter_steps")
-
-	startStep := 0
-	content, err := ioutil.ReadFile(stepFile)
-	if err == nil {
-		lines := strings.Split(string(content), "\n")
-		for i, line := range lines {
-			log.Printf("Line: %s", line)
-			if line == "OK" {
-				startStep = i + 1
-			}
+	for k, v := range pb.Outputs {
+		sub := task.SubTask(k)
+		s, err := v.Init(sub)
+		if err == nil {
+			c := flame.AddSink(wf, s.Write)
+			inNodes[k] = c
+			writers[k] = s
+		} else {
+			log.Printf("output error: %s", err)
 		}
 	}
 
-	f, err := os.OpenFile(stepFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Println(err)
-	}
-	defer f.Close()
-	log.Printf("StartStep: %d", startStep)
-
-	for i, step := range pb.Steps {
-		if i >= startStep {
-			log.Printf("Running Playbook Step: %#v", step)
-			err := step.Run(run, pb.path, inputs)
-			if err == nil {
-				f.WriteString("OK\n")
-				log.Printf("Playbook Step Done")
+	for dst, p := range pb.Pipelines {
+		if len(p) > 0 {
+			if p[0].From != nil {
+				src := string(*p[0].From)
+				if src == dst {
+					//TODO: more loop detection
+					log.Printf("Pipeline Loop detected in %s", dst)
+					return fmt.Errorf("Pipeline Loop detected")
+				}
+				if srcNode, ok := outNodes[src]; ok {
+					if dstNode, ok := inNodes[dst]; ok {
+						log.Printf("Connecting %s to %s ", src, dst)
+						dstNode.Connect(srcNode)
+					} else {
+						log.Printf("Dest %s not found", dst)
+					}
+				} else {
+					log.Printf("%s source %s not found", dst, src)
+				}
 			} else {
-				log.Printf("Playbook Step Error: %s", err)
-				break
+				log.Printf("First step of pipelines %s not 'from'", dst)
+				return fmt.Errorf("First step of pipelines %s not 'from'", dst)
 			}
+		} else {
+			log.Printf("Pipeline %s is empty", dst)
 		}
 	}
-	log.Printf("Done with steps")
-	run.Close()
 
+	for dst, v := range pb.Outputs {
+		src := v.From()
+		if src == dst {
+			//TODO: more loop detection
+			log.Printf("Pipeline Loop detected in %s", dst)
+			return fmt.Errorf("Pipeline Loop detected")
+		}
+		if srcNode, ok := outNodes[src]; ok {
+			if dstNode, ok := inNodes[dst]; ok {
+				log.Printf("Connecting %s to %s ", src, dst)
+				dstNode.Connect(srcNode)
+			} else {
+				log.Printf("Dest %s not found", dst)
+			}
+		} else {
+			log.Printf("%s source %s not found", dst, src)
+		}
+	}
+
+	//log.Printf("WF: %#v", wf)
+
+	wf.Start()
+	log.Printf("Workflow Started")
+
+	wf.Wait()
+
+	for k := range writers {
+		writers[k].Close()
+	}
+
+	task.Close()
 	return nil
 }

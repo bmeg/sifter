@@ -1,8 +1,0 @@
-
-playbook: examples/gene-table/gene-table.yaml
-
-inputs:
-  geneTSV: resources/gene2ensembl.gz
-
-outputs:
-  - out/gene.table

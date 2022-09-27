@@ -4,74 +4,60 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sync"
 
+	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
-	"github.com/bmeg/sifter/transform"
+	"github.com/bmeg/sifter/task"
 
 	"github.com/linkedin/goavro/v2"
 )
 
 type AvroLoadStep struct {
-	Input         string         `json:"input" jsonschema_description:"Path of avro object file to transform"`
-	Transform     transform.Pipe `json:"transform" jsonschema_description:"Transformation Pipeline"`
-	SkipIfMissing bool           `json:"skipIfMissing" jsonschema_description:"Skip without error if file does note exist"`
+	Input string `json:"input" jsonschema_description:"Path of avro object file to transform"`
 }
 
-func (ml *AvroLoadStep) Run(task *manager.Task) error {
+func (ml *AvroLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 	log.Printf("Starting Avro Load")
 
-	input, err := evaluate.ExpressionString(ml.Input, task.Inputs, nil)
-	inputPath, err := task.AbsPath(input)
+	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
 
-	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
-		if ml.SkipIfMissing {
-			return nil
-		}
-		return fmt.Errorf("File Not Found: %s", input)
+	if _, err := os.Stat(input); os.IsNotExist(err) {
+		return nil, fmt.Errorf("File Not Found: %s", input)
 	}
-	log.Printf("Loading: %s", inputPath)
+	log.Printf("Loading: %s", input)
 
-	fh, err := os.Open(inputPath)
+	fh, err := os.Open(input)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	ocf, err := goavro.NewOCFReader(fh)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	procChan := make(chan map[string]interface{}, 100)
-	wg := &sync.WaitGroup{}
-
-	if err := ml.Transform.Init(task); err != nil {
-		return err
-	}
-
-	out, err := ml.Transform.Start(procChan, task, wg)
-	if err != nil {
-		return err
-	}
 	go func() {
-		for range out {
-		}
-	}()
-
-	for ocf.Scan() {
-		datum, err := ocf.Read()
-		if err == nil {
-			if d, ok := datum.(map[string]interface{}); ok {
-				procChan <- d
+		for ocf.Scan() {
+			datum, err := ocf.Read()
+			if err == nil {
+				if d, ok := datum.(map[string]interface{}); ok {
+					procChan <- d
+				}
 			}
 		}
-	}
+		close(procChan)
+		fh.Close()
+		log.Printf("Done Loading")
+	}()
 
-	log.Printf("Done Loading")
-	close(procChan)
-	wg.Wait()
-	ml.Transform.Close()
-	fh.Close()
-	return nil
+	return procChan, nil
+}
+
+func (ml *AvroLoadStep) GetConfigFields() []config.ConfigVar {
+	out := []config.ConfigVar{}
+	for _, s := range evaluate.ExpressionIDs(ml.Input) {
+		out = append(out, config.ConfigVar{Type: "File", Name: config.TrimPrefix(s)})
+	}
+	return out
 }

@@ -1,0 +1,14 @@
+
+class: Playbook
+
+inputs:
+  xml:
+    type: File
+    default: test.xml
+
+steps:
+  - xmlLoad:
+      input: "{{inputs.xml}}"
+      transform:
+        - emit:
+            name: output

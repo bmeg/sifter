@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+  <entry id="1">
+    <name>
+      <first>Bob</first>
+      <last>Smith</last>
+    </name>
+    <item>Item 1</item>
+    <item>Item 2</item>
+    <item>Item 3</item>
+  </entry>
+  <entry id="2">
+    <name>
+      <first>Karen</first>
+      <last>Smith</last>
+    </name>    
+  </entry>
+</data>

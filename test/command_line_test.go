@@ -2,21 +2,17 @@ package test
 
 import (
 	"bytes"
-	"compress/gzip"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"path/filepath"
-	"strings"
 	"testing"
 
-	"github.com/ghodss/yaml"
-	shellquote "github.com/kballard/go-shellquote"
+	"sigs.k8s.io/yaml"
 )
 
-var tPath string = "command-line-tests.yaml"
+var tPath string = "config.yaml"
 
 func lineCounter(r io.Reader) (int, error) {
 	buf := make([]byte, 32*1024)
@@ -37,14 +33,10 @@ func lineCounter(r io.Reader) (int, error) {
 	}
 }
 
-type OutputConfig struct {
-	LineCount int `json:"lineCount"`
-}
-
 type CommandLineConfig struct {
-	Title   string                  `json:"title"`
-	Command string                  `json:"command"`
-	Outputs map[string]OutputConfig `json:"outputs"`
+	Playbook string   `json:"playbook"`
+	Checks   []string `json:"checks"`
+	Outputs  []string `json:"outputs"`
 }
 
 func TestCommandLines(t *testing.T) {
@@ -53,49 +45,46 @@ func TestCommandLines(t *testing.T) {
 		t.Error(fmt.Errorf("failed to read config %s %s", tPath, err))
 	}
 	conf := []CommandLineConfig{}
-	if err := yaml.Unmarshal(raw, &conf); err != nil {
+	if err := yaml.UnmarshalStrict(raw, &conf); err != nil {
 		t.Error(fmt.Errorf("failed to read config %s %s", tPath, err))
 	}
 
 	for _, c := range conf {
-		csplit, err := shellquote.Split(c.Command)
-		if err != nil {
-			t.Error(err)
-		}
-		fmt.Printf("%#v\n", csplit)
-		cmd := exec.Command("../sifter", csplit...)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		fmt.Printf("Running: %#v", cmd)
+		cmd := exec.Command("../sifter", "run", c.Playbook)
+		//cmd.Stdout = os.Stdout
+		//cmd.Stderr = os.Stderr
+		fmt.Printf("Running: %s\n", c.Playbook)
 		err = cmd.Run()
 		if err != nil {
-			t.Error(err)
+			t.Errorf("Failed running %s", c.Playbook)
 		} else {
-			for f, chk := range c.Outputs {
-				path := filepath.Join("out", f)
-				if _, err := os.Stat(path); err == nil {
-					if chk.LineCount != 0 {
-						file, err := os.Open(path)
-						var reader io.Reader
-						if strings.HasSuffix(path, ".gz") {
-							reader, _ = gzip.NewReader(file)
-						} else {
-							reader = file
-						}
-						defer file.Close()
-						if err == nil {
-							count, _ := lineCounter(reader)
-							if count != chk.LineCount {
-								t.Errorf("Incorrect number of lines: %d != %d", count, chk.LineCount)
+			/*
+				for f, chk := range c.Outputs {
+					path := filepath.Join("out", f)
+					if _, err := os.Stat(path); err == nil {
+						if chk.LineCount != 0 {
+							file, err := os.Open(path)
+							var reader io.Reader
+							if strings.HasSuffix(path, ".gz") {
+								reader, _ = gzip.NewReader(file)
+							} else {
+								reader = file
 							}
-						} else {
-							t.Errorf("failed to open %s", f)
+							defer file.Close()
+							if err == nil {
+								count, _ := lineCounter(reader)
+								if count != chk.LineCount {
+									t.Errorf("Incorrect number of lines: %d != %d", count, chk.LineCount)
+								}
+							} else {
+								t.Errorf("failed to open %s", f)
+							}
 						}
+					} else if os.IsNotExist(err) {
+						t.Errorf("Output %s missing", f)
 					}
-				} else if os.IsNotExist(err) {
-					t.Errorf("Output %s missing", f)
 				}
-			}
+			*/
 		}
 		os.RemoveAll("./out")
 	}

@@ -1,0 +1,38 @@
+
+name: pathway_commons
+outdir: ../../out
+
+config:
+  sifFile:
+    type: File
+    default: ../../resources/pathways.sif
+
+inputs:
+  sifFile:
+    tableLoad:
+      input: "{{config.sifFile}}"
+      sep: "\t"
+      columns: [_from, _label, _to]
+
+pipelines:
+  nodes:
+    - from: sifFile
+    - project:
+        mapping:
+          nodes: 
+            - { "_gid" : "{{row._from}}" }
+            - { "_gid" : "{{row._to}}" }
+    - fieldProcess:
+        field: nodes
+    - distinct:
+        value: "{{row._gid}}"
+    - project:
+        mapping:
+          _label: "Protein"
+    - emit:
+        name: node
+
+  edges:
+    - from: sifFile
+    - emit:
+        name: edge

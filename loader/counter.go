@@ -2,9 +2,6 @@ package loader
 
 import (
 	"sync/atomic"
-
-	"github.com/bmeg/grip/gripql"
-	"github.com/bmeg/sifter/schema"
 )
 
 type CountLoader struct {
@@ -20,7 +17,6 @@ type CountDataEmitter struct {
 }
 
 type CountGraphEmitter struct {
-	g  GraphEmitter
 	cl *CountLoader
 }
 
@@ -32,14 +28,9 @@ func (cl *CountLoader) Close() {
 	cl.l.Close()
 }
 
-func (cl *CountLoader) NewDataEmitter(sch *schema.Schemas) (DataEmitter, error) {
-	o, err := cl.l.NewDataEmitter(sch)
+func (cl *CountLoader) NewDataEmitter() (DataEmitter, error) {
+	o, err := cl.l.NewDataEmitter()
 	return &CountDataEmitter{o, cl}, err
-}
-
-func (cl *CountLoader) NewGraphEmitter() (GraphEmitter, error) {
-	o, err := cl.l.NewGraphEmitter()
-	return &CountGraphEmitter{o, cl}, err
 }
 
 func (cl *CountLoader) increment() {
@@ -56,23 +47,4 @@ func (cd *CountDataEmitter) Close() {
 func (cd *CountDataEmitter) Emit(name string, e map[string]interface{}) error {
 	cd.cl.increment()
 	return cd.d.Emit(name, e)
-}
-
-func (cd *CountDataEmitter) EmitObject(prefix string, objClass string, e map[string]interface{}) error {
-	cd.cl.increment()
-	return cd.d.EmitObject(prefix, objClass, e)
-}
-
-func (cd *CountDataEmitter) EmitTable(prefix string, columns []string, sep rune) TableEmitter {
-	return cd.d.EmitTable(prefix, columns, sep)
-}
-
-func (cg *CountGraphEmitter) EmitVertex(v *gripql.Vertex) error {
-	cg.cl.increment()
-	return cg.g.EmitVertex(v)
-}
-
-func (cg *CountGraphEmitter) EmitEdge(e *gripql.Edge) error {
-	cg.cl.increment()
-	return cg.g.EmitEdge(e)
 }

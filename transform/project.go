@@ -3,8 +3,9 @@ package transform
 import (
 	"strings"
 
+	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/manager"
+	"github.com/bmeg/sifter/task"
 )
 
 type ProjectStep struct {
@@ -12,9 +13,52 @@ type ProjectStep struct {
 	Rename  map[string]string      `json:"rename" jsonschema_description:"Rename field (no template engine)"`
 }
 
-func valueRender(v interface{}, task manager.RuntimeTask, row map[string]interface{}) (interface{}, error) {
+type projectStepProcess struct {
+	project ProjectStep
+	task    task.RuntimeTask
+}
+
+func (pr ProjectStep) Init(t task.RuntimeTask) (Processor, error) {
+	return &projectStepProcess{pr, t}, nil
+}
+
+func (pr ProjectStep) GetConfigFields() []config.ConfigVar {
+	out := []config.ConfigVar{}
+	for _, v := range pr.Mapping {
+		t := scanIds(v)
+		for i := range t {
+			if strings.HasPrefix(t[i], "config.") {
+				out = append(out, config.ConfigVar{Name: config.TrimPrefix(t[i])})
+			}
+		}
+	}
+	return out
+}
+
+func scanIds(v interface{}) []string {
+	out := []string{}
 	if vStr, ok := v.(string); ok {
-		return evaluate.ExpressionString(vStr, task.GetInputs(), row)
+		for _, s := range evaluate.ExpressionIDs(vStr) {
+			out = append(out, s)
+		}
+	} else if vArray, ok := v.([]interface{}); ok {
+		for _, val := range vArray {
+			j := scanIds(val)
+			out = append(out, j...)
+		}
+	} else if vArray, ok := v.([]string); ok {
+		for _, vStr := range vArray {
+			j := evaluate.ExpressionIDs(vStr)
+			out = append(out, j...)
+		}
+	}
+
+	return out
+}
+
+func valueRender(v interface{}, task task.RuntimeTask, row map[string]interface{}) (interface{}, error) {
+	if vStr, ok := v.(string); ok {
+		return evaluate.ExpressionString(vStr, task.GetConfig(), row)
 	} else if vMap, ok := v.(map[string]interface{}); ok {
 		o := map[string]interface{}{}
 		for key, val := range vMap {
@@ -31,7 +75,7 @@ func valueRender(v interface{}, task manager.RuntimeTask, row map[string]interfa
 	} else if vArray, ok := v.([]string); ok {
 		o := []string{}
 		for _, vStr := range vArray {
-			j, _ := evaluate.ExpressionString(vStr, task.GetInputs(), row)
+			j, _ := evaluate.ExpressionString(vStr, task.GetConfig(), row)
 			o = append(o, j)
 		}
 		return o, nil
@@ -39,28 +83,31 @@ func valueRender(v interface{}, task manager.RuntimeTask, row map[string]interfa
 	return v, nil
 }
 
-func (pr ProjectStep) Run(i map[string]interface{}, task manager.RuntimeTask) map[string]interface{} {
-
-	o := map[string]interface{}{}
-	for k, v := range i {
-		if r, ok := pr.Rename[k]; ok {
-			o[r] = v
-		} else {
-			o[k] = v
-		}
-	}
-
-	for k, v := range pr.Mapping {
-		t, _ := valueRender(v, task, i)
-		SetProjectValue(o, k, t)
-	}
-	return o
-}
-
-func SetProjectValue(i map[string]interface{}, key string, val interface{}) error {
+func setProjectValue(i map[string]interface{}, key string, val interface{}) error {
 	if strings.HasPrefix(key, "$.") {
 		return evaluate.SetJSONPath(key, i, val)
 	}
 	i[key] = val
 	return nil
+}
+
+func (pr *projectStepProcess) Process(i map[string]interface{}) []map[string]interface{} {
+
+	o := map[string]interface{}{}
+	for k, v := range i {
+		if r, ok := pr.project.Rename[k]; ok {
+			o[r] = v
+		} else {
+			o[k] = v
+		}
+	}
+	for k, v := range pr.project.Mapping {
+		t, _ := valueRender(v, pr.task, i)
+		setProjectValue(o, k, t)
+	}
+	return []map[string]any{o}
+}
+
+func (pr *projectStepProcess) Close() {
+
 }

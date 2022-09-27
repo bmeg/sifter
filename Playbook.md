@@ -49,51 +49,45 @@ ZIP,COUNTYNAME,STATE,STCOUNTYFP,CLASSFP
 36091,Autauga County,AL,01001,H1
 ```
 
-First is the header of the Playbook. This declared that is a playbook, the
-unique name of the playbook and the directory where the target schema files
-can be found.
+First is the header of the Playbook. This declares the
+unique name of the playbook and it's output directory.
 
 ```
-class: Playbook
-
 name: zipcode_map
-schema: ../covid19_datadictionary/gdcdictionary/schemas/
-
+outdir: ./
+docs: Converts zipcode TSV into graph elements
 ```
 
-Next the inputs are declared. In this case the only input is the zipcode TSV.
+Next the configuration is declared. In this case the only input is the zipcode TSV.
 There is a default value, so the playbook can be invoked without passing in
 any parameters. However, to apply this playbook to a new input file, the
 input parameter `zipcode` could be used to define the source file.
 
 ```
-
-inputs:
+config:
+  schema:
+    type: Dir
+    default: ../covid19_datadictionary/gdcdictionary/schemas/
   zipcode:
     type: File
     default: ../data/ZIP-COUNTY-FIPS_2017-06.csv
 ```
 
-The `steps` section defines the sequence extraction steps that can be taken.
-In this program, there is only one extraction step, which is to run the table
-loader. The table loader then has a transform pipeline that is applied to the
-data extracted from the file.
+The `inputs` section declares data input sources. In this playbook, there is 
+only one input, which is to run the table loader. 
+```
+inputs:
+  tableLoad:
+    input: "{{config.zipcode}}"
+    sep: ","
+```
 
 Tableload operaters of the input file that was originally passed in using the
 `inputs` stanza. SIFTER string parsing is based on mustache template system.
-To access the string passed in the template is `{{inputs.zipcode}}`.
+To access the string passed in the template is `{{config.zipcode}}`.
 The seperator in the file input file is a `,` so that is also passed in as a
 parameter to the extractor.
 
-```
-steps:
-  - desc: Convert ZIP code File
-    tableLoad:
-      input: "{{inputs.zipcode}}"
-      sep: ","
-      transform:
-        .......
-```
 
 The `tableLoad` extractor opens up the TSV and generates a one message for
 every row in the file. It uses the header of the file to map the column values
@@ -111,19 +105,6 @@ into a dictionary. The first row would produce the message:
 
 The stream of messages are then passed into the steps listed in the `transform`
 section of the tableLoad extractor.
-
-The first step is to create an output table, with two columns connecting
-`ZIP` values to `STCOUNTYFP` values. The `STCOUNTYFP` is a county level FIPS
-code, used by the census office. A single FIPS code my contain many ZIP codes,
-and we can use this table later for mapping ids when loading the data into a database.
-
-```
-        - tableWrite:
-            output: zip2fips
-            columns:
-              - ZIP
-              - STCOUNTYFP
-```
 
 For the current tranform, we want to produce a single entry per `STCOUNTYFP`,
 however, the file has a line per `ZIP`. We need to run a `reduce` transform,
@@ -149,15 +130,17 @@ The `method` field names the function, in this case `merge` that will be used
 as the reduce function.
 
 ```
-        - reduce:
-            field: "{{row.STCOUNTYFP}}"
-            method: merge
-            python: >
-              def merge(x,y):
-                a = x.get('zipcodes', []) + [x['ZIP']]
-                b = y.get('zipcodes', []) + [y['ZIP']]
-                x['zipcodes'] = a + b
-                return x
+  zipReduce:
+    - from: zipcode
+    - reduce:
+        field: STCOUNTYFP
+        method: merge
+        python: >
+          def merge(x,y):
+            a = x.get('zipcodes', []) + [x['ZIP']]
+            b = y.get('zipcodes', []) + [y['ZIP']]
+            x['zipcodes'] = a + b
+            return x
 ```
 
 The original messages produced by the loader have all of the information required
@@ -169,15 +152,15 @@ message data in the value `row`. So the value
 `FIPS:{{row.STCOUNTYFP}}` is mapped into the field `id`.
 
 ```
-        - project:
-            mapping:
-              id: "FIPS:{{row.STCOUNTYFP}}"
-              province_state: "{{row.STATE}}"
-              summary_locations: "{{row.STCOUNTYFP}}"
-              county: "{{row.COUNTYNAME}}"
-              submitter_id: "{{row.STCOUNTYFP}}"
-              type: summary_location
-              projects: []
+  - project:
+      mapping:
+        id: "FIPS:{{row.STCOUNTYFP}}"
+        province_state: "{{row.STATE}}"
+        summary_locations: "{{row.STCOUNTYFP}}"
+        county: "{{row.COUNTYNAME}}"
+        submitter_id: "{{row.STCOUNTYFP}}"
+        type: summary_location
+        projects: []
 ```
 
 Using this projection, the message:
@@ -216,8 +199,27 @@ transformation, which will read in the schema for `summary_location`, check the
 message to make sure it matches and then output it.
 
 ```
-        - objectCreate:
-              class: summary_location
+  - objectCreate:
+        class: summary_location
+```
+
+
+Outputs
+
+To create an output table, with two columns connecting
+`ZIP` values to `STCOUNTYFP` values. The `STCOUNTYFP` is a county level FIPS
+code, used by the census office. A single FIPS code my contain many ZIP codes,
+and we can use this table later for mapping ids when loading the data into a database.
+
+```
+outputs:
+  zip2fips:
+    tableWrite:
+      from: 
+      output: zip2fips
+      columns:
+        - ZIP
+        - STCOUNTYFP
 ```
 
 
@@ -242,40 +244,45 @@ then run a sequential set of extraction steps.
 
 : Unique name of the playbook
 
+ -  docs
+
+> Type: *string* 
+
+ -  outdir
+
+> Type: *string* 
+
+ -  config
+
+> Type: *object*  of [ConfigVar](#configvar)
+
+
+: Configuration for Playbook
+
  -  inputs
 
-> Type: *object*  of [Input](#input)
+> Type: *object*  of [Extractor](#extractor)
 
-
-: Optional inputs to Playbook
-
- -  outputs
-
-> Type: *array*  of [Output](#output)
-
-: Additional file created by Playbook
-
- -  schema
-
-> Type: *string* 
-
-: Name of directory with library of Gen3/JSON Schema files
-
- -  class
-
-> Type: *string* 
-
-: Notation for file inspection, set as 'Playbook'
-
- -  steps
-
-> Type: *array*  of [Extractor](#extractor)
 
 : Steps of the transformation
 
+ -  outputs
+
+> Type: *object*  of [WriteConfig](#writeconfig)
+
+
+ -  pipelines
+
+> Type: *object* 
+
+ -  scripts
+
+> Type: *object*  of [Script](#script)
+
+
 
 ***
-## Input
+## ConfigVar
 
  -  type
 
@@ -309,27 +316,9 @@ extractor type, but only one is supposed to be filed in at a time.
 
 : Human Readable description of step
 
- -  download
-
- of [DownloadStep](#downloadstep)
-
-: Download a File
-
- -  untar
-
- of [UntarStep](#untarstep)
-
-: Untar a file
-
  -  xmlLoad
 
  of [XMLLoadStep](#xmlloadstep)
-
- -  transposeFile
-
- of [TransposeFileStep](#transposefilestep)
-
-: Take a matrix TSV and transpose it (row become columns)
 
  -  tableLoad
 
@@ -349,23 +338,11 @@ extractor type, but only one is supposed to be filed in at a time.
 
 : Parse the content of a SQL dump to find insert and run a transform pipeline
 
- -  fileGlob
+ -  gripperLoad
 
- of [FileGlobStep](#fileglobstep)
+ of [GripperLoadStep](#gripperloadstep)
 
-: Scan a directory and run a ETL pipeline on each of the files
-
- -  script
-
- of [ScriptStep](#scriptstep)
-
-: Execute a script
-
- -  digLoad
-
- of [DigLoadStep](#digloadstep)
-
-: Use a GRIP Dig server to get data and run a transform pipeline
+: Use a GRIPPER server to get data and run a transform pipeline
 
  -  avroLoad
 
@@ -397,81 +374,6 @@ An array of Extractors, each defining a different extraction step
 
 
 ***
-## TransposeFileStep
-
- -  input
-
-> Type: *string* 
-
-: TSV to transpose
-
- -  output
-
-> Type: *string* 
-
-: Where transpose output should be stored
-
- -  lineSkip
-
-> Type: *integer* 
-
-: Number of header lines to skip
-
- -  lowMem
-
-> Type: *boolean* 
-
-: Do transpose without caching matrix in memory. Takes longer but works on large files
-
-
-```
-  - desc: Transpose RNA file
-    transposeFile:
-      input: "{{inputs.rnaFile}}"
-      output: data_RNA_Seq_expression_median_transpose.txt
-```
-
-
-***
-## DownloadStep
-
- -  source
-
-> Type: *string* 
-
- -  dest
-
-> Type: *string* 
-
- -  output
-
-> Type: *string* 
-
-
-***
-## UntarStep
-
- -  input
-
-> Type: *string* 
-
-: Path to TAR file
-
- -  strip
-
-> Type: *integer* 
-
-: Number of base directories to strip with untaring
-
-
-```
-  - desc: Untar
-    untar:
-      input: "{{inputs.tar}}"
-```
-
-
-***
 ## SQLDumpStep
 
  -  input
@@ -482,74 +384,9 @@ An array of Extractors, each defining a different extraction step
 
  -  tables
 
-> Type: *array*  of [TableTransform](#tabletransform)
-
-: Array of transforms for the different tables in the SQL dump
-
- -  skipIfMissing
-
-> Type: *boolean* 
-
-: Option to skip without fail if input file does not exist
-
-
-***
-## TableTransform
-
- -  name
-
-> Type: *string* 
-
-: Name of the SQL file to transform
-
- -  transform
-
-> Type: *array*  of [Step](#step)
-
-: The transform pipeline
-
-
-***
-## ScriptStep
-
- -  dockerImage
-
-> Type: *string* 
-
-: Docker image the contains script environment
-
- -  command
-
 > Type: *array* 
 
-: Command line, written as an array, to be run
-
- -  commandLine
-
-> Type: *string* 
-
-: Command line to be run
-
- -  stdout
-
-> Type: *string* 
-
-: File to capture stdout
-
- -  workdir
-
-> Type: *string* 
-
-```
-  - desc: Scrape GDC Projects
-    script:
-      dockerImage: bmeg/sifter-gdc-scan
-      command: [/opt/gdc-scan.py, projects]
-  - desc: Scrape GDC Cases
-    script:
-      dockerImage: bmeg/sifter-gdc-scan
-      command: [/opt/gdc-scan.py, cases]
-```
+: Array of transforms for the different tables in the SQL dump
 
 
 ***
@@ -567,23 +404,17 @@ An array of Extractors, each defining a different extraction step
 
 : Number of header rows to skip
 
- -  skipIfMissing
-
-> Type: *boolean* 
-
-: Skip without error if file missing
-
  -  columns
 
 > Type: *array* 
 
 : Manually set names of columns
 
- -  transform
+ -  extraColumns
 
-> Type: *array*  of [Step](#step)
+> Type: *string* 
 
-: Transform pipelines
+: Columns beyond originally declared columns will be placed in this array
 
  -  sep
 
@@ -607,11 +438,11 @@ An array of Extractors, each defining a different extraction step
 
 : Transformation Pipeline
 
- -  skipIfMissing
+ -  multiline
 
 > Type: *boolean* 
 
-: Skip without error if file does note exist
+: Load file as a single multiline JSON object
 
 ```
 - desc: Convert Census File
@@ -623,53 +454,21 @@ An array of Extractors, each defining a different extraction step
 
 
 ***
-## FileGlobStep
+## GripperLoadStep
 
- -  files
-
-> Type: *array* 
-
-: Array of files (with wildcards) to scan for
-
- -  limit
-
-> Type: *integer* 
-
- -  inputName
-
-> Type: *string* 
-
-: variable name the file will be stored in when calling the extraction steps
-
- -  steps
-
-> Type: *array*  of [Extractor](#extractor)
-
-: Extraction pipeline to run
-
-
-***
-## DigLoadStep
-
-Use a GRIP DIG server to obtain data
+Use a GRIPPER server to obtain data
 
  -  host
 
 > Type: *string* 
 
-: DIG URL
+: GRIPPER URL
 
  -  collection
 
 > Type: *string* 
 
-: DIG collection to target
-
- -  transform
-
-> Type: *array*  of [Step](#step)
-
-: The transform pipeline to run
+: GRIPPER collection to target
 
 
 ***
@@ -688,11 +487,11 @@ Output a JSON schema described object
 
 : Object class, should match declared class in JSON Schema
 
- -  name
+ -  schema
 
 > Type: *string* 
 
-: domain name of stream, to separate it from other output streams of the same output type
+: Directory with JSON schema files
 
 
 ***
@@ -711,6 +510,12 @@ Apply the sample function to every message
 > Type: *string* 
 
 : Python code to be run
+
+ -  gpython
+
+> Type: *string* 
+
+: Python code to be run using GPython
 
 The `python` section defines the code, and the `method` parameter defines
 which function from the code to call
@@ -756,27 +561,7 @@ Project templates into fields in the message
 
 
 ***
-## TableWriteStep
-
- -  output
-
-> Type: *string* 
-
-: Name of file to create
-
- -  columns
-
-> Type: *array* 
-
-: Columns to be written into table file
-
- -  sep
-
-> Type: *string* 
-
-
-***
-## TableReplaceStep
+## TableLookupStep
 
 Use a two column file to make values from one value to another.
 
@@ -784,13 +569,25 @@ Use a two column file to make values from one value to another.
 
 > Type: *string* 
 
- -  field
+ -  sep
 
 > Type: *string* 
 
- -  target
+ -  value
 
 > Type: *string* 
+
+ -  key
+
+> Type: *string* 
+
+ -  header
+
+> Type: *array* 
+
+ -  Project
+
+> Type: *object* 
 
 Starting with a table that maps state names to the two character state code:
 
@@ -869,6 +666,10 @@ Use a regular expression based replacement to alter a field
 
 > Type: *string* 
 
+ -  gpython
+
+> Type: *string* 
+
  -  init
 
 > Type: *object* 
@@ -893,6 +694,10 @@ Use a regular expression based replacement to alter a field
 
 > Type: *string* 
 
+ -  value
+
+> Type: *string* 
+
  -  match
 
 > Type: *string* 
@@ -908,6 +713,10 @@ Use a regular expression based replacement to alter a field
 > Type: *string* 
 
  -  python
+
+> Type: *string* 
+
+ -  gpython
 
 > Type: *string* 
 
@@ -943,40 +752,6 @@ Code based filters:
 
 
 ***
-## ForkStep
-
- -  transform
-
-> Type: *array* 
-
-```
-  - desc: Loading ProjectData
-    jsonLoad:
-      input: out.projects.json
-      transform:
-        - fork:
-            transform:
-              -
-                - project:
-                    mapping:
-                      code: "{{row.project_id}}"
-                      programs: "{{row.program.name}}"
-                - objectCreate:
-                    class: project
-              -
-                - project:
-                    mapping:
-                      code: "{{row.project_id}}"
-                      programs: "{{row.program.name}}"
-                      submitter_id: "{{row.program.name}}"
-                      projects: "{{row.project_id}}"
-                      type: experiment
-                - objectCreate:
-                    class: experiment
-```
-
-
-***
 ## DebugStep
 
 Print out messages
@@ -1003,35 +778,38 @@ child messages.
 
 > Type: *string* 
 
- -  steps
-
-> Type: *array*  of [Step](#step)
-
  -  mapping
 
 > Type: *object* 
+
+ -  itemField
+
+> Type: *string* 
+
+: If processing an array of non-dict elements, create a dict as {itemField:element}
 
 ```
 - fieldProcess:
     col: portions
     mapping:
       samples: "{{row.id}}"
-    steps:
-      - fieldProcess:
-          ...
 ```
 
 
 ***
-## FieldMapStep
+## FieldParseStep
 
 Take a param style string and parse it into independent elements in the message
 
- -  col
+ -  field
 
 > Type: *string* 
 
  -  sep
+
+> Type: *string* 
+
+ -  assign
 
 > Type: *string* 
 
@@ -1045,7 +823,7 @@ The messages
 After the transform:
 
 ```
-  - fieldMap:
+  - fieldParse:
       col: attributes
       sep: ";"
 ```
@@ -1059,82 +837,6 @@ Becomes:
   "protein_id" : "ENSP00000419345"
 }
 ```
-
-
-***
-## CacheStep
-
-The results of long running functions can be stored in a database and only
-calculated as needed.
-
-
- -  transform
-
-> Type: *array*  of [Step](#step)
-
-The address lookup function provided by the Census bureau is takes time to
-run, so we use the `cache` step to define a subsection of the pipeline
-that should be cached in a database, and if the transform is run again,
-the results would be pulled out of the database.
-
-```
- - cache:
-     transform:
-       - map:
-           method: addressLookup
-           python: >
-
-             import json
-
-             from urllib import request, parse
-
-             def addressLookup(x):
-               try:
-                 address = x['query']
-                 baseUrl = "https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?format=json&benchmark=9&address="
-                 out = request.urlopen(baseUrl + parse.quote(address))
-                 data = json.loads(out.read())
-                 x['addressLookup'] = data
-               except:
-                 pass
-               return x
-```
-
-
-***
-## AlleleIDStep
-
- -  prefix
-
-> Type: *string* 
-
- -  genome
-
-> Type: *string* 
-
- -  chromosome
-
-> Type: *string* 
-
- -  start
-
-> Type: *string* 
-
- -  end
-
-> Type: *string* 
-
- -  reference_bases
-
-> Type: *string* 
-
- -  alternate_bases
-
-> Type: *string* 
-
- -  dst
-
-> Type: *string* 
 
 
 ***
@@ -1152,12 +854,6 @@ the results would be pulled out of the database.
 
 : Transformation Pipeline
 
- -  skipIfMissing
-
-> Type: *boolean* 
-
-: Skip without error if file does note exist
-
 ## CleanStep
 
  -  fields
@@ -1174,11 +870,78 @@ the results would be pulled out of the database.
 
 > Type: *string* 
 
+## DistinctStep
+
+ -  value
+
+> Type: *string* 
+
+ -  steps
+
+> Type: *array*  of [Step](#step)
+
+## EdgeRule
+
+ -  prefixFilter
+
+> Type: *boolean* 
+
+ -  blankFilter
+
+> Type: *boolean* 
+
+ -  toPrefix
+
+> Type: *string* 
+
+ -  sep
+
+> Type: *string* 
+
+ -  idTemplate
+
+> Type: *string* 
+
 ## EmitStep
 
  -  name
 
 > Type: *string* 
+
+## GraphBuildStep
+
+ -  schema
+
+> Type: *string* 
+
+ -  class
+
+> Type: *string* 
+
+ -  idPrefix
+
+> Type: *string* 
+
+ -  idTemplate
+
+> Type: *string* 
+
+ -  idField
+
+> Type: *string* 
+
+ -  filePrefix
+
+> Type: *string* 
+
+ -  sep
+
+> Type: *string* 
+
+ -  fields
+
+> Type: *object*  of [EdgeRule](#edgerule)
+
 
 ## JSONFileLookupStep
 
@@ -1186,7 +949,7 @@ the results would be pulled out of the database.
 
 > Type: *string* 
 
- -  field
+ -  value
 
 > Type: *string* 
 
@@ -1198,25 +961,47 @@ the results would be pulled out of the database.
 
 > Type: *object* 
 
-## Output
+ -  Copy
 
- -  type
+> Type: *object* 
+
+ -  Replace
+
+ of [TableReplace](#tablereplace)
+
+## Script
+
+ -  commandLine
 
 > Type: *string* 
 
-: File type: File, ObjectFile, VertexFile, EdgeFile
+ -  inputs
 
- -  path
+> Type: *array* 
+
+ -  outputs
+
+> Type: *array* 
+
+ -  workdir
 
 > Type: *string* 
+
+ -  order
+
+> Type: *integer* 
 
 ## Step
 
- -  fieldMap
+ -  from
 
- of [FieldMapStep](#fieldmapstep)
+> Type: *string* 
 
-: fieldMap to run
+ -  fieldParse
+
+ of [FieldParseStep](#fieldparsestep)
+
+: fieldParse to run
 
  -  fieldType
 
@@ -1254,12 +1039,6 @@ the results would be pulled out of the database.
 
  of [RegexReplaceStep](#regexreplacestep)
 
- -  alleleID
-
- of [AlleleIDStep](#alleleidstep)
-
-: Generate a standardized allele hash ID
-
  -  project
 
  of [ProjectStep](#projectstep)
@@ -1276,23 +1055,15 @@ the results would be pulled out of the database.
 
  of [ReduceStep](#reducestep)
 
+ -  distinct
+
+ of [DistinctStep](#distinctstep)
+
  -  fieldProcess
 
  of [FieldProcessStep](#fieldprocessstep)
 
 : Take an array field from a message and run in child transform
-
- -  tableWrite
-
- of [TableWriteStep](#tablewritestep)
-
-: Write out a TSV
-
- -  tableReplace
-
- of [TableReplaceStep](#tablereplacestep)
-
-: Load in TSV to map a fields values
 
  -  tableLookup
 
@@ -1302,55 +1073,51 @@ the results would be pulled out of the database.
 
  of [JSONFileLookupStep](#jsonfilelookupstep)
 
- -  fork
+ -  graphBuild
 
- of [ForkStep](#forkstep)
+ of [GraphBuildStep](#graphbuildstep)
 
-: Take message stream and split into multiple child transforms
-
- -  cache
-
- of [CacheStep](#cachestep)
-
-: Sub a child transform pipeline, caching the results in a database
-
-## TableLookupStep
-
- -  input
-
-> Type: *string* 
-
- -  sep
-
-> Type: *string* 
+## TableReplace
 
  -  field
 
 > Type: *string* 
 
- -  key
+ -  target
 
 > Type: *string* 
 
- -  header
+## TableWriter
+
+ -  from
+
+> Type: *string* 
+
+ -  output
+
+> Type: *string* 
+
+: Name of file to create
+
+ -  columns
 
 > Type: *array* 
 
- -  Project
+: Columns to be written into table file
 
-> Type: *object* 
+ -  sep
+
+> Type: *string* 
+
+## WriteConfig
+
+ -  tableWrite
+
+ of [TableWriter](#tablewriter)
 
 ## XMLLoadStep
 
  -  input
 
 > Type: *string* 
-
- -  transform
-
-> Type: *array*  of [Step](#step)
-
- -  skipIfMissing
-
-> Type: *boolean* 
 

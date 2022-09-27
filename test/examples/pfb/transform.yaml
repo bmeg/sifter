@@ -1,0 +1,78 @@
+
+config:
+  file: 
+    type: File
+    default: ../../resources/1000G.pfb.avro
+
+outdir: ../../out
+
+inputs:
+  pfb:
+    avroLoad:
+      input: "{{config.file}}"
+
+pipelines:
+  transform:
+    - from: pfb
+    - filter:
+        method: f
+        gpython: |
+          def f(x):
+            return x['id'] is not None
+    - map:
+        # undo the "key" : {"string" : "value" } pattern uses for multi-type fields
+        method: transform
+        gpython: |
+          
+          def transform(x):
+            if x is None:
+              return x
+            if isinstance(x, dict):
+                if len(x) == 1 and "string" in x:
+                    return x["string"]
+                elif len(x) == 1 and "float" in x:
+                    return x["float"]
+                elif len(x) == 1 and "long" in x:
+                    return x["long"]
+                else:
+                    out = {}
+                    for i in x.items():
+                        out[i[0]] = transform(i[1])
+                    return out
+            elif isinstance(x, list):
+                out = []
+                for i in x:
+                    out.append(transform(i))
+                return out
+            return x
+
+  vertex:
+    - from: transform
+    - map: 
+        method: transform
+        gpython: |
+
+          def transform(x):
+            o = x["object"][x["name"]]
+            return { "gid" : x["name"] + ":" + x["id"], "label" : x["name"], "data" : o }
+           
+    - emit:
+        name: vertex
+
+  edge:
+    - from: transform
+    - fieldProcess:
+        field: relations
+        mapping:
+          from: "{{row.name}}:{{row.id}}"
+    - project:
+        mapping:
+          to: "{{row.dst_name}}:{{row.dst_id}}"
+          label: "{{row.dst_name}}"
+    - clean:
+        fields:
+          - to
+          - from
+          - label
+    - emit: 
+        name: edge

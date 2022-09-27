@@ -1,58 +1,106 @@
 
+name: gdc
+outdir: ../../out
 
-class: Playbook
-name: GDCConvert
-
-inputs: {}
-
-schema: ../../resources/schemas
-
-inputs:
+config:
   cases:
     type: File
+    default: ../../resources/case.json
+  schema: 
+    type: Directory
+    default: ../../resources/schemas
 
-steps:
-  - desc: Loading CaseData
+inputs:
+  caseData:
     jsonLoad:
-      input: "{{inputs.cases}}"
-      transform:
-        - project:
-            mapping:
-              studies: "{{row.project.project_id}}"
-              experiments: "exp:{{row.project.project_id}}"
-              type: case
-        - objectCreate:
-            class: case
-        - fieldProcess:
-            field: samples
-            mapping:
-              cases: "{{row.id}}"
-            steps:
-              #- debug: {}
-              - project:
-                  mapping:
-                    type: sample
-                    id: "{{row.sample_id}}"
-              - objectCreate:
-                  class: sample
-              - fieldProcess:
-                  field: portions
-                  mapping:
-                    samples: "{{row.id}}"
-                  steps:
-                    - fieldProcess:
-                        field: analytes
-                        mapping:
-                          samples: "{{row.samples}}"
-                        steps:
-                          - fieldProcess:
-                              field: aliquots
-                              mapping:
-                                samples: "{{row.samples}}"
-                              steps:
-                                - project:
-                                    mapping:
-                                      type: aliquot
-                                      id: "{{row.aliquot_id}}"
-                                - objectCreate:
-                                    class: aliquot
+      input: "{{config.cases}}"
+
+pipelines:
+  caseObject:
+    - from: caseData
+    - project:
+        mapping:
+          studies: "{{row.project.project_id}}"
+          experiments: "exp:{{row.project.project_id}}"
+          type: case
+    - objectCreate:
+        class: case
+        schema: "{{config.schema}}"
+    - emit:
+        name: case
+  
+  caseGraph:
+    - from: caseObject
+    - graphBuild:
+        schema: "{{config.schema}}"
+        idPrefix: Case
+        class: case
+        fields:
+          experiments:
+            toPrefix: Project
+  
+  sampleData:
+    - from: caseData
+    - fieldProcess:
+        field: samples
+        mapping:
+          cases: "{{row.id}}"
+
+  sampleObject:
+    - from: sampleData
+    - project:
+        mapping:
+          type: sample
+          id: "{{row.sample_id}}"
+    - objectCreate:
+        class: sample
+        schema: "{{config.schema}}"
+    - emit:
+        name: sample
+
+  sampleGraph:
+    - from: sampleObject
+    - graphBuild:
+        schema: "{{config.schema}}"
+        idPrefix: Sample
+        class: sample
+        fields:
+          cases:
+            toPrefix: Case
+        #inEdges:
+        #  samples:
+        #   fromPrefix: Case
+
+  aliquotObject:
+    - from: sampleData
+    - fieldProcess:
+        field: portions
+        mapping:
+          samples: "{{row.id}}"
+    - fieldProcess:
+        field: analytes
+        mapping:
+          samples: "{{row.samples}}"
+    - fieldProcess:
+        field: aliquots
+        mapping:
+          samples: "{{row.samples}}"
+    - project:
+        mapping:
+          type: aliquot
+          id: "{{row.aliquot_id}}"
+    - objectCreate:
+        class: aliquot
+        schema: "{{config.schema}}"
+    - emit:
+        name: aliquot
+
+  aliquotGraph:
+    - from: aliquotObject
+    - graphBuild:
+        schema: "{{config.schema}}"
+        idPrefix: Aliquot
+        class: aliquot
+        fields:
+          samples:
+            toPrefix: Sample

@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	_ "github.com/go-python/gpython/builtin" // initialize builing gpython functions
-	"github.com/go-python/gpython/compile"
+	_ "github.com/go-python/gpython/modules"
 	"github.com/go-python/gpython/py"
-	"github.com/go-python/gpython/vm"
 )
 
 type GPythonEngine struct{}
@@ -51,6 +49,18 @@ func PyObject(i interface{}) py.Object {
 			o.Append(PyObject(v))
 		}
 		return o
+	} else if xList, ok := i.([]map[string]any); ok {
+		o := py.NewList()
+		for _, v := range xList {
+			o.Append(PyObject(v))
+		}
+		return o
+	} else if xList, ok := i.([]string); ok {
+		o := py.NewList()
+		for _, v := range xList {
+			o.Append(PyObject(v))
+		}
+		return o
 	} else if xString, ok := i.(string); ok {
 		return py.String(xString)
 	} else if xInt, ok := i.(int); ok {
@@ -59,8 +69,14 @@ func PyObject(i interface{}) py.Object {
 		return py.Int(xInt)
 	} else if xFloat, ok := i.(float64); ok {
 		return py.Float(xFloat)
+	} else if xFloat, ok := i.(float32); ok {
+		return py.Float(xFloat)
 	} else if xBool, ok := i.(bool); ok {
 		return py.Bool(xBool)
+	} else if i == nil {
+		return py.None
+	} else {
+		log.Printf("gpython conversion Not found: %T", i)
 	}
 	return nil
 }
@@ -86,6 +102,10 @@ func FromPyObject(i py.Object) interface{} {
 		return bool(xBool)
 	} else if xInt, ok := i.(py.Int); ok {
 		return int64(xInt)
+	} else if i == py.None {
+		return nil
+	} else {
+		log.Printf("gpython conversion Not found: %T", i)
 	}
 	return nil
 }
@@ -98,22 +118,19 @@ func PyCompile(codeStr string) (*PyCode, error) {
 
 	log.Printf("Gpython compile: %s", codeStr)
 
-	obj, err := compile.Compile(codeStr, "test.py", "exec", 0, true)
-	if err != nil {
-		log.Fatalf("Can't compile %q: %v", codeStr, err)
-	}
+	opts := py.ContextOpts{SysArgs: []string{}, SysPaths: []string{}}
+	ctx := py.NewContext(opts)
 
-	code := obj.(*py.Code)
-	//log.Printf("Code: %s", code)
-	module := py.NewModule("__main__", "", nil, nil)
-	//res, err := vm.EvalCode(code, module.Globals, module.Globals)
-	_, err = vm.Run(module.Globals, module.Globals, code, nil)
+	mainImpl := py.ModuleImpl{
+		Info:    py.ModuleInfo{Name: "user", FileDesc: "<user>"},
+		CodeSrc: codeStr,
+	}
+	module, err := ctx.ModuleInit(&mainImpl)
 	if err != nil {
 		py.TracebackDump(err)
-		log.Fatal(err)
 		return nil, err
 	}
-	//log.Printf("Module: %s", module.Globals)
+
 	return &PyCode{module: module}, nil
 }
 
@@ -128,6 +145,7 @@ func (p *PyCode) Evaluate(method string, inputs ...map[string]interface{}) (map[
 	if err != nil {
 		py.TracebackDump(err)
 		log.Printf("Inputs: %#v", inputs)
+		log.Printf("Inputs: %#v", in)
 		log.Printf("Map Error: %s", err)
 		return nil, err
 	}

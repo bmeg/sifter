@@ -1,0 +1,18 @@
+
+- playbook: examples/gdc/gdc-convert.yaml
+  checks:
+    - exists
+    - non-zero-lines
+  outputs:
+    - out/GDCConvert.aliquot.json.gz
+    - out/GDCConvert.case.json.gz
+    - out/GDCConvert.sample.json.gz
+
+- playbook: examples/pathwaycommons/pathway_commons.yaml
+- playbook: examples/pathwaycommons/gene_collect.yaml
+
+- playbook: examples/gene-table/gene-table.yaml
+- playbook: examples/lookup/inline-table.yaml
+- playbook: examples/lookup/tsv-table-replace.yaml
+- playbook: examples/gdc/gdc-convert.yaml
+- playbook: examples/pfb/transform.yaml

@@ -588,6 +588,10 @@ Use a two column file to make values from one value to another.
 
  of [JSONTable](#jsontable)
 
+ -  table
+
+> Type: *object* 
+
  -  lookup
 
 > Type: *string* 

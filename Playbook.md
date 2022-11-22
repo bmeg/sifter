@@ -238,6 +238,10 @@ and turns them into multiple output streams. It can take a set of inputs
 then run a sequential set of extraction steps.
 
 
+ -  class
+
+> Type: *string* 
+
  -  name
 
 > Type: *string* 
@@ -275,24 +279,19 @@ then run a sequential set of extraction steps.
 
 > Type: *object* 
 
- -  scripts
-
-> Type: *object*  of [Script](#script)
-
-
 
 ***
 ## ConfigVar
+
+ -  name
+
+> Type: *string* 
 
  -  type
 
 > Type: *string* 
 
  -  default
-
-> Type: *string* 
-
- -  source
 
 > Type: *string* 
 
@@ -349,6 +348,18 @@ extractor type, but only one is supposed to be filed in at a time.
  of [AvroLoadStep](#avroloadstep)
 
 : Load data from avro file
+
+ -  embedded
+
+> Type: *array* 
+
+ -  glob
+
+ of [GlobLoadStep](#globloadstep)
+
+ -  sqliteLoad
+
+ of [SQLiteStep](#sqlitestep)
 
 An array of Extractors, each defining a different extraction step
 
@@ -561,31 +572,27 @@ Project templates into fields in the message
 
 
 ***
-## TableLookupStep
+## LookupStep
 
 Use a two column file to make values from one value to another.
 
- -  input
+ -  replace
 
 > Type: *string* 
 
- -  sep
+ -  tsv
+
+ of [TSVTable](#tsvtable)
+
+ -  json
+
+ of [JSONTable](#jsontable)
+
+ -  lookup
 
 > Type: *string* 
 
- -  value
-
-> Type: *string* 
-
- -  key
-
-> Type: *string* 
-
- -  header
-
-> Type: *array* 
-
- -  Project
+ -  copy
 
 > Type: *object* 
 
@@ -625,7 +632,7 @@ to
 
 Use a regular expression based replacement to alter a field
 
- -  col
+ -  field
 
 > Type: *string* 
 
@@ -840,6 +847,18 @@ Becomes:
 
 
 ***
+## AccumulateStep
+
+ -  field
+
+> Type: *string* 
+
+: Field to use for group definition
+
+ -  dest
+
+> Type: *string* 
+
 ## AvroLoadStep
 
  -  input
@@ -847,12 +866,6 @@ Becomes:
 > Type: *string* 
 
 : Path of avro object file to transform
-
- -  transform
-
-> Type: *array*  of [Step](#step)
-
-: Transformation Pipeline
 
 ## CleanStep
 
@@ -869,6 +882,20 @@ Becomes:
  -  storeExtra
 
 > Type: *string* 
+
+## CommandLineTemplate
+
+ -  template
+
+> Type: *string* 
+
+ -  outputs
+
+> Type: *array* 
+
+ -  inputs
+
+> Type: *array* 
 
 ## DistinctStep
 
@@ -908,6 +935,40 @@ Becomes:
 
 > Type: *string* 
 
+## GlobLoadStep
+
+ -  storeFilename
+
+> Type: *string* 
+
+ -  input
+
+> Type: *string* 
+
+: Path of avro object file to transform
+
+ -  xmlLoad
+
+ of [XMLLoadStep](#xmlloadstep)
+
+ -  tableLoad
+
+ of [TableLoadStep](#tableloadstep)
+
+: Run transform pipeline on a TSV or CSV
+
+ -  jsonLoad
+
+ of [JSONLoadStep](#jsonloadstep)
+
+: Run a transform pipeline on a multi line json file
+
+ -  avroLoad
+
+ of [AvroLoadStep](#avroloadstep)
+
+: Load data from avro file
+
 ## GraphBuildStep
 
  -  schema
@@ -943,7 +1004,25 @@ Becomes:
 > Type: *object*  of [EdgeRule](#edgerule)
 
 
-## JSONFileLookupStep
+ -  flat
+
+> Type: *boolean* 
+
+## HashStep
+
+ -  field
+
+> Type: *string* 
+
+ -  value
+
+> Type: *string* 
+
+ -  method
+
+> Type: *string* 
+
+## JSONTable
 
  -  input
 
@@ -957,39 +1036,29 @@ Becomes:
 
 > Type: *string* 
 
- -  Project
+## SQLiteStep
 
-> Type: *object* 
-
- -  Copy
-
-> Type: *object* 
-
- -  Replace
-
- of [TableReplace](#tablereplace)
-
-## Script
-
- -  commandLine
+ -  input
 
 > Type: *string* 
 
- -  inputs
+: Path to the SQLite file
 
-> Type: *array* 
-
- -  outputs
-
-> Type: *array* 
-
- -  workdir
+ -  query
 
 > Type: *string* 
 
- -  order
+: SQL select statement based input
 
-> Type: *integer* 
+## SnakeFileWriter
+
+ -  from
+
+> Type: *string* 
+
+ -  commands
+
+> Type: *array*  of [CommandLineTemplate](#commandlinetemplate)
 
 ## Step
 
@@ -1065,27 +1134,43 @@ Becomes:
 
 : Take an array field from a message and run in child transform
 
- -  tableLookup
+ -  lookup
 
- of [TableLookupStep](#tablelookupstep)
+ of [LookupStep](#lookupstep)
 
- -  jsonLookup
+ -  hash
 
- of [JSONFileLookupStep](#jsonfilelookupstep)
+ of [HashStep](#hashstep)
 
  -  graphBuild
 
  of [GraphBuildStep](#graphbuildstep)
 
-## TableReplace
+ -  accumulate
 
- -  field
+ of [AccumulateStep](#accumulatestep)
+
+## TSVTable
+
+ -  input
 
 > Type: *string* 
 
- -  target
+ -  sep
 
 > Type: *string* 
+
+ -  value
+
+> Type: *string* 
+
+ -  key
+
+> Type: *string* 
+
+ -  header
+
+> Type: *array* 
 
 ## TableWriter
 
@@ -1114,6 +1199,10 @@ Becomes:
  -  tableWrite
 
  of [TableWriter](#tablewriter)
+
+ -  snakefile
+
+ of [SnakeFileWriter](#snakefilewriter)
 
 ## XMLLoadStep
 

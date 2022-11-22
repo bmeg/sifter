@@ -48,10 +48,13 @@ type lookupTable interface {
 	LookupRecord(k string) (map[string]any, bool)
 }
 
+type LookupTable map[string]string
+
 type LookupStep struct {
 	Replace string            `json:"replace"`
 	TSV     *TSVTable         `json:"tsv"`
 	JSON    *JSONTable        `json:"json"`
+	Table   *LookupTable      `json:"table"`
 	Lookup  string            `json:"lookup"`
 	Copy    map[string]string `json:"copy"`
 	//Mapping map[string]string `json:"mapping"`
@@ -77,6 +80,8 @@ func (tr *LookupStep) Init(task task.RuntimeTask) (Processor, error) {
 		} else {
 			return nil, err
 		}
+	} else if tr.Table != nil {
+		return &lookupProcess{tr, tr.Table, task.GetConfig()}, nil
 	}
 	return nil, fmt.Errorf("Table input not defined")
 }
@@ -265,6 +270,18 @@ func (jp *jsonLookup) LookupRecord(s string) (map[string]any, bool) {
 		row := map[string]interface{}{}
 		json.Unmarshal(line, &row)
 		return row, true
+	}
+	return nil, false
+}
+
+func (jp *LookupTable) LookupValue(k string) (string, bool) {
+	s, ok := (*jp)[k]
+	return s, ok
+}
+
+func (jp *LookupTable) LookupRecord(k string) (map[string]any, bool) {
+	if x, ok := (*jp)[k]; ok {
+		return map[string]any{"value": x}, true
 	}
 	return nil, false
 }

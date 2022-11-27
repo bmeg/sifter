@@ -20,14 +20,8 @@ var Cmd = &cobra.Command{
 	Short: "Inspect script",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		inputs := map[string]string{}
 
-		inputs := map[string]interface{}{}
-		if inputFile != "" {
-			if err := playbook.ParseDataFile(inputFile, &inputs); err != nil {
-				log.Printf("%s", err)
-				return err
-			}
-		}
 		for k, v := range cmdInputs {
 			inputs[k] = v
 		}
@@ -39,8 +33,11 @@ var Cmd = &cobra.Command{
 			log.Printf("%s", err)
 			return err
 		}
-
-		inputs = pb.PrepConfig(inputs, "./")
+		var err error
+		inputs, err = pb.PrepConfig(inputs, "./")
+		if err != nil {
+			return err
+		}
 
 		if outDir == "" {
 			outDir = pb.GetDefaultOutDir()
@@ -54,11 +51,11 @@ var Cmd = &cobra.Command{
 
 		cf := map[string]string{}
 		for _, f := range pb.GetConfigFields() {
-			cf[f.Name] = f.Type
+			cf[f.Name] = f.Name //f.Type
 		}
 		out["configFields"] = cf
 
-		ins, _ := pb.GetConfig(task)
+		ins := pb.GetConfigFields()
 		out["config"] = ins
 
 		outputs := map[string]any{}
@@ -85,5 +82,4 @@ var Cmd = &cobra.Command{
 func init() {
 	flags := Cmd.Flags()
 	flags.StringToStringVarP(&cmdInputs, "inputs", "i", cmdInputs, "Input variables")
-	flags.StringVarP(&inputFile, "inputfile", "f", inputFile, "Input variables file")
 }

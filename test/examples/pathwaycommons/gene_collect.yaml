@@ -2,9 +2,7 @@
 outdir: ../../out
 
 config:
-  sifFile:
-    type: File
-    default: ../../resources/pathways.sif
+  sifFile: ../../resources/pathways.sif
 
 inputs:
   sifFile:

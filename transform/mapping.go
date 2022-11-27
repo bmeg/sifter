@@ -39,7 +39,7 @@ func (ms *MapStep) Init(task task.RuntimeTask) (Processor, error) {
 		}
 		return &mapProcess{ms, c}, nil
 	}
-	return nil, fmt.Errorf("Script not found")
+	return nil, fmt.Errorf("script not found")
 }
 
 func (mp *mapProcess) PoolReady() bool {

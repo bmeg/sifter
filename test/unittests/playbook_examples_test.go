@@ -2,7 +2,6 @@ package test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -20,7 +19,7 @@ type PlaybookExampleConfig struct {
 	Outputs  []string          `json:"outputs"`
 }
 
-func runPlaybook(playbook string, inputs map[string]interface{}, outdir string) error {
+func runPlaybook(playbook string, inputs map[string]string, outdir string) error {
 	workDir := "./"
 	os.Mkdir(outdir, 0700)
 	driver := "dir://" + outdir
@@ -30,7 +29,7 @@ func runPlaybook(playbook string, inputs map[string]interface{}, outdir string) 
 	}
 	defer ld.Close()
 
-	dir, err := ioutil.TempDir(workDir, "sifterwork_")
+	dir, _ := os.MkdirTemp(workDir, "sifterwork_")
 	defer os.RemoveAll(dir)
 
 	err = run.Execute(playbook, dir, outdir, inputs)
@@ -55,7 +54,7 @@ func TestPlaybookExamples(t *testing.T) {
 		t.Error(err)
 	}
 	for _, tPath := range tests {
-		raw, err := ioutil.ReadFile(tPath)
+		raw, err := os.ReadFile(tPath)
 		if err != nil {
 			t.Error(fmt.Errorf("failed to read config %s", tPath))
 		}
@@ -63,12 +62,12 @@ func TestPlaybookExamples(t *testing.T) {
 		if err := yaml.Unmarshal(raw, &conf); err != nil {
 			t.Error(fmt.Errorf("failed to read config %s", tPath))
 		}
-		inputs := map[string]interface{}{}
+		inputs := map[string]string{}
 		for k, v := range conf.Inputs {
 			inputs[k] = v
 		}
 		fmt.Printf("%s\n", conf)
-		outDir, err := ioutil.TempDir("./", "testout_")
+		outDir, _ := os.MkdirTemp("./", "testout_")
 		runPlaybook(conf.Playbook, inputs, outDir)
 
 		for _, out := range conf.Outputs {

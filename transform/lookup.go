@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 
 	"github.com/bmeg/golib"
+	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/task"
 
 	"github.com/bmeg/sifter/evaluate"
@@ -32,13 +33,13 @@ type JSONTable struct {
 
 type jsonLookup struct {
 	config *JSONTable
-	inputs map[string]any
+	inputs map[string]string
 	table  map[string][]byte //found it more space efficiant to store the JSON rather then keep all the unpacked values
 }
 
 type tsvLookup struct {
 	config *TSVTable
-	inputs map[string]any
+	inputs map[string]string
 	colmap map[string]int
 	table  map[string][]string
 }
@@ -63,7 +64,7 @@ type LookupStep struct {
 type lookupProcess struct {
 	config     *LookupStep
 	table      lookupTable
-	userConfig map[string]any
+	userConfig map[string]string
 	//table  map[string][]string
 }
 
@@ -83,7 +84,21 @@ func (tr *LookupStep) Init(task task.RuntimeTask) (Processor, error) {
 	} else if tr.Table != nil {
 		return &lookupProcess{tr, tr.Table, task.GetConfig()}, nil
 	}
-	return nil, fmt.Errorf("Table input not defined")
+	return nil, fmt.Errorf("table input not defined")
+}
+
+func (ts *LookupStep) GetConfigFields() []config.ConfigVar {
+	out := []config.ConfigVar{}
+	if ts.TSV != nil && ts.TSV.Input != "" {
+		for _, s := range evaluate.ExpressionIDs(ts.TSV.Input) {
+			out = append(out, config.ConfigVar{Type: config.File, Name: config.TrimPrefix(s)})
+		}
+	} else if ts.JSON != nil && ts.JSON.Input != "" {
+		for _, s := range evaluate.ExpressionIDs(ts.JSON.Input) {
+			out = append(out, config.ConfigVar{Type: config.File, Name: config.TrimPrefix(s)})
+		}
+	}
+	return out
 }
 
 func (tp *lookupProcess) Close() {}
@@ -143,9 +158,9 @@ func (tsv *TSVTable) Open(task task.RuntimeTask) (lookupTable, error) {
 	}
 
 	if s, err := os.Stat(inputPath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("File Not Found: %s", inputPath)
+		return nil, fmt.Errorf("file not found: %s", inputPath)
 	} else if s.IsDir() {
-		return nil, fmt.Errorf("File Not Found: %s", inputPath)
+		return nil, fmt.Errorf("file not found: %s", inputPath)
 	}
 	log.Printf("Loading Translation file: %s", inputPath)
 
@@ -216,9 +231,9 @@ func (jf *JSONTable) Open(task task.RuntimeTask) (lookupTable, error) {
 	}
 
 	if s, err := os.Stat(inputPath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("File Not Found: %s", inputPath)
+		return nil, fmt.Errorf("file not found: %s", inputPath)
 	} else if s.IsDir() {
-		return nil, fmt.Errorf("File Not Found: %s", inputPath)
+		return nil, fmt.Errorf("file not found: %s", inputPath)
 	}
 	log.Printf("Loading Translation file: %s", inputPath)
 

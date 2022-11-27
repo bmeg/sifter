@@ -22,7 +22,7 @@ type SnakeFileWriter struct {
 
 type snakefileProcess struct {
 	cmdConfig *SnakeFileWriter
-	config    map[string]any
+	config    map[string]string
 	commands  []step
 	count     int
 }
@@ -72,7 +72,7 @@ func (cp *snakefileProcess) Close() {
 	if err != nil {
 		panic(err)
 	}
-	err = tmpl.Execute(os.Stdout, steps)
+	tmpl.Execute(os.Stdout, steps)
 }
 
 func (tp *snakefileProcess) Write(i map[string]interface{}) {

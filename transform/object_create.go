@@ -35,7 +35,7 @@ func (ts ObjectCreateStep) Init(task task.RuntimeTask) (Processor, error) {
 		return nil, err
 	}
 	if c, ok := sc.Classes[className]; !ok {
-		return nil, fmt.Errorf("Class %s not found", className)
+		return nil, fmt.Errorf("class %s not found", className)
 	} else {
 		return &objectProcess{ts, task, c}, nil
 	}
@@ -45,7 +45,7 @@ func (ts ObjectCreateStep) GetConfigFields() []config.ConfigVar {
 	out := []config.ConfigVar{}
 	if ts.Schema != "" {
 		for _, s := range evaluate.ExpressionIDs(ts.Schema) {
-			out = append(out, config.ConfigVar{Type: "Dir", Name: config.TrimPrefix(s)})
+			out = append(out, config.ConfigVar{Type: config.Dir, Name: config.TrimPrefix(s)})
 		}
 	}
 	return out

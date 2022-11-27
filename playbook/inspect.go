@@ -9,24 +9,6 @@ import (
 	"github.com/bmeg/sifter/task"
 )
 
-func (pb *Playbook) GetConfig(task task.RuntimeTask) (map[string]string, error) {
-	out := map[string]string{}
-	inputs := task.GetConfig()
-
-	for k, v := range pb.Config {
-		if v.IsFile() || v.IsDir() {
-			if iv, ok := inputs[k]; ok {
-				if ivStr, ok := iv.(string); ok {
-					out[k], _ = task.AbsPath(ivStr)
-				}
-			} else {
-				out[k] = ""
-			}
-		}
-	}
-	return out, nil
-}
-
 func (pb *Playbook) GetConfigFields() []config.ConfigVar {
 	out := []config.ConfigVar{}
 

@@ -28,40 +28,38 @@ to generated 'Vertex.json.gz' and 'Edge.json.gz' files
 More detailed descriptions can be found in out [Playbook manual](Playbook.md)
 
 ```
-class: Playbook
+class: sifter
 name: census_2010
 
-schema: ../covid19_datadictionary/gdcdictionary/schemas/
+config:
+  census: ../data/census_2010_byzip.json
+  date: "2010-01-01"
+  schema: ../covid19_datadictionary/gdcdictionary/schemas/
 
 inputs:
-  census:
-    type: File
-    default: ../data/census_2010_byzip.json
-  date:
-    type: string
-    default: "2010-01-01"
-
-steps:
-  - desc: Convert Census File
+  censusData:
     jsonLoad:
-      input: "{{inputs.census}}"
-      transform:
-        - map:
-            #fix weird formatting of zip code
-            python: >
-              def f(x):
-                d = int(x['zipcode'])
-                x['zipcode'] = "%05d" % (int(d))
-                return x
-            method: f
-        - project:
-            mapping:
-              submitter_id: "{{row.geo_id}}:{{inputs.date}}"
-              type: census_report
-              date: "{{inputs.date}}"
-              summary_location: "{{row.zipcode}}"
-        - objectCreate:
-              class: census_report
+      input: "{{config.census}}"
+
+pipelines:
+  transform:
+    - from: censusData
+    - map:
+        #fix weird formatting of zip code
+        gpython: >
+          def f(x):
+            d = int(x['zipcode'])
+            x['zipcode'] = "%05d" % (int(d))
+            return x
+        method: f
+    - project:
+        mapping:
+          submitter_id: "{{row.geo_id}}:{{inputs.date}}"
+          type: census_report
+          date: "{{config.date}}"
+          summary_location: "{{row.zipcode}}"
+    - objectCreate:
+        class: census_report
 ```
 
 

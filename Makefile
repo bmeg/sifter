@@ -29,7 +29,7 @@ lint:
 	@golangci-lint run --timeout 2m --disable-all -E govet
 
 lint-depends:
-	@go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.50.1
 
 test: .TEST
 

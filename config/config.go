@@ -12,20 +12,20 @@ const (
 	Dir     Type = "Dir"
 )
 
-type ConfigVar struct {
+type Variable struct {
 	Name string `json:"name"`
 	Type Type
 }
 
 type Configurable interface {
-	GetConfigFields() []ConfigVar
+	GetConfigFields() []Variable
 }
 
-func (in *ConfigVar) IsFile() bool {
+func (in *Variable) IsFile() bool {
 	return in.Type == File
 }
 
-func (in *ConfigVar) IsDir() bool {
+func (in *Variable) IsDir() bool {
 	return in.Type == Dir
 }
 

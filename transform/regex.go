@@ -28,7 +28,7 @@ func (pr *RegexReplaceStep) Init(t task.RuntimeTask) (Processor, error) {
 	return &regexReplaceProcess{pr, t, reg}, nil
 }
 
-func (tp *regexReplaceProcess) Close() {}
+func (re *regexReplaceProcess) Close() {}
 
 func (re *regexReplaceProcess) Process(i map[string]interface{}) []map[string]interface{} {
 	if field, ok := i[re.config.Field]; ok {

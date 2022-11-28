@@ -109,78 +109,78 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 			if err != nil {
 				log.Printf("Pipeline %s error: %s", k, err)
 				return err
-			} else {
-				if mProcess, ok := b.(transform.NodeProcessor); ok {
-					log.Printf("Pipeline %s step %d: %T", k, i, b)
-					c := flame.AddFlatMapper(wf, mProcess.Process)
-					if lastStep != nil {
-						c.Connect(lastStep)
-					}
-					if c != nil {
-						lastStep = c
-						if firstStep == nil {
-							firstStep = c
-						}
-					} else {
-						log.Printf("Error setting up step")
-						//throw error?
-					}
-				} else if mProcess, ok := b.(transform.MapProcessor); ok {
-					log.Printf("Pipeline Pool %s step %d: %T", k, i, b)
-					var c flame.Node[map[string]any, map[string]any]
-					if mProcess.PoolReady() {
-						log.Printf("Starting pool worker")
-						c = flame.AddMapperPool(wf, mProcess.Process, 4) // TODO: config pool count
-					} else {
-						c = flame.AddMapper(wf, mProcess.Process)
-					}
-					if lastStep != nil {
-						c.Connect(lastStep)
-					}
-					if c != nil {
-						lastStep = c
-						if firstStep == nil {
-							firstStep = c
-						}
-					} else {
-						log.Printf("Error setting up step")
-						//throw error?
-					}
-				} else if rProcess, ok := b.(transform.ReduceProcessor); ok {
-					log.Printf("Pipeline reduce %s step %d: %T", k, i, b)
-					wrap := reduceWrapper{rProcess}
-					k := flame.AddMapper(wf, wrap.addKeyValue)
-					r := flame.AddReduceKey(wf, rProcess.Reduce, rProcess.GetInit())
-					c := flame.AddFlatMapper(wf, wrap.removeKeyValue)
-					if lastStep != nil {
-						k.Connect(lastStep)
-					}
-					r.Connect(k)
-					c.Connect(r)
-					lastStep = c
-					if firstStep == nil {
-						firstStep = k
-					}
-				} else if rProcess, ok := b.(transform.AccumulateProcessor); ok {
-					log.Printf("Pipeline accumulate %s step %d: %T", k, i, b)
+			}
 
-					wrap := accumulateWrapper{rProcess}
-					k := flame.AddMapper(wf, wrap.addKeyValue)
-					r := flame.AddAccumulate(wf, rProcess.Accumulate)
-					c := flame.AddFlatMapper(wf, wrap.removeKeyValue)
-					if lastStep != nil {
-						k.Connect(lastStep)
-					}
-					r.Connect(k)
-					c.Connect(r)
-					lastStep = c
-					if firstStep == nil {
-						firstStep = k
-					}
-
-				} else {
-					log.Printf("Unknown processor type")
+			if mProcess, ok := b.(transform.NodeProcessor); ok {
+				log.Printf("Pipeline %s step %d: %T", k, i, b)
+				c := flame.AddFlatMapper(wf, mProcess.Process)
+				if lastStep != nil {
+					c.Connect(lastStep)
 				}
+				if c != nil {
+					lastStep = c
+					if firstStep == nil {
+						firstStep = c
+					}
+				} else {
+					log.Printf("Error setting up step")
+					//throw error?
+				}
+			} else if mProcess, ok := b.(transform.MapProcessor); ok {
+				log.Printf("Pipeline Pool %s step %d: %T", k, i, b)
+				var c flame.Node[map[string]any, map[string]any]
+				if mProcess.PoolReady() {
+					log.Printf("Starting pool worker")
+					c = flame.AddMapperPool(wf, mProcess.Process, 4) // TODO: config pool count
+				} else {
+					c = flame.AddMapper(wf, mProcess.Process)
+				}
+				if lastStep != nil {
+					c.Connect(lastStep)
+				}
+				if c != nil {
+					lastStep = c
+					if firstStep == nil {
+						firstStep = c
+					}
+				} else {
+					log.Printf("Error setting up step")
+					//throw error?
+				}
+			} else if rProcess, ok := b.(transform.ReduceProcessor); ok {
+				log.Printf("Pipeline reduce %s step %d: %T", k, i, b)
+				wrap := reduceWrapper{rProcess}
+				k := flame.AddMapper(wf, wrap.addKeyValue)
+				r := flame.AddReduceKey(wf, rProcess.Reduce, rProcess.GetInit())
+				c := flame.AddFlatMapper(wf, wrap.removeKeyValue)
+				if lastStep != nil {
+					k.Connect(lastStep)
+				}
+				r.Connect(k)
+				c.Connect(r)
+				lastStep = c
+				if firstStep == nil {
+					firstStep = k
+				}
+			} else if rProcess, ok := b.(transform.AccumulateProcessor); ok {
+				log.Printf("Pipeline accumulate %s step %d: %T", k, i, b)
+
+				wrap := accumulateWrapper{rProcess}
+				k := flame.AddMapper(wf, wrap.addKeyValue)
+				r := flame.AddAccumulate(wf, rProcess.Accumulate)
+				c := flame.AddFlatMapper(wf, wrap.removeKeyValue)
+				if lastStep != nil {
+					k.Connect(lastStep)
+				}
+				r.Connect(k)
+				c.Connect(r)
+				lastStep = c
+				if firstStep == nil {
+					firstStep = k
+				}
+
+			} else {
+				log.Printf("Unknown processor type")
 			}
 		}
 		outNodes[k] = lastStep

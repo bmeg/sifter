@@ -9,8 +9,8 @@ import (
 	"github.com/bmeg/sifter/task"
 )
 
-func (pb *Playbook) GetConfigFields() []config.ConfigVar {
-	out := []config.ConfigVar{}
+func (pb *Playbook) GetConfigFields() []config.Variable {
+	out := []config.Variable{}
 
 	for _, v := range pb.Inputs {
 		out = append(out, v.GetConfigFields()...)

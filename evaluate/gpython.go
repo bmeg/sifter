@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	_ "github.com/go-python/gpython/modules"
+	_ "github.com/go-python/gpython/modules" // Load modiles in gpython environment
 	"github.com/go-python/gpython/py"
 )
 

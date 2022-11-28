@@ -22,13 +22,13 @@ func (pr ProjectStep) Init(t task.RuntimeTask) (Processor, error) {
 	return &projectStepProcess{pr, t}, nil
 }
 
-func (pr ProjectStep) GetConfigFields() []config.ConfigVar {
-	out := []config.ConfigVar{}
+func (pr ProjectStep) GetConfigFields() []config.Variable {
+	out := []config.Variable{}
 	for _, v := range pr.Mapping {
 		t := scanIds(v)
 		for i := range t {
 			if strings.HasPrefix(t[i], "config.") {
-				out = append(out, config.ConfigVar{Name: config.TrimPrefix(t[i])})
+				out = append(out, config.Variable{Name: config.TrimPrefix(t[i])})
 			}
 		}
 	}
@@ -38,9 +38,7 @@ func (pr ProjectStep) GetConfigFields() []config.ConfigVar {
 func scanIds(v interface{}) []string {
 	out := []string{}
 	if vStr, ok := v.(string); ok {
-		for _, s := range evaluate.ExpressionIDs(vStr) {
-			out = append(out, s)
-		}
+		out = append(out, evaluate.ExpressionIDs(vStr)...)
 	} else if vArray, ok := v.([]interface{}); ok {
 		for _, val := range vArray {
 			j := scanIds(val)

@@ -70,32 +70,34 @@ type lookupProcess struct {
 
 func (tr *LookupStep) Init(task task.RuntimeTask) (Processor, error) {
 	if tr.TSV != nil {
-		if table, err := tr.TSV.Open(task); err == nil {
+		var table lookupTable
+		var err error
+		if table, err = tr.TSV.open(task); err == nil {
 			return &lookupProcess{tr, table, task.GetConfig()}, nil
-		} else {
-			return nil, err
 		}
+		return nil, err
 	} else if tr.JSON != nil {
-		if table, err := tr.JSON.Open(task); err == nil {
+		var table lookupTable
+		var err error
+		if table, err = tr.JSON.open(task); err == nil {
 			return &lookupProcess{tr, table, task.GetConfig()}, nil
-		} else {
-			return nil, err
 		}
+		return nil, err
 	} else if tr.Table != nil {
 		return &lookupProcess{tr, tr.Table, task.GetConfig()}, nil
 	}
 	return nil, fmt.Errorf("table input not defined")
 }
 
-func (ts *LookupStep) GetConfigFields() []config.ConfigVar {
-	out := []config.ConfigVar{}
-	if ts.TSV != nil && ts.TSV.Input != "" {
-		for _, s := range evaluate.ExpressionIDs(ts.TSV.Input) {
-			out = append(out, config.ConfigVar{Type: config.File, Name: config.TrimPrefix(s)})
+func (tr *LookupStep) GetConfigFields() []config.Variable {
+	out := []config.Variable{}
+	if tr.TSV != nil && tr.TSV.Input != "" {
+		for _, s := range evaluate.ExpressionIDs(tr.TSV.Input) {
+			out = append(out, config.Variable{Type: config.File, Name: config.TrimPrefix(s)})
 		}
-	} else if ts.JSON != nil && ts.JSON.Input != "" {
-		for _, s := range evaluate.ExpressionIDs(ts.JSON.Input) {
-			out = append(out, config.ConfigVar{Type: config.File, Name: config.TrimPrefix(s)})
+	} else if tr.JSON != nil && tr.JSON.Input != "" {
+		for _, s := range evaluate.ExpressionIDs(tr.JSON.Input) {
+			out = append(out, config.Variable{Type: config.File, Name: config.TrimPrefix(s)})
 		}
 	}
 	return out
@@ -151,7 +153,7 @@ func (tp *lookupProcess) Process(i map[string]interface{}) []map[string]interfac
 	return []map[string]any{i}
 }
 
-func (tsv *TSVTable) Open(task task.RuntimeTask) (lookupTable, error) {
+func (tsv *TSVTable) open(task task.RuntimeTask) (lookupTable, error) {
 	inputPath, err := evaluate.ExpressionString(tsv.Input, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
@@ -224,7 +226,7 @@ func (tl *tsvLookup) LookupRecord(w string) (map[string]any, bool) {
 	return nil, false
 }
 
-func (jf *JSONTable) Open(task task.RuntimeTask) (lookupTable, error) {
+func (jf *JSONTable) open(task task.RuntimeTask) (lookupTable, error) {
 	inputPath, err := evaluate.ExpressionString(jf.Input, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err

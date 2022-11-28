@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 
 	"github.com/bmeg/golib"
+	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/task"
 
 	"github.com/bmeg/sifter/evaluate"
@@ -32,13 +33,13 @@ type JSONTable struct {
 
 type jsonLookup struct {
 	config *JSONTable
-	inputs map[string]any
+	inputs map[string]string
 	table  map[string][]byte //found it more space efficiant to store the JSON rather then keep all the unpacked values
 }
 
 type tsvLookup struct {
 	config *TSVTable
-	inputs map[string]any
+	inputs map[string]string
 	colmap map[string]int
 	table  map[string][]string
 }
@@ -48,10 +49,13 @@ type lookupTable interface {
 	LookupRecord(k string) (map[string]any, bool)
 }
 
+type LookupTable map[string]string
+
 type LookupStep struct {
 	Replace string            `json:"replace"`
 	TSV     *TSVTable         `json:"tsv"`
 	JSON    *JSONTable        `json:"json"`
+	Table   *LookupTable      `json:"table"`
 	Lookup  string            `json:"lookup"`
 	Copy    map[string]string `json:"copy"`
 	//Mapping map[string]string `json:"mapping"`
@@ -60,25 +64,43 @@ type LookupStep struct {
 type lookupProcess struct {
 	config     *LookupStep
 	table      lookupTable
-	userConfig map[string]any
+	userConfig map[string]string
 	//table  map[string][]string
 }
 
 func (tr *LookupStep) Init(task task.RuntimeTask) (Processor, error) {
 	if tr.TSV != nil {
-		if table, err := tr.TSV.Open(task); err == nil {
+		var table lookupTable
+		var err error
+		if table, err = tr.TSV.open(task); err == nil {
 			return &lookupProcess{tr, table, task.GetConfig()}, nil
-		} else {
-			return nil, err
 		}
+		return nil, err
 	} else if tr.JSON != nil {
-		if table, err := tr.JSON.Open(task); err == nil {
+		var table lookupTable
+		var err error
+		if table, err = tr.JSON.open(task); err == nil {
 			return &lookupProcess{tr, table, task.GetConfig()}, nil
-		} else {
-			return nil, err
+		}
+		return nil, err
+	} else if tr.Table != nil {
+		return &lookupProcess{tr, tr.Table, task.GetConfig()}, nil
+	}
+	return nil, fmt.Errorf("table input not defined")
+}
+
+func (tr *LookupStep) GetConfigFields() []config.Variable {
+	out := []config.Variable{}
+	if tr.TSV != nil && tr.TSV.Input != "" {
+		for _, s := range evaluate.ExpressionIDs(tr.TSV.Input) {
+			out = append(out, config.Variable{Type: config.File, Name: config.TrimPrefix(s)})
+		}
+	} else if tr.JSON != nil && tr.JSON.Input != "" {
+		for _, s := range evaluate.ExpressionIDs(tr.JSON.Input) {
+			out = append(out, config.Variable{Type: config.File, Name: config.TrimPrefix(s)})
 		}
 	}
-	return nil, fmt.Errorf("Table input not defined")
+	return out
 }
 
 func (tp *lookupProcess) Close() {}
@@ -131,16 +153,16 @@ func (tp *lookupProcess) Process(i map[string]interface{}) []map[string]interfac
 	return []map[string]any{i}
 }
 
-func (tsv *TSVTable) Open(task task.RuntimeTask) (lookupTable, error) {
+func (tsv *TSVTable) open(task task.RuntimeTask) (lookupTable, error) {
 	inputPath, err := evaluate.ExpressionString(tsv.Input, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
 
 	if s, err := os.Stat(inputPath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("File Not Found: %s", inputPath)
+		return nil, fmt.Errorf("file not found: %s", inputPath)
 	} else if s.IsDir() {
-		return nil, fmt.Errorf("File Not Found: %s", inputPath)
+		return nil, fmt.Errorf("file not found: %s", inputPath)
 	}
 	log.Printf("Loading Translation file: %s", inputPath)
 
@@ -204,16 +226,16 @@ func (tl *tsvLookup) LookupRecord(w string) (map[string]any, bool) {
 	return nil, false
 }
 
-func (jf *JSONTable) Open(task task.RuntimeTask) (lookupTable, error) {
+func (jf *JSONTable) open(task task.RuntimeTask) (lookupTable, error) {
 	inputPath, err := evaluate.ExpressionString(jf.Input, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
 
 	if s, err := os.Stat(inputPath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("File Not Found: %s", inputPath)
+		return nil, fmt.Errorf("file not found: %s", inputPath)
 	} else if s.IsDir() {
-		return nil, fmt.Errorf("File Not Found: %s", inputPath)
+		return nil, fmt.Errorf("file not found: %s", inputPath)
 	}
 	log.Printf("Loading Translation file: %s", inputPath)
 
@@ -265,6 +287,18 @@ func (jp *jsonLookup) LookupRecord(s string) (map[string]any, bool) {
 		row := map[string]interface{}{}
 		json.Unmarshal(line, &row)
 		return row, true
+	}
+	return nil, false
+}
+
+func (jp *LookupTable) LookupValue(k string) (string, bool) {
+	s, ok := (*jp)[k]
+	return s, ok
+}
+
+func (jp *LookupTable) LookupRecord(k string) (map[string]any, bool) {
+	if x, ok := (*jp)[k]; ok {
+		return map[string]any{"value": x}, true
 	}
 	return nil, false
 }

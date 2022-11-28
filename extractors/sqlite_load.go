@@ -60,10 +60,10 @@ func (ml *SQLiteStep) Start(task task.RuntimeTask) (chan map[string]interface{},
 	return procChan, nil
 }
 
-func (ml *SQLiteStep) GetConfigFields() []config.ConfigVar {
-	out := []config.ConfigVar{}
+func (ml *SQLiteStep) GetConfigFields() []config.Variable {
+	out := []config.Variable{}
 	for _, s := range evaluate.ExpressionIDs(ml.Input) {
-		out = append(out, config.ConfigVar{Type: "File", Name: config.TrimPrefix(s)})
+		out = append(out, config.Variable{Type: "File", Name: config.TrimPrefix(s)})
 	}
 	return out
 }

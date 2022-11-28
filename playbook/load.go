@@ -2,7 +2,7 @@ package playbook
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/bmeg/grip/gripql"
@@ -48,7 +48,7 @@ func ParseFile(relpath string, conf *Playbook) error {
 	}
 
 	// Read file
-	source, err := ioutil.ReadFile(path)
+	source, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("failed to read config at path %s: \n%v", path, err)
 	}
@@ -65,8 +65,15 @@ func ParseFile(relpath string, conf *Playbook) error {
 
 // ParseDataFile parses input file
 func ParseDataFile(path string, data *map[string]interface{}) error {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("failed to read data at path %s: \n%v", path, err)
+	}
+	return yaml.Unmarshal(raw, data)
+}
 
-	raw, err := ioutil.ReadFile(path)
+func ParseStringFile(path string, data *map[string]string) error {
+	raw, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("failed to read data at path %s: \n%v", path, err)
 	}

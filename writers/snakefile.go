@@ -22,7 +22,7 @@ type SnakeFileWriter struct {
 
 type snakefileProcess struct {
 	cmdConfig *SnakeFileWriter
-	config    map[string]any
+	config    map[string]string
 	commands  []step
 	count     int
 }
@@ -35,7 +35,7 @@ func (cw *SnakeFileWriter) From() string {
 	return cw.FromName
 }
 
-func (cl *SnakeFileWriter) GetOutputs(task task.RuntimeTask) []string {
+func (cw *SnakeFileWriter) GetOutputs(task task.RuntimeTask) []string {
 	return []string{}
 }
 
@@ -72,13 +72,13 @@ func (cp *snakefileProcess) Close() {
 	if err != nil {
 		panic(err)
 	}
-	err = tmpl.Execute(os.Stdout, steps)
+	tmpl.Execute(os.Stdout, steps)
 }
 
-func (tp *snakefileProcess) Write(i map[string]interface{}) {
+func (cp *snakefileProcess) Write(i map[string]interface{}) {
 
-	for c, t := range tp.cmdConfig.Commands {
-		cmdLine, err := evaluate.ExpressionString(t.Template, tp.config, i)
+	for c, t := range cp.cmdConfig.Commands {
+		cmdLine, err := evaluate.ExpressionString(t.Template, cp.config, i)
 		if err != nil {
 			continue
 		}
@@ -87,28 +87,28 @@ func (tp *snakefileProcess) Write(i map[string]interface{}) {
 		outputs := []string{}
 
 		for _, ti := range t.Inputs {
-			n, err := evaluate.ExpressionString(ti, tp.config, i)
+			n, err := evaluate.ExpressionString(ti, cp.config, i)
 			if err == nil {
 				inputs = append(inputs, n)
 			}
 		}
 
 		for _, to := range t.Outputs {
-			n, err := evaluate.ExpressionString(to, tp.config, i)
+			n, err := evaluate.ExpressionString(to, cp.config, i)
 			if err == nil {
 				outputs = append(outputs, n)
 			}
 		}
 
 		s := step{
-			Name:    fmt.Sprintf("cmd_%d_%d", tp.count, c),
+			Name:    fmt.Sprintf("cmd_%d_%d", cp.count, c),
 			Command: cmdLine,
 			Inputs:  inputs,
 			Outputs: outputs,
 		}
-		tp.commands = append(tp.commands, s)
+		cp.commands = append(cp.commands, s)
 	}
-	tp.count += 1
+	cp.count++
 }
 
 type step struct {

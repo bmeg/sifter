@@ -23,23 +23,23 @@ func (cs *CleanStep) Init(task task.RuntimeTask) (Processor, error) {
 	return cs, nil
 }
 
-func (fs *CleanStep) Close() {}
+func (cs *CleanStep) Close() {}
 
-func (fs *CleanStep) Process(i map[string]interface{}) []map[string]interface{} {
+func (cs *CleanStep) Process(i map[string]interface{}) []map[string]interface{} {
 	o := map[string]interface{}{}
-	if len(fs.Fields) > 0 {
+	if len(cs.Fields) > 0 {
 		extra := map[string]interface{}{}
 		for k, v := range i {
-			if fs.has(k) {
+			if cs.has(k) {
 				o[k] = v
-			} else if fs.StoreExtra != "" {
+			} else if cs.StoreExtra != "" {
 				extra[k] = v
 			}
 		}
-		if fs.StoreExtra != "" {
-			o[fs.StoreExtra] = extra
+		if cs.StoreExtra != "" {
+			o[cs.StoreExtra] = extra
 		}
-	} else if fs.RemoveEmpty {
+	} else if cs.RemoveEmpty {
 		for k, v := range i {
 			copy := true
 			if vs, ok := v.(string); ok {

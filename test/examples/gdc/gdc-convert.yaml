@@ -3,12 +3,8 @@ name: gdc
 outdir: ../../out
 
 config:
-  cases:
-    type: File
-    default: ../../resources/case.json
-  schema: 
-    type: Directory
-    default: ../../resources/schemas
+  cases: ../../resources/case.json
+  schema: ../../resources/schemas
 
 inputs:
   caseData:

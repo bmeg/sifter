@@ -1,8 +1,6 @@
 
 config:
-  file: 
-    type: File
-    default: ../../resources/1000G.pfb.avro
+  file: ../../resources/1000G.pfb.avro
 
 outdir: ../../out
 

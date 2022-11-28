@@ -76,8 +76,8 @@ func (ts Step) Init(t task.RuntimeTask) (Processor, error) {
 	return nil, fmt.Errorf(("Transform not defined"))
 }
 
-func (ts Step) GetConfigFields() []config.ConfigVar {
-	out := []config.ConfigVar{}
+func (ts Step) GetConfigFields() []config.Variable {
+	out := []config.Variable{}
 	v := reflect.ValueOf(ts)
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)

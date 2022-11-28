@@ -4,12 +4,8 @@ name: gdc-projects
 outdir: ../../out/
 
 config:
-  cases: 
-    type: File
-    default: ../../resources/case.json
-  diseaseTSV:
-    type: File
-    default: ../../resources/disease_table.tsv
+  cases: ../../resources/case.json
+  diseaseTSV: ../../resources/disease_table.tsv
 
 inputs:
   caseReader:

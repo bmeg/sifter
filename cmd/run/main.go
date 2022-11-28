@@ -26,9 +26,9 @@ var Cmd = &cobra.Command{
 	Short: "Run importer",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		inputs := map[string]interface{}{}
+		inputs := map[string]string{}
 		if inputFile != "" {
-			if err := playbook.ParseDataFile(inputFile, &inputs); err != nil {
+			if err := playbook.ParseStringFile(inputFile, &inputs); err != nil {
 				log.Printf("%s", err)
 				return err
 			}

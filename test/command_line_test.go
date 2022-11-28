@@ -56,7 +56,7 @@ func TestCommandLines(t *testing.T) {
 		fmt.Printf("Running: %s\n", c.Playbook)
 		err = cmd.Run()
 		if err != nil {
-			t.Errorf("Failed running %s", c.Playbook)
+			t.Errorf("Failed running %s: %s", c.Playbook, err)
 		} else {
 			/*
 				for f, chk := range c.Outputs {

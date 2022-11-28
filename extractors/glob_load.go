@@ -66,10 +66,10 @@ func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 	return nil, fmt.Errorf("Not found")
 }
 
-func (gl *GlobLoadStep) GetConfigFields() []config.ConfigVar {
-	out := []config.ConfigVar{}
+func (gl *GlobLoadStep) GetConfigFields() []config.Variable {
+	out := []config.Variable{}
 	for _, s := range evaluate.ExpressionIDs(gl.Input) {
-		out = append(out, config.ConfigVar{Type: "File", Name: config.TrimPrefix(s)})
+		out = append(out, config.Variable{Type: "File", Name: config.TrimPrefix(s)})
 	}
 	return out
 }

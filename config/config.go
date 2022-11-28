@@ -2,30 +2,31 @@ package config
 
 import "strings"
 
-type ConfigVar struct {
-	Name    string `json:"name"`
-	Type    string `json:"type"`
-	Default string `json:"default"`
-}
+type Config map[string]string
 
-type Config map[string]ConfigVar
+type Type string
+
+const (
+	Unknown Type = ""
+	File    Type = "File"
+	Dir     Type = "Dir"
+)
+
+type Variable struct {
+	Name string `json:"name"`
+	Type Type
+}
 
 type Configurable interface {
-	GetConfigFields() []ConfigVar
+	GetConfigFields() []Variable
 }
 
-func (in *ConfigVar) IsFile() bool {
-	if in.Type == "File" || in.Type == "file" {
-		return true
-	}
-	return false
+func (in *Variable) IsFile() bool {
+	return in.Type == File
 }
 
-func (in *ConfigVar) IsDir() bool {
-	if in.Type == "Dir" || in.Type == "dir" || in.Type == "Directory" || in.Type == "directory" {
-		return true
-	}
-	return false
+func (in *Variable) IsDir() bool {
+	return in.Type == Dir
 }
 
 func TrimPrefix(s string) string {

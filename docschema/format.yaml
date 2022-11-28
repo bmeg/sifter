@@ -323,7 +323,7 @@
           type: experiment
     ```
 
- - class: TableLookupStep
+ - class: LookupStep
    description: Use a two column file to make values from one value to another.
    example: |
     Starting with a table that maps state names to the two character state code:

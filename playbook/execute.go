@@ -3,7 +3,6 @@ package playbook
 import (
 	"fmt"
 	"log"
-	"os"
 	"path/filepath"
 
 	"github.com/bmeg/flame"
@@ -12,6 +11,7 @@ import (
 	"github.com/bmeg/sifter/writers"
 )
 
+/*
 func fileExists(filename string) bool {
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {
@@ -19,40 +19,33 @@ func fileExists(filename string) bool {
 	}
 	return !info.IsDir()
 }
+*/
 
-func (pb *Playbook) PrepConfig(inputs map[string]any, workdir string) map[string]any {
+func (pb *Playbook) PrepConfig(inputs map[string]string, workdir string) (map[string]string, error) {
+	log.Printf("Start config: %#v", inputs)
 
 	workdir, _ = filepath.Abs(workdir)
-
-	out := map[string]any{}
-
-	//fill in missing values with default values
-	for k, v := range pb.Config {
-		if _, ok := inputs[k]; !ok {
-			if v.Default != "" {
-				if v.IsFile() || v.IsDir() {
-					defaultPath := filepath.Join(filepath.Dir(pb.path), v.Default)
-					out[k], _ = filepath.Abs(defaultPath)
-				} else {
-					out[k] = v.Default
-				}
+	out := map[string]string{}
+	for _, v := range pb.GetConfigFields() {
+		if val, ok := inputs[v.Name]; ok {
+			if v.IsFile() || v.IsDir() {
+				defaultPath := filepath.Join(workdir, val)
+				out[v.Name], _ = filepath.Abs(defaultPath)
+			} else {
+				out[v.Name] = val
+			}
+		} else if val, ok := pb.Config[v.Name]; ok {
+			if v.IsFile() || v.IsDir() {
+				defaultPath := filepath.Join(filepath.Dir(pb.path), val)
+				out[v.Name], _ = filepath.Abs(defaultPath)
+			} else {
+				out[v.Name] = val
 			}
 		} else {
-			if v.IsFile() || v.IsDir() {
-				if i, ok := inputs[k]; ok {
-					if iStr, ok := i.(string); ok {
-						newPath := filepath.Join(workdir, iStr)
-						out[k], _ = filepath.Abs(newPath)
-					}
-				}
-			} else {
-				if i, ok := inputs[k]; ok {
-					out[k] = i
-				}
-			}
+			return nil, fmt.Errorf("config %s not defined", v.Name)
 		}
 	}
-	return out
+	return out, nil
 }
 
 type reduceWrapper struct {
@@ -116,78 +109,78 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 			if err != nil {
 				log.Printf("Pipeline %s error: %s", k, err)
 				return err
-			} else {
-				if mProcess, ok := b.(transform.NodeProcessor); ok {
-					log.Printf("Pipeline %s step %d: %T", k, i, b)
-					c := flame.AddFlatMapper(wf, mProcess.Process)
-					if lastStep != nil {
-						c.Connect(lastStep)
-					}
-					if c != nil {
-						lastStep = c
-						if firstStep == nil {
-							firstStep = c
-						}
-					} else {
-						log.Printf("Error setting up step")
-						//throw error?
-					}
-				} else if mProcess, ok := b.(transform.MapProcessor); ok {
-					log.Printf("Pipeline Pool %s step %d: %T", k, i, b)
-					var c flame.Node[map[string]any, map[string]any]
-					if mProcess.PoolReady() {
-						log.Printf("Starting pool worker")
-						c = flame.AddMapperPool(wf, mProcess.Process, 4) // TODO: config pool count
-					} else {
-						c = flame.AddMapper(wf, mProcess.Process)
-					}
-					if lastStep != nil {
-						c.Connect(lastStep)
-					}
-					if c != nil {
-						lastStep = c
-						if firstStep == nil {
-							firstStep = c
-						}
-					} else {
-						log.Printf("Error setting up step")
-						//throw error?
-					}
-				} else if rProcess, ok := b.(transform.ReduceProcessor); ok {
-					log.Printf("Pipeline reduce %s step %d: %T", k, i, b)
-					wrap := reduceWrapper{rProcess}
-					k := flame.AddMapper(wf, wrap.addKeyValue)
-					r := flame.AddReduceKey(wf, rProcess.Reduce, rProcess.GetInit())
-					c := flame.AddFlatMapper(wf, wrap.removeKeyValue)
-					if lastStep != nil {
-						k.Connect(lastStep)
-					}
-					r.Connect(k)
-					c.Connect(r)
-					lastStep = c
-					if firstStep == nil {
-						firstStep = k
-					}
-				} else if rProcess, ok := b.(transform.AccumulateProcessor); ok {
-					log.Printf("Pipeline accumulate %s step %d: %T", k, i, b)
+			}
 
-					wrap := accumulateWrapper{rProcess}
-					k := flame.AddMapper(wf, wrap.addKeyValue)
-					r := flame.AddAccumulate(wf, rProcess.Accumulate)
-					c := flame.AddFlatMapper(wf, wrap.removeKeyValue)
-					if lastStep != nil {
-						k.Connect(lastStep)
-					}
-					r.Connect(k)
-					c.Connect(r)
-					lastStep = c
-					if firstStep == nil {
-						firstStep = k
-					}
-
-				} else {
-					log.Printf("Unknown processor type")
+			if mProcess, ok := b.(transform.NodeProcessor); ok {
+				log.Printf("Pipeline %s step %d: %T", k, i, b)
+				c := flame.AddFlatMapper(wf, mProcess.Process)
+				if lastStep != nil {
+					c.Connect(lastStep)
 				}
+				if c != nil {
+					lastStep = c
+					if firstStep == nil {
+						firstStep = c
+					}
+				} else {
+					log.Printf("Error setting up step")
+					//throw error?
+				}
+			} else if mProcess, ok := b.(transform.MapProcessor); ok {
+				log.Printf("Pipeline Pool %s step %d: %T", k, i, b)
+				var c flame.Node[map[string]any, map[string]any]
+				if mProcess.PoolReady() {
+					log.Printf("Starting pool worker")
+					c = flame.AddMapperPool(wf, mProcess.Process, 4) // TODO: config pool count
+				} else {
+					c = flame.AddMapper(wf, mProcess.Process)
+				}
+				if lastStep != nil {
+					c.Connect(lastStep)
+				}
+				if c != nil {
+					lastStep = c
+					if firstStep == nil {
+						firstStep = c
+					}
+				} else {
+					log.Printf("Error setting up step")
+					//throw error?
+				}
+			} else if rProcess, ok := b.(transform.ReduceProcessor); ok {
+				log.Printf("Pipeline reduce %s step %d: %T", k, i, b)
+				wrap := reduceWrapper{rProcess}
+				k := flame.AddMapper(wf, wrap.addKeyValue)
+				r := flame.AddReduceKey(wf, rProcess.Reduce, rProcess.GetInit())
+				c := flame.AddFlatMapper(wf, wrap.removeKeyValue)
+				if lastStep != nil {
+					k.Connect(lastStep)
+				}
+				r.Connect(k)
+				c.Connect(r)
+				lastStep = c
+				if firstStep == nil {
+					firstStep = k
+				}
+			} else if rProcess, ok := b.(transform.AccumulateProcessor); ok {
+				log.Printf("Pipeline accumulate %s step %d: %T", k, i, b)
+
+				wrap := accumulateWrapper{rProcess}
+				k := flame.AddMapper(wf, wrap.addKeyValue)
+				r := flame.AddAccumulate(wf, rProcess.Accumulate)
+				c := flame.AddFlatMapper(wf, wrap.removeKeyValue)
+				if lastStep != nil {
+					k.Connect(lastStep)
+				}
+				r.Connect(k)
+				c.Connect(r)
+				lastStep = c
+				if firstStep == nil {
+					firstStep = k
+				}
+
+			} else {
+				log.Printf("Unknown processor type")
 			}
 		}
 		outNodes[k] = lastStep
@@ -213,7 +206,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 				if src == dst {
 					//TODO: more loop detection
 					log.Printf("Pipeline Loop detected in %s", dst)
-					return fmt.Errorf("Pipeline Loop detected")
+					return fmt.Errorf("pipeline loop detected")
 				}
 				if srcNode, ok := outNodes[src]; ok {
 					if dstNode, ok := inNodes[dst]; ok {
@@ -227,7 +220,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 				}
 			} else {
 				log.Printf("First step of pipelines %s not 'from'", dst)
-				return fmt.Errorf("First step of pipelines %s not 'from'", dst)
+				return fmt.Errorf("first step of pipelines %s not 'from'", dst)
 			}
 		} else {
 			log.Printf("Pipeline %s is empty", dst)
@@ -239,7 +232,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 		if src == dst {
 			//TODO: more loop detection
 			log.Printf("Pipeline Loop detected in %s", dst)
-			return fmt.Errorf("Pipeline Loop detected")
+			return fmt.Errorf("pipeline loop detected")
 		}
 		if srcNode, ok := outNodes[src]; ok {
 			if dstNode, ok := inNodes[dst]; ok {

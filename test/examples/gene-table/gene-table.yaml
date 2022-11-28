@@ -7,9 +7,7 @@ docs: >
   column TSV into the working directory
 
 config:
-  geneTSV:
-    type: File
-    default: ../../resources/gene2ensembl.gz
+  geneTSV: ../../resources/gene2ensembl.gz
 
 inputs:
   genes:

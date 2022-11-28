@@ -25,7 +25,7 @@ jobs:
       run: go build -v ./
 
     - name: Test
-      run: go test -v ./test
+      run: go test -v ./test/...
 
   golangci:
     name: lint
@@ -39,4 +39,5 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
-          version: v1.46.2
+          version: v1.50.1
+          args:  --timeout 2m --disable-all -E gofmt 

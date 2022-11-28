@@ -2,9 +2,7 @@
 outdir: ../../out
 
 config:
-  json:
-    type: File
-    default: 
+  json: ../../resources/projects.json
     
 
 inputs:

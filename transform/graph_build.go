@@ -62,11 +62,11 @@ func (ts GraphBuildStep) Init(task task.RuntimeTask) (Processor, error) {
 	return &graphBuildProcess{ts, task, sc, className}, nil
 }
 
-func (ts GraphBuildStep) GetConfigFields() []config.ConfigVar {
-	out := []config.ConfigVar{}
+func (ts GraphBuildStep) GetConfigFields() []config.Variable {
+	out := []config.Variable{}
 	if ts.Schema != "" {
 		for _, s := range evaluate.ExpressionIDs(ts.Schema) {
-			out = append(out, config.ConfigVar{Type: "Dir", Name: config.TrimPrefix(s)})
+			out = append(out, config.Variable{Type: config.Dir, Name: config.TrimPrefix(s)})
 		}
 	}
 	return out
@@ -156,7 +156,7 @@ func prefixAdjust(id string, prefix string, sep *string, filter bool) (string, e
 	}
 	if !strings.HasPrefix(id, prefix) {
 		if filter {
-			return id, fmt.Errorf("Mismatch prefix")
+			return id, fmt.Errorf("mismatch prefix")
 		}
 		s := ":"
 		if sep != nil {

@@ -8,7 +8,7 @@ import (
 	"github.com/bmeg/sifter/task"
 )
 
-func Execute(playFile string, workDir string, outDir string, inputs map[string]interface{}) error {
+func Execute(playFile string, workDir string, outDir string, inputs map[string]string) error {
 	log.Printf("Starting: %s\n", playFile)
 	pb := playbook.Playbook{}
 	if err := playbook.ParseFile(playFile, &pb); err != nil {
@@ -24,8 +24,11 @@ func Execute(playFile string, workDir string, outDir string, inputs map[string]i
 		os.MkdirAll(outDir, 0777)
 	}
 
-	nInputs := pb.PrepConfig(inputs, workDir)
+	nInputs, err := pb.PrepConfig(inputs, workDir)
+	if err != nil {
+		return err
+	}
 	t := task.NewTask(pb.Name, workDir, outDir, nInputs)
-	err := pb.Execute(t)
+	err = pb.Execute(t)
 	return err
 }

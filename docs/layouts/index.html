@@ -1,0 +1,15 @@
+
+{{ partial "head.html" . }}
+
+<article>
+    <header>
+        <!-- # comment this out for the home page. -->
+        <!--<h1 class="text-primary">{{ .Title }}</h1>-->
+    </header>
+    <section>
+        {{ .Content }}
+    </section>
+</article>
+
+
+{{ partial "tail.html" . }}

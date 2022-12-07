@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  
+  <title>Example &middot; Sifter</title>
+  
+
+  
+  <link rel="stylesheet" href="http://example.org/css/poole.css">
+  <link rel="stylesheet" href="http://example.org/css/darcula.css">
+  <link rel="stylesheet" href="http://example.org/css/syntax.css">
+  <link rel="stylesheet" href="http://example.org/css/theme.css">
+  <link rel="stylesheet" href="http://example.org/css/funnel.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  <script src="http://example.org/js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+</head>
+<body>
+
+  <div class="global-header">
+    <div class="global-header-container">
+      <div class="global-header-home">
+        <a href="http://example.org"><h1>Sifter</h1></a>
+      </div>
+      <ul class="global-header-nav">
+          <li><a href="https://github.com/bmeg/sifter/releases">Download</a></li>
+          <li><a href="http://example.org/docs/">Docs</a></li>
+          <li><a href="https://github.com/bmeg/sifter">GitHub</a></li>
+        </ul>
+    </div>
+  </div>
+
+
+<div class="content section group">
+
+  <div class="sidebar col span_3_of_12">
+    <ul class="sidebar-nav">
+      
+      
+        
+        <li>
+          
+          <a href="/docs/"
+             class="sidebar-nav-item "
+          >Overview</a></li>
+          
+        
+        <li>
+          
+          <a href="/docs/playbook/"
+             class="sidebar-nav-item "
+          >Sifter Pipeline File</a></li>
+          
+        
+        <li>
+          
+          <a href="/docs/example/"
+             class="sidebar-nav-item  active"
+          >Example</a></li>
+          
+        
+        <li>
+          
+          
+          <span class="intermediate"><a href="/docs/inputs/">Inputs</a></span></li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/avroload/"
+                   class="sidebar-nav-item "
+                >avroLoad</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/embedded/"
+                   class="sidebar-nav-item "
+                >embedded</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/glob/"
+                   class="sidebar-nav-item "
+                >glob</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/gripperload/"
+                   class="sidebar-nav-item "
+                >gripperLoad</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/jsonload/"
+                   class="sidebar-nav-item "
+                >jsonLoad</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/sqldump/"
+                   class="sidebar-nav-item "
+                >sqldump</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/sqliteload/"
+                   class="sidebar-nav-item "
+                >sqliteLoad</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/tableload/"
+                   class="sidebar-nav-item "
+                >tableLoad</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/xmlload/"
+                   class="sidebar-nav-item "
+                >xmlLoad</a></li>
+            </ul>
+          </li>
+          
+          
+        
+        <li>
+          
+          
+          <span class="intermediate"><a href="/docs/transforms/">Pipeline Steps</a></span></li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/accumulate/"
+                   class="sidebar-nav-item "
+                >accumulate</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/clean/"
+                   class="sidebar-nav-item "
+                >clean</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/debug/"
+                   class="sidebar-nav-item "
+                >debug</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/distinct/"
+                   class="sidebar-nav-item "
+                >distinct</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/emit/"
+                   class="sidebar-nav-item "
+                >emit</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/fieldparse/"
+                   class="sidebar-nav-item "
+                >fieldParse</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/fieldprocess/"
+                   class="sidebar-nav-item "
+                >fieldProcess</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/fieldtype/"
+                   class="sidebar-nav-item "
+                >fieldType</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/filter/"
+                   class="sidebar-nav-item "
+                >filter</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/from/"
+                   class="sidebar-nav-item "
+                >from</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/graphbuild/"
+                   class="sidebar-nav-item "
+                >graphBuild</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/hash/"
+                   class="sidebar-nav-item "
+                >hash</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/lookup/"
+                   class="sidebar-nav-item "
+                >lookup</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/map/"
+                   class="sidebar-nav-item "
+                >map</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/objectcreate/"
+                   class="sidebar-nav-item "
+                >objectCreate</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/project/"
+                   class="sidebar-nav-item "
+                >project</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/reduce/"
+                   class="sidebar-nav-item "
+                >reduce</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/regexreplace/"
+                   class="sidebar-nav-item "
+                >regexReplace</a></li>
+            </ul>
+          </li>
+          
+          
+        
+      
+    </ul>
+  </div>
+
+  <div class="main col span_8_of_12">
+    <h1 id="example-pipeline">Example Pipeline</h1>
+<p>Our first task will be to convert a ZIP code TSV into a set of county level
+entries.</p>
+<p>The input file looks like:</p>
+<pre tabindex="0"><code>ZIP,COUNTYNAME,STATE,STCOUNTYFP,CLASSFP
+36003,Autauga County,AL,01001,H1
+36006,Autauga County,AL,01001,H1
+36067,Autauga County,AL,01001,H1
+36066,Autauga County,AL,01001,H1
+36703,Autauga County,AL,01001,H1
+36701,Autauga County,AL,01001,H1
+36091,Autauga County,AL,01001,H1
+</code></pre><p>First is the header of the pipeline. This declares the
+unique name of the pipeline and it&rsquo;s output directory.</p>
+<pre tabindex="0"><code>name: zipcode_map
+outdir: ./
+docs: Converts zipcode TSV into graph elements
+</code></pre><p>Next the configuration is declared. In this case the only input is the zipcode TSV.
+There is a default value, so the pipeline can be invoked without passing in
+any parameters. However, to apply this pipeline to a new input file, the
+input parameter <code>zipcode</code> could be used to define the source file.</p>
+<pre tabindex="0"><code>config:
+  schema: ../covid19_datadictionary/gdcdictionary/schemas/
+  zipcode: ../data/ZIP-COUNTY-FIPS_2017-06.csv
+</code></pre><p>The <code>inputs</code> section declares data input sources. In this pipeline, there is
+only one input, which is to run the table loader.</p>
+<pre tabindex="0"><code>inputs:
+  tableLoad:
+    input: &#34;{{config.zipcode}}&#34;
+    sep: &#34;,&#34;
+</code></pre><p>Tableload operaters of the input file that was originally passed in using the
+<code>inputs</code> stanza. SIFTER string parsing is based on mustache template system.
+To access the string passed in the template is <code>{{config.zipcode}}</code>.
+The seperator in the file input file is a <code>,</code> so that is also passed in as a
+parameter to the extractor.</p>
+<p>The <code>tableLoad</code> extractor opens up the TSV and generates a one message for
+every row in the file. It uses the header of the file to map the column values
+into a dictionary. The first row would produce the message:</p>
+<pre tabindex="0"><code>{
+    &#34;ZIP&#34; : &#34;36003&#34;,
+    &#34;COUNTYNAME&#34; : &#34;Autauga County&#34;,
+    &#34;STATE&#34; : &#34;AL&#34;,
+    &#34;STCOUNTYFP&#34; : &#34;01001&#34;,
+    &#34;CLASSFP&#34; : &#34;H1&#34;
+}
+</code></pre><p>The stream of messages are then passed into the steps listed in the <code>transform</code>
+section of the tableLoad extractor.</p>
+<p>For the current tranform, we want to produce a single entry per <code>STCOUNTYFP</code>,
+however, the file has a line per <code>ZIP</code>. We need to run a <code>reduce</code> transform,
+that collects rows togeather using a field key, which in this case is <code>&quot;{{row.STCOUNTYFP}}&quot;</code>,
+and then runs a function <code>merge</code> that takes two messages, merges them togeather
+and produces a single output message.</p>
+<p>The two messages:</p>
+<pre tabindex="0"><code>{ &#34;ZIP&#34; : &#34;36003&#34;, &#34;COUNTYNAME&#34; : &#34;Autauga County&#34;, &#34;STATE&#34; : &#34;AL&#34;, &#34;STCOUNTYFP&#34; : &#34;01001&#34;, &#34;CLASSFP&#34; : &#34;H1&#34;}
+{ &#34;ZIP&#34; : &#34;36006&#34;, &#34;COUNTYNAME&#34; : &#34;Autauga County&#34;, &#34;STATE&#34; : &#34;AL&#34;, &#34;STCOUNTYFP&#34; : &#34;01001&#34;, &#34;CLASSFP&#34; : &#34;H1&#34;}
+</code></pre><p>Would be merged into the message:</p>
+<pre tabindex="0"><code>{ &#34;ZIP&#34; : [&#34;36003&#34;, &#34;36006&#34;], &#34;COUNTYNAME&#34; : &#34;Autauga County&#34;, &#34;STATE&#34; : &#34;AL&#34;, &#34;STCOUNTYFP&#34; : &#34;01001&#34;, &#34;CLASSFP&#34; : &#34;H1&#34;}
+</code></pre><p>The <code>reduce</code> transform step uses a block of python code to describe the function.
+The <code>method</code> field names the function, in this case <code>merge</code> that will be used
+as the reduce function.</p>
+<pre tabindex="0"><code>  zipReduce:
+    - from: zipcode
+    - reduce:
+        field: STCOUNTYFP
+        method: merge
+        python: &gt;
+          def merge(x,y):
+            a = x.get(&#39;zipcodes&#39;, []) + [x[&#39;ZIP&#39;]]
+            b = y.get(&#39;zipcodes&#39;, []) + [y[&#39;ZIP&#39;]]
+            x[&#39;zipcodes&#39;] = a + b
+            return x
+</code></pre><p>The original messages produced by the loader have all of the information required
+by the <code>summary_location</code> object type as described by the JSON schema that was linked
+to in the header stanza. However, the data is all under the wrong field names.
+To remap the data, we use a <code>project</code> tranformation that uses the template engine
+to project data into new files in the message. The template engine has the current
+message data in the value <code>row</code>. So the value
+<code>FIPS:{{row.STCOUNTYFP}}</code> is mapped into the field <code>id</code>.</p>
+<pre tabindex="0"><code>  - project:
+      mapping:
+        id: &#34;FIPS:{{row.STCOUNTYFP}}&#34;
+        province_state: &#34;{{row.STATE}}&#34;
+        summary_locations: &#34;{{row.STCOUNTYFP}}&#34;
+        county: &#34;{{row.COUNTYNAME}}&#34;
+        submitter_id: &#34;{{row.STCOUNTYFP}}&#34;
+        type: summary_location
+        projects: []
+</code></pre><p>Using this projection, the message:</p>
+<pre tabindex="0"><code>{
+  &#34;ZIP&#34; : [&#34;36003&#34;, &#34;36006&#34;],
+  &#34;COUNTYNAME&#34; : &#34;Autauga County&#34;,
+  &#34;STATE&#34; : &#34;AL&#34;,
+  &#34;STCOUNTYFP&#34; : &#34;01001&#34;,
+  &#34;CLASSFP&#34; : &#34;H1&#34;
+}
+</code></pre><p>would become</p>
+<pre tabindex="0"><code>{
+  &#34;id&#34; : &#34;FIPS:01001&#34;,
+  &#34;province_state&#34; : &#34;AL&#34;,
+  &#34;summary_locations&#34; : &#34;01001&#34;,
+  &#34;county&#34; : &#34;Autauga County&#34;,
+  &#34;submitter_id&#34; : &#34;01001&#34;,
+  &#34;type&#34; : &#34;summary_location&#34;
+  &#34;projects&#34; : [],
+  &#34;ZIP&#34; : [&#34;36003&#34;, &#34;36006&#34;],
+  &#34;COUNTYNAME&#34; : &#34;Autauga County&#34;,
+  &#34;STATE&#34; : &#34;AL&#34;,
+  &#34;STCOUNTYFP&#34; : &#34;01001&#34;,
+  &#34;CLASSFP&#34; : &#34;H1&#34;
+}
+</code></pre><p>Now that the data has been remapped, we pass the data into the &lsquo;objectCreate&rsquo;
+transformation, which will read in the schema for <code>summary_location</code>, check the
+message to make sure it matches and then output it.</p>
+<pre tabindex="0"><code>  - objectCreate:
+        class: summary_location
+</code></pre><p>Outputs</p>
+<p>To create an output table, with two columns connecting
+<code>ZIP</code> values to <code>STCOUNTYFP</code> values. The <code>STCOUNTYFP</code> is a county level FIPS
+code, used by the census office. A single FIPS code my contain many ZIP codes,
+and we can use this table later for mapping ids when loading the data into a database.</p>
+<pre tabindex="0"><code>outputs:
+  zip2fips:
+    tableWrite:
+      from: 
+      output: zip2fips
+      columns:
+        - ZIP
+        - STCOUNTYFP
+</code></pre>
+  </div>
+
+</div>
+</body>
+</html>

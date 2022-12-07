@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  
+  <title>sqldump &middot; Sifter</title>
+  
+
+  
+  <link rel="stylesheet" href="http://example.org/css/poole.css">
+  <link rel="stylesheet" href="http://example.org/css/darcula.css">
+  <link rel="stylesheet" href="http://example.org/css/syntax.css">
+  <link rel="stylesheet" href="http://example.org/css/theme.css">
+  <link rel="stylesheet" href="http://example.org/css/funnel.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  <script src="http://example.org/js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+</head>
+<body>
+
+  <div class="global-header">
+    <div class="global-header-container">
+      <div class="global-header-home">
+        <a href="http://example.org"><h1>Sifter</h1></a>
+      </div>
+      <ul class="global-header-nav">
+          <li><a href="https://github.com/bmeg/sifter/releases">Download</a></li>
+          <li><a href="http://example.org/docs/">Docs</a></li>
+          <li><a href="https://github.com/bmeg/sifter">GitHub</a></li>
+        </ul>
+    </div>
+  </div>
+
+
+<div class="content section group">
+
+  <div class="sidebar col span_3_of_12">
+    <ul class="sidebar-nav">
+      
+      
+        
+        <li>
+          
+          <a href="/docs/"
+             class="sidebar-nav-item "
+          >Overview</a></li>
+          
+        
+        <li>
+          
+          <a href="/docs/playbook/"
+             class="sidebar-nav-item "
+          >Sifter Pipeline File</a></li>
+          
+        
+        <li>
+          
+          <a href="/docs/example/"
+             class="sidebar-nav-item "
+          >Example</a></li>
+          
+        
+        <li>
+          
+          
+          <span class="intermediate"><a href="/docs/inputs/">Inputs</a></span></li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/avroload/"
+                   class="sidebar-nav-item "
+                >avroLoad</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/embedded/"
+                   class="sidebar-nav-item "
+                >embedded</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/glob/"
+                   class="sidebar-nav-item "
+                >glob</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/gripperload/"
+                   class="sidebar-nav-item "
+                >gripperLoad</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/jsonload/"
+                   class="sidebar-nav-item "
+                >jsonLoad</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/sqldump/"
+                   class="sidebar-nav-item  active"
+                >sqldump</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/sqliteload/"
+                   class="sidebar-nav-item "
+                >sqliteLoad</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/tableload/"
+                   class="sidebar-nav-item "
+                >tableLoad</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/inputs/xmlload/"
+                   class="sidebar-nav-item "
+                >xmlLoad</a></li>
+            </ul>
+          </li>
+          
+          
+        
+        <li>
+          
+          
+          <span class="intermediate"><a href="/docs/transforms/">Pipeline Steps</a></span></li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/accumulate/"
+                   class="sidebar-nav-item "
+                >accumulate</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/clean/"
+                   class="sidebar-nav-item "
+                >clean</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/debug/"
+                   class="sidebar-nav-item "
+                >debug</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/distinct/"
+                   class="sidebar-nav-item "
+                >distinct</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/emit/"
+                   class="sidebar-nav-item "
+                >emit</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/fieldparse/"
+                   class="sidebar-nav-item "
+                >fieldParse</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/fieldprocess/"
+                   class="sidebar-nav-item "
+                >fieldProcess</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/fieldtype/"
+                   class="sidebar-nav-item "
+                >fieldType</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/filter/"
+                   class="sidebar-nav-item "
+                >filter</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/from/"
+                   class="sidebar-nav-item "
+                >from</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/graphbuild/"
+                   class="sidebar-nav-item "
+                >graphBuild</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/hash/"
+                   class="sidebar-nav-item "
+                >hash</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/lookup/"
+                   class="sidebar-nav-item "
+                >lookup</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/map/"
+                   class="sidebar-nav-item "
+                >map</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/objectcreate/"
+                   class="sidebar-nav-item "
+                >objectCreate</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/project/"
+                   class="sidebar-nav-item "
+                >project</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/reduce/"
+                   class="sidebar-nav-item "
+                >reduce</a></li>
+            </ul>
+          </li>
+          
+          <li>
+            <ul class="sidebar-nav sidebar-nav-nested">
+              <li>
+                <a href="/docs/transforms/regexreplace/"
+                   class="sidebar-nav-item "
+                >regexReplace</a></li>
+            </ul>
+          </li>
+          
+          
+        
+      
+    </ul>
+  </div>
+
+  <div class="main col span_8_of_12">
+    <h1 id="sqldump">sqlDump</h1>
+<p>Scan file produced produced from sqldump.</p>
+<h2 id="parameters">Parameters</h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>input</td>
+<td>string</td>
+<td>Path to the SQL dump file</td>
+</tr>
+<tr>
+<td>tables</td>
+<td>[]string</td>
+<td>Names of tables to read out</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example">Example</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">inputs</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">database</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">sqldumpLoad</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">input</span>: <span style="color:#e6db74">&#34;{{config.sql}}&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">tables</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">cells</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">cell_tissues</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">dose_responses</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">drugs</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">drug_annots</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">experiments</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">profiles</span>
+</span></span></code></pre></div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Sifter</title>
+    <link>http://example.org/</link>
+    <description>Recent content on Sifter</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="http://example.org/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>accumulate</title>
+      <link>http://example.org/docs/transforms/accumulate/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/accumulate/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>avroLoad</title>
+      <link>http://example.org/docs/inputs/avroload/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/inputs/avroload/</guid>
+      <description>avroLoad Load an AvroFile
+Parameters name Description input Path to input file </description>
+    </item>
+    
+    <item>
+      <title>clean</title>
+      <link>http://example.org/docs/transforms/clean/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/clean/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>debug</title>
+      <link>http://example.org/docs/transforms/debug/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/debug/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>distinct</title>
+      <link>http://example.org/docs/transforms/distinct/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/distinct/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>embedded</title>
+      <link>http://example.org/docs/inputs/embedded/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/inputs/embedded/</guid>
+      <description>embedded Load data from embedded structure
+Example inputs: data: embedded: - { &amp;#34;name&amp;#34; : &amp;#34;Alice&amp;#34;, &amp;#34;age&amp;#34;: 28 } - { &amp;#34;name&amp;#34; : &amp;#34;Bob&amp;#34;, &amp;#34;age&amp;#34;: 27 } </description>
+    </item>
+    
+    <item>
+      <title>emit</title>
+      <link>http://example.org/docs/transforms/emit/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/emit/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Example</title>
+      <link>http://example.org/docs/example/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/example/</guid>
+      <description>Example Pipeline Our first task will be to convert a ZIP code TSV into a set of county level entries.
+The input file looks like:
+ZIP,COUNTYNAME,STATE,STCOUNTYFP,CLASSFP 36003,Autauga County,AL,01001,H1 36006,Autauga County,AL,01001,H1 36067,Autauga County,AL,01001,H1 36066,Autauga County,AL,01001,H1 36703,Autauga County,AL,01001,H1 36701,Autauga County,AL,01001,H1 36091,Autauga County,AL,01001,H1 First is the header of the pipeline. This declares the unique name of the pipeline and it&amp;rsquo;s output directory.
+name: zipcode_map outdir: ./ docs: Converts zipcode TSV into graph elements Next the configuration is declared.</description>
+    </item>
+    
+    <item>
+      <title>fieldParse</title>
+      <link>http://example.org/docs/transforms/fieldparse/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/fieldparse/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>fieldProcess</title>
+      <link>http://example.org/docs/transforms/fieldprocess/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/fieldprocess/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>fieldType</title>
+      <link>http://example.org/docs/transforms/fieldtype/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/fieldtype/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>filter</title>
+      <link>http://example.org/docs/transforms/filter/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/filter/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>from</title>
+      <link>http://example.org/docs/transforms/from/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/from/</guid>
+      <description>from Parmeters Name of data source
+Example inputs: profileReader: tableLoad: input: &amp;#34;{{config.profiles}}&amp;#34; pipelines: profileProcess: - from: profileReader </description>
+    </item>
+    
+    <item>
+      <title>glob</title>
+      <link>http://example.org/docs/inputs/glob/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/inputs/glob/</guid>
+      <description>glob Scan files using * based glob statement and open all files as input.
+Parameters Name Description storeFilename Store value of filename in parameter each row input Path of avro object file to transform xmlLoad xmlLoad configutation tableLoad Run transform pipeline on a TSV or CSV jsonLoad Run a transform pipeline on a multi line json file avroLoad Load data from avro file Example inputs: pubmedRead: glob: input: &amp;#34;{{config.baseline}}/*.xml.gz&amp;#34; xmlLoad: {} </description>
+    </item>
+    
+    <item>
+      <title>graphBuild</title>
+      <link>http://example.org/docs/transforms/graphbuild/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/graphbuild/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>gripperLoad</title>
+      <link>http://example.org/docs/inputs/gripperload/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/inputs/gripperload/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>hash</title>
+      <link>http://example.org/docs/transforms/hash/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/hash/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Inputs</title>
+      <link>http://example.org/docs/inputs/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/inputs/</guid>
+      <description>Every playbook consists of a series of inputs.</description>
+    </item>
+    
+    <item>
+      <title>jsonLoad</title>
+      <link>http://example.org/docs/inputs/jsonload/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/inputs/jsonload/</guid>
+      <description>jsonLoad Load data from a JSON file. Default behavior expects a single dictionary per line. Each line is a seperate entry. The multiline parameter reads all of the lines of the files and returns a single object.
+Parameters name Description input Path of JSON file to transform multiline Load file as a single multiline JSON object Example inputs: caseData: jsonLoad: input: &amp;#34;{{config.casesJSON}}&amp;#34; </description>
+    </item>
+    
+    <item>
+      <title>lookup</title>
+      <link>http://example.org/docs/transforms/lookup/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/lookup/</guid>
+      <description>lookup Using key from current row, get values from a reference source
+Parameters name Type Description replace string (field path) Field to replace lookup string (template string) Key to use for looking up data copy map[string]string Given lookup of structure, copy values (key) to row (value) tsv TSVTable TSV translation table file json JSONTable JSON data file table LookupTable Inline lookup table Example - lookup: json: input: &amp;#34;{{config.doseResponseFile}}&amp;#34; key: experiment_id lookup: &amp;#34;{{row.</description>
+    </item>
+    
+    <item>
+      <title>map</title>
+      <link>http://example.org/docs/transforms/map/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/map/</guid>
+      <description>map Run function on every row
+Parameters name Description method Name of function to call python Python code to be run gpython Python code to be run using GPython Example - map: method: response gpython: | def response(x): s = sorted(x[&amp;#34;curve&amp;#34;].items(), key=lambda x:float(x[0])) x[&amp;#39;dose_um&amp;#39;] = [] x[&amp;#39;response&amp;#39;] = [] for d, r in s: try: dn = float(d) rn = float(r) x[&amp;#39;dose_um&amp;#39;].append(dn) x[&amp;#39;response&amp;#39;].append(rn) except ValueError: pass return x </description>
+    </item>
+    
+    <item>
+      <title>objectCreate</title>
+      <link>http://example.org/docs/transforms/objectcreate/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/objectcreate/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Overview</title>
+      <link>http://example.org/docs/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/</guid>
+      <description>Sifter pipelines Sifter pipelines process steams of nested JSON messages. Sifter comes with a number of file extractors that operate as inputs to these pipelines. The pipeline engine connects togeather arrays of transform steps into direct acylic graph that is processed in parallel.
+Example Message:
+{ &amp;#34;firstName&amp;#34; : &amp;#34;bob&amp;#34;, &amp;#34;age&amp;#34; : &amp;#34;25&amp;#34; &amp;#34;friends&amp;#34; : [ &amp;#34;Max&amp;#34;, &amp;#34;Alex&amp;#34;] } Once a stream of messages are produced, that can be run through a transform pipeline.</description>
+    </item>
+    
+    <item>
+      <title>Pipeline Steps</title>
+      <link>http://example.org/docs/transforms/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/</guid>
+      <description>Transforms alter the data</description>
+    </item>
+    
+    <item>
+      <title>project</title>
+      <link>http://example.org/docs/transforms/project/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/project/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>reduce</title>
+      <link>http://example.org/docs/transforms/reduce/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/reduce/</guid>
+      <description>reduce Using key from rows, reduce matched records into a single entry
+Parameters name Type Description field string (field path) Field used to match rows method string Method name python string Python code string gpython string Python code string run using (https://github.com/go-python/gpython) init map[string]any Data to use for first reduce Example - reduce: field: dataset_name method: merge init: { &amp;#34;compounds&amp;#34; : [] } gpython: | def merge(x,y): x[&amp;#34;compounds&amp;#34;] = list(set(y[&amp;#34;compounds&amp;#34;]+x[&amp;#34;compounds&amp;#34;])) return x </description>
+    </item>
+    
+    <item>
+      <title>regexReplace</title>
+      <link>http://example.org/docs/transforms/regexreplace/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/transforms/regexreplace/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Sifter Pipeline File</title>
+      <link>http://example.org/docs/playbook/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/playbook/</guid>
+      <description>Pipeline File An sifter pipeline file is in YAML format and describes an entire processing pipelines. If is composed of the following sections: config, inputs, pipelines, outputs. In addition, for tracking, the file will also include name and class entries.
+class: sifter name: &amp;lt;script name&amp;gt; outdir: &amp;lt;where output files should go, relative to this file&amp;gt; config: &amp;lt;config key&amp;gt;: &amp;lt;config value&amp;gt; &amp;lt;config key&amp;gt;: &amp;lt;config value&amp;gt; # values that are referenced in pipeline parameters for # files will be treated like file paths and be # translated to full paths inputs: &amp;lt;input name&amp;gt;: &amp;lt;input driver&amp;gt;: &amp;lt;driver config&amp;gt; pipelines: &amp;lt;pipeline name&amp;gt;: # all pipelines must start with a from step - from: &amp;lt;name of input or pipeline&amp;gt; - &amp;lt;transform name&amp;gt;: &amp;lt;transform parameters&amp;gt; outputs: &amp;lt;output name&amp;gt;: &amp;lt;output driver&amp;gt;: &amp;lt;driver config&amp;gt; </description>
+    </item>
+    
+    <item>
+      <title>sqldump</title>
+      <link>http://example.org/docs/inputs/sqldump/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/inputs/sqldump/</guid>
+      <description>sqlDump Scan file produced produced from sqldump.
+Parameters Name Type Description input string Path to the SQL dump file tables []string Names of tables to read out Example inputs: database: sqldumpLoad: input: &amp;#34;{{config.sql}}&amp;#34; tables: - cells - cell_tissues - dose_responses - drugs - drug_annots - experiments - profiles </description>
+    </item>
+    
+    <item>
+      <title>sqliteLoad</title>
+      <link>http://example.org/docs/inputs/sqliteload/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/inputs/sqliteload/</guid>
+      <description>sqliteLoad Extract data from an sqlite file
+Parameters Name Type Description input string Path to the SQLite file query string SQL select statement based input Example inputs: sqlQuery: sqliteLoad: input: &amp;#34;{{config.sqlite}}&amp;#34; query: &amp;#34;select * from drug_mechanism as a LEFT JOIN MECHANISM_REFS as b on a.MEC_ID=b.MEC_ID LEFT JOIN TARGET_COMPONENTS as c on a.TID=c.TID LEFT JOIN COMPONENT_SEQUENCES as d on c.COMPONENT_ID=d.COMPONENT_ID LEFT JOIN MOLECULE_DICTIONARY as e on a.MOLREGNO=e.MOLREGNO&amp;#34; </description>
+    </item>
+    
+    <item>
+      <title>tableLoad</title>
+      <link>http://example.org/docs/inputs/tableload/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/inputs/tableload/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>xmlLoad</title>
+      <link>http://example.org/docs/inputs/xmlload/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://example.org/docs/inputs/xmlload/</guid>
+      <description>xmlLoad Load an XML file
+Parameters name Description input Path to input file Example inputs: loader: xmlLoad: input: &amp;#34;{{config.xmlPath}}&amp;#34; </description>
+    </item>
+    
+  </channel>
+</rss>

@@ -23,10 +23,13 @@ type JSONLoadStep struct {
 func (ml *JSONLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 	log.Printf("Starting JSON Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
-	inputPath, err := task.AbsPath(input)
+	if err != nil {
+		return nil, err
+	}
 
+	inputPath, _ := task.AbsPath(input)
 	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("File Not Found: %s", input)
+		return nil, fmt.Errorf("file not found: %s", input)
 	}
 	log.Printf("Loading: %s", inputPath)
 

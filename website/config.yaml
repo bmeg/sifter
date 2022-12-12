@@ -1,4 +1,4 @@
-baseURL: https://bmeg.github.io/sifter/
+baseURL: https://bmeg.github.io/sifter
 languageCode: en-us
 title: Sifter
 publishDir: ../docs/

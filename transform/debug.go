@@ -8,7 +8,8 @@ import (
 )
 
 type DebugStep struct {
-	Label string `json:"label"`
+	Label  string `json:"label"`
+	Format bool   `json:"format"`
 }
 
 func (ds DebugStep) Init(task task.RuntimeTask) (Processor, error) {
@@ -16,7 +17,12 @@ func (ds DebugStep) Init(task task.RuntimeTask) (Processor, error) {
 }
 
 func (ds DebugStep) Process(i map[string]interface{}) []map[string]interface{} {
-	s, _ := json.Marshal(i)
+	var s []byte
+	if ds.Format {
+		s, _ = json.MarshalIndent(i, "", "    ")
+	} else {
+		s, _ = json.Marshal(i)
+	}
 	log.Printf("DebugData %s: %s", ds.Label, s)
 	return []map[string]any{i}
 }

@@ -26,12 +26,16 @@ type TableLoadStep struct {
 func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 	log.Printf("Starting Table Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
-	inputPath, err := task.AbsPath(input)
+	if err != nil {
+		return nil, err
+	}
+
+	inputPath, _ := task.AbsPath(input)
 
 	if s, err := os.Stat(inputPath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("File Not Found: %s", inputPath)
+		return nil, fmt.Errorf("file not found: %s", inputPath)
 	} else if s.IsDir() {
-		return nil, fmt.Errorf("Input not a file: %s", inputPath)
+		return nil, fmt.Errorf("input not a file: %s", inputPath)
 	}
 	log.Printf("Loading table: %s", inputPath)
 	fhd, err := os.Open(inputPath)

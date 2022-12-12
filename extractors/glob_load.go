@@ -12,6 +12,7 @@ import (
 
 type GlobLoadStep struct {
 	StoreFilename string         `json:"storeFilename"`
+	StoreFilepath string         `json:"storeFilepath"`
 	Input         string         `json:"input" jsonschema_description:"Path of avro object file to transform"`
 	XMLLoad       *XMLLoadStep   `json:"xmlLoad"`
 	TableLoad     *TableLoadStep `json:"tableLoad" jsonschema_description:"Run transform pipeline on a TSV or CSV"`
@@ -56,6 +57,9 @@ func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 						if gl.StoreFilename != "" {
 							i[gl.StoreFilename] = filepath.Base(f)
 						}
+						if gl.StoreFilepath != "" {
+							i[gl.StoreFilepath] = f
+						}
 						out <- i
 					}
 				}
@@ -63,7 +67,7 @@ func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 		}()
 		return out, nil
 	}
-	return nil, fmt.Errorf("Not found")
+	return nil, fmt.Errorf("not found")
 }
 
 func (gl *GlobLoadStep) GetConfigFields() []config.Variable {

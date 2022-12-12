@@ -22,11 +22,15 @@ type SQLDumpStep struct {
 func (ml *SQLDumpStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 
 	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
-	inputPath, err := task.AbsPath(input)
+	if err != nil {
+		return nil, err
+	}
+
+	inputPath, _ := task.AbsPath(input)
 	log.Printf("Starting SQLDump Load: %s", inputPath)
 
 	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("File Not Found: %s", input)
+		return nil, fmt.Errorf("file not found: %s", input)
 	}
 	log.Printf("Loading: %s", inputPath)
 	fhd, err := os.Open(inputPath)

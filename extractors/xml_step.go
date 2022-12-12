@@ -29,7 +29,7 @@ func (ml *XMLLoadStep) Start(task task.RuntimeTask) (chan map[string]any, error)
 	}
 
 	if _, err := os.Stat(input); os.IsNotExist(err) {
-		return nil, fmt.Errorf("File Not Found: %s", input)
+		return nil, fmt.Errorf("file not found: %s", input)
 	}
 	log.Printf("Loading: %s", input)
 

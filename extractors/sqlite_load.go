@@ -17,7 +17,11 @@ type SQLiteStep struct {
 
 func (ml *SQLiteStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
-	inputPath, err := task.AbsPath(input)
+	if err != nil {
+		return nil, err
+	}
+
+	inputPath, _ := task.AbsPath(input)
 
 	log.Printf("SQLite Loading: %s", inputPath)
 

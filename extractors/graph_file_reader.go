@@ -13,7 +13,7 @@ import (
 
 func LoadVertexFile(path string) (chan *gripql.Vertex, error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return nil, fmt.Errorf("File Not Found: %s", path)
+		return nil, fmt.Errorf("file not found: %s", path)
 	}
 	log.Printf("Loading: %s", path)
 
@@ -48,7 +48,7 @@ func LoadVertexFile(path string) (chan *gripql.Vertex, error) {
 
 func LoadEdgeFile(path string) (chan *gripql.Edge, error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return nil, fmt.Errorf("File Not Found: %s", path)
+		return nil, fmt.Errorf("file not found: %s", path)
 	}
 	log.Printf("Loading: %s", path)
 

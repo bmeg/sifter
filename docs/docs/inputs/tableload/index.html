@@ -12,18 +12,18 @@
   
 
   
-  <link rel="stylesheet" href="https://bmeg.github.io/sifter//css/poole.css">
-  <link rel="stylesheet" href="https://bmeg.github.io/sifter//css/darcula.css">
-  <link rel="stylesheet" href="https://bmeg.github.io/sifter//css/syntax.css">
-  <link rel="stylesheet" href="https://bmeg.github.io/sifter//css/theme.css">
-  <link rel="stylesheet" href="https://bmeg.github.io/sifter//css/funnel.css">
+  <link rel="stylesheet" href="https://bmeg.github.io/sifter/css/poole.css">
+  <link rel="stylesheet" href="https://bmeg.github.io/sifter/css/darcula.css">
+  <link rel="stylesheet" href="https://bmeg.github.io/sifter/css/syntax.css">
+  <link rel="stylesheet" href="https://bmeg.github.io/sifter/css/theme.css">
+  <link rel="stylesheet" href="https://bmeg.github.io/sifter/css/funnel.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700">
 
   
   <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
   <link rel="shortcut icon" href="/favicon.png">
 
-  <script src="https://bmeg.github.io/sifter//js/highlight.pack.js"></script>
+  <script src="https://bmeg.github.io/sifter/js/highlight.pack.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
 
 </head>
@@ -32,11 +32,11 @@
   <div class="global-header">
     <div class="global-header-container">
       <div class="global-header-home">
-        <a href="https://bmeg.github.io/sifter/"><h1>Sifter</h1></a>
+        <a href="https://bmeg.github.io/sifter"><h1>Sifter</h1></a>
       </div>
       <ul class="global-header-nav">
           <li><a href="https://github.com/bmeg/sifter/releases">Download</a></li>
-          <li><a href="https://bmeg.github.io/sifter//docs/">Docs</a></li>
+          <li><a href="https://bmeg.github.io/sifter/docs/">Docs</a></li>
           <li><a href="https://github.com/bmeg/sifter">GitHub</a></li>
         </ul>
     </div>
@@ -333,7 +333,73 @@
   </div>
 
   <div class="main col span_8_of_12">
-    
+    <h1 id="tableload">tableLoad</h1>
+<p>Extract data from tabular file, includiong TSV and CSV files.</p>
+<h2 id="parameters">Parameters</h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Input</td>
+<td>string</td>
+<td>File to be transformed</td>
+</tr>
+<tr>
+<td>RowSkip</td>
+<td>int</td>
+<td>Number of header rows to skip</td>
+</tr>
+<tr>
+<td>Columns</td>
+<td>[]string</td>
+<td>Manually set names of columns</td>
+</tr>
+<tr>
+<td>ExtraColumns</td>
+<td>string</td>
+<td>Columns beyond originally declared columns will be placed in this array</td>
+</tr>
+<tr>
+<td>Sep</td>
+<td>string</td>
+<td>Separator \t for TSVs or , for CSVs</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example">Example</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">config</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">gafFile</span>: <span style="color:#ae81ff">../../source/go/goa_human.gaf.gz</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">inputs</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">gafLoad</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">tableLoad</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">input</span>: <span style="color:#e6db74">&#34;{{config.gafFile}}&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">columns</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">db</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">id</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">symbol</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">qualifier</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">goID</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">reference</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">evidenceCode</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">from</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">aspect</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">name</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">synonym</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">objectType</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">taxon</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">date</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">assignedBy</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">extension</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">geneProduct</span>
+</span></span></code></pre></div>
   </div>
 
 </div>

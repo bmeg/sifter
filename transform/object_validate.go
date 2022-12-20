@@ -9,18 +9,18 @@ import (
 	"github.com/bmeg/sifter/task"
 )
 
-type ObjectCreateStep struct {
+type ObjectValidateStep struct {
 	Class  string `json:"class" jsonschema_description:"Object class, should match declared class in JSON Schema"`
 	Schema string `json:"schema" jsonschema_description:"Directory with JSON schema files"`
 }
 
 type objectProcess struct {
-	config ObjectCreateStep
+	config ObjectValidateStep
 	task   task.RuntimeTask
 	schema schema.Schema
 }
 
-func (ts ObjectCreateStep) Init(task task.RuntimeTask) (Processor, error) {
+func (ts ObjectValidateStep) Init(task task.RuntimeTask) (Processor, error) {
 	className, err := evaluate.ExpressionString(ts.Class, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func (ts ObjectCreateStep) Init(task task.RuntimeTask) (Processor, error) {
 	return nil, fmt.Errorf("class %s not found", className)
 }
 
-func (ts ObjectCreateStep) GetConfigFields() []config.Variable {
+func (ts ObjectValidateStep) GetConfigFields() []config.Variable {
 	out := []config.Variable{}
 	if ts.Schema != "" {
 		for _, s := range evaluate.ExpressionIDs(ts.Schema) {

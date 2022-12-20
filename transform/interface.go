@@ -40,24 +40,24 @@ type Transform interface {
 }
 
 type Step struct {
-	From         *FromStep         `json:"from"`
-	FieldParse   *FieldParseStep   `json:"fieldParse" jsonschema_description:"fieldParse to run"`
-	FieldType    *FieldTypeStep    `json:"fieldType" jsonschema_description:"Change type of a field (ie string -> integer)"`
-	ObjectCreate *ObjectCreateStep `json:"objectCreate" jsonschema_description:"Create a JSON schema based object"`
-	Emit         *EmitStep         `json:"emit" jsonschema_description:"Write to unstructured JSON file"`
-	Filter       *FilterStep       `json:"filter"`
-	Clean        *CleanStep        `json:"clean"`
-	Debug        *DebugStep        `json:"debug" jsonschema_description:"Print message contents to stdout"`
-	RegexReplace *RegexReplaceStep `json:"regexReplace"`
-	Project      *ProjectStep      `json:"project" jsonschema_description:"Run a projection mapping message"`
-	Map          *MapStep          `json:"map" jsonschema_description:"Apply a single function to all records"`
-	Reduce       *ReduceStep       `json:"reduce"`
-	Distinct     *DistinctStep     `json:"distinct"`
-	FieldProcess *FieldProcessStep `json:"fieldProcess" jsonschema_description:"Take an array field from a message and run in child transform"`
-	Lookup       *LookupStep       `json:"lookup"`
-	Hash         *HashStep         `json:"hash"`
-	GraphBuild   *GraphBuildStep   `json:"graphBuild"`
-	Accumulate   *AccumulateStep   `json:"accumulate"`
+	From           *FromStep           `json:"from"`
+	FieldParse     *FieldParseStep     `json:"fieldParse" jsonschema_description:"fieldParse to run"`
+	FieldType      *FieldTypeStep      `json:"fieldType" jsonschema_description:"Change type of a field (ie string -> integer)"`
+	ObjectValidate *ObjectValidateStep `json:"objectValidate" jsonschema_description:"Validate a JSON schema based object"`
+	Emit           *EmitStep           `json:"emit" jsonschema_description:"Write to unstructured JSON file"`
+	Filter         *FilterStep         `json:"filter"`
+	Clean          *CleanStep          `json:"clean"`
+	Debug          *DebugStep          `json:"debug" jsonschema_description:"Print message contents to stdout"`
+	RegexReplace   *RegexReplaceStep   `json:"regexReplace"`
+	Project        *ProjectStep        `json:"project" jsonschema_description:"Run a projection mapping message"`
+	Map            *MapStep            `json:"map" jsonschema_description:"Apply a single function to all records"`
+	Reduce         *ReduceStep         `json:"reduce"`
+	Distinct       *DistinctStep       `json:"distinct"`
+	FieldProcess   *FieldProcessStep   `json:"fieldProcess" jsonschema_description:"Take an array field from a message and run in child transform"`
+	Lookup         *LookupStep         `json:"lookup"`
+	Hash           *HashStep           `json:"hash"`
+	GraphBuild     *GraphBuildStep     `json:"graphBuild"`
+	Accumulate     *AccumulateStep     `json:"accumulate"`
 }
 
 type Pipe []Step

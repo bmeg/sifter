@@ -1,6 +1,7 @@
 package run
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -10,6 +11,7 @@ import (
 
 func Execute(playFile string, workDir string, outDir string, inputs map[string]string) error {
 	log.Printf("Starting: %s\n", playFile)
+	log.Default().SetPrefix(fmt.Sprintf("%s: ", playFile))
 	pb := playbook.Playbook{}
 	if err := playbook.ParseFile(playFile, &pb); err != nil {
 		log.Printf("%s", err)

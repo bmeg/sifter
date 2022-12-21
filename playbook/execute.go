@@ -22,8 +22,6 @@ func fileExists(filename string) bool {
 */
 
 func (pb *Playbook) PrepConfig(inputs map[string]string, workdir string) (map[string]string, error) {
-	log.Printf("Start config: %#v", inputs)
-
 	workdir, _ = filepath.Abs(workdir)
 	out := map[string]string{}
 	for _, v := range pb.GetConfigFields() {

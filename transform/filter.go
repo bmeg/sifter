@@ -15,7 +15,6 @@ type FilterStep struct {
 	Method  string `json:"method"`
 	Python  string `json:"python"`
 	GPython string `json:"gpython"`
-	Steps   Pipe   `json:"steps"`
 }
 
 type filterProcessor struct {
@@ -46,43 +45,55 @@ func (fs FilterStep) Init(task task.RuntimeTask) (Processor, error) {
 	return &filterProcessor{fs, nil, task}, nil
 }
 
-func (fs *filterProcessor) Process(i map[string]interface{}) []map[string]any {
+func (fs *filterProcessor) Process(row map[string]interface{}) []map[string]any {
 	if fs.proc != nil {
-		out, err := fs.proc.EvaluateBool(i)
+		out, err := fs.proc.EvaluateBool(row)
 		if err != nil {
 			log.Printf("Filter Error: %s", err)
 		}
 		if out {
-			return []map[string]any{i}
+			return []map[string]any{row}
 		}
 		return []map[string]any{}
 	}
 	value := ""
 	var err error
 	if fs.config.Value != "" {
-		value, err = evaluate.ExpressionString(fs.config.Value, fs.task.GetConfig(), i)
+		value, err = evaluate.ExpressionString(fs.config.Value, fs.task.GetConfig(), row)
+		if err != nil {
+			log.Printf("Expression Error: %s", err)
+		}
 	} else if fs.config.Field != "" {
-		i, e := evaluate.GetJSONPath(fs.config.Field, i)
+		i, e := evaluate.GetJSONPath(fs.config.Field, row)
 		err = e
+		if err != nil {
+			log.Printf("Field Error: %s", err)
+		}
 		if vstr, ok := i.(string); ok {
 			value = vstr
 		}
 	}
 	if (fs.config.Check == "" && fs.config.Match == "") || fs.config.Check == "exists" {
 		if err == nil {
-			return []map[string]any{i}
+			return []map[string]any{row}
 		}
 		return []map[string]any{}
 	} else if fs.config.Check == "hasValue" {
 		if err == nil && value != "" {
-			return []map[string]any{i}
+			return []map[string]any{row}
+		}
+		return []map[string]any{}
+	} else if fs.config.Check == "not" {
+		log.Printf("Filter not: %s != %s", value, fs.config.Match)
+		if err == nil && value != fs.config.Match {
+			return []map[string]any{row}
 		}
 		return []map[string]any{}
 	}
 
-	match, _ := evaluate.ExpressionString(fs.config.Match, fs.task.GetConfig(), i)
+	match, _ := evaluate.ExpressionString(fs.config.Match, fs.task.GetConfig(), row)
 	if value == match {
-		return []map[string]any{i}
+		return []map[string]any{row}
 	}
 	return []map[string]any{}
 }

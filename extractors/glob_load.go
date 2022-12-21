@@ -21,11 +21,11 @@ type GlobLoadStep struct {
 }
 
 func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
-	log.Printf("Starting Glob Load")
 	input, err := evaluate.ExpressionString(gl.Input, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Starting Glob Load: %s", input)
 	if gl.XMLLoad != nil || gl.JSONLoad != nil || gl.TableLoad != nil {
 		flist, err := filepath.Glob(input)
 		if err != nil {

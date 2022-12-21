@@ -117,7 +117,9 @@ name: zipcode_map outdir: ./ docs: Converts zipcode TSV into graph elements Next
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://bmeg.github.io/sifter/docs/transforms/filter/</guid>
-      <description></description>
+      <description>filter Filter rows in stream using a number of different methods
+Parameters name Type Description field string (field path) Field used to match rows value string (template string) Template string to match against match string String to match against check string How to check value, &amp;rsquo;exists&amp;rsquo; or &amp;lsquo;hasValue&amp;rsquo; method string Method name python string Python code string gpython string Python code string run using (https://github.com/go-python/gpython) Example Field based match
+- filter: field: table match: source_statistics Check based match</description>
     </item>
     
     <item>

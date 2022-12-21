@@ -333,7 +333,65 @@
   </div>
 
   <div class="main col span_8_of_12">
-    
+    <h1 id="filter">filter</h1>
+<p>Filter rows in stream using a number of different methods</p>
+<h2 id="parameters">Parameters</h2>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>field</td>
+<td>string (field path)</td>
+<td>Field used to match rows</td>
+</tr>
+<tr>
+<td>value</td>
+<td>string (template string)</td>
+<td>Template string to match against</td>
+</tr>
+<tr>
+<td>match</td>
+<td>string</td>
+<td>String to match against</td>
+</tr>
+<tr>
+<td>check</td>
+<td>string</td>
+<td>How to check value, &rsquo;exists&rsquo; or &lsquo;hasValue&rsquo;</td>
+</tr>
+<tr>
+<td>method</td>
+<td>string</td>
+<td>Method name</td>
+</tr>
+<tr>
+<td>python</td>
+<td>string</td>
+<td>Python code string</td>
+</tr>
+<tr>
+<td>gpython</td>
+<td>string</td>
+<td>Python code string run using (<a href="https://github.com/go-python/gpython">https://github.com/go-python/gpython</a>)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example">Example</h2>
+<p>Field based match</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    - <span style="color:#f92672">filter</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">field</span>: <span style="color:#ae81ff">table</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">match</span>: <span style="color:#ae81ff">source_statistics</span>
+</span></span></code></pre></div><p>Check based match</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    - <span style="color:#f92672">filter</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">field</span>: <span style="color:#ae81ff">uniprot</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">check</span>: <span style="color:#ae81ff">hasValue</span>
+</span></span></code></pre></div>
   </div>
 
 </div>

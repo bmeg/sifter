@@ -11,7 +11,6 @@ import (
 
 type DistinctStep struct {
 	Value string `json:"value"`
-	Steps Pipe   `json:"steps"`
 }
 
 type distinctProcess struct {

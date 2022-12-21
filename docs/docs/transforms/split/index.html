@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 
   
-  <title>distinct &middot; Sifter</title>
+  <title>reduce &middot; Sifter</title>
   
 
   
@@ -195,7 +195,7 @@
             <ul class="sidebar-nav sidebar-nav-nested">
               <li>
                 <a href="/sifter/docs/transforms/distinct/"
-                   class="sidebar-nav-item  active"
+                   class="sidebar-nav-item "
                 >distinct</a></li>
             </ul>
           </li>
@@ -333,8 +333,8 @@
   </div>
 
   <div class="main col span_8_of_12">
-    <h1 id="distinct">distinct</h1>
-<p>Using templated value, allow only the first record for each distinct key</p>
+    <h1 id="split">split</h1>
+<p>Split a field using string <code>sep</code></p>
 <h2 id="parameters">Parameters</h2>
 <table>
 <thead>
@@ -346,15 +346,21 @@
 </thead>
 <tbody>
 <tr>
-<td>value</td>
+<td>field</td>
 <td>string</td>
-<td>Key used for distinct value</td>
+<td>Field to the split</td>
+</tr>
+<tr>
+<td>sep</td>
+<td>string</td>
+<td>String to use for splitting</td>
 </tr>
 </tbody>
 </table>
 <h2 id="example">Example</h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    - <span style="color:#f92672">distinct</span>:
-</span></span><span style="display:flex;"><span>        <span style="color:#f92672">value</span>: <span style="color:#e6db74">&#34;{{row.key}}&#34;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    - <span style="color:#f92672">split</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">field</span>: <span style="color:#ae81ff">methods</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sep</span>: <span style="color:#e6db74">&#34;;&#34;</span>
 </span></span></code></pre></div>
   </div>
 

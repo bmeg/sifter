@@ -41,6 +41,7 @@ type Transform interface {
 
 type Step struct {
 	From           *FromStep           `json:"from"`
+	Split          *SplitStep          `json:"split"`
 	FieldParse     *FieldParseStep     `json:"fieldParse" jsonschema_description:"fieldParse to run"`
 	FieldType      *FieldTypeStep      `json:"fieldType" jsonschema_description:"Change type of a field (ie string -> integer)"`
 	ObjectValidate *ObjectValidateStep `json:"objectValidate" jsonschema_description:"Validate a JSON schema based object"`

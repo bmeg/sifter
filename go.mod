@@ -11,7 +11,7 @@ require (
 	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad
 	github.com/dgraph-io/badger/v2 v2.0.1
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-python/gpython v0.1.1-0.20220322084537-7da1de05fdb7
+	github.com/go-python/gpython v0.1.0
 	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/go-getter v1.6.2
 	github.com/hashicorp/go-multierror v1.0.0

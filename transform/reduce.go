@@ -23,7 +23,8 @@ type reduceProcess struct {
 
 func (ms *ReduceStep) Init(t task.RuntimeTask) (Processor, error) {
 	if ms.Python != "" {
-		log.Printf("Init Reduce: %s", ms.Python)
+		log.Printf("ReduceInit: %s", ms.InitData)
+		log.Printf("Reduce: %s", ms.Python)
 		e := evaluate.GetEngine("python", t.WorkDir())
 		c, err := e.Compile(ms.Python, ms.Method)
 		if err != nil {
@@ -31,7 +32,8 @@ func (ms *ReduceStep) Init(t task.RuntimeTask) (Processor, error) {
 		}
 		return &reduceProcess{ms, c}, nil
 	} else if ms.GPython != "" {
-		log.Printf("Init Reduce: %s", ms.GPython)
+		log.Printf("ReduceInit: %s", ms.InitData)
+		log.Printf("Reduce: %s", ms.GPython)
 		e := evaluate.GetEngine("gpython", t.WorkDir())
 		c, err := e.Compile(ms.GPython, ms.Method)
 		if err != nil {
@@ -39,7 +41,7 @@ func (ms *ReduceStep) Init(t task.RuntimeTask) (Processor, error) {
 		}
 		return &reduceProcess{ms, c}, nil
 	}
-	return nil, fmt.Errorf("Script not found")
+	return nil, fmt.Errorf("script not found")
 }
 
 func (rp *reduceProcess) Close() {
@@ -63,6 +65,9 @@ func (rp *reduceProcess) GetKey(i map[string]any) string {
 }
 
 func (rp *reduceProcess) Reduce(key string, a map[string]any, b map[string]any) map[string]any {
-	out, _ := rp.proc.Evaluate(a, b)
+	out, err := rp.proc.Evaluate(a, b)
+	if err != nil {
+		log.Printf("Reduce Error: %s", err)
+	}
 	return out
 }

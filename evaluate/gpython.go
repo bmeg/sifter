@@ -144,8 +144,8 @@ func (p *PyCode) Evaluate(method string, inputs ...map[string]interface{}) (map[
 	out, err := py.Call(fun, in, nil)
 	if err != nil {
 		py.TracebackDump(err)
-		log.Printf("Inputs: %#v", inputs)
-		log.Printf("Inputs: %#v", in)
+		log.Printf("Error Inputs: %#v", inputs)
+		log.Printf("Error Inputs: %#v", in)
 		log.Printf("Map Error: %s", err)
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func (p *PyCode) Evaluate(method string, inputs ...map[string]interface{}) (map[
 	if out, ok := o.(map[string]interface{}); ok {
 		return out, nil
 	}
-	return nil, fmt.Errorf("Incorrect return type: %s", out)
+	return nil, fmt.Errorf("incorrect return type: %s", out)
 }
 
 func (p *PyCode) EvaluateBool(method string, inputs ...map[string]interface{}) (bool, error) {
@@ -173,5 +173,5 @@ func (p *PyCode) EvaluateBool(method string, inputs ...map[string]interface{}) (
 	if out, ok := o.(bool); ok {
 		return out, nil
 	}
-	return false, fmt.Errorf("Incorrect return type: %s", out)
+	return false, fmt.Errorf("incorrect return type: %s", out)
 }

@@ -11,7 +11,7 @@ require (
 	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad
 	github.com/dgraph-io/badger/v2 v2.0.1
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-python/gpython v0.1.0
+	github.com/go-python/gpython v0.1.1-0.20221005072539-6f8e06a46607
 	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/go-getter v1.6.2
 	github.com/hashicorp/go-multierror v1.0.0
@@ -73,11 +73,14 @@ require (
 	github.com/logrusorgru/aurora v0.0.0-20190428105938-cea283e61946 // indirect
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/oklog/run v1.0.0 // indirect
+	github.com/peterh/liner v1.2.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/rivo/uniseg v0.3.4 // indirect
 	github.com/segmentio/ksuid v1.0.2 // indirect
 	github.com/sirupsen/logrus v1.6.0 // indirect
 	github.com/spf13/cast v1.3.0 // indirect
@@ -95,7 +98,7 @@ require (
 	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
 	golang.org/x/oauth2 v0.0.0-20210615190721-d04028783cf1 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20220517195934-5e4e11fc645e // indirect
+	golang.org/x/sys v0.0.0-20220817070843-5a390386f1f2 // indirect
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.8-0.20211029000441-d6a9af8af023 // indirect

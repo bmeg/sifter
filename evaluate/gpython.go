@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	_ "github.com/go-python/gpython/modules" // Load modiles in gpython environment
 	"github.com/go-python/gpython/py"
+	_ "github.com/go-python/gpython/stdlib" // Load modiles in gpython environment
 )
 
 type GPythonEngine struct{}

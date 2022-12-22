@@ -2,7 +2,6 @@ package playbook
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
 
 	"github.com/bmeg/sifter/config"
@@ -58,7 +57,6 @@ func (pb *Playbook) GetDefaultOutDir() string {
 	}
 	path := filepath.Join(filepath.Dir(pb.path), pb.Outdir)
 	out, _ := filepath.Abs(path)
-	log.Printf("default: %s %s %s", pb.path, pb.Outdir, out)
 	return out
 }
 

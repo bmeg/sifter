@@ -27,8 +27,6 @@ type Extractor struct {
 	//Untar         *UntarStep         `json:"untar" jsonschema_description:"Untar a file"`
 	//FileGlob      *FileGlobStep      `json:"fileGlob" jsonschema_description:"Scan a directory and run a ETL pipeline on each of the files"`
 	//Script        *ScriptStep        `json:"script" jsonschema_description:"Execute a script"`
-	//TransposeFile *TransposeFileStep `json:"transposeFile" jsonschema_description:"Take a matrix TSV and transpose it (row become columns)"`
-
 }
 
 func (ex *Extractor) Start(t task.RuntimeTask) (chan map[string]interface{}, error) {

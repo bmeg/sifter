@@ -14,11 +14,11 @@ Extract data from tabular file, includiong TSV and CSV files.
 
 | Name | Type | Description |
 |-------|---|--------|
-| Input     |   string   | File to be transformed |
-|	RowSkip   |   int       | Number of header rows to skip | 
-|	Columns   |   []string  | Manually set names of columns |
-|	ExtraColumns | string   |  Columns beyond originally declared columns will be placed in this array |
-|	Sep       |   string   | Separator \\t for TSVs or , for CSVs |
+| input     |   string   | File to be transformed |
+|	rowSkip   |   int       | Number of header rows to skip | 
+|	columns   |   []string  | Manually set names of columns |
+|	extraColumns | string   |  Columns beyond originally declared columns will be placed in this array |
+|	sep       |   string   | Separator \\t for TSVs or , for CSVs |
 
 
 ## Example

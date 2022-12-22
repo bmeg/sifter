@@ -105,11 +105,11 @@ func (tr *LookupStep) GetConfigFields() []config.Variable {
 
 func (tp *lookupProcess) Close() {}
 
-func (tp *lookupProcess) Process(i map[string]interface{}) []map[string]interface{} {
+func (tp *lookupProcess) Process(row map[string]interface{}) []map[string]interface{} {
 	if tp.config.Replace != "" {
-		if _, ok := i[tp.config.Replace]; ok {
+		if _, ok := row[tp.config.Replace]; ok {
 			out := map[string]interface{}{}
-			for k, v := range i {
+			for k, v := range row {
 				if k == tp.config.Replace {
 					if x, ok := v.(string); ok {
 						if n, ok := tp.table.LookupValue(x); ok {
@@ -129,6 +129,16 @@ func (tp *lookupProcess) Process(i map[string]interface{}) []map[string]interfac
 							}
 						}
 						out[k] = o
+					} else if x, ok := v.(map[string]any); ok {
+						o := map[string]any{}
+						for key, val := range x {
+							if n, ok := tp.table.LookupValue(key); ok {
+								o[n] = val
+							} else {
+								o[key] = val
+							}
+						}
+						out[k] = o
 					} else {
 						out[k] = v
 					}
@@ -139,18 +149,18 @@ func (tp *lookupProcess) Process(i map[string]interface{}) []map[string]interfac
 			return []map[string]any{out}
 		}
 	} else if tp.config.Lookup != "" {
-		value, err := evaluate.ExpressionString(tp.config.Lookup, tp.userConfig, i)
+		value, err := evaluate.ExpressionString(tp.config.Lookup, tp.userConfig, row)
 		if err == nil {
 			if pv, ok := tp.table.LookupRecord(value); ok {
 				for k, v := range tp.config.Copy {
 					if ki, ok := pv[v]; ok {
-						i[k] = ki
+						row[k] = ki
 					}
 				}
 			}
 		}
 	}
-	return []map[string]any{i}
+	return []map[string]any{row}
 }
 
 func (tsv *TSVTable) open(task task.RuntimeTask) (lookupTable, error) {

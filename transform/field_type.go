@@ -18,25 +18,29 @@ func (fs FieldTypeStep) Init(task task.RuntimeTask) (Processor, error) {
 
 func (fp *fieldTypeProcess) Close() {}
 
-func (fp *fieldTypeProcess) Process(i map[string]interface{}) []map[string]interface{} {
+func (fp *fieldTypeProcess) Process(row map[string]interface{}) []map[string]interface{} {
 	o := map[string]interface{}{}
-	for x, y := range i {
+	for x, y := range row {
 		o[x] = y
 	}
 	for field, fType := range fp.config {
-		if fType == "int" {
-			if val, ok := i[field]; ok {
+		if fType == "int" || fType == "integer" {
+			if val, ok := row[field]; ok {
 				if vStr, ok := val.(string); ok {
 					if d, err := strconv.ParseInt(vStr, 10, 64); err == nil {
 						o[field] = d
+					} else {
+						o[field] = nil
 					}
 				}
 			}
 		} else if fType == "float" {
-			if val, ok := i[field]; ok {
+			if val, ok := row[field]; ok {
 				if vStr, ok := val.(string); ok {
 					if d, err := strconv.ParseFloat(vStr, 64); err == nil {
 						o[field] = d
+					} else {
+						o[field] = nil
 					}
 				}
 			}

@@ -35,7 +35,7 @@ type GraphBuildStep struct {
 type graphBuildProcess struct {
 	config GraphBuildStep
 	task   task.RuntimeTask
-	sch    schema.Schemas
+	sch    schema.GraphSchema
 	class  string
 }
 

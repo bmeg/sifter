@@ -1,7 +1,9 @@
 package transform
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
@@ -15,9 +17,11 @@ type ObjectValidateStep struct {
 }
 
 type objectProcess struct {
-	config ObjectValidateStep
-	task   task.RuntimeTask
-	schema schema.Schema
+	config     ObjectValidateStep
+	task       task.RuntimeTask
+	className  string
+	schema     schema.GraphSchema
+	errorCount int
 }
 
 func (ts ObjectValidateStep) Init(task task.RuntimeTask) (Processor, error) {
@@ -34,8 +38,8 @@ func (ts ObjectValidateStep) Init(task task.RuntimeTask) (Processor, error) {
 	if err != nil {
 		return nil, err
 	}
-	if c, ok := sc.Classes[className]; ok {
-		return &objectProcess{ts, task, c}, nil
+	if _, ok := sc.Classes[className]; ok {
+		return &objectProcess{ts, task, className, sc, 0}, nil
 	}
 	return nil, fmt.Errorf("class %s not found", className)
 }
@@ -51,13 +55,19 @@ func (ts ObjectValidateStep) GetConfigFields() []config.Variable {
 }
 
 func (ts *objectProcess) Process(i map[string]interface{}) []map[string]interface{} {
-	o, err := ts.schema.Validate(i)
+	out, err := ts.schema.CleanAndValidate(ts.className, i)
 	if err == nil {
-		return []map[string]any{o}
+		return []map[string]any{out}
+	} else {
+		//if ts.errorCount < 10 {
+		data, _ := json.Marshal(i)
+		log.Printf("validate %s error: %s on %s", ts.className, err, data)
+		//}
+		ts.errorCount++
 	}
 	return []map[string]any{}
 }
 
 func (ts *objectProcess) Close() {
-
+	log.Printf("Total incorrect rows: %d", ts.errorCount)
 }

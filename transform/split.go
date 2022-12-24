@@ -20,7 +20,11 @@ func (ss SplitStep) Process(i map[string]any) []map[string]any {
 	if v, err := evaluate.GetJSONPath(ss.Field, i); err == nil {
 		if vStr, ok := v.(string); ok {
 			vArray := strings.Split(vStr, ss.Sep)
-			evaluate.SetJSONPath(ss.Field, i, vArray)
+			out := make([]any, len(vArray))
+			for i := range vArray {
+				out[i] = vArray[i]
+			}
+			evaluate.SetJSONPath(ss.Field, i, out)
 		}
 	}
 	return []map[string]any{i}

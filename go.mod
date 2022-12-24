@@ -1,5 +1,7 @@
 module github.com/bmeg/sifter
 
+replace github.com/santhosh-tekuri/jsonschema/v5 v5.1.1 => github.com/bmeg/jsonschema/v5 v5.0.0-20221214044651-ecb619a20d1f
+
 require (
 	github.com/akrylysov/pogreb v0.9.1
 	github.com/alecthomas/jsonschema v0.0.0-20200514014646-0366d1034a17
@@ -9,6 +11,7 @@ require (
 	github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50
 	github.com/bmeg/grip v0.0.0-20210910231938-94d69d94ff65
 	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad
+	github.com/cockroachdb/pebble v0.0.0-20220311224846-910ce60578df
 	github.com/dgraph-io/badger/v2 v2.0.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-python/gpython v0.1.1-0.20221005072539-6f8e06a46607
@@ -18,6 +21,7 @@ require (
 	github.com/jlaffaye/ftp v0.0.0-20200602180915-5563613968bf
 	github.com/linkedin/goavro/v2 v2.10.0
 	github.com/mattn/go-sqlite3 v1.9.0
+	github.com/santhosh-tekuri/jsonschema/v5 v5.1.1
 	github.com/spf13/cobra v1.0.1-0.20201006035406-b97b5ead31f7
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
 	go.mongodb.org/mongo-driver v1.5.1
@@ -38,7 +42,6 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/cockroachdb/errors v1.8.1 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20190617123548-eb05cc24525f // indirect
-	github.com/cockroachdb/pebble v0.0.0-20220311224846-910ce60578df // indirect
 	github.com/cockroachdb/redact v1.0.8 // indirect
 	github.com/cockroachdb/sentry-go v0.6.1-cockroachdb.2 // indirect
 	github.com/dgraph-io/ristretto v0.0.0-20191025175511-c1f00be0418e // indirect

@@ -2,12 +2,8 @@ package schema
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/bmeg/grip/gripql"
-	"google.golang.org/protobuf/types/known/structpb"
-
-	multierror "github.com/hashicorp/go-multierror"
 )
 
 type GraphElement struct {
@@ -17,45 +13,21 @@ type GraphElement struct {
 	Field   string
 }
 
-func (s Schemas) Generate(classID string, data map[string]interface{}) ([]GraphElement, error) {
+func (s GraphSchema) Generate(classID string, data map[string]interface{}) ([]GraphElement, error) {
 	if class, ok := s.Classes[classID]; ok {
-		d, err := class.Validate(data)
+		err := class.Validate(data)
 		if err != nil {
 			return nil, err
 		}
-		out, err := class.Generate(d)
-		//log.Printf("%s", out)
+
+		out := make([]GraphElement, 0, 1)
+
 		return out, err
 	}
-	return nil, fmt.Errorf("Class '%s' not found", classID)
+	return nil, fmt.Errorf("class '%s' not found", classID)
 }
 
-func (s Schemas) Validate(classID string, data map[string]interface{}) (map[string]interface{}, error) {
-	if class, ok := s.Classes[classID]; ok {
-		return class.Validate(data)
-	}
-	return nil, fmt.Errorf("Class '%s' not found in %s", classID, s.GetClasses())
-}
-
-func (s Schema) Validate(data map[string]interface{}) (map[string]interface{}, error) {
-	out := map[string]interface{}{}
-	for k := range s.Props {
-		if dataV, ok := data[k]; ok {
-			//TODO: typecheck here
-			out[k] = dataV
-		}
-	}
-
-	for _, r := range s.Required {
-		if _, ok := out[r]; !ok {
-			log.Printf("%s field %s not found in %s ", s.ID, r, data)
-			return nil, fmt.Errorf("Required field '%s' in '%s' not found", r, s.ID)
-		}
-	}
-
-	return out, nil
-}
-
+/*
 func (l Link) Generate(gid string, data map[string]interface{}) ([]GraphElement, error) {
 	if l.Name == "" && len(l.Subgroup) > 0 {
 		out := make([]GraphElement, 0, 1)
@@ -144,7 +116,8 @@ func (l Link) Generate(gid string, data map[string]interface{}) ([]GraphElement,
 	  } else {
 	    log.Printf("Class %s field %s Unknown property type: %s", s.Id, l.Name, s.Props[l.Name].Element.Type.Type)
 	  }
-	*/
+*/
+/*
 	for _, d := range dst {
 		e := gripql.Edge{From: gid, To: d.id, Label: l.Label}
 		if d.data != nil {
@@ -221,3 +194,5 @@ func (s Schema) Generate(data map[string]interface{}) ([]GraphElement, error) {
 	}
 	return out, result
 }
+
+*/

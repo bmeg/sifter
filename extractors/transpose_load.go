@@ -26,85 +26,6 @@ type TransposeLoadStep struct {
 	OnDisk  bool   `json:"onDisk" jsonschema_description:"Do transpose without caching matrix in memory. Takes longer but works on large files"`
 }
 
-/*
-func (ml *TransposeLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
-	log.Printf("Starting Table Load")
-	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	inputPath, _ := task.AbsPath(input)
-
-	if s, err := os.Stat(inputPath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("file not found: %s", inputPath)
-	} else if s.IsDir() {
-		return nil, fmt.Errorf("input not a file: %s", inputPath)
-	}
-	log.Printf("Loading table: %s", inputPath)
-	fhd, err := os.Open(inputPath)
-	if err != nil {
-		return nil, err
-	}
-
-	var hd io.Reader
-	if strings.HasSuffix(input, ".gz") || strings.HasSuffix(input, ".tgz") {
-		hd, err = gzip.NewReader(fhd)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		hd = fhd
-	}
-
-	r := readers.CSVReader{}
-	if ml.Sep == "" {
-		r.Comma = "\t"
-	} else {
-		r.Comma = ml.Sep
-	}
-	r.Comment = "#"
-
-	var columns []string
-
-	procChan := make(chan map[string]interface{}, 25)
-
-	rowSkip := ml.RowSkip
-
-	inputStream, err := readers.ReadLines(hd)
-	if err != nil {
-		log.Printf("Error %s", err)
-		return nil, err
-	}
-
-	go func() {
-		defer fhd.Close()
-		log.Printf("STARTING READ: %#v %#v", r, inputStream)
-		for record := range r.Read(inputStream) {
-			if rowSkip > 0 {
-				rowSkip--
-			} else {
-				if columns == nil {
-					columns = record
-				} else {
-					o := map[string]interface{}{}
-					if len(record) >= len(columns) {
-						for i, n := range columns {
-							o[n] = record[i]
-						}
-						procChan <- o
-					}
-				}
-			}
-		}
-		log.Printf("Done Loading")
-		close(procChan)
-	}()
-
-	return procChan, nil
-}
-*/
-
 func (ml *TransposeLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
 	if err != nil {
@@ -199,97 +120,6 @@ func transposeInMem(c csvReader, out chan map[string]any) error {
 	return nil
 }
 
-/*
-func transposeOnDisk(workdir string, c csvReader, out chan map[string]any) error {
-	opts := badger.DefaultOptions(filepath.Join(workdir, "transpose.db"))
-	opts.ValueDir = filepath.Join(workdir, "transpose.db")
-	db, err := badger.Open(opts)
-	if err != nil {
-		log.Printf("%s", err)
-	}
-	batch := db.NewWriteBatch()
-	r, err := c.open()
-	if err != nil {
-		return nil
-	}
-	rowCount := uint64(0)
-	colCount := uint64(0)
-	for row := uint64(0); ; row++ {
-		log.Printf("Row: %d", row)
-		record, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if row == 0 {
-			colCount = uint64(len(record))
-		}
-		bRow := make([]byte, 8)
-		binary.BigEndian.PutUint64(bRow, row)
-
-		for col := uint64(0); col < uint64(len(record)); col++ {
-			bCol := make([]byte, 8)
-			binary.BigEndian.PutUint64(bCol, col)
-			//key := bytes.Join([][]byte{[]byte(bCol), bRow}, []byte{})
-			key := bytes.Join([][]byte{bRow, bCol}, []byte{})
-			batch.Set(key, []byte(record[col]))
-		}
-		rowCount = row + 1
-	}
-	batch.Flush()
-
-	log.Printf("%d %d", colCount, rowCount)
-
-	columns := []string{}
-	db.View(func(txn *badger.Txn) error {
-		bCol := make([]byte, 8)
-		binary.BigEndian.PutUint64(bCol, 0)
-		for row := uint64(0); row < rowCount; row++ {
-			bRow := make([]byte, 8)
-			binary.BigEndian.PutUint64(bRow, row)
-			key := bytes.Join([][]byte{bRow, bCol}, []byte{})
-			item, err := txn.Get(key)
-			if err == nil {
-				item.Value(func(val []byte) error {
-					columns = append(columns, string(val))
-					return nil
-				})
-			}
-		}
-		return nil
-	})
-
-	for col := uint64(1); col < colCount; col++ {
-		log.Printf("Writing Row %d", col)
-		bCol := make([]byte, 8)
-		binary.BigEndian.PutUint64(bCol, col)
-		o := []string{}
-		db.View(func(txn *badger.Txn) error {
-			for row := uint64(0); row < rowCount; row++ {
-				bRow := make([]byte, 8)
-				binary.BigEndian.PutUint64(bRow, row)
-				key := bytes.Join([][]byte{bRow, bCol}, []byte{})
-				item, err := txn.Get(key)
-				if err == nil {
-					item.Value(func(val []byte) error {
-						o = append(o, string(val))
-						return nil
-					})
-				}
-			}
-			return nil
-		})
-		res := make(map[string]any, len(columns))
-		for i := 0; i < len(o); i++ {
-			res[columns[i]] = o[i]
-		}
-		out <- res
-	}
-
-	db.Close()
-	return nil
-}
-*/
-
 type pebbleBulkWrite struct {
 	db              *pebble.DB
 	batch           *pebble.Batch
@@ -308,6 +138,7 @@ func copyBytes(in []byte) []byte {
 }
 
 func (pbw *pebbleBulkWrite) Set(id []byte, val []byte) error {
+	//log.Printf("Setting %x %s", id, val)
 	pbw.curSize += len(id) + len(val)
 	if pbw.highest == nil || bytes.Compare(id, pbw.highest) > 0 {
 		pbw.highest = copyBytes(id)
@@ -317,6 +148,7 @@ func (pbw *pebbleBulkWrite) Set(id []byte, val []byte) error {
 	}
 	err := pbw.batch.Set(id, val, nil)
 	if pbw.curSize > maxWriterBuffer {
+		log.Printf("Running batch Commit")
 		pbw.batch.Commit(nil)
 		pbw.batch.Reset()
 		pbw.curSize = 0
@@ -324,12 +156,17 @@ func (pbw *pebbleBulkWrite) Set(id []byte, val []byte) error {
 	return err
 }
 
-func (pbw *pebbleBulkWrite) Close() {
-	pbw.batch.Commit(nil)
+func (pbw *pebbleBulkWrite) Close() error {
+	log.Printf("Running batch close Commit")
+	err := pbw.batch.Commit(nil)
+	if err != nil {
+		return err
+	}
 	pbw.batch.Close()
 	if pbw.lowest != nil && pbw.highest != nil {
 		pbw.db.Compact(pbw.lowest, pbw.highest, true)
 	}
+	return nil
 }
 
 func transposeOnDisk(workdir string, c csvReader, out chan map[string]any) error {
@@ -340,7 +177,7 @@ func transposeOnDisk(workdir string, c csvReader, out chan map[string]any) error
 	}
 
 	batch := db.NewBatch()
-	ptx := &pebbleBulkWrite{db, batch, nil, nil, 0}
+	pbw := &pebbleBulkWrite{db, batch, nil, nil, 0}
 
 	r, err := c.open()
 	if err != nil {
@@ -365,13 +202,21 @@ func transposeOnDisk(workdir string, c csvReader, out chan map[string]any) error
 		for col := uint64(0); col < uint64(len(record)); col++ {
 			bCol := make([]byte, 8)
 			binary.BigEndian.PutUint64(bCol, col)
-			//key := bytes.Join([][]byte{[]byte(bCol), bRow}, []byte{})
-			key := bytes.Join([][]byte{bRow, bCol}, []byte{})
-			ptx.Set(key, []byte(record[col]))
+			//key := bytes.Join([][]byte{bRow, bCol}, []byte{})
+			//log.Printf("Put %x", key)
+			key := bytes.Join([][]byte{bCol, bRow}, []byte{})
+			err := pbw.Set(key, []byte(record[col]))
+			if err != nil {
+				log.Printf("Put Error: %s", err)
+			}
 		}
 		rowCount = row + 1
 	}
-	batch.Close()
+	if err := pbw.Close(); err != nil {
+		log.Print(err)
+	}
+
+	log.Println(db.Metrics().String())
 
 	log.Printf("Col/Row counts: %d %d", colCount, rowCount)
 
@@ -382,38 +227,47 @@ func transposeOnDisk(workdir string, c csvReader, out chan map[string]any) error
 	for row := uint64(0); row < rowCount; row++ {
 		bRow := make([]byte, 8)
 		binary.BigEndian.PutUint64(bRow, row)
-		key := bytes.Join([][]byte{bRow, bCol}, []byte{})
+		//key := bytes.Join([][]byte{bRow, bCol}, []byte{})
+		key := bytes.Join([][]byte{bCol, bRow}, []byte{})
 		val, c, err := db.Get(key)
 		if err == nil {
+			log.Printf("Get %x %s", key, val)
 			columns = append(columns, string(val))
 			c.Close()
+		} else {
+			log.Printf("Column error: %s", err)
 		}
 	}
 
 	log.Printf("Columns: %#v", columns)
 
 	for col := uint64(1); col < colCount; col++ {
-		log.Printf("Writing Row %d", col)
-		bCol := make([]byte, 8)
-		binary.BigEndian.PutUint64(bCol, col)
+		if (col % 100) == 0 {
+			log.Printf("Writing Col %d", col)
+		}
+		prefix := make([]byte, 8)
+		binary.BigEndian.PutUint64(prefix, col)
+		it := db.NewIter(&pebble.IterOptions{LowerBound: prefix})
 		o := []string{}
-		for row := uint64(0); row < rowCount; row++ {
-			bRow := make([]byte, 8)
-			binary.BigEndian.PutUint64(bRow, row)
-			key := bytes.Join([][]byte{bRow, bCol}, []byte{})
-			val, c, err := db.Get(key)
-			if err == nil {
-				o = append(o, string(val))
-				c.Close()
+		for it.First(); it.Valid() && bytes.HasPrefix(it.Key(), prefix); it.Next() {
+			v := it.Value()
+			r := make([]byte, len(v))
+			copy(r, v)
+			o = append(o, string(r))
+		}
+		it.Close()
+		//log.Printf("Col width: %d %d", len(columns), len(o))
+		if len(o) == len(columns) {
+			res := make(map[string]any, len(columns))
+			for i := 0; i < len(o); i++ {
+				res[columns[i]] = o[i]
 			}
+			out <- res
 		}
-		res := make(map[string]any, len(columns))
-		for i := 0; i < len(o); i++ {
-			res[columns[i]] = o[i]
-		}
-		out <- res
 	}
+
 	close(out)
 	db.Close()
+	os.RemoveAll(workdir)
 	return nil
 }

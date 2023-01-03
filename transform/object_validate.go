@@ -9,10 +9,12 @@ import (
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/schema"
 	"github.com/bmeg/sifter/task"
+	"github.com/santhosh-tekuri/jsonschema/v5"
 )
 
 type ObjectValidateStep struct {
-	Class  string `json:"class" jsonschema_description:"Object class, should match declared class in JSON Schema"`
+	Title  string `json:"title" jsonschema_description:"Object class, should match declared class title in JSON Schema"`
+	URI    string `json:"uri"`
 	Schema string `json:"schema" jsonschema_description:"Directory with JSON schema files"`
 }
 
@@ -21,14 +23,11 @@ type objectProcess struct {
 	task       task.RuntimeTask
 	className  string
 	schema     schema.GraphSchema
+	class      *jsonschema.Schema
 	errorCount int
 }
 
 func (ts ObjectValidateStep) Init(task task.RuntimeTask) (Processor, error) {
-	className, err := evaluate.ExpressionString(ts.Class, task.GetConfig(), nil)
-	if err != nil {
-		return nil, err
-	}
 	path, err := evaluate.ExpressionString(ts.Schema, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
@@ -38,10 +37,20 @@ func (ts ObjectValidateStep) Init(task task.RuntimeTask) (Processor, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, ok := sc.Classes[className]; ok {
-		return &objectProcess{ts, task, className, sc, 0}, nil
+	if ts.Title != "" {
+		if cls := sc.GetClass(ts.Title); cls != nil {
+			return &objectProcess{ts, task, ts.Title, sc, cls, 0}, nil
+		}
+		return nil, fmt.Errorf("class %s not found", ts.Title)
 	}
-	return nil, fmt.Errorf("class %s not found", className)
+	if ts.URI != "" {
+		uri := path + "/" + ts.URI
+		if cls := sc.GetClass(uri); cls != nil {
+			return &objectProcess{ts, task, cls.Title, sc, cls, 0}, nil
+		}
+		return nil, fmt.Errorf("uri %s not found", uri)
+	}
+	return nil, fmt.Errorf("class not configured")
 }
 
 func (ts ObjectValidateStep) GetConfigFields() []config.Variable {
@@ -55,7 +64,7 @@ func (ts ObjectValidateStep) GetConfigFields() []config.Variable {
 }
 
 func (ts *objectProcess) Process(i map[string]interface{}) []map[string]interface{} {
-	out, err := ts.schema.CleanAndValidate(ts.className, i)
+	out, err := ts.schema.CleanAndValidate(ts.class, i)
 	if err == nil {
 		return []map[string]any{out}
 	} else {

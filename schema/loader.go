@@ -17,7 +17,8 @@ import (
 )
 
 type GraphSchema struct {
-	Classes map[string]*jsonschema.Schema
+	Classes  map[string]*jsonschema.Schema
+	compiler *jsonschema.Compiler
 }
 
 func yamlLoader(s string) (io.ReadCloser, error) {
@@ -33,12 +34,14 @@ func yamlLoader(s string) (io.ReadCloser, error) {
 	if strings.HasSuffix(f, ".yaml") {
 		source, err := os.ReadFile(f)
 		if err != nil {
+			log.Printf("Error reading file")
 			return nil, err
 		}
 		d := map[string]any{}
 		yaml.Unmarshal(source, &d)
 		schemaText, err := json.Marshal(d)
 		if err != nil {
+			log.Printf("Error translating file")
 			return nil, err
 		}
 		return io.NopCloser(strings.NewReader(string(schemaText))), nil
@@ -106,15 +109,29 @@ func Load(path string) (GraphSchema, error) {
 
 	files, _ := filepath.Glob(filepath.Join(path, "*.yaml"))
 	if len(files) == 0 {
-		return GraphSchema{}, fmt.Errorf("No schema files found")
+		return GraphSchema{}, fmt.Errorf("no schema files found")
 	}
-	out := GraphSchema{Classes: map[string]*jsonschema.Schema{}}
+	out := GraphSchema{Classes: map[string]*jsonschema.Schema{}, compiler: compiler}
 	for _, f := range files {
 		if sch, err := compiler.Compile(f); err == nil {
-			out.Classes[sch.Id] = sch
+			if sch.Title != "" {
+				out.Classes[sch.Title] = sch
+			}
 		} else {
 			log.Printf("Error loading: %s", err)
 		}
 	}
 	return out, nil
+}
+
+func (s GraphSchema) GetClass(classID string) *jsonschema.Schema {
+	if class, ok := s.Classes[classID]; ok {
+		return class
+	}
+	if sch, err := s.compiler.Compile(classID); err == nil {
+		return sch
+	} else {
+		log.Printf("compile error: %s", err)
+	}
+	return nil
 }

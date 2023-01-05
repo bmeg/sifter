@@ -1,11 +1,14 @@
 package transform
 
 import (
+	"compress/gzip"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
 
+	"encoding/csv"
 	"encoding/json"
 
 	"github.com/bmeg/golib"
@@ -176,11 +179,17 @@ func (tsv *TSVTable) open(task task.RuntimeTask) (lookupTable, error) {
 	}
 	log.Printf("Loading Translation file: %s", inputPath)
 
-	var inputStream chan []byte
-	if strings.HasSuffix(inputPath, ".gz") {
-		inputStream, err = golib.ReadGzipLines(inputPath)
-	} else {
-		inputStream, err = golib.ReadFileLines(inputPath)
+	var inputStream io.Reader
+	if gfile, err := os.Open(inputPath); err == nil {
+		if strings.HasSuffix(inputPath, ".gz") {
+			inp, err := gzip.NewReader(gfile)
+			if err != nil {
+				return nil, err
+			}
+			inputStream = inp
+		} else {
+			inputStream = gfile
+		}
 	}
 	if err != nil {
 		return nil, err
@@ -189,6 +198,9 @@ func (tsv *TSVTable) open(task task.RuntimeTask) (lookupTable, error) {
 	if tsv.Sep == "" {
 		tsv.Sep = "\t"
 	}
+
+	tsvReader := csv.NewReader(inputStream)
+	tsvReader.Comma = rune(tsv.Sep[0])
 
 	tp := &tsvLookup{config: tsv, inputs: task.GetConfig()}
 
@@ -200,17 +212,20 @@ func (tsv *TSVTable) open(task task.RuntimeTask) (lookupTable, error) {
 		}
 	}
 	tp.table = map[string][]string{}
-	for line := range inputStream {
-		if len(line) > 0 {
-			row := strings.Split(string(line), tsv.Sep)
-			if tp.colmap == nil {
-				tp.colmap = map[string]int{}
-				for i, k := range row {
-					tp.colmap[k] = i
-				}
-			} else {
-				tp.table[row[tp.colmap[tsv.Key]]] = row
+
+	lines, err := tsvReader.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, row := range lines {
+		if tp.colmap == nil {
+			tp.colmap = map[string]int{}
+			for i, k := range row {
+				tp.colmap[k] = i
 			}
+		} else {
+			tp.table[row[tp.colmap[tsv.Key]]] = row
 		}
 	}
 	log.Printf("tableLookup loaded %d values from %s", len(tp.table), inputPath)

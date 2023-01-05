@@ -89,6 +89,8 @@ github.com/bmeg/flame v0.0.0-20220629214151-e9f416368cd4 h1:wtrIpIETN223UIe4QNxJ
 github.com/bmeg/flame v0.0.0-20220629214151-e9f416368cd4/go.mod h1:W59Ikapd0tGKtwJpw4CVDxzzDTkDKX2VRZLkMP3J3Is=
 github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50 h1:zg0pjw8ZUufzIo7iEr0811OZ1UkcjEL8579AdUL8ISU=
 github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50/go.mod h1:hoSeuZtqe58ANXHuWpeODx4bDHGV36QXlCs1yrUvK6M=
+github.com/bmeg/gpython v0.0.3-0.20230105173224-c247710799a2 h1:dpE+RfHHJ2j7vuOfsSZVnNsVCfdMraNCJt8cpqUN/z0=
+github.com/bmeg/gpython v0.0.3-0.20230105173224-c247710799a2/go.mod h1:fUN4z1X+GFaOwPOoHOAM8MOPnh1NJatWo/cDqGlZDEI=
 github.com/bmeg/grip v0.0.0-20210910231938-94d69d94ff65 h1:ngj395aMDI4GZaN77fwjtr1jdFf/3fwg8vNabskFpSw=
 github.com/bmeg/grip v0.0.0-20210910231938-94d69d94ff65/go.mod h1:wBLwQsr53I/0kdS4LYL7R4tMshZCVerCWnPTwMdKX3s=
 github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad h1:ICgBexeLB7iv/IQz4rsP+MimOXFZUwWSPojEypuOaQ8=
@@ -193,8 +195,6 @@ github.com/go-logfmt/logfmt v0.3.0/go.mod h1:Qt1PoO58o5twSAckw1HlFXLmHsOX5/0LbT9
 github.com/go-logfmt/logfmt v0.4.0/go.mod h1:3RMwSq7FuexP4Kalkev3ejPJsZTpXXBr9+V4qmtdjCk=
 github.com/go-martini/martini v0.0.0-20170121215854-22fa46961aab/go.mod h1:/P9AEU963A2AYjv4d1V5eVL1CQbEJq6aCNHDDjibzu8=
 github.com/go-ole/go-ole v1.2.1/go.mod h1:7FAglXiTm7HKlQRDeOQ6ZNUHidzCWXuZWq/1dTyBNF8=
-github.com/go-python/gpython v0.1.1-0.20221005072539-6f8e06a46607 h1:xhi3l9LtrO3o26hk+A8IjUWolN0ql8AmJMfIaYNQ4i0=
-github.com/go-python/gpython v0.1.1-0.20221005072539-6f8e06a46607/go.mod h1:fUN4z1X+GFaOwPOoHOAM8MOPnh1NJatWo/cDqGlZDEI=
 github.com/go-resty/resty/v2 v2.1.0/go.mod h1:dZGr0i9PLlaaTD4H/hoZIDjQ+r6xq8mgbRzHZf7f2J8=
 github.com/go-sourcemap/sourcemap v2.1.2+incompatible/go.mod h1:F8jJfvm2KbVjc5NqelyYJmf/v5J0dwNLS2mL4sNA1Jg=
 github.com/go-sql-driver/mysql v1.4.0/go.mod h1:zAC/RDZ24gD3HViQzih4MyKcchzm+sOG5ZlKdlhCg5w=

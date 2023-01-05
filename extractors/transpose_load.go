@@ -231,7 +231,6 @@ func transposeOnDisk(workdir string, c csvReader, out chan map[string]any) error
 		key := bytes.Join([][]byte{bCol, bRow}, []byte{})
 		val, c, err := db.Get(key)
 		if err == nil {
-			log.Printf("Get %x %s", key, val)
 			columns = append(columns, string(val))
 			c.Close()
 		} else {
@@ -239,7 +238,7 @@ func transposeOnDisk(workdir string, c csvReader, out chan map[string]any) error
 		}
 	}
 
-	log.Printf("Columns: %#v", columns)
+	//log.Printf("Columns: %#v", columns)
 
 	for col := uint64(1); col < colCount; col++ {
 		if (col % 100) == 0 {

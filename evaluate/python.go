@@ -30,7 +30,7 @@ func (d PythonProcessor) Close() {
 }
 
 func (d PythonProcessor) Evaluate(inputs ...map[string]interface{}) (map[string]interface{}, error) {
-	i, err := json.Marshal(inputs)
+	i, _ := json.Marshal(inputs)
 	out, err := d.runner.Call(&Input{Data: string(i), Code: d.fNum})
 	if err != nil {
 		return nil, err
@@ -39,6 +39,23 @@ func (d PythonProcessor) Evaluate(inputs ...map[string]interface{}) (map[string]
 		return nil, fmt.Errorf("%s", out.Error)
 	}
 	o := map[string]interface{}{}
+	err = json.Unmarshal([]byte(out.Data), &o)
+	if err != nil {
+		return nil, err
+	}
+	return o, nil
+}
+
+func (d PythonProcessor) EvaluateArray(inputs ...map[string]interface{}) ([]any, error) {
+	i, _ := json.Marshal(inputs)
+	out, err := d.runner.Call(&Input{Data: string(i), Code: d.fNum})
+	if err != nil {
+		return nil, err
+	}
+	if out.Error != "" {
+		return nil, fmt.Errorf("%s", out.Error)
+	}
+	o := []any{}
 	err = json.Unmarshal([]byte(out.Data), &o)
 	if err != nil {
 		return nil, err

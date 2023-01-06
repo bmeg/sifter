@@ -24,6 +24,7 @@ type Extractor struct {
 	Glob          *GlobLoadStep      `json:"glob"`
 	SQLiteLoad    *SQLiteStep        `json:"sqliteLoad"`
 	TransposeLoad *TransposeLoadStep `json:"transposeLoad"`
+	Plugin        *PluginLoadStep    `json:"plugin"`
 	//Untar         *UntarStep         `json:"untar" jsonschema_description:"Untar a file"`
 	//FileGlob      *FileGlobStep      `json:"fileGlob" jsonschema_description:"Scan a directory and run a ETL pipeline on each of the files"`
 	//Script        *ScriptStep        `json:"script" jsonschema_description:"Execute a script"`

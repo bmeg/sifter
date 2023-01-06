@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/bmeg/sifter/playbook"
 	"github.com/bmeg/sifter/task"
@@ -18,6 +19,9 @@ func Execute(playFile string, workDir string, outDir string, inputs map[string]s
 		return err
 	}
 
+	a, _ := filepath.Abs(playFile)
+	baseDir := filepath.Dir(a)
+	log.Printf("basedir: %s", baseDir)
 	if outDir == "" {
 		outDir = pb.GetDefaultOutDir()
 	}
@@ -30,7 +34,7 @@ func Execute(playFile string, workDir string, outDir string, inputs map[string]s
 	if err != nil {
 		return err
 	}
-	t := task.NewTask(pb.Name, workDir, outDir, nInputs)
+	t := task.NewTask(pb.Name, baseDir, workDir, outDir, nInputs)
 	err = pb.Execute(t)
 	return err
 }

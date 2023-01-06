@@ -87,6 +87,8 @@ github.com/bitly/go-simplejson v0.5.0/go.mod h1:cXHtHw4XUPsvGaxgjIAn8PhEWG9NfngE
 github.com/bketelsen/crypt v0.0.3-0.20200106085610-5cbc8cc4026c/go.mod h1:MKsuJmJgSg28kpZDP6UIiPt0e0Oz0kqKNGyRaWEPv84=
 github.com/bmeg/flame v0.0.0-20220629214151-e9f416368cd4 h1:wtrIpIETN223UIe4QNxJ2/PopfQLgs2fjraIf36q3ok=
 github.com/bmeg/flame v0.0.0-20220629214151-e9f416368cd4/go.mod h1:W59Ikapd0tGKtwJpw4CVDxzzDTkDKX2VRZLkMP3J3Is=
+github.com/bmeg/flame v0.0.0-20230105234137-27bef72d7775 h1:k63eLVOQAItDuTSFKoXMgeHuKV/gxPTIG4G/iFhe2Wc=
+github.com/bmeg/flame v0.0.0-20230105234137-27bef72d7775/go.mod h1:XA9wVP0ORyATjjwdbwkjq/yaimsnreixGUR62sGMWsY=
 github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50 h1:zg0pjw8ZUufzIo7iEr0811OZ1UkcjEL8579AdUL8ISU=
 github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50/go.mod h1:hoSeuZtqe58ANXHuWpeODx4bDHGV36QXlCs1yrUvK6M=
 github.com/bmeg/gpython v0.0.3-0.20230105173224-c247710799a2 h1:dpE+RfHHJ2j7vuOfsSZVnNsVCfdMraNCJt8cpqUN/z0=
@@ -335,6 +337,8 @@ github.com/google/pprof v0.0.0-20200229191704-1ebb73c60ed3/go.mod h1:ZgVRPoUq/hf
 github.com/google/pprof v0.0.0-20200430221834-fc25d7d30c6d/go.mod h1:ZgVRPoUq/hfqzAqh7sHMqb3I9Rq5C59dIz2SbBwJ4eM=
 github.com/google/pprof v0.0.0-20200708004538-1a94d8640e99/go.mod h1:ZgVRPoUq/hfqzAqh7sHMqb3I9Rq5C59dIz2SbBwJ4eM=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
+github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 h1:El6M4kTTCOh6aBiKaUGG7oYTSPP8MxqL4YI3kZKwcP4=
+github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510/go.mod h1:pupxD2MaaD3pAXIBCelhxNneeOaAeabZDe5s4K6zSpQ=
 github.com/google/uuid v1.0.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.1.2/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=

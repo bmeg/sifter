@@ -146,7 +146,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 					//throw error?
 				}
 			} else if mProcess, ok := b.(transform.FlatMapProcessor); ok {
-				log.Printf("Pipeline Pool %s step %d: %T", k, i, b)
+				log.Printf("Pipeline flatmap %s step %d: %T", k, i, b)
 				//var c flame.Node[map[string]any, map[string]any]
 				//if mProcess.PoolReady() {
 				//	log.Printf("Starting pool worker")
@@ -154,6 +154,21 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 				//} else {
 				c := flame.AddFlatMapper(wf, mProcess.Process)
 				//}
+				if lastStep != nil {
+					c.Connect(lastStep)
+				}
+				if c != nil {
+					lastStep = c
+					if firstStep == nil {
+						firstStep = c
+					}
+				} else {
+					log.Printf("Error setting up step")
+					//throw error?
+				}
+			} else if mProcess, ok := b.(transform.StreamProcessor); ok {
+				log.Printf("Pipeline stream %s step %d: %T", k, i, b)
+				c := flame.AddStreamer(wf, mProcess.Process)
 				if lastStep != nil {
 					c.Connect(lastStep)
 				}

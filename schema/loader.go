@@ -98,7 +98,36 @@ func (referenceCompiler) Compile(ctx jsonschema.CompilerContext, m map[string]in
 	return referenceSchema{[]string{eString}, brString}, nil
 }
 
-func Load(path string) (GraphSchema, error) {
+type LoadOpt struct {
+	LogError func(uri string, err error)
+}
+
+func ObjectScan(sch *jsonschema.Schema) []*jsonschema.Schema {
+	out := []*jsonschema.Schema{}
+
+	//fmt.Printf("%#v\n", sch)
+	isObject := false
+	for _, i := range sch.Types {
+		if i == "object" {
+			isObject = true
+		}
+	}
+	if isObject {
+		out = append(out, sch)
+	}
+
+	if sch.Ref != nil {
+		out = append(out, ObjectScan(sch.Ref)...)
+	}
+
+	for _, i := range sch.AnyOf {
+		out = append(out, ObjectScan(i)...)
+	}
+
+	return out
+}
+
+func Load(path string, opt ...LoadOpt) (GraphSchema, error) {
 
 	jsonschema.Loaders["file"] = yamlLoader
 
@@ -107,18 +136,42 @@ func Load(path string) (GraphSchema, error) {
 
 	compiler.RegisterExtension("reference_type_enum", referenceMeta, referenceCompiler{})
 
-	files, _ := filepath.Glob(filepath.Join(path, "*.yaml"))
-	if len(files) == 0 {
-		return GraphSchema{}, fmt.Errorf("no schema files found")
+	info, err := os.Stat(path)
+	if err != nil {
+		return GraphSchema{}, err
 	}
 	out := GraphSchema{Classes: map[string]*jsonschema.Schema{}, compiler: compiler}
-	for _, f := range files {
-		if sch, err := compiler.Compile(f); err == nil {
-			if sch.Title != "" {
-				out.Classes[sch.Title] = sch
+	if info.IsDir() {
+		files, _ := filepath.Glob(filepath.Join(path, "*.yaml"))
+		if len(files) == 0 {
+			return GraphSchema{}, fmt.Errorf("no schema files found")
+		}
+		for _, f := range files {
+			if sch, err := compiler.Compile(f); err == nil {
+				if sch.Title != "" {
+					out.Classes[sch.Title] = sch
+				}
+			} else {
+				for _, i := range opt {
+					if i.LogError != nil {
+						i.LogError(f, err)
+					}
+				}
+			}
+		}
+	} else {
+		if sch, err := compiler.Compile(path); err == nil {
+			for _, obj := range ObjectScan(sch) {
+				if obj.Title != "" {
+					out.Classes[obj.Title] = obj
+				}
 			}
 		} else {
-			log.Printf("Error loading: %s", err)
+			for _, i := range opt {
+				if i.LogError != nil {
+					i.LogError(path, err)
+				}
+			}
 		}
 	}
 	return out, nil

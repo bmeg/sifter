@@ -2,6 +2,8 @@ module github.com/bmeg/sifter
 
 replace github.com/go-python/gpython v0.1.1-0.20221005072539-6f8e06a46607 => github.com/bmeg/gpython v0.0.3-0.20230105173224-c247710799a2
 
+replace github.com/santhosh-tekuri/jsonschema/v5 v5.1.1 => /Users/ellrott/workspaces/jsonschema/
+
 require (
 	github.com/akrylysov/pogreb v0.9.1
 	github.com/alecthomas/jsonschema v0.0.0-20200514014646-0366d1034a17

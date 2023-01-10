@@ -16,6 +16,8 @@ import (
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
 
+var GraphExtensionTag = "json_schema_graph"
+
 type GraphSchema struct {
 	Classes  map[string]*jsonschema.Schema
 	compiler *jsonschema.Compiler
@@ -58,44 +60,35 @@ func isEdge(s string) bool {
 	return false
 }
 
-var referenceMeta = jsonschema.MustCompileString("referenceMeta.json", `{
+var graphExtMeta = jsonschema.MustCompileString("graphExtMeta.json", `{
 	"properties" : {
-		"reference_type_enum": {
-			"type": "string"
-		},
-		"reference_backref": {
-			"type" : "string"
+		"reference_backrefs": {
+			"type" : "object",
+			"properties" : {},
+			"additionalProperties" : true
 		}
 	}
 }`)
 
-type referenceCompiler struct{}
+type graphExtCompiler struct{}
 
-type referenceSchema struct {
-	typeEnum []string
-	backRef  string
+type GraphExtension struct {
+	Backrefs map[string]any
 }
 
-func (s referenceSchema) Validate(ctx jsonschema.ValidationContext, v interface{}) error {
+func (s GraphExtension) Validate(ctx jsonschema.ValidationContext, v interface{}) error {
+	//fmt.Printf("graph schema validate\n")
 	return nil
 }
 
-func (referenceCompiler) Compile(ctx jsonschema.CompilerContext, m map[string]interface{}) (jsonschema.ExtSchema, error) {
-	eString := ""
-	if e, ok := m["reference_type_enum"]; ok {
-		n, _ := e.(string)
-		eString = n
+func (graphExtCompiler) Compile(ctx jsonschema.CompilerContext, m map[string]interface{}) (jsonschema.ExtSchema, error) {
+
+	if e, ok := m["reference_backrefs"]; ok {
+		if emap, ok := e.(map[string]any); ok {
+			return GraphExtension{emap}, nil
+		}
 	}
-	brString := ""
-	if e, ok := m["reference_backref"]; ok {
-		n, _ := e.(string)
-		brString = n
-	}
-	if eString == "" && brString == "" {
-		return nil, nil
-	}
-	// nothing to compile, return nil
-	return referenceSchema{[]string{eString}, brString}, nil
+	return nil, nil
 }
 
 type LoadOpt struct {
@@ -105,7 +98,6 @@ type LoadOpt struct {
 func ObjectScan(sch *jsonschema.Schema) []*jsonschema.Schema {
 	out := []*jsonschema.Schema{}
 
-	//fmt.Printf("%#v\n", sch)
 	isObject := false
 	for _, i := range sch.Types {
 		if i == "object" {
@@ -134,7 +126,7 @@ func Load(path string, opt ...LoadOpt) (GraphSchema, error) {
 	compiler := jsonschema.NewCompiler()
 	compiler.ExtractAnnotations = true
 
-	compiler.RegisterExtension("reference_type_enum", referenceMeta, referenceCompiler{})
+	compiler.RegisterExtension(GraphExtensionTag, graphExtMeta, graphExtCompiler{})
 
 	info, err := os.Stat(path)
 	if err != nil {

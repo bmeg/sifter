@@ -1,9 +1,7 @@
 package transform
 
 import (
-	"fmt"
 	"log"
-	"strings"
 
 	"github.com/bmeg/grip/gripql"
 	"github.com/bmeg/sifter/config"
@@ -12,24 +10,17 @@ import (
 	"github.com/bmeg/sifter/task"
 )
 
-type EdgeRule struct {
-	PrefixFilter bool    `json:"prefixFilter"`
-	BlankFilter  bool    `json:"blankFilter"`
-	ToPrefix     string  `json:"toPrefix"`
-	Sep          *string `json:"sep"`
-	IDTemplate   string  `json:"idTemplate"`
+type EdgeFix struct {
+	Method  string `json:"method"`
+	GPython string `json:"gpython"`
 }
 
 type GraphBuildStep struct {
-	Schema     string               `json:"schema"`
-	Class      string               `json:"class"`
-	IDPrefix   string               `json:"idPrefix"`
-	IDTemplate string               `json:"idTemplate"`
-	IDField    string               `json:"idField"`
-	FilePrefix string               `json:"filePrefix"`
-	Sep        *string              `json:"sep"`
-	Fields     map[string]*EdgeRule `json:"fields"`
-	Flat       bool                 `json:"flat"`
+	Schema  string   `json:"schema"`
+	Title   string   `json:"title"`
+	Clean   bool     `json:"clean"`
+	Flat    bool     `json:"flat"`
+	EdgeFix *EdgeFix `json:"edgeFix"`
 }
 
 type graphBuildProcess struct {
@@ -37,14 +28,12 @@ type graphBuildProcess struct {
 	task   task.RuntimeTask
 	sch    schema.GraphSchema
 	class  string
+
+	edgeFix evaluate.Processor
 }
 
 func (ts GraphBuildStep) Init(task task.RuntimeTask) (Processor, error) {
 
-	className, err := evaluate.ExpressionString(ts.Class, task.GetConfig(), nil)
-	if err != nil {
-		return nil, err
-	}
 	path, err := evaluate.ExpressionString(ts.Schema, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
@@ -59,7 +48,19 @@ func (ts GraphBuildStep) Init(task task.RuntimeTask) (Processor, error) {
 	task.Emit("vertex", nil)
 	task.Emit("edge", nil)
 
-	return &graphBuildProcess{ts, task, sc, className}, nil
+	var edgeFix evaluate.Processor
+	if ts.EdgeFix != nil {
+		if ts.EdgeFix.GPython != "" {
+			log.Printf("Init Map: %s", ts.EdgeFix.GPython)
+			e := evaluate.GetEngine("gpython", task.WorkDir())
+			c, err := e.Compile(ts.EdgeFix.GPython, ts.EdgeFix.Method)
+			if err != nil {
+				log.Printf("Compile Error: %s", err)
+			}
+			edgeFix = c
+		}
+	}
+	return &graphBuildProcess{ts, task, sc, ts.Title, edgeFix}, nil
 }
 
 func (ts GraphBuildStep) GetConfigFields() []config.Variable {
@@ -78,18 +79,9 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 
 	out := []map[string]any{}
 
-	if o, err := ts.sch.Generate(ts.class, i); err == nil {
+	if o, err := ts.sch.Generate(ts.class, i, ts.config.Clean); err == nil {
 		for _, j := range o {
 			if j.Vertex != nil {
-				j.Vertex.Gid, _ = prefixAdjust(j.Vertex.Gid, ts.config.IDPrefix, ts.config.Sep, false)
-				if j.Vertex.Gid == "" {
-					//default behavior if GID is not configured
-					if x, ok := j.Vertex.Data.AsMap()["id"]; ok {
-						if xStr, ok := x.(string); ok {
-							j.Vertex.Gid = xStr
-						}
-					}
-				}
 				err := ts.task.Emit("vertex", ts.vertexToMap(j.Vertex))
 				if err != nil {
 					log.Printf("Emit Error: %s", err)
@@ -98,73 +90,31 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 				var edge *gripql.Edge
 				if j.OutEdge != nil {
 					edge = j.OutEdge
-					edge.From, _ = prefixAdjust(edge.From, ts.config.IDPrefix, ts.config.Sep, false)
-					if er, ok := ts.config.Fields[j.Field]; ok {
-						var err error
-						if er.BlankFilter && edge.To == "" {
-							edge = nil
-						} else if edge.To, err = prefixAdjust(edge.To, er.ToPrefix, er.Sep, er.PrefixFilter); err != nil {
-							edge = nil
-						}
-						if edge != nil && er.IDTemplate != "" {
-							val, err := evaluate.ExpressionString(er.IDTemplate, nil, ts.edgeToMap(edge))
-							if err == nil {
-								edge.Gid = val
-							}
-						}
-					} else {
-						//default rules
-					}
 				}
 				if j.InEdge != nil {
 					edge = j.InEdge
-					edge.To, _ = prefixAdjust(edge.To, ts.config.IDPrefix, ts.config.Sep, false)
-					if er, ok := ts.config.Fields[j.Field]; ok {
-						var err error
-						if er.BlankFilter && edge.From == "" {
-							edge = nil
-						} else if edge.From, err = prefixAdjust(edge.From, er.ToPrefix, er.Sep, er.PrefixFilter); err != nil {
-							edge = nil
-						}
-						if edge != nil && er.IDTemplate != "" {
-							val, err := evaluate.ExpressionString(er.IDTemplate, nil, ts.edgeToMap(edge))
-							if err == nil {
-								edge.Gid = val
-							}
-						}
-					} else {
-						//default rules
-					}
 				}
 				if edge != nil {
-					err := ts.task.Emit("edge", ts.edgeToMap(edge))
+					edgeData := ts.edgeToMap(edge)
+					if ts.edgeFix != nil {
+						o, err := ts.edgeFix.Evaluate(edgeData)
+						if err == nil {
+							edgeData = o
+						}
+					}
+					err := ts.task.Emit("edge", edgeData)
 					if err != nil {
 						log.Printf("Emit Error: %s", err)
 					}
 				}
 			}
 		}
+	} else {
+		log.Printf("Graphbuild %s error : %s", ts.config.Title, err)
 	}
 
 	return out
 
-}
-
-func prefixAdjust(id string, prefix string, sep *string, filter bool) (string, error) {
-	if prefix == "" {
-		return id, nil
-	}
-	if !strings.HasPrefix(id, prefix) {
-		if filter {
-			return id, fmt.Errorf("mismatch prefix")
-		}
-		s := ":"
-		if sep != nil {
-			s = *sep
-		}
-		return prefix + s + id, nil
-	}
-	return id, nil
 }
 
 func (ts *graphBuildProcess) edgeToMap(e *gripql.Edge) map[string]interface{} {

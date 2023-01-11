@@ -1,8 +1,6 @@
 module github.com/bmeg/sifter
 
-replace github.com/go-python/gpython v0.1.1-0.20221005072539-6f8e06a46607 => github.com/bmeg/gpython v0.0.3-0.20230105173224-c247710799a2
-
-replace github.com/santhosh-tekuri/jsonschema/v5 v5.1.1 => /Users/ellrott/workspaces/jsonschema/
+replace github.com/go-python/gpython v0.1.1-0.20221005072539-6f8e06a46607 => github.com/bmeg/gpython v0.0.3-0.20230110235619-1ae7af7fbf53
 
 require (
 	github.com/akrylysov/pogreb v0.9.1
@@ -18,6 +16,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-python/gpython v0.1.1-0.20221005072539-6f8e06a46607
 	github.com/golang/protobuf v1.5.2
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-getter v1.6.2
 	github.com/jlaffaye/ftp v0.0.0-20200602180915-5563613968bf
 	github.com/linkedin/goavro/v2 v2.10.0
@@ -53,7 +52,6 @@ require (
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/snappy v0.0.3 // indirect
-	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.5.0 // indirect

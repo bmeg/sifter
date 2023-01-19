@@ -190,8 +190,8 @@ func (tsv *TSVTable) open(task task.RuntimeTask) (lookupTable, error) {
 		} else {
 			inputStream = gfile
 		}
-	}
-	if err != nil {
+	} else if err != nil {
+		log.Printf("Error loading table: %s", err)
 		return nil, err
 	}
 
@@ -215,6 +215,7 @@ func (tsv *TSVTable) open(task task.RuntimeTask) (lookupTable, error) {
 
 	lines, err := tsvReader.ReadAll()
 	if err != nil {
+		log.Printf("Error loading lookup table: %s", err)
 		return nil, err
 	}
 

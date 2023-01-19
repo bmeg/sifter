@@ -110,6 +110,12 @@ func FromPyObject(i py.Object) interface{} {
 			}
 		}
 		return out
+	} else if xTuple, ok := i.(py.Tuple); ok {
+		out := []interface{}{}
+		for _, v := range xTuple {
+			out = append(out, FromPyObject(v))
+		}
+		return out
 	} else if xStr, ok := i.(py.String); ok {
 		return string(xStr)
 	} else if xFloat, ok := i.(py.Float); ok {

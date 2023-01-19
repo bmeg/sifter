@@ -84,7 +84,7 @@ func (fs *filterProcessor) Process(row map[string]interface{}) []map[string]any 
 		}
 		return []map[string]any{}
 	} else if fs.config.Check == "not" {
-		log.Printf("Filter not: %s != %s", value, fs.config.Match)
+		//log.Printf("Filter not: %s != %s", value, fs.config.Match)
 		if err == nil && value != fs.config.Match {
 			return []map[string]any{row}
 		}

@@ -1,6 +1,7 @@
 package extractors
 
 import (
+	"encoding/csv"
 	"fmt"
 	"io"
 	"log"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/readers"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -21,6 +21,7 @@ type TableLoadStep struct {
 	Columns      []string `json:"columns" jsonschema_description:"Manually set names of columns"`
 	ExtraColumns string   `json:"extraColumns" jsonschema_description:"Columns beyond originally declared columns will be placed in this array"`
 	Sep          string   `json:"sep" jsonschema_description:"Separator \\t for TSVs or , for CSVs"`
+	Comment      string   `json:"comment"`
 }
 
 func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
@@ -38,67 +39,75 @@ func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface
 		return nil, fmt.Errorf("input not a file: %s", inputPath)
 	}
 	log.Printf("Loading table: %s", inputPath)
-	fhd, err := os.Open(inputPath)
+
+	var inputStream io.ReadCloser
+	if gfile, err := os.Open(inputPath); err == nil {
+		if strings.HasSuffix(inputPath, ".gz") {
+			inp, err := gzip.NewReader(gfile)
+			if err != nil {
+				return nil, err
+			}
+			inputStream = inp
+		} else {
+			inputStream = gfile
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
 
-	var hd io.Reader
-	if strings.HasSuffix(input, ".gz") || strings.HasSuffix(input, ".tgz") {
-		hd, err = gzip.NewReader(fhd)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		hd = fhd
-	}
-
-	r := readers.CSVReader{}
 	if ml.Sep == "" {
-		r.Comma = "\t"
-	} else {
-		r.Comma = ml.Sep
+		ml.Sep = "\t"
 	}
-	r.Comment = "#"
 
+	tsvReader := csv.NewReader(inputStream)
+	tsvReader.Comma = rune(ml.Sep[0])
+	tsvReader.LazyQuotes = true
+	tsvReader.Comment = '#'
+	if ml.Comment != "" {
+		tsvReader.Comment = []rune(ml.Comment)[0]
+	}
 	var columns []string
 	if ml.Columns != nil {
 		columns = ml.Columns
+		tsvReader.FieldsPerRecord = len(ml.Columns)
 	}
 
 	procChan := make(chan map[string]interface{}, 25)
 
 	rowSkip := ml.RowSkip
 
-	inputStream, err := readers.ReadLines(hd)
-	if err != nil {
-		log.Printf("Error %s", err)
-		return nil, err
-	}
-
 	go func() {
-		defer fhd.Close()
-		log.Printf("STARTING READ: %#v %#v", r, inputStream)
-		for record := range r.Read(inputStream) {
-			if rowSkip > 0 {
-				rowSkip--
-			} else {
-				if columns == nil {
-					columns = record
+		defer inputStream.Close()
+		//log.Printf("STARTING READ: %#v", inputStream)
+		for {
+			record, err := tsvReader.Read()
+			if err == io.EOF {
+				break
+			}
+			if err == nil {
+				if rowSkip > 0 {
+					rowSkip--
 				} else {
-					o := map[string]interface{}{}
-					if len(record) >= len(columns) {
-						for i, n := range columns {
-							o[n] = record[i]
-						}
-						if ml.ExtraColumns != "" {
-							if len(record) > len(columns) {
-								o[ml.ExtraColumns] = record[len(columns):]
+					if columns == nil {
+						columns = record
+					} else {
+						o := map[string]interface{}{}
+						if len(record) >= len(columns) {
+							for i, n := range columns {
+								o[n] = record[i]
 							}
+							if ml.ExtraColumns != "" {
+								if len(record) > len(columns) {
+									o[ml.ExtraColumns] = record[len(columns):]
+								}
+							}
+							procChan <- o
 						}
-						procChan <- o
 					}
 				}
+			} else {
+				log.Printf("Error: %s", err)
 			}
 		}
 		log.Printf("Done Loading")

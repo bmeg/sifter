@@ -1,7 +1,5 @@
 module github.com/bmeg/sifter
 
-replace github.com/go-python/gpython v0.1.1-0.20221005072539-6f8e06a46607 => github.com/bmeg/gpython v0.0.3-0.20230110235619-1ae7af7fbf53
-
 require (
 	github.com/akrylysov/pogreb v0.9.1
 	github.com/alecthomas/jsonschema v0.0.0-20200514014646-0366d1034a17
@@ -14,7 +12,7 @@ require (
 	github.com/cockroachdb/pebble v0.0.0-20220311224846-910ce60578df
 	github.com/dgraph-io/badger/v2 v2.0.1
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-python/gpython v0.1.1-0.20221005072539-6f8e06a46607
+	github.com/go-python/gpython v0.1.1-0.20230118193350-337df2ad1ec2
 	github.com/golang/protobuf v1.5.2
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/hashicorp/go-getter v1.6.2
@@ -77,11 +75,14 @@ require (
 	github.com/logrusorgru/aurora v0.0.0-20190428105938-cea283e61946 // indirect
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/oklog/run v1.0.0 // indirect
+	github.com/peterh/liner v1.2.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/rivo/uniseg v0.3.4 // indirect
 	github.com/segmentio/ksuid v1.0.2 // indirect
 	github.com/sirupsen/logrus v1.6.0 // indirect
 	github.com/spf13/cast v1.3.0 // indirect

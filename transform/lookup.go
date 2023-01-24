@@ -154,13 +154,18 @@ func (tp *lookupProcess) Process(row map[string]interface{}) []map[string]interf
 	} else if tp.config.Lookup != "" {
 		value, err := evaluate.ExpressionString(tp.config.Lookup, tp.userConfig, row)
 		if err == nil {
+			out := map[string]any{}
+			for k, v := range row {
+				out[k] = v
+			}
 			if pv, ok := tp.table.LookupRecord(value); ok {
 				for k, v := range tp.config.Copy {
 					if ki, ok := pv[v]; ok {
-						row[k] = ki
+						out[k] = ki
 					}
 				}
 			}
+			return []map[string]any{out}
 		}
 	}
 	return []map[string]any{row}

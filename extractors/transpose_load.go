@@ -1,6 +1,7 @@
 package extractors
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/binary"
 	"encoding/csv"
@@ -16,14 +17,14 @@ import (
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/task"
 	"github.com/cockroachdb/pebble"
-	//badger "github.com/dgraph-io/badger/v2"
 )
 
 type TransposeLoadStep struct {
-	Input   string `json:"input" jsonschema_description:"TSV to be transformed"`
-	RowSkip int    `json:"rowSkip" jsonschema_description:"Number of header rows to skip"`
-	Sep     string `json:"sep" jsonschema_description:"Separator \\t for TSVs or , for CSVs"`
-	OnDisk  bool   `json:"onDisk" jsonschema_description:"Do transpose without caching matrix in memory. Takes longer but works on large files"`
+	Input    string `json:"input" jsonschema_description:"TSV to be transformed"`
+	RowSkip  int    `json:"rowSkip" jsonschema_description:"Number of header rows to skip"`
+	Sep      string `json:"sep" jsonschema_description:"Separator \\t for TSVs or , for CSVs"`
+	UseDB    bool   `json:"useDB" jsonschema_description:"Do transpose without caching matrix in memory. Takes longer but works on large files"`
+	UseTable int    `json:"useTable"`
 }
 
 func (ml *TransposeLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
@@ -35,11 +36,14 @@ func (ml *TransposeLoadStep) Start(task task.RuntimeTask) (chan map[string]inter
 	cr := csvReader{inputPath, ml.RowSkip, ml.Sep}
 	out := make(chan map[string]any, 10)
 
-	if !ml.OnDisk {
-		go transposeInMem(cr, out)
-	} else {
+	if ml.UseDB {
 		tdir := task.TempDir()
-		go transposeOnDisk(tdir, cr, out)
+		go transposeInDB(tdir, cr, out)
+	} else if ml.UseTable > 0 {
+		tdir := task.TempDir()
+		go transposeInTable(tdir, ml.UseTable, cr, out)
+	} else {
+		go transposeInMem(cr, out)
 	}
 	return out, nil
 }
@@ -169,7 +173,7 @@ func (pbw *pebbleBulkWrite) Close() error {
 	return nil
 }
 
-func transposeOnDisk(workdir string, c csvReader, out chan map[string]any) error {
+func transposeInDB(workdir string, c csvReader, out chan map[string]any) error {
 
 	db, err := pebble.Open(filepath.Join(workdir, "transpose.db"), &pebble.Options{})
 	if err != nil {
@@ -267,6 +271,82 @@ func transposeOnDisk(workdir string, c csvReader, out chan map[string]any) error
 
 	close(out)
 	db.Close()
+	os.RemoveAll(workdir)
+	return nil
+}
+
+func transposeInTable(workdir string, fieldSize int, c csvReader, out chan map[string]any) error {
+
+	table, err := os.Create(filepath.Join(workdir, "transpose"))
+	if err != nil {
+		return err
+	}
+
+	r, err := c.open()
+	if err != nil {
+		return nil
+	}
+
+	rowCount := int64(0)
+	colCount := int64(0)
+	writer := bufio.NewWriterSize(table, 1024*10)
+	for row := int64(0); ; row++ {
+		if (row % 100) == 0 {
+			log.Printf("Row: %d", row)
+		}
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if row == 0 {
+			colCount = int64(len(record))
+		}
+		if colCount != int64(len(record)) {
+			log.Printf("Incorrectly sized row: %d != %d", colCount, uint64(len(record)))
+		}
+		for col := int64(0); col < colCount; col++ {
+			b := []byte(record[col])
+			rec := make([]byte, fieldSize)
+			copy(rec, b)
+			writer.Write(rec)
+		}
+		rowCount = row + 1
+	}
+	writer.Flush()
+
+	stepSize := colCount * int64(fieldSize)
+
+	log.Printf("Col/Row counts: %d %d", colCount, rowCount)
+
+	columns := []string{}
+	for row := int64(0); row < rowCount; row++ {
+		buf := make([]byte, fieldSize)
+		table.ReadAt(buf, row*stepSize)
+		tmp := bytes.Split(buf, []byte{0})
+		if err == nil {
+			columns = append(columns, string(tmp[0]))
+		} else {
+			log.Printf("Column error: %s", err)
+		}
+	}
+
+	log.Printf("Columns: %s\n", columns)
+
+	for col := int64(1); col < colCount; col++ {
+		if (col % 100) == 0 {
+			log.Printf("Writing Col %d", col)
+		}
+		record := map[string]any{}
+		for row := int64(0); row < rowCount; row++ {
+			buf := make([]byte, fieldSize)
+			table.ReadAt(buf, row*stepSize)
+			tmp := bytes.Split(buf, []byte{0})
+			record[columns[row]] = string(tmp[0])
+		}
+		out <- record
+	}
+	table.Close()
+	close(out)
 	os.RemoveAll(workdir)
 	return nil
 }

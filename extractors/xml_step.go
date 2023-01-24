@@ -1,8 +1,10 @@
 package extractors
 
 import (
+	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"log"
@@ -18,6 +20,7 @@ import (
 
 type XMLLoadStep struct {
 	Input string `json:"input"`
+	Level int    `json:"level"`
 }
 
 func (ml *XMLLoadStep) Start(task task.RuntimeTask) (chan map[string]any, error) {
@@ -49,17 +52,60 @@ func (ml *XMLLoadStep) Start(task task.RuntimeTask) (chan map[string]any, error)
 	}
 
 	procChan := make(chan map[string]any, 100)
-
-	go func() {
-		jStr, err := xj.Convert(hd)
-		if err == nil {
-			data := map[string]any{}
-			if err = json.Unmarshal(jStr.Bytes(), &data); err == nil {
-				procChan <- data
+	if ml.Level == 0 {
+		go func() {
+			jStr, err := xj.Convert(hd)
+			if err == nil {
+				data := map[string]any{}
+				if err = json.Unmarshal(jStr.Bytes(), &data); err == nil {
+					procChan <- data
+				}
 			}
-		}
-		close(procChan)
-	}()
+			close(procChan)
+		}()
+	} else {
+		go func() {
+			d := xml.NewDecoder(hd)
+			stack := []string{}
+			buffer := []xml.Token{}
+			for {
+				tok, err := d.Token()
+				if tok == nil || err == io.EOF {
+					// EOF means we're done.
+					break
+				} else if err != nil {
+					log.Printf("Error decoding token: %s", err)
+				}
+				if len(stack) >= ml.Level {
+					buffer = append(buffer, xml.CopyToken(tok))
+				}
+				switch ty := tok.(type) {
+				case xml.StartElement:
+					stack = append(stack, ty.Name.Local)
+				case xml.EndElement:
+					stack = stack[:len(stack)-1]
+					if len(stack) == ml.Level {
+						b := &bytes.Buffer{}
+						e := xml.NewEncoder(b)
+						for _, i := range buffer {
+							e.EncodeToken(i)
+						}
+						e.Flush()
+						jStr, err := xj.Convert(b)
+						if err == nil {
+							data := map[string]any{}
+							if err = json.Unmarshal(jStr.Bytes(), &data); err == nil {
+								procChan <- data
+							}
+						}
+						buffer = []xml.Token{}
+					}
+				default:
+				}
+			}
+			close(procChan)
+		}()
+	}
 	return procChan, nil
 }
 

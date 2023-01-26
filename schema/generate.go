@@ -15,9 +15,9 @@ type GraphElement struct {
 	Field   string
 }
 
-func getReferenceIDField(data map[string]any, name string) ([]string, error) {
+func getReferenceIDField(data map[string]any, fieldName string, idName string) ([]string, error) {
 	out := []string{}
-	if d, ok := data[name]; ok {
+	if d, ok := data[fieldName]; ok {
 		//fmt.Printf("Dest id field %#v\n", d)
 		if idStr, ok := d.(string); ok {
 			out = append(out, idStr)
@@ -26,7 +26,7 @@ func getReferenceIDField(data map[string]any, name string) ([]string, error) {
 				if gStr, ok := g.(string); ok {
 					out = append(out, gStr)
 				} else if gMap, ok := g.(map[string]any); ok {
-					if id, ok := gMap["reference"]; ok {
+					if id, ok := gMap[idName]; ok {
 						if idStr, ok := id.(string); ok {
 							out = append(out, idStr)
 						}
@@ -37,7 +37,7 @@ func getReferenceIDField(data map[string]any, name string) ([]string, error) {
 
 			}
 		} else if idMap, ok := d.(map[string]any); ok {
-			if id, ok := idMap["reference"]; ok {
+			if id, ok := idMap[idName]; ok {
 				if idStr, ok := id.(string); ok {
 					out = append(out, idStr)
 				}
@@ -75,7 +75,7 @@ func (s GraphSchema) Generate(classID string, data map[string]any, clean bool) (
 
 		//TODO: need a way to define the primary ID field
 		if id, err := getObjectID(data, class); err == nil {
-			fmt.Printf("Vertex %s\n", id)
+			//fmt.Printf("Vertex %s\n", id)
 			dataPB, err := structpb.NewStruct(data)
 			if err == nil {
 				vert := gripql.Vertex{Gid: id, Label: classID, Data: dataPB}
@@ -85,24 +85,22 @@ func (s GraphSchema) Generate(classID string, data map[string]any, clean bool) (
 			for name, prop := range class.Properties {
 				if ext, ok := prop.Extensions[GraphExtensionTag]; ok {
 					gext := ext.(GraphExtension)
-					for dstName, backrefLabel := range gext.Backrefs {
-						fmt.Printf("Dst: %s\n", dstName)
-						if backrefLabelStr, ok := backrefLabel.(string); ok {
-							dstIDs, err := getReferenceIDField(data, name)
-							if err == nil {
-								for _, dstID := range dstIDs {
-									edgeOut := gripql.Edge{
-										To:    dstID,
-										From:  id,
-										Label: name,
-									}
+					for _, target := range gext.Targets {
+						dstIDs, err := getReferenceIDField(data, name, target.IDProperty)
+						if err == nil {
+							for _, dstID := range dstIDs {
+								edgeOut := gripql.Edge{
+									To:    dstID,
+									From:  id,
+									Label: name,
+								}
+								out = append(out, GraphElement{OutEdge: &edgeOut})
+								if target.Backref != "" {
 									edgeIn := gripql.Edge{
 										To:    id,
 										From:  dstID,
-										Label: backrefLabelStr,
+										Label: target.Backref,
 									}
-									fmt.Printf("edge %s %s %s\n", id, name, dstID)
-									out = append(out, GraphElement{OutEdge: &edgeOut})
 									out = append(out, GraphElement{InEdge: &edgeIn})
 								}
 							}

@@ -62,18 +62,41 @@ func isEdge(s string) bool {
 
 var graphExtMeta = jsonschema.MustCompileString("graphExtMeta.json", `{
 	"properties" : {
-		"reference_backrefs": {
-			"type" : "object",
-			"properties" : {},
-			"additionalProperties" : true
+		"targets": {
+			"type" : "array",
+			"items" : {
+				"type" : "object",
+				"properties" : {
+					"type" : {
+						"type": "object",
+						"properties" : {
+							"$ref" : {
+								"type" : "string"
+							}
+						}
+					},
+					"id_property" : {
+						"type" : "string"
+					},
+					"backref" : {
+						"type": "string"
+					}
+				}
+			}
 		}
 	}
 }`)
 
 type graphExtCompiler struct{}
 
+type Target struct {
+	Schema     *jsonschema.Schema
+	IDProperty string
+	Backref    string
+}
+
 type GraphExtension struct {
-	Backrefs map[string]any
+	Targets []Target
 }
 
 func (s GraphExtension) Validate(ctx jsonschema.ValidationContext, v interface{}) error {
@@ -82,10 +105,45 @@ func (s GraphExtension) Validate(ctx jsonschema.ValidationContext, v interface{}
 }
 
 func (graphExtCompiler) Compile(ctx jsonschema.CompilerContext, m map[string]interface{}) (jsonschema.ExtSchema, error) {
-
-	if e, ok := m["reference_backrefs"]; ok {
-		if emap, ok := e.(map[string]any); ok {
-			return GraphExtension{emap}, nil
+	if e, ok := m["targets"]; ok {
+		fmt.Printf("Found: %#v\n", e)
+		if ea, ok := e.([]any); ok {
+			out := GraphExtension{Targets: []Target{}}
+			for i := range ea {
+				if emap, ok := ea[i].(map[string]any); ok {
+					fmt.Printf("found: %s\n", emap)
+					if tval, ok := emap["type"]; ok {
+						if tmap, ok := tval.(map[string]any); ok {
+							if ref, ok := tmap["$ref"]; ok {
+								if refStr, ok := ref.(string); ok {
+									backRef := ""
+									if bval, ok := emap["backref"]; ok {
+										if bstr, ok := bval.(string); ok {
+											backRef = bstr
+										}
+									}
+									idProperty := "id"
+									if ival, ok := emap["idProperty"]; ok {
+										if bstr, ok := ival.(string); ok {
+											idProperty = bstr
+										}
+									}
+									sch, err := ctx.CompileRef(refStr, "./", false)
+									if err == nil {
+										out.Targets = append(out.Targets, Target{
+											Schema:     sch,
+											Backref:    backRef,
+											IDProperty: idProperty,
+										})
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			return out, nil
+			//return GraphExtension{emap}, nil
 		}
 	}
 	return nil, nil

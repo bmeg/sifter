@@ -67,13 +67,12 @@ func (ts *objectProcess) Process(i map[string]interface{}) []map[string]interfac
 	out, err := ts.schema.CleanAndValidate(ts.class, i)
 	if err == nil {
 		return []map[string]any{out}
-	} else {
-		//if ts.errorCount < 10 {
-		data, _ := json.Marshal(i)
-		log.Printf("validate %s error: %s on %s", ts.className, err, data)
-		//}
-		ts.errorCount++
 	}
+	//if ts.errorCount < 10 {
+	data, _ := json.Marshal(i)
+	log.Printf("validate %s error: %s on %s", ts.className, err, data)
+	//}
+	ts.errorCount++
 	return []map[string]any{}
 }
 

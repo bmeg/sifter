@@ -2,6 +2,9 @@
 run:
   skip-files:
     - ".*bindata.go$"
+    - ".*pb.go"
+    - ".*pb.gw.go"
+
   timeout: 5m
 
 issues:

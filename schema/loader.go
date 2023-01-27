@@ -231,10 +231,11 @@ func (s GraphSchema) GetClass(classID string) *jsonschema.Schema {
 	if class, ok := s.Classes[classID]; ok {
 		return class
 	}
-	if sch, err := s.compiler.Compile(classID); err == nil {
+	var err error
+	var sch *jsonschema.Schema
+	if sch, err = s.compiler.Compile(classID); err == nil {
 		return sch
-	} else {
-		log.Printf("compile error: %s", err)
 	}
+	log.Printf("compile error: %s", err)
 	return nil
 }

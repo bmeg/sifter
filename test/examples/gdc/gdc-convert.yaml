@@ -19,8 +19,8 @@ pipelines:
           studies: "{{row.project.project_id}}"
           experiments: "exp:{{row.project.project_id}}"
           type: case
-    - objectCreate:
-        class: case
+    - objectValidate:
+        title: Case
         schema: "{{config.schema}}"
     - emit:
         name: case
@@ -29,11 +29,8 @@ pipelines:
     - from: caseObject
     - graphBuild:
         schema: "{{config.schema}}"
-        idPrefix: Case
-        class: case
-        fields:
-          experiments:
-            toPrefix: Project
+        #idPrefix: Case
+        title: Case
   
   sampleData:
     - from: caseData
@@ -48,8 +45,8 @@ pipelines:
         mapping:
           type: sample
           id: "{{row.sample_id}}"
-    - objectCreate:
-        class: sample
+    - objectValidate:
+        title: Sample
         schema: "{{config.schema}}"
     - emit:
         name: sample
@@ -58,14 +55,8 @@ pipelines:
     - from: sampleObject
     - graphBuild:
         schema: "{{config.schema}}"
-        idPrefix: Sample
-        class: sample
-        fields:
-          cases:
-            toPrefix: Case
-        #inEdges:
-        #  samples:
-        #   fromPrefix: Case
+        #idPrefix: Sample
+        title: Sample
 
   aliquotObject:
     - from: sampleData
@@ -85,8 +76,8 @@ pipelines:
         mapping:
           type: aliquot
           id: "{{row.aliquot_id}}"
-    - objectCreate:
-        class: aliquot
+    - objectValidate:
+        title: Aliquot
         schema: "{{config.schema}}"
     - emit:
         name: aliquot
@@ -95,8 +86,5 @@ pipelines:
     - from: aliquotObject
     - graphBuild:
         schema: "{{config.schema}}"
-        idPrefix: Aliquot
-        class: aliquot
-        fields:
-          samples:
-            toPrefix: Sample
+        #idPrefix: Aliquot
+        title: Aliquot

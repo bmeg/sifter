@@ -3,6 +3,7 @@ package writers
 import (
 	"compress/gzip"
 	"encoding/csv"
+	"encoding/json"
 	"io"
 	"log"
 	"os"
@@ -14,10 +15,12 @@ import (
 )
 
 type TableWriter struct {
-	FromName string   `json:"from"`
-	Output   string   `json:"output" jsonschema_description:"Name of file to create"`
-	Columns  []string `json:"columns" jsonschema_description:"Columns to be written into table file"`
-	Sep      string   `json:"sep"`
+	FromName         string   `json:"from"`
+	Output           string   `json:"output" jsonschema_description:"Name of file to create"`
+	Columns          []string `json:"columns" jsonschema_description:"Columns to be written into table file"`
+	Header           string   `json:"header"`
+	SkipColumnHeader bool     `json:"skipColumnHeader"`
+	Sep              string   `json:"sep"`
 }
 
 type tableWriteProcess struct {
@@ -53,11 +56,17 @@ func (tw *TableWriter) Init(task task.RuntimeTask) (WriteProcess, error) {
 	} else {
 		te.out = te.handle
 	}
+	if tw.Header != "" {
+		te.out.Write([]byte(tw.Header))
+		te.out.Write([]byte("\n"))
+	}
 	te.writer = csv.NewWriter(te.out)
 	te.writer.Comma = sep
 	te.columns = tw.Columns
 	te.config = tw
-	te.writer.Write(te.columns)
+	if !tw.SkipColumnHeader {
+		te.writer.Write(te.columns)
+	}
 	return &te, nil
 }
 
@@ -77,6 +86,9 @@ func (tp *tableWriteProcess) Write(i map[string]interface{}) {
 		if v, ok := i[k]; ok {
 			if vStr, ok := v.(string); ok {
 				o[j] = vStr
+			} else {
+				b, _ := json.Marshal(v)
+				o[j] = string(b)
 			}
 		}
 	}

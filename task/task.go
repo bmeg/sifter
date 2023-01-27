@@ -17,6 +17,7 @@ type RuntimeTask interface {
 	AbsPath(p string) (string, error)
 	TempDir() string
 	WorkDir() string
+	BaseDir() string
 	OutDir() string
 	GetName() string
 
@@ -27,19 +28,21 @@ type Task struct {
 	Prefix  string
 	Name    string
 	Workdir string
+	Basedir string
 	Config  map[string]string
 	Emitter loader.DataEmitter
 	Outdir  string
 }
 
-func NewTask(name string, workDir string, outDir string, config map[string]string) *Task {
+func NewTask(name string, baseDir string, workDir string, outDir string, config map[string]string) *Task {
 	ld := loader.NewDirLoader(outDir)
 	em, _ := ld.NewDataEmitter()
 
+	baseDir, _ = filepath.Abs(baseDir)
 	workDir, _ = filepath.Abs(workDir)
 	outDir, _ = filepath.Abs(outDir)
 
-	return &Task{Name: name, Config: config, Workdir: workDir, Outdir: outDir, Emitter: em}
+	return &Task{Name: name, Config: config, Basedir: baseDir, Workdir: workDir, Outdir: outDir, Emitter: em}
 }
 
 func (m *Task) SetName(name string) {
@@ -62,6 +65,7 @@ func (m *Task) SubTask(ext string) RuntimeTask {
 		Prefix:  m.GetName(),
 		Name:    ext,
 		Workdir: m.Workdir,
+		Basedir: m.Basedir,
 		Config:  m.Config,
 		Emitter: m.Emitter,
 		Outdir:  m.Outdir,
@@ -94,6 +98,10 @@ func (m *Task) TempDir() string {
 
 func (m *Task) WorkDir() string {
 	return m.Workdir
+}
+
+func (m *Task) BaseDir() string {
+	return m.Basedir
 }
 
 func (m *Task) Emit(n string, e map[string]interface{}) error {

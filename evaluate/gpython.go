@@ -32,6 +32,10 @@ func (g GPythonProcessor) Evaluate(inputs ...map[string]interface{}) (map[string
 	return g.code.Evaluate(g.method, inputs...)
 }
 
+func (g GPythonProcessor) EvaluateArray(inputs ...map[string]interface{}) ([]any, error) {
+	return g.code.EvaluateArray(g.method, inputs...)
+}
+
 func (g GPythonProcessor) EvaluateBool(inputs ...map[string]interface{}) (bool, error) {
 	return g.code.EvaluateBool(g.method, inputs...)
 }
@@ -94,6 +98,24 @@ func FromPyObject(i py.Object) interface{} {
 			out = append(out, FromPyObject(v))
 		}
 		return out
+	} else if xGen, ok := i.(*py.Generator); ok {
+		out := []any{}
+		for done := false; !done; {
+			i, err := xGen.M__next__()
+			if err == nil {
+				j := FromPyObject(i)
+				out = append(out, j)
+			} else {
+				done = true
+			}
+		}
+		return out
+	} else if xTuple, ok := i.(py.Tuple); ok {
+		out := []interface{}{}
+		for _, v := range xTuple {
+			out = append(out, FromPyObject(v))
+		}
+		return out
 	} else if xStr, ok := i.(py.String); ok {
 		return string(xStr)
 	} else if xFloat, ok := i.(py.Float); ok {
@@ -151,6 +173,28 @@ func (p *PyCode) Evaluate(method string, inputs ...map[string]interface{}) (map[
 	}
 	o := FromPyObject(out)
 	if out, ok := o.(map[string]interface{}); ok {
+		return out, nil
+	}
+	return nil, fmt.Errorf("incorrect return type: %s", out)
+}
+
+func (p *PyCode) EvaluateArray(method string, inputs ...map[string]interface{}) ([]any, error) {
+	fun := p.module.Globals[method]
+	in := py.Tuple{}
+	for _, i := range inputs {
+		data := PyObject(i)
+		in = append(in, data)
+	}
+	out, err := py.Call(fun, in, nil)
+	if err != nil {
+		py.TracebackDump(err)
+		log.Printf("Error Inputs: %#v", inputs)
+		log.Printf("Error Inputs: %#v", in)
+		log.Printf("Map Error: %s", err)
+		return nil, err
+	}
+	o := FromPyObject(out)
+	if out, ok := o.([]any); ok {
 		return out, nil
 	}
 	return nil, fmt.Errorf("incorrect return type: %s", out)

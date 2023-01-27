@@ -3,247 +3,239 @@ package schema
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
+	"net/url"
+	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"sigs.k8s.io/yaml"
+
+	"github.com/santhosh-tekuri/jsonschema/v5"
 )
 
-type Link struct {
-	Name         string              `json:"name"`
-	Backref      string              `json:"backref,omitempty"`
-	Label        string              `json:"label"`
-	TargetType   string              `json:"target_type"`
-	Multiplicity string              `json:"multiplicity"`
-	Required     bool                `json:"required"`
-	Subgroup     []Link              `json:"subgroup"`
-	Properties   map[string]Property `json:"properties"`
-	TargetField  string              `json:"target_field"`
+var GraphExtensionTag = "json_schema_graph"
+
+type GraphSchema struct {
+	Classes  map[string]*jsonschema.Schema
+	compiler *jsonschema.Compiler
 }
 
-type Value struct {
-	StringVal *string
-	IntVal    *int64
-	BoolVal   *bool
-}
-
-func (v *Value) UnmarshalJSON(data []byte) error {
-	var stringVal string
-	var intVal int64
-	var boolVal bool
-
-	if err := json.Unmarshal(data, &stringVal); err == nil {
-		v.StringVal = &stringVal
-		return nil
-	} else if err := json.Unmarshal(data, &intVal); err == nil {
-		v.IntVal = &intVal
-		return nil
-	} else if err := json.Unmarshal(data, &boolVal); err == nil {
-		v.BoolVal = &boolVal
-		return nil
+func yamlLoader(s string) (io.ReadCloser, error) {
+	u, err := url.Parse(s)
+	if err != nil {
+		return nil, err
 	}
-	return fmt.Errorf("Unknown type: %s", data)
-}
-
-func (v Value) MarshalJSON() ([]byte, error) {
-	if v.StringVal != nil {
-		return json.Marshal(v.StringVal)
+	f := u.Path
+	if runtime.GOOS == "windows" {
+		f = strings.TrimPrefix(f, "/")
+		f = filepath.FromSlash(f)
 	}
-	if v.IntVal != nil {
-		return json.Marshal(v.IntVal)
+	if strings.HasSuffix(f, ".yaml") {
+		source, err := os.ReadFile(f)
+		if err != nil {
+			log.Printf("Error reading file")
+			return nil, err
+		}
+		d := map[string]any{}
+		yaml.Unmarshal(source, &d)
+		schemaText, err := json.Marshal(d)
+		if err != nil {
+			log.Printf("Error translating file")
+			return nil, err
+		}
+		return io.NopCloser(strings.NewReader(string(schemaText))), nil
 	}
-	if v.BoolVal != nil {
-		return json.Marshal(v.BoolVal)
+	return os.Open(f)
+}
+
+func isEdge(s string) bool {
+	if strings.Contains(s, "_definitions.yaml#/to_many") {
+		return true
+	} else if strings.Contains(s, "_definitions.yaml#/to_one") {
+		return true
 	}
-	return json.Marshal(nil)
+	return false
 }
 
-type Property struct {
-	Type        TypeClass `json:"type"`
-	Ref         string    `json:"$ref,omitempty"`
-	SystemAlias string    `json:"systemAlias,omitempty"`
-	Description string    `json:"description"`
-	Enum        []Value   `json:"enum,omitempty"`
-	Default     Value     `json:"default,omitempty"`
-	Format      string    `json:"format,omitempty"`
-}
-
-type PropertyElement struct {
-	Element Property
-	Value   string
-	AnyOf   []Property `json:"anyOf"`
-}
-
-func (w *PropertyElement) UnmarshalJSON(data []byte) error {
-	s := ""
-	e := Property{}
-	if err := json.Unmarshal(data, &e); err == nil {
-		w.Element = e
-		return nil
+var graphExtMeta = jsonschema.MustCompileString("graphExtMeta.json", `{
+	"properties" : {
+		"targets": {
+			"type" : "array",
+			"items" : {
+				"type" : "object",
+				"properties" : {
+					"type" : {
+						"type": "object",
+						"properties" : {
+							"$ref" : {
+								"type" : "string"
+							}
+						}
+					},
+					"id_property" : {
+						"type" : "string"
+					},
+					"backref" : {
+						"type": "string"
+					}
+				}
+			}
+		}
 	}
-	if err := json.Unmarshal(data, &s); err == nil {
-		w.Value = s
-		return nil
+}`)
+
+type graphExtCompiler struct{}
+
+type Target struct {
+	Schema     *jsonschema.Schema
+	IDProperty string
+	Backref    string
+}
+
+type GraphExtension struct {
+	Targets []Target
+}
+
+func (s GraphExtension) Validate(ctx jsonschema.ValidationContext, v interface{}) error {
+	//fmt.Printf("graph schema validate\n")
+	return nil
+}
+
+func (graphExtCompiler) Compile(ctx jsonschema.CompilerContext, m map[string]interface{}) (jsonschema.ExtSchema, error) {
+	if e, ok := m["targets"]; ok {
+		fmt.Printf("Found: %#v\n", e)
+		if ea, ok := e.([]any); ok {
+			out := GraphExtension{Targets: []Target{}}
+			for i := range ea {
+				if emap, ok := ea[i].(map[string]any); ok {
+					fmt.Printf("found: %s\n", emap)
+					if tval, ok := emap["type"]; ok {
+						if tmap, ok := tval.(map[string]any); ok {
+							if ref, ok := tmap["$ref"]; ok {
+								if refStr, ok := ref.(string); ok {
+									backRef := ""
+									if bval, ok := emap["backref"]; ok {
+										if bstr, ok := bval.(string); ok {
+											backRef = bstr
+										}
+									}
+									idProperty := "id"
+									if ival, ok := emap["idProperty"]; ok {
+										if bstr, ok := ival.(string); ok {
+											idProperty = bstr
+										}
+									}
+									sch, err := ctx.CompileRef(refStr, "./", false)
+									if err == nil {
+										out.Targets = append(out.Targets, Target{
+											Schema:     sch,
+											Backref:    backRef,
+											IDProperty: idProperty,
+										})
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			return out, nil
+			//return GraphExtension{emap}, nil
+		}
 	}
-	if err := json.Unmarshal(data, &w); err == nil {
-		return nil
+	return nil, nil
+}
+
+type LoadOpt struct {
+	LogError func(uri string, err error)
+}
+
+func ObjectScan(sch *jsonschema.Schema) []*jsonschema.Schema {
+	out := []*jsonschema.Schema{}
+
+	isObject := false
+	for _, i := range sch.Types {
+		if i == "object" {
+			isObject = true
+		}
 	}
-	return fmt.Errorf("Property not element or string: %s", data)
-}
-
-func (w PropertyElement) MarshalJSON() ([]byte, error) {
-	if w.Value != "" {
-		return json.Marshal(w.Value)
+	if isObject {
+		out = append(out, sch)
 	}
-	return json.Marshal(w.Element)
-}
 
-type Edge struct {
-	Label string `json:"label"`
-	To    string `json:"to"`
-	From  string `json:"from"`
-}
-
-type Properties map[string]PropertyElement
-
-type Schema struct {
-	ID         string     `json:"id"`
-	Title      string     `json:"title"`
-	Type       string     `json:"type"`
-	Required   []string   `json:"required"`
-	UniqueKeys [][]string `json:"uniqueKeys"`
-	Links      []Link     `json:"links"`
-	Edge       *Edge      `json:"edge"`
-	Props      Properties `json:"properties"`
-}
-
-type TypeClass struct {
-	Type  string
-	Types []string
-}
-
-func (w *TypeClass) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &w.Type); err == nil {
-		return nil
-	} else if err := json.Unmarshal(data, &w.Types); err == nil {
-		return nil
+	if sch.Ref != nil {
+		out = append(out, ObjectScan(sch.Ref)...)
 	}
-	return fmt.Errorf("Found unknown: %s", data)
-}
 
-type Schemas struct {
-	Classes map[string]Schema
-}
-
-func (s Schemas) Get(cls string) (Schema, bool) {
-	c, ok := s.Classes[cls]
-	return c, ok
-}
-
-func (s Schemas) GetClasses() []string {
-	out := []string{}
-	for k := range s.Classes {
-		out = append(out, k)
+	for _, i := range sch.AnyOf {
+		out = append(out, ObjectScan(i)...)
 	}
+
 	return out
 }
 
-func Load(path string) (Schemas, error) {
-	files, _ := filepath.Glob(filepath.Join(path, "*.yaml"))
-	if len(files) == 0 {
-		return Schemas{}, fmt.Errorf("No schema files found")
+func Load(path string, opt ...LoadOpt) (GraphSchema, error) {
+
+	jsonschema.Loaders["file"] = yamlLoader
+
+	compiler := jsonschema.NewCompiler()
+	compiler.ExtractAnnotations = true
+
+	compiler.RegisterExtension(GraphExtensionTag, graphExtMeta, graphExtCompiler{})
+
+	info, err := os.Stat(path)
+	if err != nil {
+		return GraphSchema{}, err
 	}
-	out := Schemas{Classes: map[string]Schema{}}
-	for _, f := range files {
-		if s, err := LoadSchema(f); err == nil {
-			out.Classes[s.ID] = s
+	out := GraphSchema{Classes: map[string]*jsonschema.Schema{}, compiler: compiler}
+	if info.IsDir() {
+		files, _ := filepath.Glob(filepath.Join(path, "*.yaml"))
+		if len(files) == 0 {
+			return GraphSchema{}, fmt.Errorf("no schema files found")
+		}
+		for _, f := range files {
+			if sch, err := compiler.Compile(f); err == nil {
+				if sch.Title != "" {
+					out.Classes[sch.Title] = sch
+				}
+			} else {
+				for _, i := range opt {
+					if i.LogError != nil {
+						i.LogError(f, err)
+					}
+				}
+			}
+		}
+	} else {
+		if sch, err := compiler.Compile(path); err == nil {
+			for _, obj := range ObjectScan(sch) {
+				if obj.Title != "" {
+					out.Classes[obj.Title] = obj
+				}
+			}
 		} else {
-			log.Printf("Error loading: %s", err)
+			for _, i := range opt {
+				if i.LogError != nil {
+					i.LogError(path, err)
+				}
+			}
 		}
 	}
 	return out, nil
 }
 
-func RefPath(basePath string, ref string) (string, string) {
-	vs := strings.Split(ref, "#")
-	var pPath string
-	if len(vs[0]) > 0 {
-		dir := filepath.Dir(basePath)
-		pPath = filepath.Join(dir, vs[0])
-	} else {
-		pPath = basePath
+func (s GraphSchema) GetClass(classID string) *jsonschema.Schema {
+	if class, ok := s.Classes[classID]; ok {
+		return class
 	}
-	return pPath, vs[1]
-}
-
-func LoadRef(basePath string, ref string, cls interface{}) error {
-
-	pPath, pElem := RefPath(basePath, ref)
-
-	raw, err := ioutil.ReadFile(pPath)
-	if err != nil {
-		return fmt.Errorf("failed to read data at path %s: \n%v", pPath, err)
+	var err error
+	var sch *jsonschema.Schema
+	if sch, err = s.compiler.Compile(classID); err == nil {
+		return sch
 	}
-	pProps := map[string]interface{}{}
-	if err := yaml.Unmarshal(raw, &pProps); err != nil {
-		return fmt.Errorf("failed to file reference at path %s: \n%v", pPath, err)
-	}
-	fName := pElem[1:]
-	if fData, ok := pProps[fName]; ok {
-		sData, _ := yaml.Marshal(fData)
-		if err := yaml.Unmarshal(sData, cls); err != nil {
-			return err
-		}
-	}
+	log.Printf("compile error: %s", err)
 	return nil
-}
-
-func LoadSchema(path string) (Schema, error) {
-	raw, err := ioutil.ReadFile(path)
-	if err != nil {
-		return Schema{}, fmt.Errorf("failed to read data at path %s: \n%v", path, err)
-	}
-	s := Schema{}
-	if err := yaml.Unmarshal(raw, &s); err != nil {
-		return Schema{}, fmt.Errorf("failed to read data at path %s: \n%v", path, err)
-	}
-	if ref, ok := s.Props["$ref"]; ok {
-		np := map[string]PropertyElement{}
-		if err := LoadRef(path, ref.Value, &np); err == nil {
-			refFile, _ := RefPath(path, ref.Value)
-			for k, v := range np {
-				if v.Element.Ref != "" {
-					err := LoadRef(refFile, v.Element.Ref, &v.Element)
-					if err != nil {
-						log.Printf("Error: %s", err)
-					}
-					v.Element.Ref = ""
-				}
-				s.Props[k] = v
-			}
-		} else {
-			log.Printf("Error: %s", err)
-			return Schema{}, err
-		}
-	}
-	for k := range s.Props {
-		if s.Props[k].Element.Ref != "" {
-			//log.Printf("External Load: %s %s %s", path, k, s.Props[k].Element.Ref)
-			elm := Property{}
-			err := LoadRef(path, s.Props[k].Element.Ref, &elm)
-			if err != nil {
-				log.Printf("Error: %s", err)
-			}
-			//We're overwritting the current record with the contents pointed to with
-			//$ref, but we're leaving some fields, if they've been defined...
-			if s.Props[k].Element.SystemAlias != "" {
-				elm.SystemAlias = s.Props[k].Element.SystemAlias
-			}
-			s.Props[k] = PropertyElement{Element: elm}
-			//s.Props[k].Element.Ref = ""
-		}
-	}
-	return s, nil
 }

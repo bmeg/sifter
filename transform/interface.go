@@ -16,6 +16,16 @@ type MapProcessor interface {
 	Process(map[string]any) map[string]any
 }
 
+type FlatMapProcessor interface {
+	PoolReady() bool
+	Process(map[string]any) []map[string]any
+}
+
+type StreamProcessor interface {
+	//PoolReady() bool
+	Process(chan map[string]any, chan map[string]any)
+}
+
 type ReduceProcessor interface {
 	GetInit() map[string]any
 	GetKey(map[string]any) string
@@ -52,9 +62,12 @@ type Step struct {
 	RegexReplace   *RegexReplaceStep   `json:"regexReplace"`
 	Project        *ProjectStep        `json:"project" jsonschema_description:"Run a projection mapping message"`
 	Map            *MapStep            `json:"map" jsonschema_description:"Apply a single function to all records"`
+	Plugin         *PluginStep         `json:"plugin"`
+	FlatMap        *FlatMapStep        `json:"flatmap" jsonschema_description:"Apply a single function to all records, flatten list responses"`
 	Reduce         *ReduceStep         `json:"reduce"`
 	Distinct       *DistinctStep       `json:"distinct"`
 	FieldProcess   *FieldProcessStep   `json:"fieldProcess" jsonschema_description:"Take an array field from a message and run in child transform"`
+	DropNull       *DropNullStep       `json:"dropNull"`
 	Lookup         *LookupStep         `json:"lookup"`
 	Hash           *HashStep           `json:"hash"`
 	GraphBuild     *GraphBuildStep     `json:"graphBuild"`

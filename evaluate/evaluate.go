@@ -2,6 +2,7 @@ package evaluate
 
 type Processor interface {
 	Evaluate(inputs ...map[string]interface{}) (map[string]interface{}, error)
+	EvaluateArray(inputs ...map[string]interface{}) ([]any, error)
 	EvaluateBool(inputs ...map[string]interface{}) (bool, error)
 	Close()
 }

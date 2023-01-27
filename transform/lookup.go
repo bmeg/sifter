@@ -1,11 +1,14 @@
 package transform
 
 import (
+	"compress/gzip"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
 
+	"encoding/csv"
 	"encoding/json"
 
 	"github.com/bmeg/golib"
@@ -151,13 +154,18 @@ func (tp *lookupProcess) Process(row map[string]interface{}) []map[string]interf
 	} else if tp.config.Lookup != "" {
 		value, err := evaluate.ExpressionString(tp.config.Lookup, tp.userConfig, row)
 		if err == nil {
+			out := map[string]any{}
+			for k, v := range row {
+				out[k] = v
+			}
 			if pv, ok := tp.table.LookupRecord(value); ok {
 				for k, v := range tp.config.Copy {
 					if ki, ok := pv[v]; ok {
-						row[k] = ki
+						out[k] = ki
 					}
 				}
 			}
+			return []map[string]any{out}
 		}
 	}
 	return []map[string]any{row}
@@ -176,19 +184,28 @@ func (tsv *TSVTable) open(task task.RuntimeTask) (lookupTable, error) {
 	}
 	log.Printf("Loading Translation file: %s", inputPath)
 
-	var inputStream chan []byte
-	if strings.HasSuffix(inputPath, ".gz") {
-		inputStream, err = golib.ReadGzipLines(inputPath)
-	} else {
-		inputStream, err = golib.ReadFileLines(inputPath)
-	}
-	if err != nil {
+	var inputStream io.Reader
+	if gfile, err := os.Open(inputPath); err == nil {
+		if strings.HasSuffix(inputPath, ".gz") {
+			inp, err := gzip.NewReader(gfile)
+			if err != nil {
+				return nil, err
+			}
+			inputStream = inp
+		} else {
+			inputStream = gfile
+		}
+	} else if err != nil {
+		log.Printf("Error loading table: %s", err)
 		return nil, err
 	}
 
 	if tsv.Sep == "" {
 		tsv.Sep = "\t"
 	}
+
+	tsvReader := csv.NewReader(inputStream)
+	tsvReader.Comma = rune(tsv.Sep[0])
 
 	tp := &tsvLookup{config: tsv, inputs: task.GetConfig()}
 
@@ -200,17 +217,21 @@ func (tsv *TSVTable) open(task task.RuntimeTask) (lookupTable, error) {
 		}
 	}
 	tp.table = map[string][]string{}
-	for line := range inputStream {
-		if len(line) > 0 {
-			row := strings.Split(string(line), tsv.Sep)
-			if tp.colmap == nil {
-				tp.colmap = map[string]int{}
-				for i, k := range row {
-					tp.colmap[k] = i
-				}
-			} else {
-				tp.table[row[tp.colmap[tsv.Key]]] = row
+
+	lines, err := tsvReader.ReadAll()
+	if err != nil {
+		log.Printf("Error loading lookup table: %s", err)
+		return nil, err
+	}
+
+	for _, row := range lines {
+		if tp.colmap == nil {
+			tp.colmap = map[string]int{}
+			for i, k := range row {
+				tp.colmap[k] = i
 			}
+		} else {
+			tp.table[row[tp.colmap[tsv.Key]]] = row
 		}
 	}
 	log.Printf("tableLookup loaded %d values from %s", len(tp.table), inputPath)

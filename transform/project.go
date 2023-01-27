@@ -89,10 +89,10 @@ func setProjectValue(i map[string]interface{}, key string, val interface{}) erro
 	return nil
 }
 
-func (pr *projectStepProcess) Process(i map[string]interface{}) []map[string]interface{} {
+func (pr *projectStepProcess) Process(row map[string]interface{}) []map[string]interface{} {
 
 	o := map[string]interface{}{}
-	for k, v := range i {
+	for k, v := range row {
 		if r, ok := pr.project.Rename[k]; ok {
 			o[r] = v
 		} else {
@@ -100,7 +100,7 @@ func (pr *projectStepProcess) Process(i map[string]interface{}) []map[string]int
 		}
 	}
 	for k, v := range pr.project.Mapping {
-		t, _ := valueRender(v, pr.task, i)
+		t, _ := valueRender(v, pr.task, row)
 		setProjectValue(o, k, t)
 	}
 	return []map[string]any{o}

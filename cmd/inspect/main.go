@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"path/filepath"
 
 	"github.com/bmeg/sifter/playbook"
 	"github.com/bmeg/sifter/task"
@@ -45,7 +46,9 @@ var Cmd = &cobra.Command{
 
 		log.Printf("outdir: %s", outDir)
 
-		task := task.NewTask(pb.Name, "./", outDir, inputs)
+		p, _ := filepath.Abs(playFile)
+		baseDir := filepath.Dir(p)
+		task := task.NewTask(pb.Name, baseDir, "./", outDir, inputs)
 
 		out := map[string]any{}
 

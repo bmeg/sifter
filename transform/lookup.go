@@ -115,19 +115,47 @@ func (tp *lookupProcess) Process(row map[string]interface{}) []map[string]interf
 			for k, v := range row {
 				if k == tp.config.Replace {
 					if x, ok := v.(string); ok {
-						if n, ok := tp.table.LookupValue(x); ok {
-							out[k] = n
+						if tp.config.Copy != nil {
+							if n, ok := tp.table.LookupRecord(x); ok {
+								t := map[string]any{}
+								for tk, tv := range tp.config.Copy {
+									if jv, ok := n[tv]; ok {
+										t[tk] = jv
+									}
+								}
+								out[k] = t
+							} else {
+								out[k] = x
+							}
 						} else {
-							out[k] = x
+							if n, ok := tp.table.LookupValue(x); ok {
+								out[k] = n
+							} else {
+								out[k] = x
+							}
 						}
 					} else if x, ok := v.([]interface{}); ok {
 						o := []interface{}{}
 						for _, y := range x {
 							if z, ok := y.(string); ok {
-								if n, ok := tp.table.LookupValue(z); ok {
-									o = append(o, n)
+								if tp.config.Copy != nil {
+									if n, ok := tp.table.LookupRecord(z); ok {
+										t := map[string]any{}
+										for tk, tv := range tp.config.Copy {
+											if jv, ok := n[tv]; ok {
+												t[tk] = jv
+											}
+										}
+										o = append(o, t)
+									} else {
+										o = append(o, z)
+									}
 								} else {
-									o = append(o, z)
+									if n, ok := tp.table.LookupValue(z); ok {
+										o = append(o, n)
+									} else {
+										o = append(o, z)
+									}
 								}
 							}
 						}

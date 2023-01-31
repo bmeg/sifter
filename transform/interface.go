@@ -50,6 +50,7 @@ type Transform interface {
 }
 
 type Step struct {
+	Docs           string              `json:"docs"`
 	From           *FromStep           `json:"from"`
 	Split          *SplitStep          `json:"split"`
 	FieldParse     *FieldParseStep     `json:"fieldParse" jsonschema_description:"fieldParse to run"`

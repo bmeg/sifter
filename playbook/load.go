@@ -29,6 +29,10 @@ type Playbook struct {
 	path      string
 }
 
+func (pb *Playbook) GetPath() string {
+	return pb.path
+}
+
 // Parse parses a YAML doc into the given Config instance.
 func parse(raw []byte, conf *Playbook) error {
 	return yaml.UnmarshalStrict(raw, conf)

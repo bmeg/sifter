@@ -36,14 +36,14 @@ func yamlLoader(s string) (io.ReadCloser, error) {
 	if strings.HasSuffix(f, ".yaml") {
 		source, err := os.ReadFile(f)
 		if err != nil {
-			log.Printf("Error reading file")
+			log.Printf("Error reading file: %s", f)
 			return nil, err
 		}
 		d := map[string]any{}
 		yaml.Unmarshal(source, &d)
 		schemaText, err := json.Marshal(d)
 		if err != nil {
-			log.Printf("Error translating file")
+			log.Printf("Error translating file: %s", f)
 			return nil, err
 		}
 		return io.NopCloser(strings.NewReader(string(schemaText))), nil
@@ -51,6 +51,7 @@ func yamlLoader(s string) (io.ReadCloser, error) {
 	return os.Open(f)
 }
 
+/*
 func isEdge(s string) bool {
 	if strings.Contains(s, "_definitions.yaml#/to_many") {
 		return true
@@ -59,6 +60,7 @@ func isEdge(s string) bool {
 	}
 	return false
 }
+*/
 
 var graphExtMeta = jsonschema.MustCompileString("graphExtMeta.json", `{
 	"properties" : {
@@ -106,12 +108,10 @@ func (s GraphExtension) Validate(ctx jsonschema.ValidationContext, v interface{}
 
 func (graphExtCompiler) Compile(ctx jsonschema.CompilerContext, m map[string]interface{}) (jsonschema.ExtSchema, error) {
 	if e, ok := m["targets"]; ok {
-		fmt.Printf("Found: %#v\n", e)
 		if ea, ok := e.([]any); ok {
 			out := GraphExtension{Targets: []Target{}}
 			for i := range ea {
 				if emap, ok := ea[i].(map[string]any); ok {
-					fmt.Printf("found: %s\n", emap)
 					if tval, ok := emap["type"]; ok {
 						if tmap, ok := tval.(map[string]any); ok {
 							if ref, ok := tmap["$ref"]; ok {
@@ -135,6 +135,8 @@ func (graphExtCompiler) Compile(ctx jsonschema.CompilerContext, m map[string]int
 											Backref:    backRef,
 											IDProperty: idProperty,
 										})
+									} else {
+										return nil, err
 									}
 								}
 							}
@@ -153,15 +155,28 @@ type LoadOpt struct {
 	LogError func(uri string, err error)
 }
 
+func isObjectSchema(sch *jsonschema.Schema) bool {
+	for _, i := range sch.Types {
+		if i == "object" {
+			return true
+		}
+	}
+	return false
+}
+
+func isArraySchema(sch *jsonschema.Schema) bool {
+	for _, i := range sch.Types {
+		if i == "array" {
+			return true
+		}
+	}
+	return false
+}
+
 func ObjectScan(sch *jsonschema.Schema) []*jsonschema.Schema {
 	out := []*jsonschema.Schema{}
 
-	isObject := false
-	for _, i := range sch.Types {
-		if i == "object" {
-			isObject = true
-		}
-	}
+	isObject := isObjectSchema(sch)
 	if isObject {
 		out = append(out, sch)
 	}
@@ -200,6 +215,8 @@ func Load(path string, opt ...LoadOpt) (GraphSchema, error) {
 			if sch, err := compiler.Compile(f); err == nil {
 				if sch.Title != "" {
 					out.Classes[sch.Title] = sch
+				} else {
+					//log.Printf("Title not found: %s %#v", f, sch)
 				}
 			} else {
 				for _, i := range opt {

@@ -73,6 +73,7 @@ type Step struct {
 	Hash           *HashStep           `json:"hash"`
 	GraphBuild     *GraphBuildStep     `json:"graphBuild"`
 	Accumulate     *AccumulateStep     `json:"accumulate"`
+	UUID           *UUIDStep           `json:"uuid"`
 }
 
 type Pipe []Step

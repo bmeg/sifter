@@ -70,6 +70,11 @@ func (rw *accumulateWrapper) removeKeyValue(x flame.KeyValue[string, map[string]
 	return []map[string]any{x.Value}
 }
 
+type joinStruct struct {
+	node *flame.JoinNode[map[string]any, map[string]any, map[string]any]
+	proc transform.JoinProcessor
+}
+
 func (pb *Playbook) Execute(task task.RuntimeTask) error {
 	log.Printf("Running playbook")
 
@@ -99,6 +104,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 	}
 
 	procs := []transform.Processor{}
+	joins := []joinStruct{}
 
 	for k, v := range pb.Pipelines {
 		sub := task.SubTask(k)
@@ -173,10 +179,10 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 			} else if mProcess, ok := b.(transform.StreamProcessor); ok {
 				log.Printf("Pipeline stream %s step %d: %T", k, i, b)
 				c := flame.AddStreamer(wf, mProcess.Process)
-				if lastStep != nil {
-					c.Connect(lastStep)
-				}
 				if c != nil {
+					if lastStep != nil {
+						c.Connect(lastStep)
+					}
 					lastStep = c
 					if firstStep == nil {
 						firstStep = c
@@ -184,6 +190,24 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 				} else {
 					log.Printf("Error setting up step")
 					//throw error?
+				}
+			} else if jProcess, ok := b.(transform.JoinProcessor); ok {
+				log.Printf("Pipeline Join Step")
+				c := flame.AddJoin(wf, jProcess.Process)
+				if c != nil {
+					if lastStep != nil {
+						c.ConnectLeft(lastStep)
+					} else {
+						log.Print("Join missing input")
+					}
+					joins = append(joins, joinStruct{
+						node: c,
+						proc: jProcess,
+					})
+					lastStep = c
+					if firstStep == nil {
+						log.Printf("ERROR: Join can't be the first step")
+					}
 				}
 			} else if rProcess, ok := b.(transform.ReduceProcessor); ok {
 				log.Printf("Pipeline reduce %s step %d: %T", k, i, b)
@@ -262,6 +286,17 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 			}
 		} else {
 			log.Printf("Pipeline %s is empty", dst)
+		}
+	}
+
+	//for joins, connect the other end
+	for _, i := range joins {
+		r := i.proc.GetRightPipeline()
+		if srcNode, ok := outNodes[r]; ok {
+			log.Printf("Join Connect: %s", r)
+			i.node.ConnectRight(srcNode)
+		} else {
+			log.Printf("Join source not found: %s", r)
 		}
 	}
 

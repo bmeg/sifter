@@ -87,6 +87,8 @@ github.com/bitly/go-simplejson v0.5.0/go.mod h1:cXHtHw4XUPsvGaxgjIAn8PhEWG9NfngE
 github.com/bketelsen/crypt v0.0.3-0.20200106085610-5cbc8cc4026c/go.mod h1:MKsuJmJgSg28kpZDP6UIiPt0e0Oz0kqKNGyRaWEPv84=
 github.com/bmeg/flame v0.0.0-20230105234137-27bef72d7775 h1:k63eLVOQAItDuTSFKoXMgeHuKV/gxPTIG4G/iFhe2Wc=
 github.com/bmeg/flame v0.0.0-20230105234137-27bef72d7775/go.mod h1:XA9wVP0ORyATjjwdbwkjq/yaimsnreixGUR62sGMWsY=
+github.com/bmeg/flame v0.0.0-20230207210932-5ea8eb53c6b9 h1:p3r9MPOzXo2DlKwS5QBmM75IiKIcQpk1AE5fa0zfoyM=
+github.com/bmeg/flame v0.0.0-20230207210932-5ea8eb53c6b9/go.mod h1:XA9wVP0ORyATjjwdbwkjq/yaimsnreixGUR62sGMWsY=
 github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50 h1:zg0pjw8ZUufzIo7iEr0811OZ1UkcjEL8579AdUL8ISU=
 github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50/go.mod h1:hoSeuZtqe58ANXHuWpeODx4bDHGV36QXlCs1yrUvK6M=
 github.com/bmeg/gpython v0.0.3-0.20230117230014-6b1fd88de6b7 h1:D5QxPoq6TDsY2hAcUOznWwELmsxHPyrDmCti5eGsz6A=

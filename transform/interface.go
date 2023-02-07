@@ -41,6 +41,11 @@ type AccumulateProcessor interface {
 	Accumulate(key string, value []map[string]any) map[string]any
 }
 
+type JoinProcessor interface {
+	GetRightPipeline() string
+	Process(left chan map[string]any, right chan map[string]any, out chan map[string]any)
+}
+
 type Processor interface {
 	Close()
 }

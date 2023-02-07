@@ -34,6 +34,17 @@ type JSONTable struct {
 	Key   string `json:"key"`
 }
 
+type PipelineTable struct {
+	From  string `json:"from"`
+	Value string `json:"value"`
+	Key   string `json:"key"`
+}
+
+type lookupTable interface {
+	LookupValue(k string) (string, bool)
+	LookupRecord(k string) (map[string]any, bool)
+}
+
 type jsonLookup struct {
 	config *JSONTable
 	inputs map[string]string
@@ -47,20 +58,14 @@ type tsvLookup struct {
 	table  map[string][]string
 }
 
-type lookupTable interface {
-	LookupValue(k string) (string, bool)
-	LookupRecord(k string) (map[string]any, bool)
-}
-
-type LookupTable map[string]string
-
 type LookupStep struct {
-	Replace string            `json:"replace"`
-	TSV     *TSVTable         `json:"tsv"`
-	JSON    *JSONTable        `json:"json"`
-	Table   *LookupTable      `json:"table"`
-	Lookup  string            `json:"lookup"`
-	Copy    map[string]string `json:"copy"`
+	Replace  string            `json:"replace"`
+	TSV      *TSVTable         `json:"tsv"`
+	JSON     *JSONTable        `json:"json"`
+	Table    *LookupTable      `json:"table"`
+	Pipeline *PipelineTable    `json:"pipeline"`
+	Lookup   string            `json:"lookup"`
+	Copy     map[string]string `json:"copy"`
 	//Mapping map[string]string `json:"mapping"`
 }
 
@@ -68,6 +73,8 @@ type lookupProcess struct {
 	config     *LookupStep
 	table      lookupTable
 	userConfig map[string]string
+	hitCount   int
+	missCount  int
 	//table  map[string][]string
 }
 
@@ -76,18 +83,20 @@ func (tr *LookupStep) Init(task task.RuntimeTask) (Processor, error) {
 		var table lookupTable
 		var err error
 		if table, err = tr.TSV.open(task); err == nil {
-			return &lookupProcess{tr, table, task.GetConfig()}, nil
+			return &lookupProcess{tr, table, task.GetConfig(), 0, 0}, nil
 		}
 		return nil, err
 	} else if tr.JSON != nil {
 		var table lookupTable
 		var err error
 		if table, err = tr.JSON.open(task); err == nil {
-			return &lookupProcess{tr, table, task.GetConfig()}, nil
+			return &lookupProcess{tr, table, task.GetConfig(), 0, 0}, nil
 		}
 		return nil, err
 	} else if tr.Table != nil {
-		return &lookupProcess{tr, tr.Table, task.GetConfig()}, nil
+		return &lookupProcess{tr, tr.Table, task.GetConfig(), 0, 0}, nil
+	} else if tr.Pipeline != nil {
+		return &pipelineLookupProcess{tr, task}, nil
 	}
 	return nil, fmt.Errorf("table input not defined")
 }
@@ -106,7 +115,9 @@ func (tr *LookupStep) GetConfigFields() []config.Variable {
 	return out
 }
 
-func (tp *lookupProcess) Close() {}
+func (tp *lookupProcess) Close() {
+	log.Printf("Table hits: %d misses: %d", tp.hitCount, tp.missCount)
+}
 
 func (tp *lookupProcess) Process(row map[string]interface{}) []map[string]interface{} {
 	if tp.config.Replace != "" {
@@ -190,8 +201,11 @@ func (tp *lookupProcess) Process(row map[string]interface{}) []map[string]interf
 				for k, v := range tp.config.Copy {
 					if ki, ok := pv[v]; ok {
 						out[k] = ki
+						tp.hitCount++
 					}
 				}
+			} else {
+				tp.missCount++
 			}
 			return []map[string]any{out}
 		}
@@ -346,18 +360,6 @@ func (jp *jsonLookup) LookupRecord(s string) (map[string]any, bool) {
 		row := map[string]interface{}{}
 		json.Unmarshal(line, &row)
 		return row, true
-	}
-	return nil, false
-}
-
-func (jp *LookupTable) LookupValue(k string) (string, bool) {
-	s, ok := (*jp)[k]
-	return s, ok
-}
-
-func (jp *LookupTable) LookupRecord(k string) (map[string]any, bool) {
-	if x, ok := (*jp)[k]; ok {
-		return map[string]any{"value": x}, true
 	}
 	return nil, false
 }

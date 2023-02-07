@@ -58,8 +58,9 @@ pipelines:
           type: census_report
           date: "{{config.date}}"
           summary_location: "{{row.zipcode}}"
-    - objectCreate:
-        class: census_report
+    - objectValidate:
+        title: census_report
+        schema: "{{config.schema}}"
 ```
 
 
@@ -68,14 +69,6 @@ pipelines:
 
 ```
 sifter run examples/genome.yaml
-```
-
-CBioPortal Example:
-
-```
-./sifter run examples/gene-table.yaml
-wget http://download.cbioportal.org/brca_tcga_pub.tar.gz
-./sifter run ./examples/cbio.yaml -i tar=brca_tcga_pub.tar.gz -i geneTable=out/gene.table.table.gz
 ```
 
 

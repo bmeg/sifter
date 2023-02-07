@@ -98,6 +98,8 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 		}
 	}
 
+	procs := []transform.Processor{}
+
 	for k, v := range pb.Pipelines {
 		sub := task.SubTask(k)
 		var lastStep flame.Emitter[map[string]any]
@@ -108,6 +110,8 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 				log.Printf("Pipeline %s error: %s", k, err)
 				return err
 			}
+
+			procs = append(procs, b)
 
 			if mProcess, ok := b.(transform.NodeProcessor); ok {
 				log.Printf("Pipeline %s step %d: %T", k, i, b)
@@ -289,6 +293,10 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 
 	for k := range writers {
 		writers[k].Close()
+	}
+
+	for p := range procs {
+		procs[p].Close()
 	}
 
 	task.Close()

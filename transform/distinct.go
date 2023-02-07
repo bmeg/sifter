@@ -2,6 +2,7 @@ package transform
 
 import (
 	"log"
+	"os"
 	"path/filepath"
 
 	"github.com/bmeg/sifter/evaluate"
@@ -17,6 +18,7 @@ type distinctProcess struct {
 	config DistinctStep
 	task   task.RuntimeTask
 	db     *badger.DB
+	dir    string
 }
 
 func (ds DistinctStep) Init(task task.RuntimeTask) (Processor, error) {
@@ -28,7 +30,7 @@ func (ds DistinctStep) Init(task task.RuntimeTask) (Processor, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &distinctProcess{ds, task, db}, nil
+	return &distinctProcess{ds, task, db, tdir}, nil
 }
 
 func (ds *distinctProcess) Process(i map[string]any) []map[string]any {
@@ -53,4 +55,8 @@ func (ds *distinctProcess) Process(i map[string]any) []map[string]any {
 
 func (ds *distinctProcess) Close() {
 	ds.db.Close()
+	log.Printf("Closing DB")
+	if err := os.RemoveAll(ds.dir); err != nil {
+		log.Printf("%s", err)
+	}
 }

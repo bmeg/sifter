@@ -66,9 +66,6 @@ func (fs *filterProcessor) Process(row map[string]interface{}) []map[string]any 
 	} else if fs.config.Field != "" {
 		i, e := evaluate.GetJSONPath(fs.config.Field, row)
 		err = e
-		if err != nil {
-			log.Printf("Field Error: %s", err)
-		}
 		if vstr, ok := i.(string); ok {
 			value = vstr
 		}
@@ -79,12 +76,17 @@ func (fs *filterProcessor) Process(row map[string]interface{}) []map[string]any 
 		}
 		return []map[string]any{}
 	} else if fs.config.Check == "hasValue" {
+		if err != nil {
+			log.Printf("Field Error: %s", err)
+		}
 		if err == nil && value != "" {
 			return []map[string]any{row}
 		}
 		return []map[string]any{}
 	} else if fs.config.Check == "not" {
-		//log.Printf("Filter not: %s != %s", value, fs.config.Match)
+		if err != nil {
+			log.Printf("Field Error: %s", err)
+		}
 		if err == nil && value != fs.config.Match {
 			return []map[string]any{row}
 		}

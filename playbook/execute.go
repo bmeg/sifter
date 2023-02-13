@@ -121,7 +121,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 
 			if mProcess, ok := b.(transform.NodeProcessor); ok {
 				log.Printf("Pipeline %s step %d: %T", k, i, b)
-				c := flame.AddFlatMapper(wf, mProcess.Process)
+				c := flame.AddFlatMapperPool(wf, mProcess.Process, 4)
 				if lastStep != nil {
 					c.Connect(lastStep)
 				}

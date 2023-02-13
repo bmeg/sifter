@@ -26,7 +26,7 @@ func (s GraphSchema) CleanAndValidate(class *jsonschema.Schema, data map[string]
 					} else {
 						return nil, err
 					}
-				} //TODO report type error
+				}
 			} else if isArraySchema(subCls) && isObjectSchema(subCls.Items2020) {
 				if vArray, ok := v.([]any); ok {
 					o := []any{}
@@ -44,6 +44,18 @@ func (s GraphSchema) CleanAndValidate(class *jsonschema.Schema, data map[string]
 				}
 			} else {
 				out[k] = v
+			}
+		} else {
+			if class.AdditionalProperties != nil {
+				if addParam, ok := class.AdditionalProperties.(bool); ok {
+					if addParam {
+						out[k] = v
+					}
+				} else if addParam, ok := class.AdditionalProperties.(*jsonschema.Schema); ok {
+					if err := addParam.Validate(v); err == nil {
+						out[k] = v
+					}
+				}
 			}
 		}
 	}

@@ -156,18 +156,22 @@ type LoadOpt struct {
 }
 
 func isObjectSchema(sch *jsonschema.Schema) bool {
-	for _, i := range sch.Types {
-		if i == "object" {
-			return true
+	if sch != nil {
+		for _, i := range sch.Types {
+			if i == "object" {
+				return true
+			}
 		}
 	}
 	return false
 }
 
 func isArraySchema(sch *jsonschema.Schema) bool {
-	for _, i := range sch.Types {
-		if i == "array" {
-			return true
+	if sch != nil {
+		for _, i := range sch.Types {
+			if i == "array" {
+				return true
+			}
 		}
 	}
 	return false

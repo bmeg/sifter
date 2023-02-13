@@ -5,7 +5,7 @@ require (
 	github.com/alecthomas/jsonschema v0.0.0-20200514014646-0366d1034a17
 	github.com/aymerick/raymond v2.0.3-0.20180322193309-b565731e1464+incompatible
 	github.com/basgys/goxml2json v1.1.0
-	github.com/bmeg/flame v0.0.0-20230207210932-5ea8eb53c6b9
+	github.com/bmeg/flame v0.0.0-20230213003433-cb84bab88f8a
 	github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50
 	github.com/bmeg/grip v0.0.0-20210910231938-94d69d94ff65
 	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad

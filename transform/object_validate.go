@@ -63,6 +63,10 @@ func (ts ObjectValidateStep) GetConfigFields() []config.Variable {
 	return out
 }
 
+func (ts *objectProcess) PoolReady() bool {
+	return true
+}
+
 func (ts *objectProcess) Process(i map[string]interface{}) []map[string]interface{} {
 	out, err := ts.schema.CleanAndValidate(ts.class, i)
 	if err == nil {

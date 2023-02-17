@@ -109,3 +109,7 @@ func (pr *projectStepProcess) Process(row map[string]interface{}) []map[string]i
 func (pr *projectStepProcess) Close() {
 
 }
+
+func (pr *projectStepProcess) PoolReady() bool {
+	return true
+}

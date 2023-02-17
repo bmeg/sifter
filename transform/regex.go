@@ -30,6 +30,10 @@ func (pr *RegexReplaceStep) Init(t task.RuntimeTask) (Processor, error) {
 
 func (re *regexReplaceProcess) Close() {}
 
+func (re *regexReplaceProcess) PoolReady() bool {
+	return true
+}
+
 func (re *regexReplaceProcess) Process(i map[string]interface{}) []map[string]interface{} {
 	if field, ok := i[re.config.Field]; ok {
 		if fStr, ok := field.(string); ok {

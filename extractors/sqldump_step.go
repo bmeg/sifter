@@ -11,7 +11,7 @@ import (
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/task"
-	"github.com/xwb1989/sqlparser"
+	"vitess.io/vitess/go/vt/sqlparser"
 )
 
 type SQLDumpStep struct {
@@ -50,44 +50,52 @@ func (ml *SQLDumpStep) Start(task task.RuntimeTask) (chan map[string]interface{}
 
 	out := make(chan map[string]any, 100)
 	tables := map[string]bool{}
-	for t := range ml.Tables {
-		tables[ml.Tables[t]] = true
+	if ml.Tables != nil {
+		for t := range ml.Tables {
+			tables[ml.Tables[t]] = true
+		}
 	}
 
 	go func() {
 		defer fhd.Close()
 		defer close(out)
 		tableColumns := map[string][]string{}
-		tokens := sqlparser.NewTokenizer(hd)
+		data, _ := io.ReadAll(hd)
+		tokens := sqlparser.NewStringTokenizer(string(data))
 		for {
 			stmt, err := sqlparser.ParseNext(tokens)
 			if err == io.EOF {
 				break
 			}
+			if err != nil {
+				log.Printf("read error: %s", err)
+			}
 			switch stmt := stmt.(type) {
-			case *sqlparser.DDL:
-				if stmt.Action == "create" {
-					fmt.Printf("SQL Parser found: Table Create: %s\n", stmt.NewName.Name.CompliantName())
-					columns := []string{}
+			case *sqlparser.CreateTable:
+				fmt.Printf("SQL Parser found: Table Create: %s\n", stmt.Table.Name.CompliantName())
+				fmt.Printf("%#v\n", stmt)
+				columns := []string{}
+				if stmt.TableSpec != nil {
 					for _, col := range stmt.TableSpec.Columns {
 						name := col.Name.CompliantName()
 						columns = append(columns, name)
 					}
-					fmt.Printf("%s\n", columns)
-					tableColumns[stmt.NewName.Name.CompliantName()] = columns
 				}
+				fmt.Printf("%s\n", columns)
+				tableColumns[stmt.Table.Name.CompliantName()] = columns
+
 			case *sqlparser.Insert:
 				//fmt.Printf("Inserting into: %s\n", stmt.Table.Name)
 
 				tableName := stmt.Table.Name.CompliantName()
 
-				if _, ok := tables[tableName]; ok {
+				if _, ok := tables[tableName]; ok || len(tables) == 0 {
 					cols := tableColumns[tableName]
 					if irows, ok := stmt.Rows.(sqlparser.Values); ok {
 						for _, row := range irows {
 							data := map[string]interface{}{}
 							for i := range row {
-								if sval, ok := row[i].(*sqlparser.SQLVal); ok {
+								if sval, ok := row[i].(*sqlparser.Literal); ok {
 									data[cols[i]] = string(sval.Val)
 								}
 							}

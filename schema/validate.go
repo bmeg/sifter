@@ -2,6 +2,7 @@ package schema
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
@@ -18,6 +19,9 @@ func (s GraphSchema) CleanAndValidate(class *jsonschema.Schema, data map[string]
 	out := map[string]any{}
 	for k, v := range data {
 		if subCls, ok := class.Properties[k]; ok {
+			if subCls == nil {
+				log.Printf("Weird")
+			}
 			if isObjectSchema(subCls) {
 				if vMap, ok := v.(map[string]any); ok {
 					vn, err := s.CleanAndValidate(subCls, vMap)

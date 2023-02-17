@@ -1,6 +1,7 @@
 package transform
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -42,6 +43,7 @@ func (ds *distinctProcess) Process(i map[string]any) []map[string]any {
 			key := []byte(keyStr)
 			_, err := txn.Get(key)
 			if err == badger.ErrKeyNotFound {
+				fmt.Printf("Distinct: %s\n", keyStr)
 				out = append(out, i)
 				txn.Set(key, []byte{})
 			}

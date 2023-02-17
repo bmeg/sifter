@@ -48,3 +48,7 @@ func (fs *hashProcessor) Process(i map[string]any) []map[string]any {
 func (fs *hashProcessor) Close() {
 
 }
+
+func (fs *hashProcessor) PoolReady() bool {
+	return true
+}

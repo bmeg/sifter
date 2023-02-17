@@ -73,6 +73,10 @@ func (ts GraphBuildStep) GetConfigFields() []config.Variable {
 	return out
 }
 
+func (ts *graphBuildProcess) PoolReady() bool {
+	return true
+}
+
 func (ts *graphBuildProcess) Close() {}
 
 func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]interface{} {

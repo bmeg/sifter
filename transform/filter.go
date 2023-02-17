@@ -100,6 +100,10 @@ func (fs *filterProcessor) Process(row map[string]interface{}) []map[string]any 
 	return []map[string]any{}
 }
 
+func (fs *filterProcessor) PoolReady() bool {
+	return true
+}
+
 func (fs *filterProcessor) Close() {
 	if fs.proc != nil {
 		fs.proc.Close()

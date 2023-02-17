@@ -121,7 +121,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 
 			if mProcess, ok := b.(transform.NodeProcessor); ok {
 				log.Printf("Pipeline %s step %d: %T", k, i, b)
-				c := flame.AddFlatMapperPool(wf, mProcess.Process, 4)
+				c := flame.AddFlatMapper(wf, mProcess.Process)
 				if lastStep != nil {
 					c.Connect(lastStep)
 				}
@@ -157,13 +157,13 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 				}
 			} else if mProcess, ok := b.(transform.FlatMapProcessor); ok {
 				log.Printf("Pipeline flatmap %s step %d: %T", k, i, b)
-				//var c flame.Node[map[string]any, map[string]any]
-				//if mProcess.PoolReady() {
-				//	log.Printf("Starting pool worker")
-				//	c = flame.AddFlatMapperPool(wf, mProcess.Process, 4) // TODO: config pool count
-				//} else {
-				c := flame.AddFlatMapper(wf, mProcess.Process)
-				//}
+				var c flame.Node[map[string]any, map[string]any]
+				if mProcess.PoolReady() {
+					//	log.Printf("Starting pool worker")
+					c = flame.AddFlatMapperPool(wf, mProcess.Process, 4) // TODO: config pool count
+				} else {
+					c = flame.AddFlatMapper(wf, mProcess.Process)
+				}
 				if lastStep != nil {
 					c.Connect(lastStep)
 				}

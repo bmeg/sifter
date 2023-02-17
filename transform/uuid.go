@@ -48,3 +48,7 @@ func (uu *uuidProc) Process(i map[string]any) []map[string]any {
 }
 
 func (uu *uuidProc) Close() {}
+
+func (pr *uuidProc) PoolReady() bool {
+	return true
+}

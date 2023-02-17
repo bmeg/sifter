@@ -293,9 +293,9 @@
           <li>
             <ul class="sidebar-nav sidebar-nav-nested">
               <li>
-                <a href="/sifter/docs/transforms/objectcreate/"
+                <a href="/sifter/docs/transforms/objectvalidate/"
                    class="sidebar-nav-item "
-                >objectCreate</a></li>
+                >objectValidate</a></li>
             </ul>
           </li>
           
@@ -333,7 +333,43 @@
   </div>
 
   <div class="main col span_8_of_12">
-    
+    <h1 id="fieldprocess">fieldProcess</h1>
+<p>Create stream of objects based on the contents of a field. If the selected field is an array
+each of the items in the array will become an independent row.</p>
+<h2 id="parameters">Parameters</h2>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>field</td>
+<td>string</td>
+<td>Name of field to be processed</td>
+</tr>
+<tr>
+<td>mapping</td>
+<td>map[string]string</td>
+<td>Project templated values into child element</td>
+</tr>
+<tr>
+<td>itemField</td>
+<td>string</td>
+<td>If processing an array of non-dict elements, create a dict as <code>{itemField:element}</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="example">example</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    - <span style="color:#f92672">fieldProcess</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">field</span>: <span style="color:#ae81ff">portions</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">mapping</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">sample</span>: <span style="color:#e6db74">&#34;{{row.sample_id}}&#34;</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">project_id</span>: <span style="color:#e6db74">&#34;{{row.project_id}}&#34;</span>
+</span></span></code></pre></div>
   </div>
 
 </div>

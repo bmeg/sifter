@@ -293,9 +293,9 @@
           <li>
             <ul class="sidebar-nav sidebar-nav-nested">
               <li>
-                <a href="/sifter/docs/transforms/objectcreate/"
+                <a href="/sifter/docs/transforms/objectvalidate/"
                    class="sidebar-nav-item "
-                >objectCreate</a></li>
+                >objectValidate</a></li>
             </ul>
           </li>
           
@@ -333,7 +333,36 @@
   </div>
 
   <div class="main col span_8_of_12">
-    
+    <h1 id="project">project</h1>
+<p>Populate row with templated values</p>
+<h1 id="parameters">parameters</h1>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mapping</td>
+<td>map[string]any</td>
+<td>New fields to be generated from template</td>
+</tr>
+<tr>
+<td>rename</td>
+<td>map[string]string</td>
+<td>Rename field (no template engine)</td>
+</tr>
+</tbody>
+</table>
+<h1 id="example">Example</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    - <span style="color:#f92672">project</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">mapping</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">type</span>: <span style="color:#ae81ff">sample</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">id</span>: <span style="color:#e6db74">&#34;{{row.sample_id}}&#34;</span>
+</span></span></code></pre></div>
   </div>
 
 </div>

@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 
   
-  <title>objectCreate &middot; Sifter</title>
+  <title>objectValidate &middot; Sifter</title>
   
 
   
@@ -293,9 +293,9 @@
           <li>
             <ul class="sidebar-nav sidebar-nav-nested">
               <li>
-                <a href="/sifter/docs/transforms/objectcreate/"
+                <a href="/sifter/docs/transforms/objectvalidate/"
                    class="sidebar-nav-item  active"
-                >objectCreate</a></li>
+                >objectValidate</a></li>
             </ul>
           </li>
           
@@ -333,7 +333,35 @@
   </div>
 
   <div class="main col span_8_of_12">
-    
+    <h1 id="objectvalidate">objectValidate</h1>
+<p>Use JSON schema to validate row contents</p>
+<h1 id="parameters">parameters</h1>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>title</td>
+<td>string</td>
+<td>Title of object to use for validation</td>
+</tr>
+<tr>
+<td>schema</td>
+<td>string</td>
+<td>Path to JSON schema definition</td>
+</tr>
+</tbody>
+</table>
+<h1 id="example">example</h1>
+<pre tabindex="0"><code>    - objectValidate:
+        title: Aliquot
+        schema: &#34;{{config.schema}}&#34;
+</code></pre>
   </div>
 
 </div>

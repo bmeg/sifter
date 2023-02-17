@@ -293,9 +293,9 @@
           <li>
             <ul class="sidebar-nav sidebar-nav-nested">
               <li>
-                <a href="/sifter/docs/transforms/objectcreate/"
+                <a href="/sifter/docs/transforms/objectvalidate/"
                    class="sidebar-nav-item "
-                >objectCreate</a></li>
+                >objectValidate</a></li>
             </ul>
           </li>
           
@@ -333,7 +333,13 @@
   </div>
 
   <div class="main col span_8_of_12">
-    
+    <h1 id="graphbuild">graphBuild</h1>
+<p>Build graph elements from JSON objects using the JSON Schema graph extensions.</p>
+<h1 id="example">example</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>      - <span style="color:#f92672">graphBuild</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">schema</span>: <span style="color:#e6db74">&#34;{{config.allelesSchema}}&#34;</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">title</span>: <span style="color:#ae81ff">Allele</span>
+</span></span></code></pre></div>
   </div>
 
 </div>

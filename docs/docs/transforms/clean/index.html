@@ -293,9 +293,9 @@
           <li>
             <ul class="sidebar-nav sidebar-nav-nested">
               <li>
-                <a href="/sifter/docs/transforms/objectcreate/"
+                <a href="/sifter/docs/transforms/objectvalidate/"
                    class="sidebar-nav-item "
-                >objectCreate</a></li>
+                >objectValidate</a></li>
             </ul>
           </li>
           
@@ -333,7 +333,46 @@
   </div>
 
   <div class="main col span_8_of_12">
-    
+    <p>type CleanStep struct {
+Fields      []string <code>json:&quot;fields&quot; jsonschema_description:&quot;List of valid fields that will be left. All others will be removed&quot;</code>
+RemoveEmpty bool     <code>json:&quot;removeEmpty&quot;</code>
+StoreExtra  string   <code>json:&quot;storeExtra&quot;</code>
+}</p>
+<h1 id="clearn">clearn</h1>
+<p>Remove fields that don&rsquo;t appear in the desingated list.</p>
+<h2 id="parameters">Parameters</h2>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>fields</td>
+<td>[] string</td>
+<td>Fields to keep</td>
+</tr>
+<tr>
+<td>removeEmpty</td>
+<td>bool</td>
+<td>Fields with empty values will also be removed</td>
+</tr>
+<tr>
+<td>storeExtra</td>
+<td>string</td>
+<td>Field name to store removed fields</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example">Example</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    - <span style="color:#f92672">clean</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">fields</span>:
+</span></span><span style="display:flex;"><span>          - <span style="color:#ae81ff">id</span>
+</span></span><span style="display:flex;"><span>          - <span style="color:#ae81ff">synonyms</span>
+</span></span></code></pre></div>
   </div>
 
 </div>

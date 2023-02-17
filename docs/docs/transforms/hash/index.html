@@ -293,9 +293,9 @@
           <li>
             <ul class="sidebar-nav sidebar-nav-nested">
               <li>
-                <a href="/sifter/docs/transforms/objectcreate/"
+                <a href="/sifter/docs/transforms/objectvalidate/"
                    class="sidebar-nav-item "
-                >objectCreate</a></li>
+                >objectValidate</a></li>
             </ul>
           </li>
           
@@ -333,7 +333,40 @@
   </div>
 
   <div class="main col span_8_of_12">
-    
+    <h1 id="hash">hash</h1>
+<h1 id="parameters">Parameters</h1>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>field</td>
+<td>string</td>
+<td>Field to store hash value</td>
+</tr>
+<tr>
+<td>value</td>
+<td>string</td>
+<td>Templated string of value to be hashed</td>
+</tr>
+<tr>
+<td>method</td>
+<td>string</td>
+<td>Hashing method: sha1/sha256/md5</td>
+</tr>
+</tbody>
+</table>
+<h1 id="example">example</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>   - <span style="color:#f92672">hash</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">value</span>: <span style="color:#e6db74">&#34;{{row.contents}}&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">field</span>: <span style="color:#ae81ff">contents-sha1</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">method</span>: <span style="color:#ae81ff">sha1</span>
+</span></span></code></pre></div>
   </div>
 
 </div>

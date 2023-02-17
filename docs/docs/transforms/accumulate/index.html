@@ -293,9 +293,9 @@
           <li>
             <ul class="sidebar-nav sidebar-nav-nested">
               <li>
-                <a href="/sifter/docs/transforms/objectcreate/"
+                <a href="/sifter/docs/transforms/objectvalidate/"
                    class="sidebar-nav-item "
-                >objectCreate</a></li>
+                >objectValidate</a></li>
             </ul>
           </li>
           
@@ -333,7 +333,35 @@
   </div>
 
   <div class="main col span_8_of_12">
-    
+    <h1 id="accumulate">accumulate</h1>
+<p>Gather sequential rows into a single record, based on matching a field</p>
+<h2 id="parameters">Parameters</h2>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>field</td>
+<td>string (field path)</td>
+<td>Field used to match rows</td>
+</tr>
+<tr>
+<td>dest</td>
+<td>string</td>
+<td>field to store accumulated records</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example">Example</h2>
+<pre tabindex="0"><code>  - accumulate:
+      field: model_id
+      dest: rows   
+</code></pre>
   </div>
 
 </div>

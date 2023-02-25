@@ -22,6 +22,30 @@ type TableLoadStep struct {
 	ExtraColumns string   `json:"extraColumns" jsonschema_description:"Columns beyond originally declared columns will be placed in this array"`
 	Sep          string   `json:"sep" jsonschema_description:"Separator \\t for TSVs or , for CSVs"`
 	Comment      string   `json:"comment"`
+	LazyQuotes   bool     `json:"lazyQuotes"`
+}
+
+func arrayContains(a []string, b string) bool {
+	for _, c := range a {
+		if c == b {
+			return true
+		}
+	}
+	return false
+}
+
+func buildUniqueArray(src []string) []string {
+	out := []string{}
+	for _, n := range src {
+		name := n
+		attempt := 1
+		for arrayContains(out, name) {
+			name = fmt.Sprintf("%s_%d", n, attempt)
+			attempt++
+		}
+		out = append(out, name)
+	}
+	return out
 }
 
 func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
@@ -62,7 +86,7 @@ func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface
 
 	tsvReader := csv.NewReader(inputStream)
 	tsvReader.Comma = rune(ml.Sep[0])
-	tsvReader.LazyQuotes = true
+	tsvReader.LazyQuotes = ml.LazyQuotes
 	tsvReader.Comment = '#'
 	if ml.Comment != "" {
 		tsvReader.Comment = []rune(ml.Comment)[0]
@@ -85,12 +109,31 @@ func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface
 			if err == io.EOF {
 				break
 			}
+			if err != nil {
+				if pe, ok := err.(*csv.ParseError); ok {
+					if pe.Err == csv.ErrFieldCount {
+						//log.Printf("Field count %d != %d", len(record), len(columns))
+						if len(record) < len(columns) {
+							c := len(columns) - len(record)
+							for i := 0; i < c; i++ {
+								record = append(record, "")
+							}
+							err = nil
+						}
+					} else if pe.Err == csv.ErrQuote {
+						log.Printf("quote error: %s", record)
+					} else if pe.Err == csv.ErrBareQuote {
+						log.Printf("bare quote error: %s", record)
+					}
+				}
+			}
+
 			if err == nil {
 				if rowSkip > 0 {
 					rowSkip--
 				} else {
 					if columns == nil {
-						columns = record
+						columns = buildUniqueArray(record)
 					} else {
 						o := map[string]interface{}{}
 						if len(record) >= len(columns) {

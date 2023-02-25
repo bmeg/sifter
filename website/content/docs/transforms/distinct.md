@@ -6,7 +6,6 @@ menu:
     weight: 100
 ---
 
-
 # distinct
 Using templated value, allow only the first record for each distinct key
 

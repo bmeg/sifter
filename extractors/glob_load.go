@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"sync"
 
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
@@ -14,10 +15,16 @@ type GlobLoadStep struct {
 	StoreFilename string         `json:"storeFilename"`
 	StoreFilepath string         `json:"storeFilepath"`
 	Input         string         `json:"input" jsonschema_description:"Path of avro object file to transform"`
+	Parallelize   bool           `json:"parallelize"`
 	XMLLoad       *XMLLoadStep   `json:"xmlLoad"`
 	TableLoad     *TableLoadStep `json:"tableLoad" jsonschema_description:"Run transform pipeline on a TSV or CSV"`
 	JSONLoad      *JSONLoadStep  `json:"jsonLoad" jsonschema_description:"Run a transform pipeline on a multi line json file"`
 	AvroLoad      *AvroLoadStep  `json:"avroLoad" jsonschema_description:"Load data from avro file"`
+}
+
+type fileSource struct {
+	file   string
+	source Source
 }
 
 func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
@@ -25,15 +32,21 @@ func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 	if err != nil {
 		return nil, err
 	}
+
 	log.Printf("Starting Glob Load: %s", input)
 	if gl.XMLLoad != nil || gl.JSONLoad != nil || gl.TableLoad != nil {
 		flist, err := filepath.Glob(input)
 		if err != nil {
 			return nil, err
 		}
-		out := make(chan map[string]any, 10)
+		pCount := 1
+		if gl.Parallelize {
+			pCount = 4
+		}
+		out := make(chan map[string]any, 10*pCount)
+		sources := make(chan fileSource, 4*pCount)
 		go func() {
-			defer close(out)
+			defer close(sources)
 			for count, f := range flist {
 				log.Printf("Glob %d of %d", count, len(flist))
 				//var a func()
@@ -51,19 +64,33 @@ func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 					t.Input = f
 					a = &t
 				}
-				o, err := a.Start(task)
-				if err == nil {
-					for i := range o {
-						if gl.StoreFilename != "" {
-							i[gl.StoreFilename] = filepath.Base(f)
+				sources <- fileSource{source: a, file: f}
+			}
+		}()
+		wg := &sync.WaitGroup{}
+		for c := 0; c < pCount; c++ {
+			wg.Add(1)
+			go func() {
+				for a := range sources {
+					o, err := a.source.Start(task)
+					if err == nil {
+						for i := range o {
+							if gl.StoreFilename != "" {
+								i[gl.StoreFilename] = filepath.Base(a.file)
+							}
+							if gl.StoreFilepath != "" {
+								i[gl.StoreFilepath] = a.file
+							}
+							out <- i
 						}
-						if gl.StoreFilepath != "" {
-							i[gl.StoreFilepath] = f
-						}
-						out <- i
 					}
 				}
-			}
+				wg.Done()
+			}()
+		}
+		go func() {
+			wg.Wait()
+			close(out)
 		}()
 		return out, nil
 	}

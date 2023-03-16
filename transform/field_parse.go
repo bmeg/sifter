@@ -18,7 +18,7 @@ func (fp *FieldParseStep) Init(t task.RuntimeTask) (Processor, error) {
 
 func (fp *FieldParseStep) Close() {}
 
-func (fs *FieldParseStep) PoolReady() bool {
+func (fp *FieldParseStep) PoolReady() bool {
 	return true
 }
 func (fp *FieldParseStep) Process(i map[string]interface{}) []map[string]interface{} {

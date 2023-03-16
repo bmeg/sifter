@@ -32,6 +32,6 @@ func (ss SplitStep) Process(i map[string]any) []map[string]any {
 
 func (ss SplitStep) Close() {}
 
-func (pr SplitStep) PoolReady() bool {
+func (ss SplitStep) PoolReady() bool {
 	return true
 }

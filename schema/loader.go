@@ -77,9 +77,6 @@ var graphExtMeta = jsonschema.MustCompileString("graphExtMeta.json", `{
 							}
 						}
 					},
-					"id_property" : {
-						"type" : "string"
-					},
 					"backref" : {
 						"type": "string"
 					}
@@ -92,9 +89,8 @@ var graphExtMeta = jsonschema.MustCompileString("graphExtMeta.json", `{
 type graphExtCompiler struct{}
 
 type Target struct {
-	Schema     *jsonschema.Schema
-	IDProperty string
-	Backref    string
+	Schema  *jsonschema.Schema
+	Backref string
 }
 
 type GraphExtension struct {
@@ -122,18 +118,11 @@ func (graphExtCompiler) Compile(ctx jsonschema.CompilerContext, m map[string]int
 											backRef = bstr
 										}
 									}
-									idProperty := "id"
-									if ival, ok := emap["idProperty"]; ok {
-										if bstr, ok := ival.(string); ok {
-											idProperty = bstr
-										}
-									}
 									sch, err := ctx.CompileRef(refStr, "./", false)
 									if err == nil {
 										out.Targets = append(out.Targets, Target{
-											Schema:     sch,
-											Backref:    backRef,
-											IDProperty: idProperty,
+											Schema:  sch,
+											Backref: backRef,
 										})
 									} else {
 										return nil, err

@@ -2,6 +2,7 @@ package schema
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/bmeg/grip/gripql"
 	"github.com/santhosh-tekuri/jsonschema/v5"
@@ -15,31 +16,51 @@ type GraphElement struct {
 	Field   string
 }
 
-func getReferenceIDField(data map[string]any, fieldName string, idName string) ([]string, error) {
-	out := []string{}
+type reference struct {
+	dstID   string
+	dstType string
+}
+
+func getReferenceIDField(data map[string]any, fieldName string) ([]reference, error) {
+	out := []reference{}
 	if d, ok := data[fieldName]; ok {
 		//fmt.Printf("Dest id field %#v\n", d)
 		if idStr, ok := d.(string); ok {
-			out = append(out, idStr)
+			out = append(out, reference{dstID: idStr})
 		} else if idArray, ok := d.([]any); ok {
 			for _, g := range idArray {
 				if gStr, ok := g.(string); ok {
-					out = append(out, gStr)
+					out = append(out, reference{dstID: gStr})
 				} else if gMap, ok := g.(map[string]any); ok {
-					if id, ok := gMap[idName]; ok {
+					if id, ok := gMap["id"]; ok {
 						if idStr, ok := id.(string); ok {
-							out = append(out, idStr)
+							out = append(out, reference{dstID: idStr})
+						}
+					} else if id, ok := gMap["reference"]; ok {
+						//reference is a FHIR style id pointer, { "reference": "Type/id" }
+						if idStr, ok := id.(string); ok {
+							a := strings.Split(idStr, "/")
+							if len(a) > 1 {
+								out = append(out, reference{dstID: a[1], dstType: a[0]})
+							}
 						}
 					} else {
 						fmt.Printf("Not found in %#v\n", gMap)
 					}
 				}
-
 			}
 		} else if idMap, ok := d.(map[string]any); ok {
-			if id, ok := idMap[idName]; ok {
+			if id, ok := idMap["id"]; ok {
 				if idStr, ok := id.(string); ok {
-					out = append(out, idStr)
+					out = append(out, reference{dstID: idStr})
+				}
+			} else if id, ok := idMap["reference"]; ok {
+				//reference is a FHIR style id pointer, { "reference": "Type/id" }
+				if idStr, ok := id.(string); ok {
+					a := strings.Split(idStr, "/")
+					if len(a) > 1 {
+						out = append(out, reference{dstID: a[1], dstType: a[0]})
+					}
 				}
 			}
 		}
@@ -84,32 +105,35 @@ func (s GraphSchema) Generate(classID string, data map[string]any, clean bool) (
 
 			for name, prop := range class.Properties {
 				if ext, ok := prop.Extensions[GraphExtensionTag]; ok {
+					//fmt.Printf("Extension: %#v\n", ext)
 					gext := ext.(GraphExtension)
-					for _, target := range gext.Targets {
-						dstIDs, err := getReferenceIDField(data, name, target.IDProperty)
-						if err == nil {
-							for _, dstID := range dstIDs {
-								edgeOut := gripql.Edge{
-									To:    dstID,
-									From:  id,
-									Label: name,
-								}
-								out = append(out, GraphElement{OutEdge: &edgeOut})
-								if target.Backref != "" {
-									edgeIn := gripql.Edge{
-										To:    id,
-										From:  dstID,
-										Label: target.Backref,
+					dstIDs, err := getReferenceIDField(data, name)
+					if err == nil {
+						for _, dstID := range dstIDs {
+							for _, target := range gext.Targets {
+								if target.Schema.Title == dstID.dstType || dstID.dstType == "" {
+									edgeOut := gripql.Edge{
+										To:    dstID.dstID,
+										From:  id,
+										Label: name,
 									}
-									out = append(out, GraphElement{InEdge: &edgeIn})
+									out = append(out, GraphElement{OutEdge: &edgeOut})
+									if target.Backref != "" {
+										edgeIn := gripql.Edge{
+											To:    id,
+											From:  dstID.dstID,
+											Label: target.Backref,
+										}
+										out = append(out, GraphElement{InEdge: &edgeIn})
+									}
 								}
 							}
 						}
+					} else {
+						return nil, err
 					}
 				}
 			}
-		} else {
-			return nil, err
 		}
 		return out, nil
 	}

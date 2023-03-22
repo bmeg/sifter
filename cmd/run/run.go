@@ -10,7 +10,7 @@ import (
 	"github.com/bmeg/sifter/task"
 )
 
-func Execute(playFile string, workDir string, outDir string, inputs map[string]string) error {
+func ExecuteFile(playFile string, workDir string, outDir string, inputs map[string]string) error {
 	log.Printf("Starting: %s\n", playFile)
 	log.Default().SetPrefix(fmt.Sprintf("%s: ", playFile))
 	pb := playbook.Playbook{}
@@ -18,10 +18,14 @@ func Execute(playFile string, workDir string, outDir string, inputs map[string]s
 		log.Printf("%s", err)
 		return err
 	}
-
 	a, _ := filepath.Abs(playFile)
 	baseDir := filepath.Dir(a)
 	log.Printf("basedir: %s", baseDir)
+	return Execute(pb, baseDir, workDir, outDir, inputs)
+}
+
+func Execute(pb playbook.Playbook, baseDir string, workDir string, outDir string, inputs map[string]string) error {
+
 	if outDir == "" {
 		outDir = pb.GetDefaultOutDir()
 	}
@@ -34,6 +38,7 @@ func Execute(playFile string, workDir string, outDir string, inputs map[string]s
 	if err != nil {
 		return err
 	}
+	log.Printf("Outdir: %s", outDir)
 	t := task.NewTask(pb.Name, baseDir, workDir, outDir, nInputs)
 	err = pb.Execute(t)
 	return err

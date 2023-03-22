@@ -67,6 +67,16 @@ func ParseFile(relpath string, conf *Playbook) error {
 	return nil
 }
 
+func ParseBytes(yaml []byte, path string, conf *Playbook) error {
+	// Parse file
+	err := parse(yaml, conf)
+	if err != nil {
+		return fmt.Errorf("failed to parse config at path %s: \n%v", path, err)
+	}
+	conf.path = path
+	return nil
+}
+
 // ParseDataFile parses input file
 func ParseDataFile(path string, data *map[string]interface{}) error {
 	raw, err := os.ReadFile(path)

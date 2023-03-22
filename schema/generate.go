@@ -45,7 +45,7 @@ func getReferenceIDField(data map[string]any, fieldName string) ([]reference, er
 							}
 						}
 					} else {
-						fmt.Printf("Not found in %#v\n", gMap)
+						fmt.Printf("id/reference Not found in %#v\n", gMap)
 					}
 				}
 			}

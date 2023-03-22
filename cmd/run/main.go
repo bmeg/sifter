@@ -1,7 +1,9 @@
 package run
 
 import (
+	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/bmeg/sifter/playbook"
 
@@ -22,8 +24,8 @@ var port = 8888
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
-	Use:   "run",
-	Short: "Run importer",
+	Use:   "run <script>",
+	Short: "Run sifter script",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		inputs := map[string]string{}
@@ -37,8 +39,21 @@ var Cmd = &cobra.Command{
 			inputs[k] = v
 		}
 		for _, playFile := range args {
-			if err := Execute(playFile, "./", outDir, inputs); err != nil {
-				return err
+			if playFile == "-" {
+				yaml, err := ioutil.ReadAll(os.Stdin)
+				if err != nil {
+					log.Printf("%s", err)
+					return err
+				}
+				pb := playbook.Playbook{}
+				playbook.ParseBytes(yaml, "./playbook.yaml", &pb)
+				if err := Execute(pb, "./", "./", outDir, inputs); err != nil {
+					return err
+				}
+			} else {
+				if err := ExecuteFile(playFile, "./", outDir, inputs); err != nil {
+					return err
+				}
 			}
 		}
 		return nil

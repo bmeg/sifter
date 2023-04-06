@@ -151,6 +151,9 @@ func isObjectSchema(sch *jsonschema.Schema) bool {
 				return true
 			}
 		}
+		if sch.Ref != nil {
+			return isObjectSchema(sch.Ref)
+		}
 	}
 	return false
 }

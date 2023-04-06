@@ -55,6 +55,9 @@ func (pb *Playbook) GetDefaultOutDir() string {
 		out, _ := filepath.Abs("./")
 		return out
 	}
+	if filepath.IsAbs(pb.Outdir) {
+		return pb.Outdir
+	}
 	path := filepath.Join(filepath.Dir(pb.path), pb.Outdir)
 	out, _ := filepath.Abs(path)
 	return out
@@ -63,6 +66,9 @@ func (pb *Playbook) GetDefaultOutDir() string {
 func (pb *Playbook) GetOutDir(task task.RuntimeTask) string {
 	if pb.Outdir == "" {
 		return task.OutDir()
+	}
+	if filepath.IsAbs(pb.Outdir) {
+		return pb.Outdir
 	}
 	path := filepath.Join(filepath.Dir(pb.path), pb.Outdir)
 	out, _ := filepath.Abs(path)

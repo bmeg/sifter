@@ -45,7 +45,7 @@ func getReferenceIDField(data map[string]any, fieldName string) ([]reference, er
 							}
 						}
 					} else {
-						fmt.Printf("Not found in %#v\n", gMap)
+						//fmt.Printf("id/reference Not found in %#v\n", gMap)
 					}
 				}
 			}
@@ -96,13 +96,7 @@ func (s GraphSchema) Generate(classID string, data map[string]any, clean bool) (
 
 		//TODO: need a way to define the primary ID field
 		if id, err := getObjectID(data, class); err == nil {
-			//fmt.Printf("Vertex %s\n", id)
-			dataPB, err := structpb.NewStruct(data)
-			if err == nil {
-				vert := gripql.Vertex{Gid: id, Label: classID, Data: dataPB}
-				out = append(out, GraphElement{Vertex: &vert})
-			}
-
+			vData := map[string]any{}
 			for name, prop := range class.Properties {
 				if ext, ok := prop.Extensions[GraphExtensionTag]; ok {
 					//fmt.Printf("Extension: %#v\n", ext)
@@ -132,8 +126,20 @@ func (s GraphSchema) Generate(classID string, data map[string]any, clean bool) (
 					} else {
 						return nil, err
 					}
+				} else {
+					if d, ok := data[name]; ok {
+						vData[name] = d
+					}
 				}
 			}
+
+			//fmt.Printf("Vertex %s\n", id)
+			dataPB, err := structpb.NewStruct(vData)
+			if err == nil {
+				vert := gripql.Vertex{Gid: id, Label: classID, Data: dataPB}
+				out = append(out, GraphElement{Vertex: &vert})
+			}
+
 		}
 		return out, nil
 	}

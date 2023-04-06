@@ -26,7 +26,7 @@ func TestProject(t *testing.T) {
 	}
 	inputs := map[string]string{}
 
-	err = run.Execute("../resources/project.yaml", dir, "./", inputs)
+	err = run.ExecuteFile("../resources/project.yaml", dir, "./", inputs)
 	if err != nil {
 		t.Error(err)
 	}

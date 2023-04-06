@@ -32,7 +32,7 @@ func runPlaybook(playbook string, inputs map[string]string, outdir string) error
 	dir, _ := os.MkdirTemp(workDir, "sifterwork_")
 	defer os.RemoveAll(dir)
 
-	err = run.Execute(playbook, dir, outdir, inputs)
+	err = run.ExecuteFile(playbook, dir, outdir, inputs)
 	if err != nil {
 		return err
 	}

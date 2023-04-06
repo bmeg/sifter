@@ -32,11 +32,15 @@ func (s GraphSchema) CleanAndValidate(class *jsonschema.Schema, data map[string]
 					}
 				}
 			} else if isArraySchema(subCls) && isObjectSchema(subCls.Items2020) {
+				cls := subCls.Items2020
+				if cls.Ref != nil {
+					cls = cls.Ref
+				}
 				if vArray, ok := v.([]any); ok {
 					o := []any{}
 					for _, v := range vArray {
 						if vMap, ok := v.(map[string]any); ok {
-							l, err := s.CleanAndValidate(subCls.Items2020, vMap)
+							l, err := s.CleanAndValidate(cls, vMap)
 							if err == nil {
 								o = append(o, l)
 							} else {

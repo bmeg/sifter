@@ -20,6 +20,7 @@ type Loader interface {
 type Playbook struct {
 	Class     string                          `json:"class"`
 	Name      string                          `json:"name" jsonschema_description:"Unique name of the playbook"`
+	MemMB     int                             `json:"memMB"` //annotation of potential memory usage, for build Snakefile
 	Docs      string                          `json:"docs"`
 	Outdir    string                          `json:"outdir"`
 	Config    config.Config                   `json:"config,omitempty" jsonschema_description:"Configuration for Playbook"`

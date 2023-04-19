@@ -8,7 +8,6 @@ import (
 	"github.com/bmeg/flame"
 	"github.com/bmeg/sifter/task"
 	"github.com/bmeg/sifter/transform"
-	"github.com/bmeg/sifter/writers"
 )
 
 /*
@@ -89,7 +88,6 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 
 	outNodes := map[string]flame.Emitter[map[string]any]{}
 	inNodes := map[string]flame.Receiver[map[string]any]{}
-	writers := map[string]writers.WriteProcess{}
 
 	for n, v := range pb.Inputs {
 		log.Printf("Setting up %s", n)
@@ -249,18 +247,6 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 		inNodes[k] = firstStep
 	}
 
-	for k, v := range pb.Outputs {
-		sub := task.SubTask(k)
-		s, err := v.Init(sub)
-		if err == nil {
-			c := flame.AddSink(wf, s.Write)
-			inNodes[k] = c
-			writers[k] = s
-		} else {
-			log.Printf("output error: %s", err)
-		}
-	}
-
 	for dst, p := range pb.Pipelines {
 		if len(p) > 0 {
 			if p[0].From != nil {
@@ -300,35 +286,12 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 		}
 	}
 
-	for dst, v := range pb.Outputs {
-		src := v.From()
-		if src == dst {
-			//TODO: more loop detection
-			log.Printf("Pipeline Loop detected in %s", dst)
-			return fmt.Errorf("pipeline loop detected")
-		}
-		if srcNode, ok := outNodes[src]; ok {
-			if dstNode, ok := inNodes[dst]; ok {
-				log.Printf("Connecting %s to %s ", src, dst)
-				dstNode.Connect(srcNode)
-			} else {
-				log.Printf("Dest %s not found", dst)
-			}
-		} else {
-			log.Printf("%s source %s not found", dst, src)
-		}
-	}
-
 	//log.Printf("WF: %#v", wf)
 
 	wf.Start()
 	log.Printf("Workflow Started")
 
 	wf.Wait()
-
-	for k := range writers {
-		writers[k].Close()
-	}
 
 	for p := range procs {
 		procs[p].Close()

@@ -9,7 +9,6 @@ import (
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/extractors"
 	"github.com/bmeg/sifter/transform"
-	"github.com/bmeg/sifter/writers"
 	"sigs.k8s.io/yaml"
 )
 
@@ -25,7 +24,6 @@ type Playbook struct {
 	Outdir    string                          `json:"outdir"`
 	Config    config.Config                   `json:"config,omitempty" jsonschema_description:"Configuration for Playbook"`
 	Inputs    map[string]extractors.Extractor `json:"inputs" jsonschema_description:"Steps of the transformation"`
-	Outputs   map[string]writers.WriteConfig  `json:"outputs"`
 	Pipelines map[string]transform.Pipe       `json:"pipelines"`
 	path      string
 }

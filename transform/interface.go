@@ -77,6 +77,7 @@ type Step struct {
 	Lookup         *LookupStep         `json:"lookup"`
 	Hash           *HashStep           `json:"hash"`
 	GraphBuild     *GraphBuildStep     `json:"graphBuild"`
+	TableWrite     *TableWriteStep     `json:"tableWrite"`
 	Accumulate     *AccumulateStep     `json:"accumulate"`
 	UUID           *UUIDStep           `json:"uuid"`
 }
@@ -118,6 +119,13 @@ func (ts Step) GetEmitters() []string {
 	}
 	if ts.GraphBuild != nil {
 		return []string{"vertex", "edge"}
+	}
+	return []string{}
+}
+
+func (ts Step) GetOutputs() []string {
+	if ts.TableWrite != nil {
+		return []string{ts.TableWrite.Output}
 	}
 	return []string{}
 }

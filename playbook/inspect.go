@@ -28,10 +28,11 @@ func (pb *Playbook) GetOutputs(task task.RuntimeTask) (map[string][]string, erro
 	out := map[string][]string{}
 	//inputs := task.GetInputs()
 
-	for k, v := range pb.Outputs {
-		out[k] = v.GetOutputs(task)
+	for k, v := range pb.Pipelines {
+		for _, s := range v {
+			out[k] = s.GetOutputs()
+		}
 	}
-
 	return out, nil
 }
 

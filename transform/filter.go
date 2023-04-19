@@ -1,6 +1,7 @@
 package transform
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/bmeg/sifter/evaluate"
@@ -41,6 +42,13 @@ func (fs FilterStep) Init(task task.RuntimeTask) (Processor, error) {
 			log.Printf("Compile Error: %s", err)
 		}
 		return &filterProcessor{fs, c, task}, nil
+	}
+	if fs.Check != "" {
+		switch fs.Check {
+		case "hasValue", "exists", "not":
+		default:
+			return nil, fmt.Errorf("check %s not value (hasValue/exists/not)", fs.Check)
+		}
 	}
 	return &filterProcessor{fs, nil, task}, nil
 }

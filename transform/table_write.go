@@ -1,4 +1,4 @@
-package writers
+package transform
 
 import (
 	"compress/gzip"
@@ -14,8 +14,7 @@ import (
 	"github.com/bmeg/sifter/task"
 )
 
-type TableWriter struct {
-	FromName         string   `json:"from"`
+type TableWriteStep struct {
 	Output           string   `json:"output" jsonschema_description:"Name of file to create"`
 	Columns          []string `json:"columns" jsonschema_description:"Columns to be written into table file"`
 	Header           string   `json:"header"`
@@ -24,19 +23,14 @@ type TableWriter struct {
 }
 
 type tableWriteProcess struct {
-	config  *TableWriter
-	sep     rune
+	config  *TableWriteStep
 	columns []string
 	out     io.WriteCloser
 	handle  io.WriteCloser
 	writer  *csv.Writer
 }
 
-func (tw *TableWriter) From() string {
-	return tw.FromName
-}
-
-func (tw *TableWriter) Init(task task.RuntimeTask) (WriteProcess, error) {
+func (tw *TableWriteStep) Init(task task.RuntimeTask) (Processor, error) {
 	sep := '\t'
 	if tw.Sep != "" {
 		sep = rune(tw.Sep[0])
@@ -70,7 +64,7 @@ func (tw *TableWriter) Init(task task.RuntimeTask) (WriteProcess, error) {
 	return &te, nil
 }
 
-func (tw *TableWriter) GetOutputs(task task.RuntimeTask) []string {
+func (tw *TableWriteStep) GetOutputs(task task.RuntimeTask) []string {
 	output, err := evaluate.ExpressionString(tw.Output, task.GetConfig(), nil)
 	if err != nil {
 		return []string{}
@@ -80,7 +74,11 @@ func (tw *TableWriter) GetOutputs(task task.RuntimeTask) []string {
 	return []string{outputPath}
 }
 
-func (tp *tableWriteProcess) Write(i map[string]interface{}) {
+func (tp *tableWriteProcess) PoolReady() bool {
+	return false
+}
+
+func (tp *tableWriteProcess) Process(i map[string]any) map[string]any {
 	o := make([]string, len(tp.columns))
 	for j, k := range tp.columns {
 		if v, ok := i[k]; ok {
@@ -93,6 +91,7 @@ func (tp *tableWriteProcess) Write(i map[string]interface{}) {
 		}
 	}
 	tp.writer.Write(o)
+	return i
 }
 
 func (tp *tableWriteProcess) Close() {

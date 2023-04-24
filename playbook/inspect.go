@@ -30,7 +30,14 @@ func (pb *Playbook) GetOutputs(task task.RuntimeTask) (map[string][]string, erro
 
 	for k, v := range pb.Pipelines {
 		for _, s := range v {
-			out[k] = s.GetOutputs()
+			fArray := []string{}
+			for _, fileName := range s.GetOutputs() {
+				filePath := filepath.Join(pb.GetOutDir(task), fileName)
+				fArray = append(fArray, filePath)
+			}
+			if len(fArray) > 0 {
+				out[k] = fArray
+			}
 		}
 	}
 	return out, nil

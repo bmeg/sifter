@@ -54,6 +54,8 @@ func (ml *XMLLoadStep) Start(task task.RuntimeTask) (chan map[string]any, error)
 	procChan := make(chan map[string]any, 100)
 	if ml.Level == 0 {
 		go func() {
+			defer fhd.Close()
+			defer close(procChan)
 			jStr, err := xj.Convert(hd)
 			if err == nil {
 				data := map[string]any{}
@@ -61,10 +63,11 @@ func (ml *XMLLoadStep) Start(task task.RuntimeTask) (chan map[string]any, error)
 					procChan <- data
 				}
 			}
-			close(procChan)
 		}()
 	} else {
 		go func() {
+			defer fhd.Close()
+			defer close(procChan)
 			d := xml.NewDecoder(hd)
 			stack := []string{}
 			buffer := []xml.Token{}
@@ -103,7 +106,6 @@ func (ml *XMLLoadStep) Start(task task.RuntimeTask) (chan map[string]any, error)
 				default:
 				}
 			}
-			close(procChan)
 		}()
 	}
 	return procChan, nil

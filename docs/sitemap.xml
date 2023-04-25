@@ -61,11 +61,11 @@
   </url><url>
     <loc>https://bmeg.github.io/sifter/docs/transforms/reduce/</loc>
   </url><url>
-    <loc>https://bmeg.github.io/sifter/docs/transforms/split/</loc>
-  </url><url>
     <loc>https://bmeg.github.io/sifter/docs/transforms/regexreplace/</loc>
   </url><url>
     <loc>https://bmeg.github.io/sifter/docs/playbook/</loc>
+  </url><url>
+    <loc>https://bmeg.github.io/sifter/docs/transforms/split/</loc>
   </url><url>
     <loc>https://bmeg.github.io/sifter/docs/inputs/sqldump/</loc>
   </url><url>

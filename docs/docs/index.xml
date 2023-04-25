@@ -32,8 +32,7 @@ Parameters name Description input Path to input file </description>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://bmeg.github.io/sifter/docs/transforms/clean/</guid>
-      <description>type CleanStep struct { Fields []string json:&amp;quot;fields&amp;quot; jsonschema_description:&amp;quot;List of valid fields that will be left. All others will be removed&amp;quot; RemoveEmpty bool json:&amp;quot;removeEmpty&amp;quot; StoreExtra string json:&amp;quot;storeExtra&amp;quot; }
-clearn Remove fields that don&amp;rsquo;t appear in the desingated list.
+      <description>clean Remove fields that don&amp;rsquo;t appear in the desingated list.
 Parameters name Type Description fields [] string Fields to keep removeEmpty bool Fields with empty values will also be removed storeExtra string Field name to store removed fields Example - clean: fields: - id - synonyms </description>
     </item>
     
@@ -256,16 +255,6 @@ Parameters name Type Description field string (field path) Field used to match r
     </item>
     
     <item>
-      <title>reduce</title>
-      <link>https://bmeg.github.io/sifter/docs/transforms/split/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://bmeg.github.io/sifter/docs/transforms/split/</guid>
-      <description>split Split a field using string sep
-Parameters name Type Description field string Field to the split sep string String to use for splitting Example - split: field: methods sep: &amp;#34;;&amp;#34; </description>
-    </item>
-    
-    <item>
       <title>regexReplace</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/regexreplace/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -282,6 +271,16 @@ Parameters name Type Description field string Field to the split sep string Stri
       <guid>https://bmeg.github.io/sifter/docs/playbook/</guid>
       <description>Pipeline File An sifter pipeline file is in YAML format and describes an entire processing pipelines. If is composed of the following sections: config, inputs, pipelines, outputs. In addition, for tracking, the file will also include name and class entries.
 class: sifter name: &amp;lt;script name&amp;gt; outdir: &amp;lt;where output files should go, relative to this file&amp;gt; config: &amp;lt;config key&amp;gt;: &amp;lt;config value&amp;gt; &amp;lt;config key&amp;gt;: &amp;lt;config value&amp;gt; # values that are referenced in pipeline parameters for # files will be treated like file paths and be # translated to full paths inputs: &amp;lt;input name&amp;gt;: &amp;lt;input driver&amp;gt;: &amp;lt;driver config&amp;gt; pipelines: &amp;lt;pipeline name&amp;gt;: # all pipelines must start with a from step - from: &amp;lt;name of input or pipeline&amp;gt; - &amp;lt;transform name&amp;gt;: &amp;lt;transform parameters&amp;gt; outputs: &amp;lt;output name&amp;gt;: &amp;lt;output driver&amp;gt;: &amp;lt;driver config&amp;gt; </description>
+    </item>
+    
+    <item>
+      <title>split</title>
+      <link>https://bmeg.github.io/sifter/docs/transforms/split/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://bmeg.github.io/sifter/docs/transforms/split/</guid>
+      <description>split Split a field using string sep
+Parameters name Type Description field string Field to the split sep string String to use for splitting Example - split: field: methods sep: &amp;#34;;&amp;#34; </description>
     </item>
     
     <item>

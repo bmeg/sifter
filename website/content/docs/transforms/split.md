@@ -1,5 +1,5 @@
 ---
-title: reduce
+title: split
 menu:
   main:
     parent: transforms

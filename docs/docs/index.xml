@@ -202,7 +202,7 @@ Parameters name Description input Path of JSON file to transform multiline Load 
       
       <guid>https://bmeg.github.io/sifter/docs/transforms/lookup/</guid>
       <description>lookup Using key from current row, get values from a reference source
-Parameters name Type Description replace string (field path) Field to replace lookup string (template string) Key to use for looking up data copy map[string]string Given lookup of structure, copy values (key) to row (value) tsv TSVTable TSV translation table file json JSONTable JSON data file table LookupTable Inline lookup table Example - lookup: json: input: &amp;#34;{{config.doseResponseFile}}&amp;#34; key: experiment_id lookup: &amp;#34;{{row.</description>
+Parameters name Type Description replace string (field path) Field to replace lookup string (template string) Key to use for looking up data copy map[string]string Copy values from record that was found by lookup. The Key/Value record uses the Key as the destination field and copies the field from the retrieved records using the field named in Value tsv TSVTable TSV translation table file json JSONTable JSON data file table LookupTable Inline lookup table pipeline PipelineLookup Use output of a pipeline as a lookup table Example JSON file based lookup The JSON file defined by config.</description>
     </item>
     
     <item>

@@ -16,6 +16,9 @@ func (s GraphSchema) Validate(classID string, data map[string]any) error {
 }
 
 func (s GraphSchema) CleanAndValidate(class *jsonschema.Schema, data map[string]any) (map[string]any, error) {
+	if class.Ref != nil {
+		return s.CleanAndValidate(class.Ref, data)
+	}
 	out := map[string]any{}
 	for k, v := range data {
 		if subCls, ok := class.Properties[k]; ok {

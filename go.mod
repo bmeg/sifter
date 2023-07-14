@@ -9,6 +9,7 @@ require (
 	github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50
 	github.com/bmeg/grip v0.0.0-20210910231938-94d69d94ff65
 	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad
+	github.com/bmeg/jsonschemagraph v0.0.0-20230714221606-1bd99cd2f44d
 	github.com/cockroachdb/pebble v0.0.0-20220311224846-910ce60578df
 	github.com/dgraph-io/badger/v2 v2.0.1
 	github.com/ghodss/yaml v1.0.0
@@ -20,11 +21,11 @@ require (
 	github.com/jlaffaye/ftp v0.0.0-20200602180915-5563613968bf
 	github.com/linkedin/goavro/v2 v2.10.0
 	github.com/mattn/go-sqlite3 v1.14.14
-	github.com/santhosh-tekuri/jsonschema/v5 v5.1.1
+	github.com/santhosh-tekuri/jsonschema/v5 v5.3.0
 	github.com/spf13/cobra v1.4.0
 	go.mongodb.org/mongo-driver v1.5.1
 	google.golang.org/grpc v1.45.0
-	google.golang.org/protobuf v1.28.0
+	google.golang.org/protobuf v1.30.0
 	sigs.k8s.io/yaml v1.3.0
 	vitess.io/vitess v0.15.2
 )
@@ -74,7 +75,7 @@ require (
 	github.com/kennygrant/sanitize v1.2.4 // indirect
 	github.com/klauspost/compress v1.13.0 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
-	github.com/kr/pretty v0.2.0 // indirect
+	github.com/kr/pretty v0.2.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/logrusorgru/aurora v0.0.0-20190428105938-cea283e61946 // indirect
 	github.com/mattn/go-colorable v0.1.7 // indirect
@@ -112,7 +113,7 @@ require (
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
-	golang.org/x/sys v0.0.0-20220817070843-5a390386f1f2 // indirect
+	golang.org/x/sys v0.0.0-20220908164124-27713097b956 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.8 // indirect
 	golang.org/x/tools v0.1.12 // indirect

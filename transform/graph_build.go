@@ -3,10 +3,9 @@ package transform
 import (
 	"log"
 
-	"github.com/bmeg/grip/gripql"
+	schema "github.com/bmeg/jsonschemagraph"
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
-	"github.com/bmeg/sifter/schema"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -91,7 +90,7 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 					log.Printf("Emit Error: %s", err)
 				}
 			} else if j.OutEdge != nil || j.InEdge != nil {
-				var edge *gripql.Edge
+				var edge *schema.Edge
 				if j.OutEdge != nil {
 					edge = j.OutEdge
 				}
@@ -121,7 +120,7 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 
 }
 
-func (ts *graphBuildProcess) edgeToMap(e *gripql.Edge) map[string]interface{} {
+func (ts *graphBuildProcess) edgeToMap(e *schema.Edge) map[string]interface{} {
 	d := e.Data.AsMap()
 	if d == nil {
 		d = map[string]interface{}{}
@@ -147,7 +146,7 @@ func (ts *graphBuildProcess) edgeToMap(e *gripql.Edge) map[string]interface{} {
 	return out
 }
 
-func (ts *graphBuildProcess) vertexToMap(v *gripql.Vertex) map[string]interface{} {
+func (ts *graphBuildProcess) vertexToMap(v *schema.Vertex) map[string]interface{} {
 	d := v.Data.AsMap()
 	if d == nil {
 		d = map[string]interface{}{}

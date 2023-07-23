@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	schema "github.com/bmeg/jsonschemagraph"
+	schema "github.com/bmeg/jsonschemagraph/util"
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/task"

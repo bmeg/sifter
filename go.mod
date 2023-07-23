@@ -9,7 +9,7 @@ require (
 	github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50
 	github.com/bmeg/grip v0.0.0-20210910231938-94d69d94ff65
 	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad
-	github.com/bmeg/jsonschemagraph v0.0.0-20230714221606-1bd99cd2f44d
+	github.com/bmeg/jsonschemagraph v0.0.0-20230720224716-73305f7e1928
 	github.com/cockroachdb/pebble v0.0.0-20220311224846-910ce60578df
 	github.com/dgraph-io/badger/v2 v2.0.1
 	github.com/ghodss/yaml v1.0.0

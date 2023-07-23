@@ -110,6 +110,8 @@ github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad h1:ICgBexeLB7iv/IQz4
 github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad/go.mod h1:ft96Irkp72C7ZrUWRenG7LrF0NKMxXdRvsypo5Njhm4=
 github.com/bmeg/jsonschemagraph v0.0.0-20230714221606-1bd99cd2f44d h1:OrVQRPV4hqa5btDfonxrwr+f3I+GLZySESqBjf3QVNs=
 github.com/bmeg/jsonschemagraph v0.0.0-20230714221606-1bd99cd2f44d/go.mod h1:E3Wxi6M07EwHLi2ULLNuQErpRP6oDMHtzpwsq8ACKWU=
+github.com/bmeg/jsonschemagraph v0.0.0-20230720224716-73305f7e1928 h1:PXYTQcoh3MG09sNc/UXDbSZr4QLLbBV8yjpwfsik12c=
+github.com/bmeg/jsonschemagraph v0.0.0-20230720224716-73305f7e1928/go.mod h1:ezlsgsb5n4m6rx16koZze9zyv7BZk6xCHAAQf2yAG+M=
 github.com/bmeg/protoc-gen-grcp-rest-direct v0.0.0-20190228222353-4d40e8b9d305/go.mod h1:1S3ijn0o+w7RmSdfX3EQttlrF9csSziK8dpeh0nP4LU=
 github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
 github.com/bombsimon/wsl/v2 v2.0.0/go.mod h1:mf25kr/SqFEPhhcxW1+7pxzGlW+hIl/hYTKY95VwV8U=

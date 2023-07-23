@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	//"github.com/bmeg/grip/gripql"
-	schema "github.com/bmeg/jsonschemagraph"
+	schema "github.com/bmeg/jsonschemagraph/util"
 
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/extractors"

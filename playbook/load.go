@@ -5,7 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/bmeg/grip/gripql"
+	//"github.com/bmeg/grip/gripql"
+	schema "github.com/bmeg/jsonschemagraph/util"
+
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/extractors"
 	"github.com/bmeg/sifter/transform"
@@ -13,7 +15,7 @@ import (
 )
 
 type Loader interface {
-	Load() chan gripql.GraphElement
+	Load() chan schema.GraphElement
 }
 
 type Playbook struct {

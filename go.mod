@@ -11,7 +11,7 @@ require (
 	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad
 	github.com/bmeg/jsonschemagraph v0.0.0-20230728171758-f22dd2c6d90d
 	github.com/cockroachdb/pebble v0.0.0-20220311224846-910ce60578df
-	github.com/dgraph-io/badger/v2 v2.0.1
+	github.com/dgraph-io/badger/v2 v2.2007.4
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-python/gpython v0.1.1-0.20230118193350-337df2ad1ec2
 	github.com/golang/protobuf v1.5.2

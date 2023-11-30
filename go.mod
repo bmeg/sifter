@@ -9,7 +9,7 @@ require (
 	github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50
 	github.com/bmeg/grip v0.0.0-20210910231938-94d69d94ff65
 	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad
-	github.com/bmeg/jsonschemagraph v0.0.0-20230728171758-f22dd2c6d90d
+	github.com/bmeg/jsonschemagraph v0.0.0-20231130184725-4c439ca30b96
 	github.com/cockroachdb/pebble v0.0.0-20220311224846-910ce60578df
 	github.com/dgraph-io/badger/v2 v2.2007.4
 	github.com/ghodss/yaml v1.0.0
@@ -139,5 +139,7 @@ require (
 	inet.af/netaddr v0.0.0-20220811202034-502d2d690317 // indirect
 	k8s.io/apimachinery v0.26.1 // indirect
 )
+
+replace github.com/santhosh-tekuri/jsonschema/v5 v5.3.0 => github.com/bmeg/jsonschema/v5 v5.3.3
 
 go 1.18

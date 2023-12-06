@@ -3,6 +3,7 @@ package extractors
 import (
 	"bufio"
 	"encoding/json"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -52,7 +53,7 @@ func (ml *PluginLoadStep) Start(task task.RuntimeTask) (chan map[string]interfac
 
 			for err == nil {
 				line, isPrefix, err = reader.ReadLine()
-				if err != nil {
+				if err != nil && err != io.EOF {
 					log.Printf("plugin (%s) input error: %s", ml.CommandLine, err)
 				}
 				ln = append(ln, line...)

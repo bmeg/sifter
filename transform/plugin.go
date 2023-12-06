@@ -3,6 +3,7 @@ package transform
 import (
 	"bufio"
 	"encoding/json"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -61,7 +62,7 @@ func (ps *pluginProcess) Process(in chan map[string]any, out chan map[string]any
 
 			for err == nil {
 				line, isPrefix, err = reader.ReadLine()
-				if err != nil {
+				if err != nil && err != io.EOF {
 					log.Printf("plugin (%s) input error: %s", ps.config.CommandLine, err)
 				}
 				ln = append(ln, line...)

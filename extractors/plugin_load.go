@@ -3,6 +3,7 @@ package extractors
 import (
 	"bufio"
 	"encoding/json"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -52,6 +53,9 @@ func (ml *PluginLoadStep) Start(task task.RuntimeTask) (chan map[string]interfac
 
 			for err == nil {
 				line, isPrefix, err = reader.ReadLine()
+				if err != nil && err != io.EOF {
+					log.Printf("plugin (%s) input error: %s", ml.CommandLine, err)
+				}
 				ln = append(ln, line...)
 				if !isPrefix {
 					if len(ln) > 0 {
@@ -60,18 +64,18 @@ func (ml *PluginLoadStep) Start(task task.RuntimeTask) (chan map[string]interfac
 						if err == nil {
 							procChan <- row
 						} else {
-							log.Printf("plugin output error: %s", err)
+							log.Printf("plugin (%s) output error: %s", ml.CommandLine, err)
+							log.Printf("unmarshalled line: %s", ln)
 						}
 						ln = []byte{}
 					}
 				}
 			}
+
 			wg.Done()
 		}()
 
-		if err := cmd.Wait(); err != nil {
-			log.Printf("plugin error: %s", err)
-		}
+		log.Printf("plugin has exited: %s\n", ml.CommandLine)
 		wg.Wait()
 
 		close(procChan)

@@ -10,6 +10,7 @@ import (
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/task"
 	"github.com/santhosh-tekuri/jsonschema/v5"
+	_ "github.com/santhosh-tekuri/jsonschema/v5/httploader"
 )
 
 type ObjectValidateStep struct {

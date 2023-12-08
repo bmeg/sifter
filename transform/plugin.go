@@ -3,6 +3,7 @@ package transform
 import (
 	"bufio"
 	"encoding/json"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -61,6 +62,9 @@ func (ps *pluginProcess) Process(in chan map[string]any, out chan map[string]any
 
 			for err == nil {
 				line, isPrefix, err = reader.ReadLine()
+				if err != nil && err != io.EOF {
+					log.Printf("plugin (%s) input error: %s", ps.config.CommandLine, err)
+				}
 				ln = append(ln, line...)
 				if !isPrefix {
 					if len(ln) > 0 {
@@ -70,6 +74,7 @@ func (ps *pluginProcess) Process(in chan map[string]any, out chan map[string]any
 							out <- row
 						} else {
 							log.Printf("plugin output error: %s", err)
+							log.Printf("unmarshalled line: %s", ln)
 						}
 						ln = []byte{}
 					}
@@ -77,10 +82,7 @@ func (ps *pluginProcess) Process(in chan map[string]any, out chan map[string]any
 			}
 			wg.Done()
 		}()
-
-		if err := cmd.Wait(); err != nil {
-			log.Printf("plugin error: %s", err)
-		}
+		log.Printf("plugin has exited: %s\n", ps.config.CommandLine)
 		wg.Wait()
 	}
 }

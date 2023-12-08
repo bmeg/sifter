@@ -14,7 +14,7 @@ require (
 	github.com/dgraph-io/badger/v2 v2.2007.4
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-python/gpython v0.1.1-0.20230118193350-337df2ad1ec2
-	github.com/golang/protobuf v1.5.2
+	github.com/golang/protobuf v1.5.3
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-getter v1.7.0
@@ -24,17 +24,17 @@ require (
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.0
 	github.com/spf13/cobra v1.6.1
 	go.mongodb.org/mongo-driver v1.7.5
-	google.golang.org/grpc v1.52.3
+	google.golang.org/grpc v1.56.3
 	google.golang.org/protobuf v1.30.0
 	sigs.k8s.io/yaml v1.3.0
 	vitess.io/vitess v0.16.2
 )
 
 require (
-	cloud.google.com/go v0.109.0 // indirect
-	cloud.google.com/go/compute v1.18.0 // indirect
+	cloud.google.com/go v0.110.0 // indirect
+	cloud.google.com/go/compute v1.19.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
-	cloud.google.com/go/iam v0.10.0 // indirect
+	cloud.google.com/go/iam v0.13.0 // indirect
 	cloud.google.com/go/storage v1.29.0 // indirect
 	github.com/DataDog/datadog-agent/pkg/obfuscate v0.42.0 // indirect
 	github.com/DataDog/datadog-agent/pkg/remoteconfig/state v0.42.0 // indirect
@@ -60,12 +60,12 @@ require (
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/glog v1.0.0 // indirect
+	github.com/golang/glog v1.1.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.2.1 // indirect
-	github.com/googleapis/gax-go/v2 v2.7.0 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.2.3 // indirect
+	github.com/googleapis/gax-go/v2 v2.7.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.5.0 // indirect
@@ -123,7 +123,7 @@ require (
 	golang.org/x/exp v0.0.0-20230131160201-f062dba9d201 // indirect
 	golang.org/x/mod v0.8.0 // indirect
 	golang.org/x/net v0.17.0 // indirect
-	golang.org/x/oauth2 v0.4.0 // indirect
+	golang.org/x/oauth2 v0.7.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/term v0.13.0 // indirect
@@ -131,9 +131,9 @@ require (
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
-	google.golang.org/api v0.109.0 // indirect
+	google.golang.org/api v0.114.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20230131230820-1c016267d619 // indirect
+	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
 	gopkg.in/DataDog/dd-trace-go.v1 v1.47.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	inet.af/netaddr v0.0.0-20220811202034-502d2d690317 // indirect

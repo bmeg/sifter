@@ -44,8 +44,8 @@ func (ts GraphBuildStep) Init(task task.RuntimeTask) (Processor, error) {
 	}
 	//force the two emitters to be created. nil messages don't get emitted
 	//but the output file will be created
-	task.Emit("vertex", nil)
-	task.Emit("edge", nil)
+	task.Emit("vertex", nil, false)
+	task.Emit("edge", nil, false)
 
 	var edgeFix evaluate.Processor
 	if ts.EdgeFix != nil {
@@ -85,7 +85,7 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 	if o, err := ts.sch.Generate(ts.class, i, ts.config.Clean); err == nil {
 		for _, j := range o {
 			if j.Vertex != nil {
-				err := ts.task.Emit("vertex", ts.vertexToMap(j.Vertex))
+				err := ts.task.Emit("vertex", ts.vertexToMap(j.Vertex), false)
 				if err != nil {
 					log.Printf("Emit Error: %s", err)
 				}
@@ -105,7 +105,7 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 							edgeData = o
 						}
 					}
-					err := ts.task.Emit("edge", edgeData)
+					err := ts.task.Emit("edge", edgeData, false)
 					if err != nil {
 						log.Printf("Emit Error: %s", err)
 					}

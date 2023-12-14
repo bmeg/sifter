@@ -21,7 +21,7 @@ type StdoutEmitter struct {
 
 func (s StdoutEmitter) Close() {}
 
-func (s StdoutEmitter) Emit(name string, v map[string]interface{}) error {
+func (s StdoutEmitter) Emit(name string, v map[string]interface{}, useName bool) error {
 	if v != nil {
 		o, _ := json.Marshal(v)
 		fmt.Printf("%s\t%s\n", name, o)

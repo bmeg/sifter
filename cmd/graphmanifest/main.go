@@ -13,7 +13,9 @@ var workerCount = 1
 var Cmd = &cobra.Command{
 	Use:   "graph-manifest <directory>",
 	Short: "Build manifest for graph file archive",
-	Args:  cobra.MinimumNArgs(1),
+	Long: `Build manifest for graph file archive.
+Only works on .Vertex.json.gz and .Edge.json.gz files`,
+	Args: cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		for info := range ScanDir(args[0], workerCount) {
 			o, _ := json.Marshal(info)

@@ -21,6 +21,7 @@ func ExecuteFile(playFile string, workDir string, outDir string, inputs map[stri
 	a, _ := filepath.Abs(playFile)
 	baseDir := filepath.Dir(a)
 	log.Printf("basedir: %s", baseDir)
+	log.Printf("playbook: %s", pb)
 	return Execute(pb, baseDir, workDir, outDir, inputs)
 }
 
@@ -39,6 +40,7 @@ func Execute(pb playbook.Playbook, baseDir string, workDir string, outDir string
 		return err
 	}
 	log.Printf("Outdir: %s", outDir)
+
 	t := task.NewTask(pb.Name, baseDir, workDir, outDir, nInputs)
 	err = pb.Execute(t)
 	return err

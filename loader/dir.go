@@ -63,11 +63,13 @@ func (s *DirLoader) Close() {
 	s.dout = map[string]io.WriteCloser{}
 }
 
-func (s *DirDataLoader) Emit(name string, v map[string]interface{}) error {
+func (s *DirDataLoader) Emit(name string, v map[string]interface{}, useName bool) error {
 	s.dl.mux.Lock()
 	defer s.dl.mux.Unlock()
 	f, ok := s.dl.dout[name]
 	if !ok {
+		// log.Printf("output path %s", outputPath)
+
 		j, err := os.Create(path.Join(s.dl.dir, name+".json.gz"))
 		if err != nil {
 			return err

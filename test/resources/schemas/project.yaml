@@ -1,0 +1,51 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: project
+title: Project
+type: object
+description: 'Any specifically defined piece of work that is undertaken or attempted
+  to meet a single requirement.
+
+  '
+required:
+- id
+- submitter_id
+- project_id
+links:
+- rel: programs
+  href: program/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: program.yaml
+  templatePointers:
+    id: /programs/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: projects
+properties:
+  id:
+    type: string
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  gdc_attributes:
+    type:
+    - 'null'
+    - object
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime
+  programs:
+    type:
+    - array
+    items:
+      $ref: reference.yaml

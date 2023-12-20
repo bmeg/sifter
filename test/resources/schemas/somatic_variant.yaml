@@ -1,0 +1,78 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: somatic_variant
+title: SomaticVariant
+type: object
+description: 'A collection of somatic variants.
+
+  '
+links:
+- rel: somatic_callset
+  href: somaticcallset/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: somatic_callset.yaml
+  templatePointers:
+    id: /somatic_callset/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_one
+    association: true
+- rel: allele
+  href: allele/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: allele.yaml
+  templatePointers:
+    id: /allele/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_one
+    association: true
+properties:
+  id:
+    type: string
+    systemAlias: node_id
+  ref:
+    type: string
+  alt:
+    type: string
+  t_depth:
+    type: integer
+  t_ref_count:
+    type: integer
+  t_alt_count:
+    type: integer
+  n_depth:
+    type: integer
+  n_ref_count:
+    type: integer
+  n_alt_count:
+    type: integer
+  filter:
+    type: string
+  methods:
+    type: array
+    items:
+      type: string
+  ensembl_protein:
+    type: string
+  ensembl_transcript:
+    type: string
+  ensembl_gene:
+    type: string
+  somatic_callset:
+    type:
+    - string
+    items:
+      $ref: reference.yaml
+  allele:
+    type:
+    - string
+    items:
+      $ref: reference.yaml

@@ -2,7 +2,7 @@
 config:
   file: ../../resources/1000G.pfb.avro
 
-outdir: ../../out
+outdir: output/
 
 inputs:
   pfb:
@@ -21,7 +21,7 @@ pipelines:
         # undo the "key" : {"string" : "value" } pattern uses for multi-type fields
         method: transform
         gpython: |
-          
+
           def transform(x):
             if x is None:
               return x
@@ -46,14 +46,14 @@ pipelines:
 
   vertex:
     - from: transform
-    - map: 
+    - map:
         method: transform
         gpython: |
 
           def transform(x):
             o = x["object"][x["name"]]
             return { "gid" : x["name"] + ":" + x["id"], "label" : x["name"], "data" : o }
-           
+
     - emit:
         name: vertex
 
@@ -72,5 +72,5 @@ pipelines:
           - to
           - from
           - label
-    - emit: 
+    - emit:
         name: edge

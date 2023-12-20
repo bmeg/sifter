@@ -1,9 +1,9 @@
 
 name: gdc
-outdir: ../../out
+outdir: output/
 
 config:
-  cases: ../../resources/case.json
+  cases: ../../resources/gdc-case.json.gz
   schema: ../../resources/schemas
 
 inputs:
@@ -23,68 +23,12 @@ pipelines:
         title: Case
         schema: "{{config.schema}}"
     - emit:
+        # Testing that this doesn't do anything
+        useName: False
         name: case
-  
+
   caseGraph:
     - from: caseObject
     - graphBuild:
         schema: "{{config.schema}}"
-        #idPrefix: Case
         title: Case
-  
-  sampleData:
-    - from: caseData
-    - fieldProcess:
-        field: samples
-        mapping:
-          cases: "{{row.id}}"
-
-  sampleObject:
-    - from: sampleData
-    - project:
-        mapping:
-          type: sample
-          id: "{{row.sample_id}}"
-    - objectValidate:
-        title: Sample
-        schema: "{{config.schema}}"
-    - emit:
-        name: sample
-
-  sampleGraph:
-    - from: sampleObject
-    - graphBuild:
-        schema: "{{config.schema}}"
-        #idPrefix: Sample
-        title: Sample
-
-  aliquotObject:
-    - from: sampleData
-    - fieldProcess:
-        field: portions
-        mapping:
-          samples: "{{row.id}}"
-    - fieldProcess:
-        field: analytes
-        mapping:
-          samples: "{{row.samples}}"
-    - fieldProcess:
-        field: aliquots
-        mapping:
-          samples: "{{row.samples}}"
-    - project:
-        mapping:
-          type: aliquot
-          id: "{{row.aliquot_id}}"
-    - objectValidate:
-        title: Aliquot
-        schema: "{{config.schema}}"
-    - emit:
-        name: aliquot
-
-  aliquotGraph:
-    - from: aliquotObject
-    - graphBuild:
-        schema: "{{config.schema}}"
-        #idPrefix: Aliquot
-        title: Aliquot

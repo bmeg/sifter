@@ -1,0 +1,58 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: phenotype
+title: Phenotype
+type: object
+description: 'An observable characteristics of a case or sample resulting from the  interaction
+  of its genotype with the environment (i.e. a disease).
+
+  '
+required:
+- submitter_id
+- term_id
+- term
+- project_id
+links:
+- rel: child_terms
+  href: phenotype/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: phenotype.yaml
+  templatePointers:
+    id: /child_terms/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: phenotypes
+properties:
+  id:
+    type: string
+  term:
+    type: string
+  term_id:
+    type: string
+  name:
+    type:
+    - 'null'
+    - string
+  description:
+    type: string
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime
+  child_terms:
+    type:
+    - array
+    items:
+      $ref: reference.yaml

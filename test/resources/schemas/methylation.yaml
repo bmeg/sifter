@@ -1,0 +1,58 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: methylation
+title: Methylation
+type: object
+description: 'Methylatyion values for an aliquot
+
+  '
+required:
+- submitter_id
+- project_id
+- values
+- method
+links:
+- rel: aliquot
+  href: aliquot/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: aliquot.yaml
+  templatePointers:
+    id: /aliquot/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_one
+    backref: methylations
+properties:
+  method:
+    type: string
+  metric:
+    type: string
+  values:
+    type: object
+    additionalProperties:
+      type:
+      - number
+      - 'null'
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  id:
+    $ref: _definitions.yaml#/UUID
+    systemAlias: node_id
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime
+  aliquot:
+    type:
+    - array
+    items:
+      $ref: reference.yaml

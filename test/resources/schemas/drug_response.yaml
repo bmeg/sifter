@@ -1,0 +1,149 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: drug_response
+title: DrugResponse
+type: object
+description: 'Drug response curve fit parameters.
+
+  '
+required:
+- id
+- submitter_id
+- project_id
+links:
+- rel: compounds
+  href: compound/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: compound.yaml
+  templatePointers:
+    id: /compounds/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: drug_responses
+- rel: aliquot
+  href: aliquot/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: aliquot.yaml
+  templatePointers:
+    id: /aliquot/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_one
+    backref: drug_response
+properties:
+  id:
+    type: string
+  dose_um:
+    description: 'The drug doses (micromolar) for which responses were measured.
+
+      '
+    type:
+    - 'null'
+    - array
+  response:
+    description: 'The measured drug response for a given drug dose.
+
+      '
+    type:
+    - 'null'
+    - array
+  hs:
+    description: 'The Hill Slope
+
+      '
+    type:
+    - 'null'
+    - number
+  einf:
+    description: 'The maximum theoretical inhibition
+
+      '
+    type:
+    - 'null'
+    - number
+  ec50:
+    description: 'The dose at which 50% of the maximum response is observed
+
+      '
+    type:
+    - 'null'
+    - number
+  ic50:
+    description: 'The dose that achieves  50% inhibition of cell viability
+
+      '
+    type:
+    - 'null'
+    - number
+  aac:
+    description: 'Area above curve
+
+      '
+    type:
+    - 'null'
+    - number
+  auc:
+    description: 'Area under curve
+
+      '
+    type:
+    - 'null'
+    - number
+  dss1:
+    description: 'Drug sensitivity score 1; an AUC measurement with the baseline noise
+      subtracted.  https://www.ncbi.nlm.nih.gov/pubmed/24898935
+
+      '
+    type:
+    - 'null'
+    - number
+  dss2:
+    description: 'Drug sensitivity score 2; DSS1 further normalized by the logarithm
+      of the top  asymptote Rmax. https://www.ncbi.nlm.nih.gov/pubmed/24898935
+
+      '
+    type:
+    - 'null'
+    - number
+  dss3:
+    description: 'Drug sensitivity score 3; DSS1 further normalized by the dose range
+      over which  the response exceeds the activity threshold Amin. https://www.ncbi.nlm.nih.gov/pubmed/24898935
+
+      '
+    type:
+    - 'null'
+    - number
+  source_drug_name:
+    type: string
+  source_cell_name:
+    type: string
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime
+  compounds:
+    type:
+    - array
+    items:
+      $ref: reference.yaml
+  aliquot:
+    type:
+    - array
+    items:
+      $ref: reference.yaml

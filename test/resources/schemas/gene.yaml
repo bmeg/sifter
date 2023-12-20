@@ -1,0 +1,47 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: gene
+title: Gene
+type: object
+description: 'A gene.
+
+  '
+required:
+- submitter_id
+- project_id
+- description
+- chromosome
+- strand
+- start
+- genome
+- end
+- symbol
+links: []
+properties:
+  id:
+    type: string
+  description:
+    type: string
+  symbol:
+    type: string
+  genome:
+    $ref: _definitions.yaml#/genome
+  chromosome:
+    $ref: _definitions.yaml#/chromosome
+  start:
+    type: integer
+  end:
+    type: integer
+  strand:
+    $ref: _definitions.yaml#/strand
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime

@@ -79,3 +79,11 @@ needs to have GRPC install. To install, run:
 ```
 pip install grpcio-tools
 ```
+
+## Go Tests
+
+Run go tests with
+```
+go clean -testcache
+go test ./test/... -v
+```

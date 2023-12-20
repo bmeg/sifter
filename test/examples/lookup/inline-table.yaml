@@ -1,9 +1,9 @@
 
-outdir: ../../out
+outdir: output/
 
 config:
   json: ../../resources/projects.json
-    
+
 
 inputs:
   jsonData:

@@ -1,73 +1,70 @@
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: aliquot
-title: Aliquot
+$id: protein
+title: Protein
 type: object
-description: 'Pertaining to a portion of the whole; any one of two or more samples
-  of something, of the same volume or weight.
+description: 'A protein.
 
   '
 required:
+- id
 - submitter_id
 - project_id
-- id
 links:
-- rel: sample
-  href: sample/{id}
+- rel: gene
+  href: gene/{id}
   templateRequired:
   - id
   targetSchema:
-    $ref: sample.yaml
+    $ref: gene.yaml
   templatePointers:
-    id: /sample/-/id
+    id: /gene/-/id
   targetHints:
     directionality:
     - outbound
     multiplicity:
     - has_one
-    backref: aliquots
-- rel: projects
-  href: project/{id}
+    association: true
+- rel: transcript
+  href: transcript/{id}
   templateRequired:
   - id
   targetSchema:
-    $ref: project.yaml
+    $ref: transcript.yaml
   templatePointers:
-    id: /projects/-/id
+    id: /transcript/-/id
   targetHints:
     directionality:
     - outbound
     multiplicity:
-    - has_many
-    backref: aliquots
+    - has_one
+    association: true
 properties:
   id:
     type: string
-  cellline_attributes:
-    type:
-    - 'null'
-    - object
-  gdc_attributes:
-    type:
-    - 'null'
-    - object
-  project_id:
-    $ref: _definitions.yaml#/project_id
+  sequence:
+    type: string
   submitter_id:
     type:
     - string
     - 'null'
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  length:
+    type: number
+  mass:
+    type: number
   type:
     type: string
   created_datetime:
     $ref: _definitions.yaml#/datetime
   updated_datetime:
     $ref: _definitions.yaml#/datetime
-  sample:
+  gene:
     type:
     - array
     items:
       $ref: reference.yaml
-  projects:
+  transcript:
     type:
     - array
     items:

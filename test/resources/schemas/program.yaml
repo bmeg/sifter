@@ -1,0 +1,31 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: program
+title: Program
+type: object
+description: 'A broad framework of goals to be achieved. (i.e. TCGA or FM-AD)
+
+  '
+required:
+- submitter_id
+- program_id
+links: []
+properties:
+  program_id:
+    type: string
+  gdc_attributes:
+    type:
+    - 'null'
+    - object
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  id:
+    $ref: _definitions.yaml#/UUID
+    systemAlias: node_id
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime

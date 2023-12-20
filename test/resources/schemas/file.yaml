@@ -1,0 +1,56 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: file
+title: File
+type: object
+description: 'A file
+
+  '
+required:
+- submitter_id
+- project_id
+- md5
+- filename
+links:
+- rel: aliquots
+  href: aliquot/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: aliquot.yaml
+  templatePointers:
+    id: /aliquots/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_one
+    association: true
+properties:
+  id:
+    $ref: _definitions.yaml#/UUID
+    systemAlias: node_id
+  md5:
+    type: string
+  path:
+    type: string
+  cmd:
+    type: string
+  filename:
+    type: string
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime
+  aliquots:
+    type:
+    - array
+    items:
+      $ref: reference.yaml

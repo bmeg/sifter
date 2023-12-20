@@ -1,88 +1,76 @@
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: case
-title: Case
+$id: pathway
+title: Pathway
 type: object
-description: 'The collection of all data related to a specific subject in the context
-  of a specific experiment.
+description: 'A biological pathway
 
   '
 required:
 - submitter_id
 - project_id
-- case_id
+- name
 links:
-- rel: compounds
-  href: compound/{id}
+- rel: genes
+  href: gene/{id}
   templateRequired:
   - id
   targetSchema:
-    $ref: compound.yaml
+    $ref: gene.yaml
   templatePointers:
-    id: /compounds/-/id
+    id: /genes/-/id
   targetHints:
     directionality:
     - outbound
     multiplicity:
     - has_many
-    backref: cases
-- rel: projects
-  href: project/{id}
+    backref: pathways
+- rel: interactions
+  href: interaction/{id}
   templateRequired:
   - id
   targetSchema:
-    $ref: project.yaml
+    $ref: interaction.yaml
   templatePointers:
-    id: /projects/-/id
+    id: /interactions/-/id
   targetHints:
     directionality:
     - outbound
     multiplicity:
     - has_many
-    backref: cases
-- rel: phenotypes
-  href: phenotype/{id}
+    backref: pathways
+- rel: sub_pathways
+  href: pathway/{id}
   templateRequired:
   - id
   targetSchema:
-    $ref: phenotype.yaml
+    $ref: pathway.yaml
   templatePointers:
-    id: /phenotypes/-/id
+    id: /sub_pathways/-/id
   targetHints:
     directionality:
     - outbound
     multiplicity:
     - has_many
-    backref: cases
-- rel: same_as
-  href: case/{id}
+    backref: pathways
+- rel: publications
+  href: publication/{id}
   templateRequired:
   - id
   targetSchema:
-    $ref: case.yaml
+    $ref: publication.yaml
   templatePointers:
-    id: /same_as/-/id
+    id: /publications/-/id
   targetHints:
     directionality:
     - outbound
     multiplicity:
-    - has_many
-    backref: cases
+    - has_one
+    association: true
 properties:
-  case_id:
+  id:
     type: string
-  cellline_attributes:
-    type:
-    - 'null'
-    - object
-  gdc_attributes:
-    type:
-    - 'null'
-    - object
-  gtex_attributes:
-    type:
-    - 'null'
-    - object
-  sex:
+    systemAlias: node_id
+  name:
     type: string
   project_id:
     $ref: _definitions.yaml#/project_id
@@ -90,32 +78,28 @@ properties:
     type:
     - string
     - 'null'
-  id:
-    type: string
-  comment:
-    type: string
   type:
     type: string
   created_datetime:
     $ref: _definitions.yaml#/datetime
   updated_datetime:
     $ref: _definitions.yaml#/datetime
-  compounds:
+  genes:
     type:
     - array
     items:
       $ref: reference.yaml
-  projects:
+  interactions:
     type:
     - array
     items:
       $ref: reference.yaml
-  phenotypes:
+  sub_pathways:
     type:
     - array
     items:
       $ref: reference.yaml
-  same_as:
+  publications:
     type:
     - array
     items:

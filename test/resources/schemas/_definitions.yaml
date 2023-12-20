@@ -22,7 +22,8 @@ foreign_key_project:
     # which is the user defined ID for project
     properties:
         id:
-            $ref: "#/UUID"
+            type: string
+            #$ref: "#/UUID"
         code:
             type: string
 
@@ -52,7 +53,8 @@ foreign_key:
     # which are user defined IDs ("submitter IDs in the backend")
     properties:
         id:
-            $ref: "#/UUID"
+            type: string
+            #$ref: "#/UUID"
         submitter_id:
             type: string
 
@@ -276,3 +278,33 @@ ubiquitous_properties:
     $ref: "#/datetime"
   updated_datetime:
     $ref: "#/datetime"
+
+chromosome:
+  type: string
+  description: "Reference to a chromosome"
+  pattern: "^(chr).*$"
+
+strand:
+  type: string
+  description: "Reference to a chromosome strand"
+  enum:
+    - "+"
+    - "-"
+
+genome:
+  type: string
+  description: "Reference to a genome build"
+  enum:
+    - "GRCh37"
+    - "GRCh38"
+
+expression_metric:
+  type: string
+  description: "Expression metric"
+  enum:
+    - "TPM"
+    - "TPM_GENE"
+    - "RPKM"
+    - "FPKM"
+    - "RAW_COUNT"
+    - "RMA"

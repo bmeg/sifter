@@ -1,0 +1,54 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: publication
+title: Publication
+type: object
+description: 'A publication.
+
+  '
+required:
+- url
+- submitter_id
+- project_id
+links: []
+properties:
+  id:
+    type: string
+    systemAlias: node_id
+  url:
+    type: string
+  abstract:
+    type:
+    - 'null'
+    - string
+  author:
+    type:
+    - 'null'
+    - array
+  citation:
+    type:
+    - 'null'
+    - array
+  date:
+    type:
+    - 'null'
+    - string
+  text:
+    type:
+    - 'null'
+    - string
+  title:
+    type:
+    - 'null'
+    - string
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime

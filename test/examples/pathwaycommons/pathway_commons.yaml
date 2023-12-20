@@ -1,6 +1,6 @@
 
 name: pathway_commons
-outdir: ../../out
+outdir: output
 
 config:
   sifFile: ../../resources/pathways.sif
@@ -17,7 +17,7 @@ pipelines:
     - from: sifFile
     - project:
         mapping:
-          nodes: 
+          nodes:
             - { "_gid" : "{{row._from}}" }
             - { "_gid" : "{{row._to}}" }
     - fieldProcess:

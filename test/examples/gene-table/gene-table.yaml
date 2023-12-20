@@ -1,6 +1,6 @@
 
 name: geneTable
-outdir: ../../out
+outdir: output/
 
 docs: >
   This takes a Gene TSV, filters rows, selects columns and outputs a 2

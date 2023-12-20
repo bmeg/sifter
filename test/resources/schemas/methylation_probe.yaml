@@ -1,0 +1,59 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: methylation_probe
+title: MethylationProbe
+type: object
+description: 'Definition for a methylation probe
+
+  '
+required:
+- submitter_id
+- project_id
+- probe_id
+- chromosome
+- position
+links:
+- rel: gene
+  href: gene/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: gene.yaml
+  templatePointers:
+    id: /gene/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_one
+    backref: methylation_probes
+properties:
+  probe_id:
+    type: string
+  chromosome:
+    $ref: _definitions.yaml#/chromosome
+  position:
+    type: integer
+  target:
+    type:
+    - string
+    - 'null'
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  id:
+    $ref: _definitions.yaml#/UUID
+    systemAlias: node_id
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime
+  gene:
+    type:
+    - array
+    items:
+      $ref: reference.yaml

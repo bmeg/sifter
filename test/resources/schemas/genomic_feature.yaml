@@ -1,0 +1,77 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: genomic_feature
+title: GenomicFeature
+type: object
+description: 'An abstract genomic feature
+
+  '
+required:
+- submitter_id
+- project_id
+- name
+links:
+- rel: genes
+  href: gene/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: gene.yaml
+  templatePointers:
+    id: /genes/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: genomic_features
+properties:
+  annotations:
+    type:
+    - 'null'
+    - array
+  effect:
+    type:
+    - 'null'
+    - string
+  genome:
+    oneOf:
+    - type: 'null'
+    - $ref: _definitions.yaml#/genome
+  chromosome:
+    oneOf:
+    - type: 'null'
+    - $ref: _definitions.yaml#/chromosome
+  end:
+    type:
+    - 'null'
+    - integer
+  start:
+    type:
+    - 'null'
+    - integer
+  strand:
+    oneOf:
+    - type: 'null'
+    - $ref: _definitions.yaml#/strand
+  name:
+    type: string
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  id:
+    $ref: _definitions.yaml#/UUID
+    systemAlias: node_id
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime
+  genes:
+    type:
+    - array
+    items:
+      $ref: reference.yaml

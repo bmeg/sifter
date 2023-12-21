@@ -1,55 +1,52 @@
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: aliquot
-title: Aliquot
+$id: somatic_callset
+title: SomaticCallset
 type: object
-description: 'Pertaining to a portion of the whole; any one of two or more samples
-  of something, of the same volume or weight.
+description: 'A collection of somatic variants.
 
   '
 required:
 - submitter_id
+- tumor_aliquot_id
 - project_id
-- id
 links:
-- rel: sample
-  href: sample/{id}
+- rel: alleles
+  href: allele/{id}
   templateRequired:
   - id
   targetSchema:
-    $ref: sample.yaml
+    $ref: allele.yaml
   templatePointers:
-    id: /sample/-/id
-  targetHints:
-    directionality:
-    - outbound
-    multiplicity:
-    - has_one
-    backref: aliquots
-- rel: projects
-  href: project/{id}
-  templateRequired:
-  - id
-  targetSchema:
-    $ref: project.yaml
-  templatePointers:
-    id: /projects/-/id
+    id: /alleles/-/id
   targetHints:
     directionality:
     - outbound
     multiplicity:
     - has_many
-    backref: aliquots
+    backref: somatic_callsets
+- rel: aliquots
+  href: aliquot/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: aliquot.yaml
+  templatePointers:
+    id: /aliquots/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: somatic_callsets
 properties:
   id:
     type: string
-  cellline_attributes:
+  tumor_aliquot_id:
+    type: string
+  normal_aliquot_id:
     type:
     - 'null'
-    - object
-  gdc_attributes:
-    type:
-    - 'null'
-    - object
+    - string
   project_id:
     $ref: _definitions.yaml#/project_id
   submitter_id:
@@ -62,12 +59,12 @@ properties:
     $ref: _definitions.yaml#/datetime
   updated_datetime:
     $ref: _definitions.yaml#/datetime
-  sample:
+  alleles:
     type:
     - array
     items:
       $ref: reference.yaml
-  projects:
+  aliquots:
     type:
     - array
     items:

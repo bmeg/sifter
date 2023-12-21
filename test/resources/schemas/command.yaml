@@ -1,0 +1,55 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: command
+title: Command
+type: object
+description: 'A DVC command that was run
+
+  '
+required:
+- submitter_id
+- project_id
+- md5
+- cmd
+- filename
+links:
+- rel: writes
+  href: file/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: file.yaml
+  templatePointers:
+    id: /writes/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: command
+properties:
+  md5:
+    type: string
+  cmd:
+    type: string
+  filename:
+    type: string
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  id:
+    $ref: _definitions.yaml#/UUID
+    systemAlias: node_id
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime
+  writes:
+    type:
+    - array
+    items:
+      $ref: reference.yaml

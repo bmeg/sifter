@@ -6,7 +6,7 @@ import (
 )
 
 type DataEmitter interface {
-	Emit(name string, e map[string]interface{}) error
+	Emit(name string, e map[string]interface{}, useName bool) error
 	Close()
 }
 

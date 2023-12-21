@@ -1,0 +1,60 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: protein_structure
+title: ProteinStructure
+type: object
+description: 'A protein structure.
+
+  '
+required:
+- id
+- submitter_id
+- project_id
+links:
+- rel: protein
+  href: protein/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: protein.yaml
+  templatePointers:
+    id: /protein/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_one
+    backref: protein_structures
+properties:
+  id:
+    type: string
+  resolution:
+    type:
+    - number
+    - 'null'
+  description:
+    type: string
+  short_description:
+    type: string
+  source:
+    type: string
+  submission_date:
+    type: string
+  experiment_type:
+    type: string
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime
+  protein:
+    type:
+    - array
+    items:
+      $ref: reference.yaml

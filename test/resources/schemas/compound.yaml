@@ -1,0 +1,96 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: compound
+title: Compound
+type: object
+description: Definitions for Compound
+required:
+- id
+- submitter_id
+- project_id
+links:
+- rel: similar_compounds
+  href: compound/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: compound.yaml
+  templatePointers:
+    id: /similar_compounds/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: compounds
+properties:
+  id:
+    type: string
+  pubchem_id:
+    type:
+    - 'null'
+    - string
+  chebi_id:
+    type:
+    - 'null'
+    - string
+  chembl_id:
+    type:
+    - 'null'
+    - string
+  drugbank_id:
+    type:
+    - 'null'
+    - string
+  synonym:
+    type: array
+    items:
+      type: string
+  inchi:
+    type:
+    - 'null'
+    - string
+  inchi_key:
+    type:
+    - 'null'
+    - string
+  usan_stem_definition:
+    type:
+    - 'null'
+    - string
+  taxonomy:
+    type:
+    - 'null'
+    - object
+  approved_countries:
+    type:
+    - 'null'
+    - array
+  source_url:
+    type:
+    - 'null'
+    - string
+  id_source:
+    type:
+    - 'null'
+    - string
+  morgan_fingerprint_2:
+    type:
+    - 'null'
+    - array
+  similar_compounds:
+    type:
+    - array
+    items:
+      $ref: reference.yaml
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime

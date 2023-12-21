@@ -18,7 +18,7 @@ var cmdInputs map[string]string
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
 	Use:   "inspect",
-	Short: "Inspect script",
+	Short: "Inspect a sifter script file to view i/o config setup",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		inputs := map[string]string{}
@@ -36,6 +36,7 @@ var Cmd = &cobra.Command{
 		}
 		var err error
 		inputs, err = pb.PrepConfig(inputs, "./")
+		log.Printf("inputs: %s", inputs)
 		if err != nil {
 			return err
 		}

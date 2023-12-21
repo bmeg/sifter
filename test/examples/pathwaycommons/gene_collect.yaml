@@ -1,5 +1,5 @@
 
-outdir: ../../out
+outdir: output_gene
 
 config:
   sifFile: ../../resources/pathways.sif
@@ -19,9 +19,13 @@ pipelines:
         init: { "_to" : [] }
         method: merge
         gpython: |
-
           def merge(x,y):
             y["_from"] = x["_from"]
             y["_to"].append(x["_to"])
             return y
-    - debug: {}
+  newpip:
+    - from: geneReduce
+    - emit:
+        useName: True
+        name: sifout
+

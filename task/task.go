@@ -3,6 +3,7 @@ package task
 import (
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 
 	"github.com/bmeg/sifter/loader"
 )
@@ -11,7 +12,7 @@ type RuntimeTask interface {
 	SetName(name string)
 	SubTask(ext string) RuntimeTask
 
-	Emit(name string, e map[string]interface{}) error
+	Emit(name string, e map[string]interface{}, useName bool) error
 
 	GetConfig() map[string]string
 	AbsPath(p string) (string, error)
@@ -104,6 +105,12 @@ func (m *Task) BaseDir() string {
 	return m.Basedir
 }
 
-func (m *Task) Emit(n string, e map[string]interface{}) error {
-	return m.Emitter.Emit(m.GetName()+"."+n, e)
+func (m *Task) Emit(n string, e map[string]interface{}, useName bool) error {
+
+	new_name := m.GetName() + "." + n
+	if useName {
+		temp := strings.Split(n, ".")
+		new_name = temp[len(temp)-1]
+	}
+	return m.Emitter.Emit(new_name, e, useName)
 }

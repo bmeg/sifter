@@ -1,88 +1,89 @@
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: case
-title: Case
+$id: allele
+title: Allele
 type: object
-description: 'The collection of all data related to a specific subject in the context
-  of a specific experiment.
-
-  '
 required:
-- submitter_id
-- project_id
-- case_id
+- id
+- chromosome
+- start
+- genome
+- reference_bases
+- alternate_bases
 links:
-- rel: compounds
-  href: compound/{id}
+- rel: gene
+  href: gene/{id}
   templateRequired:
   - id
   targetSchema:
-    $ref: compound.yaml
+    $ref: gene.yaml
   templatePointers:
-    id: /compounds/-/id
+    id: /gene/-/id
   targetHints:
     directionality:
     - outbound
     multiplicity:
-    - has_many
-    backref: cases
-- rel: projects
-  href: project/{id}
+    - has_one
+    association: true
+- rel: effects
+  href: effect/{id}
   templateRequired:
   - id
   targetSchema:
-    $ref: project.yaml
+    $ref: allele_effect.yaml
   templatePointers:
-    id: /projects/-/id
+    id: /effects/-/id
   targetHints:
     directionality:
     - outbound
     multiplicity:
-    - has_many
-    backref: cases
-- rel: phenotypes
-  href: phenotype/{id}
+    - has_one
+    association: true
+- rel: transcript
+  href: transcript/{id}
   templateRequired:
   - id
   targetSchema:
-    $ref: phenotype.yaml
+    $ref: transcript.yaml
   templatePointers:
-    id: /phenotypes/-/id
+    id: /transcript/-/id
   targetHints:
     directionality:
     - outbound
     multiplicity:
-    - has_many
-    backref: cases
-- rel: same_as
-  href: case/{id}
+    - has_one
+    association: true
+- rel: protein
+  href: protein/{id}
   templateRequired:
   - id
   targetSchema:
-    $ref: case.yaml
+    $ref: protein.yaml
   templatePointers:
-    id: /same_as/-/id
+    id: /protein/-/id
   targetHints:
     directionality:
     - outbound
     multiplicity:
-    - has_many
-    backref: cases
+    - has_one
+    association: true
 properties:
-  case_id:
+  id:
     type: string
-  cellline_attributes:
-    type:
-    - 'null'
-    - object
-  gdc_attributes:
-    type:
-    - 'null'
-    - object
-  gtex_attributes:
-    type:
-    - 'null'
-    - object
-  sex:
+  reference_bases:
+    type: string
+  alternate_bases:
+    type: string
+  genome:
+    $ref: _definitions.yaml#/genome
+  chromosome:
+    $ref: _definitions.yaml#/chromosome
+  start:
+    type: integer
+  end:
+    type: integer
+  strand:
+    $ref: _definitions.yaml#/strand
+  dbsnp_rs:
     type: string
   project_id:
     $ref: _definitions.yaml#/project_id
@@ -90,32 +91,28 @@ properties:
     type:
     - string
     - 'null'
-  id:
-    type: string
-  comment:
-    type: string
   type:
     type: string
   created_datetime:
     $ref: _definitions.yaml#/datetime
   updated_datetime:
     $ref: _definitions.yaml#/datetime
-  compounds:
+  gene:
     type:
     - array
     items:
       $ref: reference.yaml
-  projects:
+  effects:
     type:
     - array
     items:
       $ref: reference.yaml
-  phenotypes:
+  transcript:
     type:
     - array
     items:
       $ref: reference.yaml
-  same_as:
+  protein:
     type:
     - array
     items:

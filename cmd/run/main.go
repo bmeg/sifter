@@ -56,6 +56,7 @@ var Cmd = &cobra.Command{
 				}
 			}
 		}
+
 		return nil
 	},
 }

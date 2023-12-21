@@ -1,0 +1,166 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: gene_phenotype_association
+title: GenePhenotypeAssociation
+type: object
+description: 'Associations of genomic features, drugs and diseases
+
+  '
+required:
+- submitter_id
+- description
+- source
+- project_id
+links:
+- rel: compounds
+  href: compound/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: compound.yaml
+  templatePointers:
+    id: /compounds/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: gene_phenotype_associations
+- rel: alleles
+  href: allele/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: allele.yaml
+  templatePointers:
+    id: /alleles/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: gene_phenotype_associations
+- rel: genes
+  href: gene/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: gene.yaml
+  templatePointers:
+    id: /genes/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: gene_phenotype_associations
+- rel: genomic_features
+  href: genomic_feature/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: genomic_feature.yaml
+  templatePointers:
+    id: /genomic_features/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: gene_phenotype_associations
+- rel: publications
+  href: publication/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: publication.yaml
+  templatePointers:
+    id: /publications/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: gene_phenotype_associations
+- rel: phenotypes
+  href: phenotype/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: phenotype.yaml
+  templatePointers:
+    id: /phenotypes/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: gene_phenotype_associations
+properties:
+  id:
+    type: string
+  description:
+    type: string
+  evidence_label:
+    type:
+    - 'null'
+    - string
+  oncogenic:
+    type:
+    - 'null'
+    - string
+  response_type:
+    type:
+    - 'null'
+    - string
+  source:
+    type: string
+  source_document:
+    type:
+    - 'null'
+    - string
+  source_url:
+    type:
+    - 'null'
+    - string
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime
+  compounds:
+    type:
+    - array
+    items:
+      $ref: reference.yaml
+  alleles:
+    type:
+    - array
+    items:
+      $ref: reference.yaml
+  genes:
+    type:
+    - array
+    items:
+      $ref: reference.yaml
+  genomic_features:
+    type:
+    - array
+    items:
+      $ref: reference.yaml
+  publications:
+    type:
+    - array
+    items:
+      $ref: reference.yaml
+  phenotypes:
+    type:
+    - array
+    items:
+      $ref: reference.yaml

@@ -1,7 +1,7 @@
 
 name: gdc-projects
 
-outdir: ../../out/
+outdir: output-tsv/
 
 config:
   cases: ../../resources/case.json

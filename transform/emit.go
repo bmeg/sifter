@@ -6,7 +6,8 @@ import (
 )
 
 type EmitStep struct {
-	Name string `json:"name"`
+	Name    string `json:"name"`
+	UseName bool   `json:"UseName"`
 }
 
 type emitProcess struct {
@@ -23,8 +24,9 @@ func (ts *emitProcess) Close() {}
 func (ts *emitProcess) Process(i map[string]interface{}) []map[string]interface{} {
 	name, err := evaluate.ExpressionString(ts.config.Name, ts.task.GetConfig(), i)
 	if err == nil {
-		//log.Printf("Emitting: %s", i)
-		ts.task.Emit(name, i)
+		// log.Printf("Emitting: %s", i)
+		// log.Printf("value of UseName flag: %t", ts.config.UseName)
+		ts.task.Emit(name, i, ts.config.UseName)
 	}
 	return []map[string]any{i}
 }

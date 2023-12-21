@@ -1,0 +1,93 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: gene_set
+title: GeneSet
+type: object
+description: 'A set of biologically related genes
+
+  '
+required:
+- id
+- submitter_id
+- project_id
+links:
+- rel: genes
+  href: gene/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: gene.yaml
+  templatePointers:
+    id: /genes/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: gene_sets
+- rel: publications
+  href: publication/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: publication.yaml
+  templatePointers:
+    id: /publications/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: gene_sets
+properties:
+  id:
+    type: string
+  standard_name:
+    type: string
+  systematic_name:
+    type: string
+  historical_names:
+    type: string
+  geoid:
+    type: string
+  exact_source:
+    type: string
+  geneset_listing_url:
+    type: string
+  external_details_url:
+    type: string
+  chip:
+    type: string
+  category_code:
+    type: string
+  sub_category_code:
+    type: string
+  contributor:
+    type: string
+  contributor_org:
+    type: string
+  description_brief:
+    type: string
+  description_full:
+    type: string
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime
+  genes:
+    type:
+    - array
+    items:
+      $ref: reference.yaml
+  publications:
+    type:
+    - array
+    items:
+      $ref: reference.yaml

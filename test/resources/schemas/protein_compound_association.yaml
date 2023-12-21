@@ -1,0 +1,129 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: protein_compound_association
+title: ProteinCompoundAssociation
+type: object
+description: Definitions for protein-compound Associations
+required:
+- id
+- submitter_id
+- project_id
+links:
+- rel: proteins
+  href: protein/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: protein.yaml
+  templatePointers:
+    id: /proteins/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: protein_compound_associations
+- rel: genes
+  href: gene/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: gene.yaml
+  templatePointers:
+    id: /genes/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: protein_compound_associations
+- rel: compound
+  href: compound/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: compound.yaml
+  templatePointers:
+    id: /compound/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_one
+    backref: protein_compound_associations
+- rel: publications
+  href: publication/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: publication.yaml
+  templatePointers:
+    id: /publications/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: protein_compound_associations
+- rel: protein_structures
+  href: protein_structure/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: protein_structure.yaml
+  templatePointers:
+    id: /protein_structures/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: protein_compound_associations
+properties:
+  id:
+    type: string
+  association_type:
+    type: string
+    description: protein-compound association keyword, example inhibitor
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  source:
+    type: string
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  ki_nm:
+    type:
+    - number
+    - 'null'
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime
+  proteins:
+    type:
+    - array
+    items:
+      $ref: reference.yaml
+  genes:
+    type:
+    - array
+    items:
+      $ref: reference.yaml
+  compound:
+    type:
+    - array
+    items:
+      $ref: reference.yaml
+  publications:
+    type:
+    - array
+    items:
+      $ref: reference.yaml
+  protein_structures:
+    type:
+    - array
+    items:
+      $ref: reference.yaml

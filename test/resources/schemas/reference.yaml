@@ -1,0 +1,14 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: reference
+id: reference
+title: reference
+type: object
+description: |
+  A reference to another entity in the graph.
+  The id of the entity is required.
+required:
+- id
+properties:
+  id:
+    type:
+    - string

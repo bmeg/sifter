@@ -1,73 +1,85 @@
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: aliquot
-title: Aliquot
+$id: gene_ontology_term
+title: GeneOntologyTerm
 type: object
-description: 'Pertaining to a portion of the whole; any one of two or more samples
-  of something, of the same volume or weight.
+description: 'The Gene Ontology project provides an ontology of defined terms representing  gene
+  product properties.
 
   '
 required:
 - submitter_id
+- synonym
 - project_id
-- id
+- name
+- xref
+- go_id
+- definition
+- namespace
 links:
-- rel: sample
-  href: sample/{id}
+- rel: genes
+  href: gene/{id}
   templateRequired:
   - id
   targetSchema:
-    $ref: sample.yaml
+    $ref: gene.yaml
   templatePointers:
-    id: /sample/-/id
-  targetHints:
-    directionality:
-    - outbound
-    multiplicity:
-    - has_one
-    backref: aliquots
-- rel: projects
-  href: project/{id}
-  templateRequired:
-  - id
-  targetSchema:
-    $ref: project.yaml
-  templatePointers:
-    id: /projects/-/id
+    id: /genes/-/id
   targetHints:
     directionality:
     - outbound
     multiplicity:
     - has_many
-    backref: aliquots
+    backref: gene_ontology_terms
+- rel: child_terms
+  href: gene_ontology_term/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: gene_ontology_term.yaml
+  templatePointers:
+    id: /child_terms/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_many
+    backref: gene_ontology_terms
 properties:
-  id:
+  go_id:
     type: string
-  cellline_attributes:
-    type:
-    - 'null'
-    - object
-  gdc_attributes:
-    type:
-    - 'null'
-    - object
+  name:
+    type: string
+  namespace:
+    type: string
+  definition:
+    type: string
+  synonym:
+    type: array
+  xref:
+    type: array
+    items:
+      type: string
   project_id:
     $ref: _definitions.yaml#/project_id
   submitter_id:
     type:
     - string
     - 'null'
+  id:
+    type: string
+    systemAlias: node_id
   type:
     type: string
   created_datetime:
     $ref: _definitions.yaml#/datetime
   updated_datetime:
     $ref: _definitions.yaml#/datetime
-  sample:
+  genes:
     type:
     - array
     items:
       $ref: reference.yaml
-  projects:
+  child_terms:
     type:
     - array
     items:

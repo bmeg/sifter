@@ -1,0 +1,59 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: transcript_expression
+title: TranscriptExpression
+type: object
+description: 'Transcript level expression values for an aliquot
+
+  '
+required:
+- submitter_id
+- project_id
+- values
+- method
+- metric
+links:
+- rel: aliquot
+  href: aliquot/{id}
+  templateRequired:
+  - id
+  targetSchema:
+    $ref: aliquot.yaml
+  templatePointers:
+    id: /aliquot/-/id
+  targetHints:
+    directionality:
+    - outbound
+    multiplicity:
+    - has_one
+    backref: transcript_expressions
+properties:
+  method:
+    type: string
+  metric:
+    $ref: _definitions.yaml#/expression_metric
+  values:
+    type: object
+    propertyNames:
+      pattern: ^ENST[0-9]+
+    additionalProperties:
+      type: number
+  project_id:
+    $ref: _definitions.yaml#/project_id
+  submitter_id:
+    type:
+    - string
+    - 'null'
+  id:
+    type: string
+    systemAlias: node_id
+  type:
+    type: string
+  created_datetime:
+    $ref: _definitions.yaml#/datetime
+  updated_datetime:
+    $ref: _definitions.yaml#/datetime
+  aliquot:
+    type:
+    - array
+    items:
+      $ref: reference.yaml

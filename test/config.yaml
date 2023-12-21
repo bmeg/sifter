@@ -1,18 +1,45 @@
 
-- playbook: examples/gdc/gdc-convert.yaml
-  checks:
-    - exists
-    - non-zero-lines
-  outputs:
-    - out/GDCConvert.aliquot.json.gz
-    - out/GDCConvert.case.json.gz
-    - out/GDCConvert.sample.json.gz
-
 - playbook: examples/pathwaycommons/pathway_commons.yaml
+  LineCount:
+    - 200
+    - 192
+  outputs:
+    - output/pathway_commons.edges.edge.json.gz
+    - output/pathway_commons.nodes.node.json.gz
 - playbook: examples/pathwaycommons/gene_collect.yaml
-
+  LineCount:
+    - 3
+  # UseName Test, actual file name would've been sifter.newpip.sifout.json.gz without the flag
+  outputs:
+    - output_gene/sifout.json.gz
 - playbook: examples/gene-table/gene-table.yaml
+  LineCount:
+    - 20
+  outputs:
+    - output/gene.table
 - playbook: examples/lookup/inline-table.yaml
+  LineCount:
+    - 10
+  outputs:
+    - output/sifter.transform.test.json.gz
 - playbook: examples/lookup/tsv-table-replace.yaml
+  LineCount:
+    - 10
+  outputs:
+    - output-tsv/gdc-projects.tranform.case-mondo.json.gz
 - playbook: examples/gdc/gdc-convert.yaml
+  LineCount:
+    - 256444
+    - 106521
+    - 106521
+  outputs:
+    - output/gdc.caseGraph.edge.json.gz
+    - output/gdc.caseGraph.vertex.json.gz
+    - output/gdc.caseObject.case.json.gz
 - playbook: examples/pfb/transform.yaml
+  LineCount:
+    - 1138
+    - 873
+  outputs:
+    - output/sifter.edge.edge.json.gz
+    - output/sifter.vertex.vertex.json.gz

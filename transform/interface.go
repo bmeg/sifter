@@ -75,6 +75,7 @@ type Step struct {
 	FieldProcess   *FieldProcessStep   `json:"fieldProcess" jsonschema_description:"Take an array field from a message and run in child transform"`
 	DropNull       *DropNullStep       `json:"dropNull"`
 	Lookup         *LookupStep         `json:"lookup"`
+	IntervalLookup *IntervalLookupStep `json:"intervalLookup"`
 	Hash           *HashStep           `json:"hash"`
 	GraphBuild     *GraphBuildStep     `json:"graphBuild"`
 	TableWrite     *TableWriteStep     `json:"tableWrite"`

@@ -1,7 +1,7 @@
 ---
-title: gripperLoad
+title: uuid
 menu:
   main:
-    parent: inputs
+    parent: transforms
     weight: 100
 ---

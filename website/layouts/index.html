@@ -1,6 +1,9 @@
 
 {{ partial "head.html" . }}
 
+<div class="sidebar col span_3_of_12"></div>
+
+<div class="main col span_8_of_12">
 <article>
     <header>
         <!-- # comment this out for the home page. -->
@@ -10,6 +13,6 @@
         {{ .Content }}
     </section>
 </article>
-
+</div>
 
 {{ partial "tail.html" . }}

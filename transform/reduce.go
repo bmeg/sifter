@@ -60,6 +60,8 @@ func (rp *reduceProcess) GetKey(i map[string]any) string {
 		if xStr, ok := x.(string); ok {
 			return xStr
 		}
+	} else {
+		log.Printf("Missing field in reduce")
 	}
 	return ""
 }

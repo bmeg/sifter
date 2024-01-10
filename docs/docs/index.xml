@@ -5,323 +5,252 @@
     <link>https://bmeg.github.io/sifter/docs/</link>
     <description>Recent content in Docs on Sifter</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language><atom:link href="https://bmeg.github.io/sifter/docs/index.xml" rel="self" type="application/rss+xml" />
+    <language>en-us</language>
+    <atom:link href="https://bmeg.github.io/sifter/docs/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>accumulate</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/accumulate/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/accumulate/</guid>
-      <description>accumulate Gather sequential rows into a single record, based on matching a field
-Parameters name Type Description field string (field path) Field used to match rows dest string field to store accumulated records Example - accumulate: field: model_id dest: rows </description>
+      <description>accumulate Gather sequential rows into a single record, based on matching a field&#xA;Parameters name Type Description field string (field path) Field used to match rows dest string field to store accumulated records Example - accumulate: field: model_id dest: rows </description>
     </item>
-    
     <item>
       <title>avroLoad</title>
       <link>https://bmeg.github.io/sifter/docs/inputs/avroload/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/inputs/avroload/</guid>
-      <description>avroLoad Load an AvroFile
-Parameters name Description input Path to input file </description>
+      <description>avroLoad Load an AvroFile&#xA;Parameters name Description input Path to input file </description>
     </item>
-    
     <item>
       <title>clean</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/clean/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/clean/</guid>
-      <description>clean Remove fields that don&amp;rsquo;t appear in the desingated list.
-Parameters name Type Description fields [] string Fields to keep removeEmpty bool Fields with empty values will also be removed storeExtra string Field name to store removed fields Example - clean: fields: - id - synonyms </description>
+      <description>clean Remove fields that don&amp;rsquo;t appear in the desingated list.&#xA;Parameters name Type Description fields [] string Fields to keep removeEmpty bool Fields with empty values will also be removed storeExtra string Field name to store removed fields Example - clean: fields: - id - synonyms </description>
     </item>
-    
     <item>
       <title>debug</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/debug/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/debug/</guid>
-      <description>debug Print out copy of stream to logging
-Parameters name Type Description label string Label for log output format bool Use multiline spaced output Example - debug: {} </description>
+      <description>debug Print out copy of stream to logging&#xA;Parameters name Type Description label string Label for log output format bool Use multiline spaced output Example - debug: {} </description>
     </item>
-    
     <item>
       <title>distinct</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/distinct/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/distinct/</guid>
-      <description>distinct Using templated value, allow only the first record for each distinct key
-Parameters name Type Description value string Key used for distinct value Example - distinct: value: &amp;#34;{{row.key}}&amp;#34; </description>
+      <description>distinct Using templated value, allow only the first record for each distinct key&#xA;Parameters name Type Description value string Key used for distinct value Example - distinct: value: &amp;#34;{{row.key}}&amp;#34; </description>
     </item>
-    
     <item>
       <title>embedded</title>
       <link>https://bmeg.github.io/sifter/docs/inputs/embedded/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/inputs/embedded/</guid>
-      <description>embedded Load data from embedded structure
-Example inputs: data: embedded: - { &amp;#34;name&amp;#34; : &amp;#34;Alice&amp;#34;, &amp;#34;age&amp;#34;: 28 } - { &amp;#34;name&amp;#34; : &amp;#34;Bob&amp;#34;, &amp;#34;age&amp;#34;: 27 } </description>
+      <description>embedded Load data from embedded structure&#xA;Example inputs: data: embedded: - { &amp;#34;name&amp;#34; : &amp;#34;Alice&amp;#34;, &amp;#34;age&amp;#34;: 28 } - { &amp;#34;name&amp;#34; : &amp;#34;Bob&amp;#34;, &amp;#34;age&amp;#34;: 27 } </description>
     </item>
-    
     <item>
       <title>emit</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/emit/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/emit/</guid>
-      <description>emit Send data to output file. The naming of the file is outdir/script name.pipeline name.emit name.json.gz
-Parameters name Type Description name string Name of emit value example - emit: name: protein_compound_association </description>
+      <description>emit Send data to output file. The naming of the file is outdir/script name.pipeline name.emit name.json.gz&#xA;Parameters name Type Description name string Name of emit value example - emit: name: protein_compound_association </description>
     </item>
-    
     <item>
       <title>Example</title>
       <link>https://bmeg.github.io/sifter/docs/example/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/example/</guid>
-      <description>Example Pipeline Our first task will be to convert a ZIP code TSV into a set of county level entries.
-The input file looks like:
-ZIP,COUNTYNAME,STATE,STCOUNTYFP,CLASSFP 36003,Autauga County,AL,01001,H1 36006,Autauga County,AL,01001,H1 36067,Autauga County,AL,01001,H1 36066,Autauga County,AL,01001,H1 36703,Autauga County,AL,01001,H1 36701,Autauga County,AL,01001,H1 36091,Autauga County,AL,01001,H1 First is the header of the pipeline. This declares the unique name of the pipeline and it&amp;rsquo;s output directory.
-name: zipcode_map outdir: ./ docs: Converts zipcode TSV into graph elements Next the configuration is declared.</description>
+      <description>Example Pipeline Our first task will be to convert a ZIP code TSV into a set of county level entries.&#xA;The input file looks like:&#xA;ZIP,COUNTYNAME,STATE,STCOUNTYFP,CLASSFP 36003,Autauga County,AL,01001,H1 36006,Autauga County,AL,01001,H1 36067,Autauga County,AL,01001,H1 36066,Autauga County,AL,01001,H1 36703,Autauga County,AL,01001,H1 36701,Autauga County,AL,01001,H1 36091,Autauga County,AL,01001,H1 First is the header of the pipeline. This declares the unique name of the pipeline and it&amp;rsquo;s output directory.&#xA;name: zipcode_map outdir: ./ docs: Converts zipcode TSV into graph elements Next the configuration is declared.</description>
     </item>
-    
     <item>
       <title>fieldParse</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/fieldparse/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/fieldparse/</guid>
       <description></description>
     </item>
-    
     <item>
       <title>fieldProcess</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/fieldprocess/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/fieldprocess/</guid>
-      <description>fieldProcess Create stream of objects based on the contents of a field. If the selected field is an array each of the items in the array will become an independent row.
-Parameters name Type Description field string Name of field to be processed mapping map[string]string Project templated values into child element itemField string If processing an array of non-dict elements, create a dict as {itemField:element} example - fieldProcess: field: portions mapping: sample: &amp;#34;{{row.</description>
+      <description>fieldProcess Create stream of objects based on the contents of a field. If the selected field is an array each of the items in the array will become an independent row.&#xA;Parameters name Type Description field string Name of field to be processed mapping map[string]string Project templated values into child element itemField string If processing an array of non-dict elements, create a dict as {itemField:element} example - fieldProcess: field: portions mapping: sample: &amp;#34;{{row.</description>
     </item>
-    
     <item>
       <title>fieldType</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/fieldtype/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/fieldtype/</guid>
-      <description>fieldType Set field to specific type, ie cast as float or integer
-example - fieldType: t_depth: int t_ref_count: int t_alt_count: int n_depth: int n_ref_count: int n_alt_count: int start: int </description>
+      <description>fieldType Set field to specific type, ie cast as float or integer&#xA;example - fieldType: t_depth: int t_ref_count: int t_alt_count: int n_depth: int n_ref_count: int n_alt_count: int start: int </description>
     </item>
-    
     <item>
       <title>filter</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/filter/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/filter/</guid>
-      <description>filter Filter rows in stream using a number of different methods
-Parameters name Type Description field string (field path) Field used to match rows value string (template string) Template string to match against match string String to match against check string How to check value, &amp;rsquo;exists&amp;rsquo; or &amp;lsquo;hasValue&amp;rsquo; method string Method name python string Python code string gpython string Python code string run using (https://github.com/go-python/gpython) Example Field based match
-- filter: field: table match: source_statistics Check based match</description>
+      <description>filter Filter rows in stream using a number of different methods&#xA;Parameters name Type Description field string (field path) Field used to match rows value string (template string) Template string to match against match string String to match against check string How to check value, &amp;rsquo;exists&amp;rsquo; or &amp;lsquo;hasValue&amp;rsquo; method string Method name python string Python code string gpython string Python code string run using (https://github.com/go-python/gpython) Example Field based match&#xA;- filter: field: table match: source_statistics Check based match</description>
     </item>
-    
+    <item>
+      <title>flatMap</title>
+      <link>https://bmeg.github.io/sifter/docs/transforms/flatmap/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://bmeg.github.io/sifter/docs/transforms/flatmap/</guid>
+      <description></description>
+    </item>
     <item>
       <title>from</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/from/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/from/</guid>
-      <description>from Parmeters Name of data source
-Example inputs: profileReader: tableLoad: input: &amp;#34;{{config.profiles}}&amp;#34; pipelines: profileProcess: - from: profileReader </description>
+      <description>from Parmeters Name of data source&#xA;Example inputs: profileReader: tableLoad: input: &amp;#34;{{config.profiles}}&amp;#34; pipelines: profileProcess: - from: profileReader </description>
     </item>
-    
     <item>
       <title>glob</title>
       <link>https://bmeg.github.io/sifter/docs/inputs/glob/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/inputs/glob/</guid>
-      <description>glob Scan files using * based glob statement and open all files as input.
-Parameters Name Description storeFilename Store value of filename in parameter each row input Path of avro object file to transform xmlLoad xmlLoad configutation tableLoad Run transform pipeline on a TSV or CSV jsonLoad Run a transform pipeline on a multi line json file avroLoad Load data from avro file Example inputs: pubmedRead: glob: input: &amp;#34;{{config.baseline}}/*.xml.gz&amp;#34; xmlLoad: {} </description>
+      <description>glob Scan files using * based glob statement and open all files as input.&#xA;Parameters Name Description storeFilename Store value of filename in parameter each row input Path of avro object file to transform xmlLoad xmlLoad configutation tableLoad Run transform pipeline on a TSV or CSV jsonLoad Run a transform pipeline on a multi line json file avroLoad Load data from avro file Example inputs: pubmedRead: glob: input: &amp;#34;{{config.baseline}}/*.xml.gz&amp;#34; xmlLoad: {} </description>
     </item>
-    
     <item>
       <title>graphBuild</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/graphbuild/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/graphbuild/</guid>
-      <description>graphBuild Build graph elements from JSON objects using the JSON Schema graph extensions.
-example - graphBuild: schema: &amp;#34;{{config.allelesSchema}}&amp;#34; title: Allele </description>
+      <description>graphBuild Build graph elements from JSON objects using the JSON Schema graph extensions.&#xA;example - graphBuild: schema: &amp;#34;{{config.allelesSchema}}&amp;#34; title: Allele </description>
     </item>
-    
-    <item>
-      <title>gripperLoad</title>
-      <link>https://bmeg.github.io/sifter/docs/inputs/gripperload/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://bmeg.github.io/sifter/docs/inputs/gripperload/</guid>
-      <description></description>
-    </item>
-    
     <item>
       <title>hash</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/hash/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/hash/</guid>
       <description>hash Parameters name Type Description field string Field to store hash value value string Templated string of value to be hashed method string Hashing method: sha1/sha256/md5 example - hash: value: &amp;#34;{{row.contents}}&amp;#34; field: contents-sha1 method: sha1 </description>
     </item>
-    
     <item>
       <title>Inputs</title>
       <link>https://bmeg.github.io/sifter/docs/inputs/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/inputs/</guid>
       <description>Every playbook consists of a series of inputs.</description>
     </item>
-    
     <item>
       <title>jsonLoad</title>
       <link>https://bmeg.github.io/sifter/docs/inputs/jsonload/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/inputs/jsonload/</guid>
-      <description>jsonLoad Load data from a JSON file. Default behavior expects a single dictionary per line. Each line is a seperate entry. The multiline parameter reads all of the lines of the files and returns a single object.
-Parameters name Description input Path of JSON file to transform multiline Load file as a single multiline JSON object Example inputs: caseData: jsonLoad: input: &amp;#34;{{config.casesJSON}}&amp;#34; </description>
+      <description>jsonLoad Load data from a JSON file. Default behavior expects a single dictionary per line. Each line is a seperate entry. The multiline parameter reads all of the lines of the files and returns a single object.&#xA;Parameters name Description input Path of JSON file to transform multiline Load file as a single multiline JSON object Example inputs: caseData: jsonLoad: input: &amp;#34;{{config.casesJSON}}&amp;#34; </description>
     </item>
-    
     <item>
       <title>lookup</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/lookup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/lookup/</guid>
-      <description>lookup Using key from current row, get values from a reference source
-Parameters name Type Description replace string (field path) Field to replace lookup string (template string) Key to use for looking up data copy map[string]string Copy values from record that was found by lookup. The Key/Value record uses the Key as the destination field and copies the field from the retrieved records using the field named in Value tsv TSVTable TSV translation table file json JSONTable JSON data file table LookupTable Inline lookup table pipeline PipelineLookup Use output of a pipeline as a lookup table Example JSON file based lookup The JSON file defined by config.</description>
+      <description>lookup Using key from current row, get values from a reference source&#xA;Parameters name Type Description replace string (field path) Field to replace lookup string (template string) Key to use for looking up data copy map[string]string Copy values from record that was found by lookup. The Key/Value record uses the Key as the destination field and copies the field from the retrieved records using the field named in Value tsv TSVTable TSV translation table file json JSONTable JSON data file table LookupTable Inline lookup table pipeline PipelineLookup Use output of a pipeline as a lookup table Example JSON file based lookup The JSON file defined by config.</description>
     </item>
-    
     <item>
       <title>map</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/map/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/map/</guid>
-      <description>map Run function on every row
-Parameters name Description method Name of function to call python Python code to be run gpython Python code to be run using GPython Example - map: method: response gpython: | def response(x): s = sorted(x[&amp;#34;curve&amp;#34;].items(), key=lambda x:float(x[0])) x[&amp;#39;dose_um&amp;#39;] = [] x[&amp;#39;response&amp;#39;] = [] for d, r in s: try: dn = float(d) rn = float(r) x[&amp;#39;dose_um&amp;#39;].append(dn) x[&amp;#39;response&amp;#39;].append(rn) except ValueError: pass return x </description>
+      <description>map Run function on every row&#xA;Parameters name Description method Name of function to call python Python code to be run gpython Python code to be run using GPython Example - map: method: response gpython: | def response(x): s = sorted(x[&amp;#34;curve&amp;#34;].items(), key=lambda x:float(x[0])) x[&amp;#39;dose_um&amp;#39;] = [] x[&amp;#39;response&amp;#39;] = [] for d, r in s: try: dn = float(d) rn = float(r) x[&amp;#39;dose_um&amp;#39;].append(dn) x[&amp;#39;response&amp;#39;].append(rn) except ValueError: pass return x </description>
     </item>
-    
     <item>
       <title>objectValidate</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/objectvalidate/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/objectvalidate/</guid>
-      <description>objectValidate Use JSON schema to validate row contents
-parameters name Type Description title string Title of object to use for validation schema string Path to JSON schema definition example - objectValidate: title: Aliquot schema: &amp;#34;{{config.schema}}&amp;#34; </description>
+      <description>objectValidate Use JSON schema to validate row contents&#xA;parameters name Type Description title string Title of object to use for validation schema string Path to JSON schema definition example - objectValidate: title: Aliquot schema: &amp;#34;{{config.schema}}&amp;#34; </description>
     </item>
-    
     <item>
       <title>Pipeline Steps</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/</guid>
       <description>Transforms alter the data</description>
     </item>
-    
+    <item>
+      <title>plugin</title>
+      <link>https://bmeg.github.io/sifter/docs/inputs/plugin/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://bmeg.github.io/sifter/docs/inputs/plugin/</guid>
+      <description>plugin Run user program for customized data extraction.&#xA;Example inputs: oboData: plugin: commandLine: ../../util/obo_reader.py {{config.oboFile}} The plugin program is expected to output JSON messages, one per line, to STDOUT that will then be passed to the transform pipelines.&#xA;Example Plugin The obo_reader.py plugin, it reads a OBO file, such as the kind the describe the GeneOntology, and emits the records as single line JSON messages.&#xA;#!/usr/bin/env python import re import sys import json re_section = re.</description>
+    </item>
+    <item>
+      <title>plugin</title>
+      <link>https://bmeg.github.io/sifter/docs/transforms/plugin/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://bmeg.github.io/sifter/docs/transforms/plugin/</guid>
+      <description></description>
+    </item>
     <item>
       <title>project</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/project/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/project/</guid>
-      <description>project Populate row with templated values
-parameters name Type Description mapping map[string]any New fields to be generated from template rename map[string]string Rename field (no template engine) Example - project: mapping: type: sample id: &amp;#34;{{row.sample_id}}&amp;#34; </description>
+      <description>project Populate row with templated values&#xA;parameters name Type Description mapping map[string]any New fields to be generated from template rename map[string]string Rename field (no template engine) Example - project: mapping: type: sample id: &amp;#34;{{row.sample_id}}&amp;#34; </description>
     </item>
-    
     <item>
       <title>reduce</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/reduce/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/reduce/</guid>
-      <description>reduce Using key from rows, reduce matched records into a single entry
-Parameters name Type Description field string (field path) Field used to match rows method string Method name python string Python code string gpython string Python code string run using (https://github.com/go-python/gpython) init map[string]any Data to use for first reduce Example - reduce: field: dataset_name method: merge init: { &amp;#34;compounds&amp;#34; : [] } gpython: | def merge(x,y): x[&amp;#34;compounds&amp;#34;] = list(set(y[&amp;#34;compounds&amp;#34;]+x[&amp;#34;compounds&amp;#34;])) return x </description>
+      <description>reduce Using key from rows, reduce matched records into a single entry&#xA;Parameters name Type Description field string (field path) Field used to match rows method string Method name python string Python code string gpython string Python code string run using (https://github.com/go-python/gpython) init map[string]any Data to use for first reduce Example - reduce: field: dataset_name method: merge init: { &amp;#34;compounds&amp;#34; : [] } gpython: | def merge(x,y): x[&amp;#34;compounds&amp;#34;] = list(set(y[&amp;#34;compounds&amp;#34;]+x[&amp;#34;compounds&amp;#34;])) return x </description>
     </item>
-    
     <item>
       <title>regexReplace</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/regexreplace/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/regexreplace/</guid>
       <description></description>
     </item>
-    
-    <item>
-      <title>Sifter Pipeline File</title>
-      <link>https://bmeg.github.io/sifter/docs/playbook/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://bmeg.github.io/sifter/docs/playbook/</guid>
-      <description>Pipeline File An sifter pipeline file is in YAML format and describes an entire processing pipelines. If is composed of the following sections: config, inputs, pipelines, outputs. In addition, for tracking, the file will also include name and class entries.
-class: sifter name: &amp;lt;script name&amp;gt; outdir: &amp;lt;where output files should go, relative to this file&amp;gt; config: &amp;lt;config key&amp;gt;: &amp;lt;config value&amp;gt; &amp;lt;config key&amp;gt;: &amp;lt;config value&amp;gt; # values that are referenced in pipeline parameters for # files will be treated like file paths and be # translated to full paths inputs: &amp;lt;input name&amp;gt;: &amp;lt;input driver&amp;gt;: &amp;lt;driver config&amp;gt; pipelines: &amp;lt;pipeline name&amp;gt;: # all pipelines must start with a from step - from: &amp;lt;name of input or pipeline&amp;gt; - &amp;lt;transform name&amp;gt;: &amp;lt;transform parameters&amp;gt; outputs: &amp;lt;output name&amp;gt;: &amp;lt;output driver&amp;gt;: &amp;lt;driver config&amp;gt; </description>
-    </item>
-    
     <item>
       <title>split</title>
       <link>https://bmeg.github.io/sifter/docs/transforms/split/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/transforms/split/</guid>
-      <description>split Split a field using string sep
-Parameters name Type Description field string Field to the split sep string String to use for splitting Example - split: field: methods sep: &amp;#34;;&amp;#34; </description>
+      <description>split Split a field using string sep&#xA;Parameters name Type Description field string Field to the split sep string String to use for splitting Example - split: field: methods sep: &amp;#34;;&amp;#34; </description>
     </item>
-    
     <item>
       <title>sqldump</title>
       <link>https://bmeg.github.io/sifter/docs/inputs/sqldump/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/inputs/sqldump/</guid>
-      <description>sqlDump Scan file produced produced from sqldump.
-Parameters Name Type Description input string Path to the SQL dump file tables []string Names of tables to read out Example inputs: database: sqldumpLoad: input: &amp;#34;{{config.sql}}&amp;#34; tables: - cells - cell_tissues - dose_responses - drugs - drug_annots - experiments - profiles </description>
+      <description>sqlDump Scan file produced produced from sqldump.&#xA;Parameters Name Type Description input string Path to the SQL dump file tables []string Names of tables to read out Example inputs: database: sqldumpLoad: input: &amp;#34;{{config.sql}}&amp;#34; tables: - cells - cell_tissues - dose_responses - drugs - drug_annots - experiments - profiles </description>
     </item>
-    
     <item>
       <title>sqliteLoad</title>
       <link>https://bmeg.github.io/sifter/docs/inputs/sqliteload/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/inputs/sqliteload/</guid>
-      <description>sqliteLoad Extract data from an sqlite file
-Parameters Name Type Description input string Path to the SQLite file query string SQL select statement based input Example inputs: sqlQuery: sqliteLoad: input: &amp;#34;{{config.sqlite}}&amp;#34; query: &amp;#34;select * from drug_mechanism as a LEFT JOIN MECHANISM_REFS as b on a.MEC_ID=b.MEC_ID LEFT JOIN TARGET_COMPONENTS as c on a.TID=c.TID LEFT JOIN COMPONENT_SEQUENCES as d on c.COMPONENT_ID=d.COMPONENT_ID LEFT JOIN MOLECULE_DICTIONARY as e on a.MOLREGNO=e.MOLREGNO&amp;#34; </description>
+      <description>sqliteLoad Extract data from an sqlite file&#xA;Parameters Name Type Description input string Path to the SQLite file query string SQL select statement based input Example inputs: sqlQuery: sqliteLoad: input: &amp;#34;{{config.sqlite}}&amp;#34; query: &amp;#34;select * from drug_mechanism as a LEFT JOIN MECHANISM_REFS as b on a.MEC_ID=b.MEC_ID LEFT JOIN TARGET_COMPONENTS as c on a.TID=c.TID LEFT JOIN COMPONENT_SEQUENCES as d on c.COMPONENT_ID=d.COMPONENT_ID LEFT JOIN MOLECULE_DICTIONARY as e on a.MOLREGNO=e.MOLREGNO&amp;#34; </description>
     </item>
-    
     <item>
       <title>tableLoad</title>
       <link>https://bmeg.github.io/sifter/docs/inputs/tableload/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/inputs/tableload/</guid>
-      <description>tableLoad Extract data from tabular file, includiong TSV and CSV files.
-Parameters Name Type Description input string File to be transformed rowSkip int Number of header rows to skip columns []string Manually set names of columns extraColumns string Columns beyond originally declared columns will be placed in this array sep string Separator \t for TSVs or , for CSVs Example config: gafFile: ../../source/go/goa_human.gaf.gz inputs: gafLoad: tableLoad: input: &amp;#34;{{config.gafFile}}&amp;#34; columns: - db - id - symbol - qualifier - goID - reference - evidenceCode - from - aspect - name - synonym - objectType - taxon - date - assignedBy - extension - geneProduct </description>
+      <description>tableLoad Extract data from tabular file, includiong TSV and CSV files.&#xA;Parameters Name Type Description input string File to be transformed rowSkip int Number of header rows to skip columns []string Manually set names of columns extraColumns string Columns beyond originally declared columns will be placed in this array sep string Separator \t for TSVs or , for CSVs Example config: gafFile: ../../source/go/goa_human.gaf.gz inputs: gafLoad: tableLoad: input: &amp;#34;{{config.gafFile}}&amp;#34; columns: - db - id - symbol - qualifier - goID - reference - evidenceCode - from - aspect - name - synonym - objectType - taxon - date - assignedBy - extension - geneProduct </description>
     </item>
-    
+    <item>
+      <title>tableWrite</title>
+      <link>https://bmeg.github.io/sifter/docs/transforms/tablewrite/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://bmeg.github.io/sifter/docs/transforms/tablewrite/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>uuid</title>
+      <link>https://bmeg.github.io/sifter/docs/transforms/uuid/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://bmeg.github.io/sifter/docs/transforms/uuid/</guid>
+      <description></description>
+    </item>
     <item>
       <title>xmlLoad</title>
       <link>https://bmeg.github.io/sifter/docs/inputs/xmlload/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://bmeg.github.io/sifter/docs/inputs/xmlload/</guid>
-      <description>xmlLoad Load an XML file
-Parameters name Description input Path to input file Example inputs: loader: xmlLoad: input: &amp;#34;{{config.xmlPath}}&amp;#34; </description>
+      <description>xmlLoad Load an XML file&#xA;Parameters name Description input Path to input file Example inputs: loader: xmlLoad: input: &amp;#34;{{config.xmlPath}}&amp;#34; </description>
     </item>
-    
   </channel>
 </rss>

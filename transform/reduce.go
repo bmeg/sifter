@@ -12,7 +12,7 @@ type ReduceStep struct {
 	Field    string                  `json:"field"`
 	Method   string                  `json:"method"`
 	Python   string                  `json:"python"`
-	GPython  string                  `json:"gpython"`
+	GPython  *CodeBlock              `json:"gpython"`
 	InitData *map[string]interface{} `json:"init"`
 }
 
@@ -31,11 +31,12 @@ func (ms *ReduceStep) Init(t task.RuntimeTask) (Processor, error) {
 			log.Printf("Compile Error: %s", err)
 		}
 		return &reduceProcess{ms, c}, nil
-	} else if ms.GPython != "" {
+	} else if ms.GPython != nil {
+		ms.GPython.SetBaseDir(t.BaseDir())
 		log.Printf("ReduceInit: %s", ms.InitData)
 		log.Printf("Reduce: %s", ms.GPython)
 		e := evaluate.GetEngine("gpython", t.WorkDir())
-		c, err := e.Compile(ms.GPython, ms.Method)
+		c, err := e.Compile(ms.GPython.String(), ms.Method)
 		if err != nil {
 			log.Printf("Compile Error: %s", err)
 		}

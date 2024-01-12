@@ -9,13 +9,13 @@ import (
 )
 
 type FilterStep struct {
-	Field   string `json:"field"`
-	Value   string `json:"value"`
-	Match   string `json:"match"`
-	Check   string `json:"check" jsonschema_description:"How to check value, 'exists' or 'hasValue'"`
-	Method  string `json:"method"`
-	Python  string `json:"python"`
-	GPython string `json:"gpython"`
+	Field   string     `json:"field"`
+	Value   string     `json:"value"`
+	Match   string     `json:"match"`
+	Check   string     `json:"check" jsonschema_description:"How to check value, 'exists' or 'hasValue'"`
+	Method  string     `json:"method"`
+	Python  string     `json:"python"`
+	GPython *CodeBlock `json:"gpython"`
 }
 
 type filterProcessor struct {
@@ -34,10 +34,11 @@ func (fs FilterStep) Init(task task.RuntimeTask) (Processor, error) {
 			log.Printf("Compile Error: %s", err)
 		}
 		return &filterProcessor{fs, c, task}, nil
-	} else if fs.GPython != "" && fs.Method != "" {
+	} else if fs.GPython != nil && fs.Method != "" {
 		log.Printf("Starting Filter Map: %s", fs.GPython)
+		fs.GPython.SetBaseDir(task.BaseDir())
 		e := evaluate.GetEngine("gpython", task.WorkDir())
-		c, err := e.Compile(fs.GPython, fs.Method)
+		c, err := e.Compile(fs.GPython.String(), fs.Method)
 		if err != nil {
 			log.Printf("Compile Error: %s", err)
 		}

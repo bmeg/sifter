@@ -1,0 +1,47 @@
+
+class: Playbook
+name: codeTest
+
+inputs:
+  startData:
+    embedded:
+      - {"COMPLEX_ID":"Complex_76a0f49f-272e-4ec4-bcba-723806b35a31___null__6468_","PROTEIN":"Q9Y296"}
+      - {"COMPLEX_ID":"Complex_da6f165b-e085-4ec6-ba43-1170756b0a57___null__6967_","PROTEIN":"O08957"}
+      - {"COMPLEX_ID":"Complex_c688ddcc-a541-4098-ab0d-25b87e5bc5cd___null__1097_","PROTEIN":"Q13347"}
+
+  otherData:
+    embedded:
+      - {"person_id": 3589912774911670272, "person_source_value": 10009628, "name": "alice"}
+      - {"person_id": -3210373572193940992, "person_source_value": 10011398, "name": "bob"}
+      - {"person_id": -775517641933593344, "person_source_value": 10004235, "name": "charlie"}
+
+pipelines:
+  filterpipeline:
+    - from: startData
+    - reduce:
+        field: COMPLEX_ID
+        method: merge
+        init: { "proteins": [] }
+        gpython:
+          $ref: reduce.py
+
+    - debug: {}
+
+  otherpipelines:
+    - from: otherData
+    - filter:
+        # The [field,match] values and the gpython file give the same result
+        #field: name
+        #match: bob
+        method: filter_bob
+        gpython:
+          $ref: filter.py
+    #- debug: {}
+    - flatMap:
+        method: fix
+        gpython:
+          $ref: flatMap.py
+
+    - debug: {}
+
+

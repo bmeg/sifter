@@ -16,7 +16,7 @@ pipelines:
     - map:
         method: update
         gpython:
-          $ref: code.py
+          $ref: map_code.py
     - map:
         method: update
         gpython: |

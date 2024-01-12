@@ -10,8 +10,8 @@ import (
 )
 
 type EdgeFix struct {
-	Method  string `json:"method"`
-	GPython string `json:"gpython"`
+	Method  string     `json:"method"`
+	GPython *CodeBlock `json:"gpython"`
 }
 
 type GraphBuildStep struct {
@@ -49,10 +49,11 @@ func (ts GraphBuildStep) Init(task task.RuntimeTask) (Processor, error) {
 
 	var edgeFix evaluate.Processor
 	if ts.EdgeFix != nil {
-		if ts.EdgeFix.GPython != "" {
+		if ts.EdgeFix.GPython != nil {
+			ts.EdgeFix.GPython.SetBaseDir(task.BaseDir())
 			log.Printf("Init Map: %s", ts.EdgeFix.GPython)
 			e := evaluate.GetEngine("gpython", task.WorkDir())
-			c, err := e.Compile(ts.EdgeFix.GPython, ts.EdgeFix.Method)
+			c, err := e.Compile(ts.EdgeFix.GPython.String(), ts.EdgeFix.Method)
 			if err != nil {
 				log.Printf("Compile Error: %s", err)
 			}

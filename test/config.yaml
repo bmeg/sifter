@@ -43,3 +43,5 @@
   outputs:
     - output/sifter.edge.edge.json.gz
     - output/sifter.vertex.vertex.json.gz
+- playbook: examples/code-ref/flatMap_pipeline.yaml
+- playbook: examples/code-ref/map_pipeline.yaml

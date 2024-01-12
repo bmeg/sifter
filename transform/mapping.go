@@ -11,9 +11,9 @@ import (
 )
 
 type MapStep struct {
-	Method  string `json:"method" jsonschema_description:"Name of function to call"`
-	Python  string `json:"python" jsonschema_description:"Python code to be run"`
-	GPython string `json:"gpython" jsonschema_description:"Python code to be run using GPython"`
+	Method  string     `json:"method" jsonschema_description:"Name of function to call"`
+	Python  string     `json:"python" jsonschema_description:"Python code to be run"`
+	GPython *CodeBlock `json:"gpython" jsonschema_description:"Python code to be run using GPython"`
 }
 
 type mapProcess struct {
@@ -30,10 +30,11 @@ func (ms *MapStep) Init(task task.RuntimeTask) (Processor, error) {
 			log.Printf("Compile Error: %s", err)
 		}
 		return &mapProcess{ms, c}, nil
-	} else if ms.GPython != "" {
+	} else if ms.GPython != nil {
 		log.Printf("Init Map: %s", ms.GPython)
+		ms.GPython.SetBaseDir(task.BaseDir())
 		e := evaluate.GetEngine("gpython", task.WorkDir())
-		c, err := e.Compile(ms.GPython, ms.Method)
+		c, err := e.Compile(ms.GPython.String(), ms.Method)
 		if err != nil {
 			log.Printf("Compile Error: %s", err)
 		}

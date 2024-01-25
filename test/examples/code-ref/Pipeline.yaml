@@ -1,0 +1,26 @@
+
+class: Playbook
+name: codeTest
+
+inputs:
+  startData:
+    embedded:
+      - {"value": 0, "name": "alice"}
+      - {"value": 1, "name": "bob"}
+      - {"value": 2, "name": "charlie"}
+
+
+pipelines:
+  codeTest:
+    - from: startData
+    - map:
+        method: update
+        gpython:
+          $ref: map.py
+    - map:
+        method: update
+        gpython: |
+          def update(x):
+            x["value"] = x["value"] + 1
+            return x
+    - debug: {}

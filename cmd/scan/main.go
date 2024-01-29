@@ -80,6 +80,7 @@ var ObjectCommand = &cobra.Command{
 }
 
 type ScriptEntry struct {
+	Name    string   `json:"name"`
 	Path    string   `json:"path"`
 	Inputs  []string `json:"inputs"`
 	Outputs []string `json:"outputs"`
@@ -161,6 +162,7 @@ var ScriptCommand = &cobra.Command{
 
 			s := ScriptEntry{
 				Path:    cmdPath,
+				Name:    pb.Name,
 				Outputs: relPathArray(baseDir, removeDuplicates(outputs)),
 				Inputs:  relPathArray(baseDir, removeDuplicates(inputs)),
 			}
@@ -183,7 +185,8 @@ var ScriptCommand = &cobra.Command{
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
-	Use: "scan",
+	Use:   "scan",
+	Short: "Scan for scripts or objects",
 }
 
 func init() {

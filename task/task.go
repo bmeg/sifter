@@ -107,10 +107,10 @@ func (m *Task) BaseDir() string {
 
 func (m *Task) Emit(n string, e map[string]interface{}, useName bool) error {
 
-	new_name := m.GetName() + "." + n
+	newName := m.GetName() + "." + n
 	if useName {
 		temp := strings.Split(n, ".")
-		new_name = temp[len(temp)-1]
+		newName = temp[len(temp)-1]
 	}
-	return m.Emitter.Emit(new_name, e, useName)
+	return m.Emitter.Emit(newName, e, useName)
 }

@@ -17,7 +17,7 @@ var jsonOut = false
 var objectsOnly = false
 var baseDir = ""
 
-type ScanEntry struct {
+type Entry struct {
 	ObjectType string `json:"objectType"`
 	SifterFile string `json:"sifterFile"`
 	Outfile    string `json:"outFile"`
@@ -31,9 +31,9 @@ var ObjectCommand = &cobra.Command{
 
 		scanDir := args[0]
 
-		outputs := []ScanEntry{}
+		outputs := []Entry{}
 
-		ScanSifter(scanDir, func(pb *playbook.Playbook) {
+		PathWalker(scanDir, func(pb *playbook.Playbook) {
 			for pname, p := range pb.Pipelines {
 				emitName := ""
 				for _, s := range p {
@@ -46,7 +46,7 @@ var ObjectCommand = &cobra.Command{
 						outdir := pb.GetDefaultOutDir()
 						outname := fmt.Sprintf("%s.%s.%s.json.gz", pb.Name, pname, emitName)
 						outpath := filepath.Join(outdir, outname)
-						o := ScanEntry{SifterFile: pb.GetPath(), Outfile: outpath}
+						o := Entry{SifterFile: pb.GetPath(), Outfile: outpath}
 						if s.ObjectValidate != nil {
 							//outpath, _ = filepath.Rel(baseDir, outpath)
 							//fmt.Printf("%s\t%s\n", s.ObjectValidate.Title, outpath)
@@ -127,7 +127,7 @@ var ScriptCommand = &cobra.Command{
 
 		userInputs := map[string]string{}
 
-		ScanSifter(scanDir, func(pb *playbook.Playbook) {
+		PathWalker(scanDir, func(pb *playbook.Playbook) {
 			path := pb.GetPath()
 			scriptDir := filepath.Dir(path)
 
@@ -203,7 +203,7 @@ func init() {
 
 }
 
-func ScanSifter(baseDir string, userFunc func(*playbook.Playbook)) {
+func PathWalker(baseDir string, userFunc func(*playbook.Playbook)) {
 	filepath.Walk(baseDir,
 		func(path string, info fs.FileInfo, err error) error {
 			if strings.HasSuffix(path, ".yaml") {

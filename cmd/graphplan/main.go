@@ -1,4 +1,4 @@
-package graph_plan
+package graphplan
 
 import (
 	"log"

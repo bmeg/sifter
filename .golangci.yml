@@ -23,6 +23,5 @@ linters:
     - goimports
     - misspell
     - typecheck
-    - golint
     - gosimple
     - govet

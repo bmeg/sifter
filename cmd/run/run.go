@@ -21,7 +21,7 @@ func ExecuteFile(playFile string, workDir string, outDir string, inputs map[stri
 	a, _ := filepath.Abs(playFile)
 	baseDir := filepath.Dir(a)
 	log.Printf("basedir: %s", baseDir)
-	log.Printf("playbook: %s", pb)
+	log.Printf("playbook: %#v", pb)
 	return Execute(pb, baseDir, workDir, outDir, inputs)
 }
 

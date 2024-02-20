@@ -127,6 +127,13 @@
       <description>hash Parameters name Type Description field string Field to store hash value value string Templated string of value to be hashed method string Hashing method: sha1/sha256/md5 example - hash: value: &amp;#34;{{row.contents}}&amp;#34; field: contents-sha1 method: sha1 </description>
     </item>
     <item>
+      <title>input plugin</title>
+      <link>https://bmeg.github.io/sifter/docs/inputs/plugin/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://bmeg.github.io/sifter/docs/inputs/plugin/</guid>
+      <description>plugin Run user program for customized data extraction.&#xA;Example inputs: oboData: plugin: commandLine: ../../util/obo_reader.py {{config.oboFile}} The plugin program is expected to output JSON messages, one per line, to STDOUT that will then be passed to the transform pipelines.&#xA;Example Plugin The obo_reader.py plugin, it reads a OBO file, such as the kind the describe the GeneOntology, and emits the records as single line JSON messages.&#xA;#!/usr/bin/env python import re import sys import json re_section = re.</description>
+    </item>
+    <item>
       <title>Inputs</title>
       <link>https://bmeg.github.io/sifter/docs/inputs/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -174,20 +181,6 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://bmeg.github.io/sifter/docs/transforms/</guid>
       <description>Transforms alter the data</description>
-    </item>
-    <item>
-      <title>plugin</title>
-      <link>https://bmeg.github.io/sifter/docs/inputs/plugin/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://bmeg.github.io/sifter/docs/inputs/plugin/</guid>
-      <description>plugin Run user program for customized data extraction.&#xA;Example inputs: oboData: plugin: commandLine: ../../util/obo_reader.py {{config.oboFile}} The plugin program is expected to output JSON messages, one per line, to STDOUT that will then be passed to the transform pipelines.&#xA;Example Plugin The obo_reader.py plugin, it reads a OBO file, such as the kind the describe the GeneOntology, and emits the records as single line JSON messages.&#xA;#!/usr/bin/env python import re import sys import json re_section = re.</description>
-    </item>
-    <item>
-      <title>plugin</title>
-      <link>https://bmeg.github.io/sifter/docs/transforms/plugin/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://bmeg.github.io/sifter/docs/transforms/plugin/</guid>
-      <description></description>
     </item>
     <item>
       <title>project</title>
@@ -244,6 +237,13 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://bmeg.github.io/sifter/docs/transforms/tablewrite/</guid>
       <description></description>
+    </item>
+    <item>
+      <title>transform plugin</title>
+      <link>https://bmeg.github.io/sifter/docs/transforms/plugin/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://bmeg.github.io/sifter/docs/transforms/plugin/</guid>
+      <description>plugin Invoke external program for data processing&#xA;Parameters name Description commandLine Command line program to be called The command line can be written in any language. Sifter and the plugin communicate via NDJSON. Sifter streams the input to the program via STDIN and the plugin returns results via STDOUT. Any loggin or additional data must be sent to STDERR, or it will interupt the stream of messages. The command line code is executed using the base directory of the sifter file as the working directory.</description>
     </item>
     <item>
       <title>uuid</title>

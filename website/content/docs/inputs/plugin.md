@@ -1,5 +1,5 @@
 ---
-title: plugin
+title: input plugin
 menu:
   main:
     parent: inputs

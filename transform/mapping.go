@@ -4,9 +4,9 @@ import (
 
 	//"sync"
 	"fmt"
-	"log"
 
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -23,20 +23,20 @@ type mapProcess struct {
 
 func (ms *MapStep) Init(task task.RuntimeTask) (Processor, error) {
 	if ms.Python != "" {
-		log.Printf("Init Map: %s", ms.Python)
+		logger.Debug("Init Map: %s", ms.Python)
 		e := evaluate.GetEngine("python", task.WorkDir())
 		c, err := e.Compile(ms.Python, ms.Method)
 		if err != nil {
-			log.Printf("Compile Error: %s", err)
+			logger.Error("Compile Error: %s", err)
 		}
 		return &mapProcess{ms, c}, nil
 	} else if ms.GPython != nil {
-		log.Printf("Init Map: %s", ms.GPython)
+		logger.Debug("Init Map: %s", ms.GPython)
 		ms.GPython.SetBaseDir(task.BaseDir())
 		e := evaluate.GetEngine("gpython", task.WorkDir())
 		c, err := e.Compile(ms.GPython.String(), ms.Method)
 		if err != nil {
-			log.Printf("Compile Error: %s", err)
+			logger.Error("Compile Error: %s", err)
 		}
 		return &mapProcess{ms, c}, nil
 	}
@@ -50,7 +50,7 @@ func (mp *mapProcess) PoolReady() bool {
 func (mp *mapProcess) Process(i map[string]interface{}) map[string]interface{} {
 	out, err := mp.proc.Evaluate(i)
 	if err != nil {
-		log.Printf("Map Step error: %s", err)
+		logger.Error("Map Step error: %s", err)
 	}
 	return out
 }

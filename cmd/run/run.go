@@ -1,27 +1,24 @@
 package run
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/playbook"
 	"github.com/bmeg/sifter/task"
 )
 
 func ExecuteFile(playFile string, workDir string, outDir string, inputs map[string]string) error {
-	log.Printf("Starting: %s\n", playFile)
-	log.Default().SetPrefix(fmt.Sprintf("%s: ", playFile))
+	logger.Info("Starting", "playFile", playFile)
 	pb := playbook.Playbook{}
 	if err := playbook.ParseFile(playFile, &pb); err != nil {
-		log.Printf("%s", err)
+		logger.Error("%s", err)
 		return err
 	}
 	a, _ := filepath.Abs(playFile)
 	baseDir := filepath.Dir(a)
-	log.Printf("basedir: %s", baseDir)
-	log.Printf("playbook: %#v", pb)
+	logger.Debug("parsed file", "baseDir", baseDir, "playbook", pb)
 	return Execute(pb, baseDir, workDir, outDir, inputs)
 }
 
@@ -39,7 +36,7 @@ func Execute(pb playbook.Playbook, baseDir string, workDir string, outDir string
 	if err != nil {
 		return err
 	}
-	log.Printf("Outdir: %s", outDir)
+	logger.Debug("Running", "outDir", outDir)
 
 	t := task.NewTask(pb.Name, baseDir, workDir, outDir, nInputs)
 	err = pb.Execute(t)

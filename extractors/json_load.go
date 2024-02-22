@@ -3,13 +3,13 @@ package extractors
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
 	"github.com/bmeg/golib"
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 	"github.com/bmeg/sifter/transform"
 )
@@ -21,7 +21,7 @@ type JSONLoadStep struct {
 }
 
 func (ml *JSONLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
-	log.Printf("Starting JSON Load")
+	logger.Debug("Starting JSON Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func (ml *JSONLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 	if _, err := os.Stat(inputPath); os.IsNotExist(err) {
 		return nil, fmt.Errorf("file not found: %s", input)
 	}
-	log.Printf("Loading: %s", inputPath)
+	logger.Debug("Loading: %s", inputPath)
 
 	var reader chan []byte
 	if ml.Multiline {

@@ -76,7 +76,7 @@ func uniqueName(name string, used []string) string {
 	}
 }
 
-func NewGraphBuild(pb *playbook.Playbook, scriptOutDir, dataDir string) error {
+func NewGraphBuild(pb *playbook.Playbook, scriptOutDir, dataDir string, objectExclude []string) error {
 	userInputs := map[string]string{}
 	localInputs, _ := pb.PrepConfig(userInputs, filepath.Dir(pb.GetPath()))
 
@@ -96,20 +96,21 @@ func NewGraphBuild(pb *playbook.Playbook, scriptOutDir, dataDir string) error {
 		if emitName != "" {
 			for _, s := range p {
 				if s.ObjectValidate != nil {
-					schema, _ := evaluate.ExpressionString(s.ObjectValidate.Schema, task.GetConfig(), map[string]any{})
-					outdir := pb.GetDefaultOutDir()
-					outname := fmt.Sprintf("%s.%s.%s.json.gz", pb.Name, pname, emitName)
+					if !contains(s.ObjectValidate.Title, objectExclude) {
+						schema, _ := evaluate.ExpressionString(s.ObjectValidate.Schema, task.GetConfig(), map[string]any{})
+						outdir := pb.GetDefaultOutDir()
+						outname := fmt.Sprintf("%s.%s.%s.json.gz", pb.Name, pname, emitName)
 
-					outpath := filepath.Join(outdir, outname)
-					outpath, _ = filepath.Rel(scriptOutDir, outpath)
+						outpath := filepath.Join(outdir, outname)
+						outpath, _ = filepath.Rel(scriptOutDir, outpath)
 
-					schemaPath, _ := filepath.Rel(scriptOutDir, schema)
+						schemaPath, _ := filepath.Rel(scriptOutDir, schema)
 
-					_ = schemaPath
+						_ = schemaPath
 
-					objCreate := ObjectConvertStep{Name: pname, Input: outpath, Class: s.ObjectValidate.Title, Schema: schemaPath}
-					gb.Objects = append(gb.Objects, objCreate)
-
+						objCreate := ObjectConvertStep{Name: pname, Input: outpath, Class: s.ObjectValidate.Title, Schema: schemaPath}
+						gb.Objects = append(gb.Objects, objCreate)
+					}
 				}
 			}
 		}

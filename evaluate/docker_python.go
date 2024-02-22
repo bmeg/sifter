@@ -1,7 +1,6 @@
 package evaluate
 
 import (
-	"log"
 	"os"
 	"time"
 
@@ -10,6 +9,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/bmeg/sifter/logger"
 	grpc "google.golang.org/grpc"
 )
 
@@ -49,7 +49,7 @@ func StartDockerExecutor(dockerImage string) (Runner, error) {
 		return nil, err
 	}
 	id := strings.Trim(string(out), " \r\n\t")
-	log.Printf("Started Container: %s", id)
+	logger.Debug("Started Container: %s", id)
 	cmd = exec.Command("docker", "port", id)
 	out, err = cmd.Output()
 	if err != nil {
@@ -62,7 +62,7 @@ func StartDockerExecutor(dockerImage string) (Runner, error) {
 	var conn *grpc.ClientConn
 
 	for i := 0; i < 5; i++ {
-		log.Printf("Contacting: %s", serverAddr)
+		logger.Debug("Contacting: %s", serverAddr)
 		conn, err = grpc.Dial(serverAddr, grpc.WithInsecure(), grpc.WithBlock())
 		if err == nil {
 			break
@@ -70,7 +70,7 @@ func StartDockerExecutor(dockerImage string) (Runner, error) {
 		time.Sleep(1 * time.Second)
 	}
 	if err != nil {
-		log.Printf("Returning err: %s", err)
+		logger.Error("Returning err: %s", err)
 		return nil, err
 	}
 	client := NewExecutorClient(conn)
@@ -86,7 +86,7 @@ func (run *DockerRunner) Call(in *Input) (*Result, error) {
 }
 
 func (run *DockerRunner) Close() {
-	log.Printf("Closing docker %s", run.containerID)
+	logger.Debug("Closing docker %s", run.containerID)
 	run.conn.Close()
 	cmd := exec.Command("docker", "kill", run.containerID)
 	cmd.Run()

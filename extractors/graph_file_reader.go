@@ -8,6 +8,7 @@ import (
 
 	"github.com/bmeg/golib"
 	"github.com/bmeg/grip/gripql"
+	"github.com/bmeg/sifter/logger"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -15,7 +16,7 @@ func LoadVertexFile(path string) (chan *gripql.Vertex, error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return nil, fmt.Errorf("file not found: %s", path)
 	}
-	log.Printf("Loading: %s", path)
+	logger.Debug("Loading: %s", path)
 
 	var reader chan []byte
 	var err error

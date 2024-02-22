@@ -67,6 +67,7 @@ require (
 	github.com/klauspost/compress v1.15.15 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/lmittmann/tint v1.0.4 // indirect
 	github.com/logrusorgru/aurora v0.0.0-20190428105938-cea283e61946 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
@@ -113,4 +114,6 @@ require (
 
 replace github.com/santhosh-tekuri/jsonschema/v5 v5.3.0 => github.com/bmeg/jsonschema/v5 v5.3.3
 
-go 1.18
+go 1.21
+
+toolchain go1.21.5

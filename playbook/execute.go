@@ -2,10 +2,10 @@ package playbook
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
 
 	"github.com/bmeg/flame"
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 	"github.com/bmeg/sifter/transform"
 )
@@ -75,9 +75,8 @@ type joinStruct struct {
 }
 
 func (pb *Playbook) Execute(task task.RuntimeTask) error {
-	log.Printf("Running playbook")
-
-	log.Printf("Inputs: %#v", task.GetConfig())
+	logger.Debug("Running playbook")
+	logger.Debug("Inputs", "config", task.GetConfig())
 
 	wf := flame.NewWorkflow()
 
@@ -90,13 +89,13 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 	inNodes := map[string]flame.Receiver[map[string]any]{}
 
 	for n, v := range pb.Inputs {
-		log.Printf("Setting up %s", n)
+		logger.Debug("Setting Up", "name", n)
 		s, err := v.Start(task)
 		if err == nil {
 			c := flame.AddSourceChan(wf, s)
 			outNodes[n] = c
 		} else {
-			log.Printf("Source error: %s", err)
+			logger.Error("Source error", "error", err)
 			return err
 		}
 	}
@@ -111,14 +110,14 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 		for i, s := range v {
 			b, err := s.Init(sub)
 			if err != nil {
-				log.Printf("Pipeline %s error: %s", k, err)
+				logger.Error("Pipeline error", "name", k, "error", err)
 				return err
 			}
 
 			procs = append(procs, b)
 
 			if mProcess, ok := b.(transform.NodeProcessor); ok {
-				log.Printf("Pipeline %s step %d: %T", k, i, b)
+				logger.Debug("PipelineSetup", "name", k, "step", i, "processor", b)
 				c := flame.AddFlatMapper(wf, mProcess.Process)
 				if lastStep != nil {
 					c.Connect(lastStep)
@@ -129,14 +128,14 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 						firstStep = c
 					}
 				} else {
-					log.Printf("Error setting up step")
+					logger.Error("Error setting up step")
 					//throw error?
 				}
 			} else if mProcess, ok := b.(transform.MapProcessor); ok {
-				log.Printf("Pipeline Pool %s step %d: %T", k, i, b)
+				logger.Debug("Pipeline Pool", "name", k, "step", i, "processor", b)
 				var c flame.Node[map[string]any, map[string]any]
 				if mProcess.PoolReady() {
-					log.Printf("Starting pool worker")
+					logger.Debug("Starting pool worker")
 					c = flame.AddMapperPool(wf, mProcess.Process, 4) // TODO: config pool count
 				} else {
 					c = flame.AddMapper(wf, mProcess.Process)
@@ -150,11 +149,11 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 						firstStep = c
 					}
 				} else {
-					log.Printf("Error setting up step")
+					logger.Error("Error setting up step")
 					//throw error?
 				}
 			} else if mProcess, ok := b.(transform.FlatMapProcessor); ok {
-				log.Printf("Pipeline flatmap %s step %d: %T", k, i, b)
+				logger.Debug("Pipeline flatmap", "name", k, "step", i, "processor", b)
 				var c flame.Node[map[string]any, map[string]any]
 				if mProcess.PoolReady() {
 					//	log.Printf("Starting pool worker")
@@ -171,11 +170,11 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 						firstStep = c
 					}
 				} else {
-					log.Printf("Error setting up step")
+					logger.Error("Error setting up step")
 					//throw error?
 				}
 			} else if mProcess, ok := b.(transform.StreamProcessor); ok {
-				log.Printf("Pipeline stream %s step %d: %T", k, i, b)
+				logger.Info("Pipeline stream %s step %d: %T", k, i, b)
 				c := flame.AddStreamer(wf, mProcess.Process)
 				if c != nil {
 					if lastStep != nil {
@@ -186,17 +185,17 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 						firstStep = c
 					}
 				} else {
-					log.Printf("Error setting up step")
+					logger.Error("Error setting up step")
 					//throw error?
 				}
 			} else if jProcess, ok := b.(transform.JoinProcessor); ok {
-				log.Printf("Pipeline Join Step")
+				logger.Debug("Pipeline Join Step")
 				c := flame.AddJoin(wf, jProcess.Process)
 				if c != nil {
 					if lastStep != nil {
 						c.ConnectLeft(lastStep)
 					} else {
-						log.Print("Join missing input")
+						logger.Debug("Join missing input")
 					}
 					joins = append(joins, joinStruct{
 						node: c,
@@ -204,11 +203,11 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 					})
 					lastStep = c
 					if firstStep == nil {
-						log.Printf("ERROR: Join can't be the first step")
+						logger.Error("ERROR: Join can't be the first step")
 					}
 				}
 			} else if rProcess, ok := b.(transform.ReduceProcessor); ok {
-				log.Printf("Pipeline reduce %s step %d: %T", k, i, b)
+				logger.Debug("Pipeline reduce %s step %d: %T", k, i, b)
 				wrap := reduceWrapper{rProcess}
 				k := flame.AddMapper(wf, wrap.addKeyValue)
 				r := flame.AddReduceKey(wf, rProcess.Reduce, rProcess.GetInit())
@@ -223,7 +222,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 					firstStep = k
 				}
 			} else if rProcess, ok := b.(transform.AccumulateProcessor); ok {
-				log.Printf("Pipeline accumulate %s step %d: %T", k, i, b)
+				logger.Debug("Pipeline accumulate %s step %d: %T", k, i, b)
 
 				wrap := accumulateWrapper{rProcess}
 				k := flame.AddMapper(wf, wrap.addKeyValue)
@@ -240,7 +239,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 				}
 
 			} else {
-				log.Printf("Unknown processor type")
+				logger.Info("Unknown processor type")
 			}
 		}
 		outNodes[k] = lastStep
@@ -253,25 +252,25 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 				src := string(*p[0].From)
 				if src == dst {
 					//TODO: more loop detection
-					log.Printf("Pipeline Loop detected in %s", dst)
+					logger.Error("Pipeline Loop detected in %s", dst)
 					return fmt.Errorf("pipeline loop detected")
 				}
 				if srcNode, ok := outNodes[src]; ok {
 					if dstNode, ok := inNodes[dst]; ok {
-						log.Printf("Connecting %s to %s ", src, dst)
+						logger.Debug("Connecting", "source", src, "dest", dst)
 						dstNode.Connect(srcNode)
 					} else {
-						log.Printf("Dest %s not found", dst)
+						logger.Error("Dest not found", "name", dst)
 					}
 				} else {
-					log.Printf("%s source %s not found", dst, src)
+					logger.Error("source not found", "dest", dst, "source", src)
 				}
 			} else {
-				log.Printf("First step of pipelines %s not 'from'", dst)
+				logger.Error("First step of pipelines not 'from'", "name", dst)
 				return fmt.Errorf("first step of pipelines %s not 'from'", dst)
 			}
 		} else {
-			log.Printf("Pipeline %s is empty", dst)
+			logger.Error("Pipeline %s is empty", dst)
 		}
 	}
 
@@ -279,17 +278,17 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 	for _, i := range joins {
 		r := i.proc.GetRightPipeline()
 		if srcNode, ok := outNodes[r]; ok {
-			log.Printf("Join Connect: %s", r)
+			logger.Debug("Join Connect", "source", r)
 			i.node.ConnectRight(srcNode)
 		} else {
-			log.Printf("Join source not found: %s", r)
+			logger.Error("Join source not found", "name", r)
 		}
 	}
 
 	//log.Printf("WF: %#v", wf)
 
 	wf.Start()
-	log.Printf("Workflow Started")
+	logger.Debug("Workflow Started")
 
 	wf.Wait()
 

@@ -3,16 +3,15 @@ package inspect
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"path/filepath"
 
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/playbook"
 	"github.com/bmeg/sifter/task"
 	"github.com/spf13/cobra"
 )
 
 var outDir string = ""
-var inputFile string = ""
 var cmdInputs map[string]string
 
 // Cmd is the declaration of the command line
@@ -31,12 +30,12 @@ var Cmd = &cobra.Command{
 
 		pb := playbook.Playbook{}
 		if err := playbook.ParseFile(playFile, &pb); err != nil {
-			log.Printf("%s", err)
+			logger.Info("%s", err)
 			return err
 		}
 		var err error
 		inputs, err = pb.PrepConfig(inputs, "./")
-		log.Printf("inputs: %s", inputs)
+		logger.Info("inputs: %s", inputs)
 		if err != nil {
 			return err
 		}
@@ -45,7 +44,7 @@ var Cmd = &cobra.Command{
 			outDir = pb.GetDefaultOutDir()
 		}
 
-		log.Printf("outdir: %s", outDir)
+		logger.Info("outdir: %s", outDir)
 
 		p, _ := filepath.Abs(playFile)
 		baseDir := filepath.Dir(p)

@@ -2,8 +2,8 @@ package transform
 
 import (
 	"encoding/json"
-	"log"
 
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -23,7 +23,7 @@ func (ds DebugStep) Process(i map[string]interface{}) []map[string]interface{} {
 	} else {
 		s, _ = json.Marshal(i)
 	}
-	log.Printf("DebugData %s: %s", ds.Label, s)
+	logger.Debug("DebugData %s: %s", ds.Label, s)
 	return []map[string]any{i}
 }
 

@@ -4,13 +4,13 @@ import (
 	"bufio"
 	"encoding/json"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"sync"
 
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 	"github.com/google/shlex"
 )
@@ -20,7 +20,7 @@ type PluginLoadStep struct {
 }
 
 func (ml *PluginLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
-	log.Printf("Starting JSON Load")
+	logger.Debug("Starting JSON Load")
 	cmdText, err := evaluate.ExpressionString(ml.CommandLine, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
@@ -37,10 +37,10 @@ func (ml *PluginLoadStep) Start(task task.RuntimeTask) (chan map[string]interfac
 		cmd.Dir = workdir
 		stdout, _ := cmd.StdoutPipe()
 		cmd.Stderr = os.Stderr
-		log.Printf("Starting: %#v", cmd)
+		logger.Debug("Starting: %#v", cmd)
 		err := cmd.Start()
 		if err != nil {
-			log.Printf("plugin exec error: %s", err)
+			logger.Error("plugin exec error: %s", err)
 		}
 
 		wg := &sync.WaitGroup{}
@@ -54,7 +54,7 @@ func (ml *PluginLoadStep) Start(task task.RuntimeTask) (chan map[string]interfac
 			for err == nil {
 				line, isPrefix, err = reader.ReadLine()
 				if err != nil && err != io.EOF {
-					log.Printf("plugin (%s) input error: %s", ml.CommandLine, err)
+					logger.Error("plugin (%s) input error: %s", ml.CommandLine, err)
 				}
 				ln = append(ln, line...)
 				if !isPrefix {
@@ -64,8 +64,8 @@ func (ml *PluginLoadStep) Start(task task.RuntimeTask) (chan map[string]interfac
 						if err == nil {
 							procChan <- row
 						} else {
-							log.Printf("plugin (%s) output error: %s", ml.CommandLine, err)
-							log.Printf("unmarshalled line: %s", ln)
+							logger.Error("plugin (%s) output error: %s", ml.CommandLine, err)
+							logger.Error("unmarshalled line: %s", ln)
 						}
 						ln = []byte{}
 					}
@@ -75,7 +75,7 @@ func (ml *PluginLoadStep) Start(task task.RuntimeTask) (chan map[string]interfac
 			wg.Done()
 		}()
 
-		log.Printf("plugin has exited: %s\n", ml.CommandLine)
+		logger.Debug("plugin has exited: %s\n", ml.CommandLine)
 		wg.Wait()
 
 		close(procChan)

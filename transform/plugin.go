@@ -4,11 +4,11 @@ import (
 	"bufio"
 	"encoding/json"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"sync"
 
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 	"github.com/google/shlex"
 )
@@ -30,7 +30,7 @@ func (ps *pluginProcess) Process(in chan map[string]any, out chan map[string]any
 
 	cmdLine, err := shlex.Split(ps.config.CommandLine)
 	if err != nil {
-		log.Printf("Plugin Error: %s", err)
+		logger.Error("Plugin Error: %s", err)
 	} else {
 		workdir := ps.task.BaseDir()
 		cmd := exec.Command(cmdLine[0], cmdLine[1:]...)
@@ -38,10 +38,10 @@ func (ps *pluginProcess) Process(in chan map[string]any, out chan map[string]any
 		stdin, _ := cmd.StdinPipe()
 		stdout, _ := cmd.StdoutPipe()
 		cmd.Stderr = os.Stderr
-		log.Printf("Starting: %#v", cmd)
+		logger.Debug("Starting: %#v", cmd)
 		err := cmd.Start()
 		if err != nil {
-			log.Printf("plugin exec error: %s", err)
+			logger.Error("plugin exec error: %s", err)
 		}
 
 		go func() {
@@ -63,7 +63,7 @@ func (ps *pluginProcess) Process(in chan map[string]any, out chan map[string]any
 			for err == nil {
 				line, isPrefix, err = reader.ReadLine()
 				if err != nil && err != io.EOF {
-					log.Printf("plugin (%s) input error: %s", ps.config.CommandLine, err)
+					logger.Error("plugin (%s) input error: %s", ps.config.CommandLine, err)
 				}
 				ln = append(ln, line...)
 				if !isPrefix {
@@ -73,8 +73,8 @@ func (ps *pluginProcess) Process(in chan map[string]any, out chan map[string]any
 						if err == nil {
 							out <- row
 						} else {
-							log.Printf("plugin output error: %s", err)
-							log.Printf("unmarshalled line: %s", ln)
+							logger.Error("plugin output error: %s", err)
+							logger.Error("unmarshalled line: %s", ln)
 						}
 						ln = []byte{}
 					}
@@ -82,7 +82,7 @@ func (ps *pluginProcess) Process(in chan map[string]any, out chan map[string]any
 			}
 			wg.Done()
 		}()
-		log.Printf("plugin has exited: %s\n", ps.config.CommandLine)
+		logger.Debug("plugin has exited: %s\n", ps.config.CommandLine)
 		wg.Wait()
 	}
 }

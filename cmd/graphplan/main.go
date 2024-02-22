@@ -11,6 +11,7 @@ import (
 
 var outScriptDir = ""
 var outDataDir = "./"
+var objectExclude = []string{}
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
@@ -40,7 +41,7 @@ var Cmd = &cobra.Command{
 		if sifterErr := playbook.ParseFile(scriptPath, &pb); sifterErr == nil {
 			if len(pb.Pipelines) > 0 || len(pb.Inputs) > 0 {
 				err := graphplan.NewGraphBuild(
-					&pb, outScriptDir, outDataDir,
+					&pb, outScriptDir, outDataDir, objectExclude,
 				)
 				if err != nil {
 					log.Printf("Error: %s\n", err)
@@ -56,4 +57,5 @@ func init() {
 	flags := Cmd.Flags()
 	flags.StringVarP(&outScriptDir, "dir", "C", outScriptDir, "Change Directory for script base")
 	flags.StringVarP(&outDataDir, "out", "o", outDataDir, "Change output Directory")
+	flags.StringArrayVarP(&objectExclude, "exclude", "x", objectExclude, "Object Exclude")
 }

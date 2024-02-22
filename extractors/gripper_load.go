@@ -3,11 +3,11 @@ package extractors
 import (
 	"context"
 	"io"
-	"log"
 
 	"github.com/bmeg/grip/gripper"
 	"github.com/bmeg/grip/util/rpc"
 
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -17,13 +17,13 @@ type GripperLoadStep struct {
 }
 
 func (ml *GripperLoadStep) Start(task.RuntimeTask) (chan map[string]interface{}, error) {
-	log.Printf("Starting GRIPPER Load")
+	logger.Debug("Starting GRIPPER Load")
 
 	rpcConf := rpc.ConfigWithDefaults(ml.Host)
-	log.Printf("Connecting to %s", ml.Host)
+	logger.Debug("Connecting to %s", ml.Host)
 	conn, err := rpc.Dial(context.Background(), rpcConf)
 	if err != nil {
-		log.Printf("RPC Connection error: %s", err)
+		logger.Error("RPC Connection error: %s", err)
 		return nil, err
 	}
 	client := gripper.NewGRIPSourceClient(conn)
@@ -31,7 +31,7 @@ func (ml *GripperLoadStep) Start(task.RuntimeTask) (chan map[string]interface{},
 	procChan := make(chan map[string]interface{}, 100)
 	go func() {
 		req := gripper.Collection{Name: ml.Collection}
-		log.Printf("Loading: '%s'", ml.Collection)
+		logger.Debug("Loading: '%s'", ml.Collection)
 		cl, err := client.GetRows(context.Background(), &req)
 		if err == nil {
 			for {
@@ -44,9 +44,9 @@ func (ml *GripperLoadStep) Start(task.RuntimeTask) (chan map[string]interface{},
 				}
 			}
 		} else {
-			log.Printf("Error Getting rows: %s", err)
+			logger.Error("Error Getting rows: %s", err)
 		}
-		log.Printf("Done Loading")
+		logger.Debug("Done Loading")
 		close(procChan)
 	}()
 

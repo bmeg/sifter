@@ -1,11 +1,10 @@
 package transform
 
 import (
-	"log"
-
 	schema "github.com/bmeg/jsonschemagraph/util"
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -51,11 +50,11 @@ func (ts GraphBuildStep) Init(task task.RuntimeTask) (Processor, error) {
 	if ts.EdgeFix != nil {
 		if ts.EdgeFix.GPython != nil {
 			ts.EdgeFix.GPython.SetBaseDir(task.BaseDir())
-			log.Printf("Init Map: %s", ts.EdgeFix.GPython)
+			logger.Debug("Init Map: %s", ts.EdgeFix.GPython)
 			e := evaluate.GetEngine("gpython", task.WorkDir())
 			c, err := e.Compile(ts.EdgeFix.GPython.String(), ts.EdgeFix.Method)
 			if err != nil {
-				log.Printf("Compile Error: %s", err)
+				logger.Error("Compile Error: %s", err)
 			}
 			edgeFix = c
 		}
@@ -88,7 +87,7 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 			if j.Vertex != nil {
 				err := ts.task.Emit("vertex", ts.vertexToMap(j.Vertex), false)
 				if err != nil {
-					log.Printf("Emit Error: %s", err)
+					logger.Error("Emit Error: %s", err)
 				}
 			} else if j.OutEdge != nil || j.InEdge != nil {
 				var edge *schema.Edge
@@ -108,13 +107,13 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 					}
 					err := ts.task.Emit("edge", edgeData, false)
 					if err != nil {
-						log.Printf("Emit Error: %s", err)
+						logger.Error("Emit Error: %s", err)
 					}
 				}
 			}
 		}
 	} else {
-		log.Printf("Graphbuild %s error : %s", ts.config.Title, err)
+		logger.Error("Graphbuild %s error : %s", ts.config.Title, err)
 	}
 
 	return out

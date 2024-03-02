@@ -5,11 +5,11 @@ require (
 	github.com/alecthomas/jsonschema v0.0.0-20200514014646-0366d1034a17
 	github.com/aymerick/raymond v2.0.3-0.20180322193309-b565731e1464+incompatible
 	github.com/basgys/goxml2json v1.1.0
-	github.com/bmeg/flame v0.0.0-20230213003433-cb84bab88f8a
-	github.com/bmeg/golib v0.0.0-20200725231742-008a48f99f50
+	github.com/bmeg/flame v0.0.0-20231228021014-450efb0021a6
+	github.com/bmeg/golib v0.0.0-20200725232156-e799a31439fc
 	github.com/bmeg/grip v0.0.0-20210910231938-94d69d94ff65
 	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad
-	github.com/bmeg/jsonschemagraph v0.0.0-20231130184725-4c439ca30b96
+	github.com/bmeg/jsonschemagraph v0.0.0-20240302044834-7ed232fc40f0
 	github.com/cockroachdb/pebble v0.0.0-20220311224846-910ce60578df
 	github.com/dgraph-io/badger/v2 v2.2007.4
 	github.com/ghodss/yaml v1.0.0

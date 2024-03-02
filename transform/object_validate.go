@@ -1,7 +1,6 @@
 package transform
 
 import (
-	"encoding/json"
 	"fmt"
 
 	schema "github.com/bmeg/jsonschemagraph/util"
@@ -76,14 +75,13 @@ func (ts *objectProcess) Process(i map[string]interface{}) []map[string]interfac
 		return []map[string]any{out}
 	}
 	//if ts.errorCount < 10 {
-	data, _ := json.Marshal(i)
 	logger.Error("validation error", "className", ts.className, "error", err)
-	logger.Debug("validation data", "data", data)
+	logger.Debug("validation data", "data", i)
 	//}
 	ts.errorCount++
 	return []map[string]any{}
 }
 
 func (ts *objectProcess) Close() {
-	logger.Info("Validation Summary", "name", ts.className, "errorCount", ts.errorCount, "validationCount", ts.objectCount)
+	logger.Info("Validation Summary", "name", ts.task.GetName(), "class", ts.className, "errorCount", ts.errorCount, "validationCount", ts.objectCount)
 }

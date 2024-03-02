@@ -20,7 +20,7 @@ type PluginLoadStep struct {
 }
 
 func (ml *PluginLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
-	logger.Debug("Starting JSON Load")
+	logger.Debug("Starting Plugin Loader")
 	cmdText, err := evaluate.ExpressionString(ml.CommandLine, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
@@ -40,9 +40,10 @@ func (ml *PluginLoadStep) Start(task task.RuntimeTask) (chan map[string]interfac
 		logger.Debug("Starting: %#v", cmd)
 		err := cmd.Start()
 		if err != nil {
-			logger.Error("plugin exec error: %s", err)
+			logger.Error("plugin exec error", "error", err)
 		}
 
+		count := uint64(0)
 		wg := &sync.WaitGroup{}
 		wg.Add(1)
 		go func() {
@@ -54,7 +55,7 @@ func (ml *PluginLoadStep) Start(task task.RuntimeTask) (chan map[string]interfac
 			for err == nil {
 				line, isPrefix, err = reader.ReadLine()
 				if err != nil && err != io.EOF {
-					logger.Error("plugin (%s) input error: %s", ml.CommandLine, err)
+					logger.Error("plugin input error", "commandLine", ml.CommandLine, "error", err)
 				}
 				ln = append(ln, line...)
 				if !isPrefix {
@@ -63,22 +64,19 @@ func (ml *PluginLoadStep) Start(task task.RuntimeTask) (chan map[string]interfac
 						err := json.Unmarshal(ln, &row)
 						if err == nil {
 							procChan <- row
+							count++
 						} else {
-							logger.Error("plugin (%s) output error: %s", ml.CommandLine, err)
-							logger.Error("unmarshalled line: %s", ln)
+							logger.Error("plugin output error", "commandLine", ml.CommandLine, "error", err, "line", ln)
 						}
 						ln = []byte{}
 					}
 				}
 			}
-
 			wg.Done()
 		}()
-
-		logger.Debug("plugin has exited: %s\n", ml.CommandLine)
 		wg.Wait()
-
 		close(procChan)
+		logger.Info("Plugin Summary", "name", task.GetName(), "rowCount", count, "commandLine", cmdLine)
 	}()
 	return procChan, nil
 }

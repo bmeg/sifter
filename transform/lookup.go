@@ -116,7 +116,7 @@ func (tr *LookupStep) GetConfigFields() []config.Variable {
 }
 
 func (tp *lookupProcess) Close() {
-	logger.Info("Table hits: %d misses: %d", tp.hitCount, tp.missCount)
+	logger.Info("Table summary", "hit", tp.hitCount, "miss", tp.missCount)
 }
 
 func (tp *lookupProcess) Process(row map[string]interface{}) []map[string]interface{} {
@@ -224,7 +224,7 @@ func (tsv *TSVTable) open(task task.RuntimeTask) (lookupTable, error) {
 	} else if s.IsDir() {
 		return nil, fmt.Errorf("file not found: %s", inputPath)
 	}
-	logger.Debug("Loading Translation file: %s", inputPath)
+	logger.Debug("Loading Translation file", "path", inputPath)
 
 	var inputStream io.Reader
 	if gfile, err := os.Open(inputPath); err == nil {
@@ -238,7 +238,7 @@ func (tsv *TSVTable) open(task task.RuntimeTask) (lookupTable, error) {
 			inputStream = gfile
 		}
 	} else if err != nil {
-		logger.Error("Error loading table: %s", err)
+		logger.Error("Error loading table", "error", err)
 		return nil, err
 	}
 
@@ -262,7 +262,7 @@ func (tsv *TSVTable) open(task task.RuntimeTask) (lookupTable, error) {
 
 	lines, err := tsvReader.ReadAll()
 	if err != nil {
-		logger.Error("Error loading lookup table: %s", err)
+		logger.Error("Error loading lookup table", "error", err)
 		return nil, err
 	}
 
@@ -276,7 +276,7 @@ func (tsv *TSVTable) open(task task.RuntimeTask) (lookupTable, error) {
 			tp.table[row[tp.colmap[tsv.Key]]] = row
 		}
 	}
-	logger.Debug("tableLookup loaded %d values from %s", len(tp.table), inputPath)
+	logger.Debug("tableLookup summary", "count", len(tp.table), "path", inputPath)
 	return tp, nil
 }
 
@@ -310,7 +310,7 @@ func (jf *JSONTable) open(task task.RuntimeTask) (lookupTable, error) {
 	} else if s.IsDir() {
 		return nil, fmt.Errorf("file not found: %s", inputPath)
 	}
-	logger.Debug("Loading Translation file: %s", inputPath)
+	logger.Debug("Loading Translation file", "path", inputPath)
 
 	var inputStream chan []byte
 	if strings.HasSuffix(inputPath, ".gz") {
@@ -337,7 +337,7 @@ func (jf *JSONTable) open(task task.RuntimeTask) (lookupTable, error) {
 			}
 		}
 	}
-	logger.Debug("jsonLookup loaded %d values from %s", len(jp.table), inputPath)
+	logger.Debug("jsonLookup summary", "count", len(jp.table), "path", inputPath)
 
 	return jp, nil
 }

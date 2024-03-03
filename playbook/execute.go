@@ -117,7 +117,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 			procs = append(procs, b)
 
 			if mProcess, ok := b.(transform.NodeProcessor); ok {
-				logger.Debug("PipelineSetup", "name", k, "step", i, "processor", b)
+				logger.Debug("PipelineSetup", "name", k, "step", i, "processor", fmt.Sprintf("%T", mProcess))
 				c := flame.AddFlatMapper(wf, mProcess.Process)
 				if lastStep != nil {
 					c.Connect(lastStep)

@@ -33,7 +33,7 @@ func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 		return nil, err
 	}
 
-	logger.Debug("Starting Glob Load: %s", input)
+	logger.Debug("Starting Glob Load", "input", input)
 	if gl.XMLLoad != nil || gl.JSONLoad != nil || gl.TableLoad != nil {
 		flist, err := filepath.Glob(input)
 		if err != nil {
@@ -48,7 +48,7 @@ func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 		go func() {
 			defer close(sources)
 			for count, f := range flist {
-				logger.Debug("Glob %d of %d", count, len(flist))
+				logger.Debug("Glob", "file", f, "num", count, "count", len(flist))
 				//var a func()
 				var a Source
 				if gl.XMLLoad != nil {

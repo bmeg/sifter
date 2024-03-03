@@ -24,10 +24,10 @@ func (pls *pipelineLookupProcess) Process(left chan map[string]any, right chan m
 				vals[kStr] = i
 			}
 		} else {
-			logger.Info("Missing key %s : %#v", pls.config.Pipeline.Key, i)
+			logger.Info("Missing key", "key", pls.config.Pipeline.Key)
 		}
 	}
-	logger.Info("Pipeline lookup loaded %d values", len(vals))
+	logger.Info("Pipeline lookup", "size", len(vals))
 	table := recordTable{vals, pls.config.Pipeline.Value}
 	lk := lookupProcess{pls.config, &table, pls.task.GetConfig(), 0, 0}
 

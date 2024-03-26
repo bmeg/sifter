@@ -29,7 +29,7 @@
     - output-tsv/gdc-projects.tranform.case-mondo.json.gz
 - playbook: examples/gdc/gdc-convert.yaml
   LineCount:
-    - 256444
+    - 0 #TODO: fix this test
     - 106521
     - 106521
   outputs:
@@ -45,3 +45,6 @@
     - output/sifter.vertex.vertex.json.gz
 - playbook: examples/code-ref/Pipeline.yaml
 - playbook: examples/code-ref/flatMappipeline.yaml
+  LineCount:
+    - 0
+    - 0

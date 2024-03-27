@@ -1,10 +1,10 @@
 package graphplan
 
 import (
-	"log"
 	"path/filepath"
 
 	"github.com/bmeg/sifter/graphplan"
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/playbook"
 	"github.com/spf13/cobra"
 )
@@ -12,6 +12,7 @@ import (
 var outScriptDir = ""
 var outDataDir = "./"
 var objectExclude = []string{}
+var verbose bool = false
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
@@ -19,6 +20,10 @@ var Cmd = &cobra.Command{
 	Short: "Scan directory to plan operations",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+
+		if verbose {
+			logger.Init(true, false)
+		}
 
 		scriptPath, _ := filepath.Abs(args[0])
 
@@ -44,7 +49,7 @@ var Cmd = &cobra.Command{
 					&pb, outScriptDir, outDataDir, objectExclude,
 				)
 				if err != nil {
-					log.Printf("Error: %s\n", err)
+					logger.Error("Parse Error", "error", err)
 				}
 			}
 		}
@@ -55,6 +60,7 @@ var Cmd = &cobra.Command{
 
 func init() {
 	flags := Cmd.Flags()
+	flags.BoolVarP(&verbose, "verbose", "v", verbose, "Verbose logging")
 	flags.StringVarP(&outScriptDir, "dir", "C", outScriptDir, "Change Directory for script base")
 	flags.StringVarP(&outDataDir, "out", "o", outDataDir, "Change output Directory")
 	flags.StringArrayVarP(&objectExclude, "exclude", "x", objectExclude, "Object Exclude")

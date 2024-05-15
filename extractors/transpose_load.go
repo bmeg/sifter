@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"encoding/csv"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,6 +14,7 @@ import (
 
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 	"github.com/cockroachdb/pebble"
 )
@@ -101,12 +101,12 @@ func transposeInMem(c csvReader, out chan map[string]any) error {
 			break
 		}
 		if err != nil {
-			log.Printf("Error %s", err)
+			logger.Error("Error", "error", err)
 			break
 		}
 		matrix = append(matrix, record)
 	}
-	log.Printf("Writing Transpose")
+	logger.Info("Writing Transpose")
 	l := len(matrix[0])
 	h := len(matrix)
 	columns := make([]string, h)
@@ -142,7 +142,6 @@ func copyBytes(in []byte) []byte {
 }
 
 func (pbw *pebbleBulkWrite) Set(id []byte, val []byte) error {
-	//log.Printf("Setting %x %s", id, val)
 	pbw.curSize += len(id) + len(val)
 	if pbw.highest == nil || bytes.Compare(id, pbw.highest) > 0 {
 		pbw.highest = copyBytes(id)
@@ -152,7 +151,7 @@ func (pbw *pebbleBulkWrite) Set(id []byte, val []byte) error {
 	}
 	err := pbw.batch.Set(id, val, nil)
 	if pbw.curSize > maxWriterBuffer {
-		log.Printf("Running batch Commit")
+		logger.Info("Running batch Commit")
 		pbw.batch.Commit(nil)
 		pbw.batch.Reset()
 		pbw.curSize = 0
@@ -161,7 +160,7 @@ func (pbw *pebbleBulkWrite) Set(id []byte, val []byte) error {
 }
 
 func (pbw *pebbleBulkWrite) Close() error {
-	log.Printf("Running batch close Commit")
+	logger.Info("Running batch close Commit")
 	err := pbw.batch.Commit(nil)
 	if err != nil {
 		return err
@@ -191,7 +190,7 @@ func transposeInDB(workdir string, c csvReader, out chan map[string]any) error {
 	colCount := uint64(0)
 	for row := uint64(0); ; row++ {
 		if (row % 100) == 0 {
-			log.Printf("Row: %d", row)
+			logger.Info("Row", "row", row)
 		}
 		record, err := r.Read()
 		if err == io.EOF {
@@ -207,22 +206,21 @@ func transposeInDB(workdir string, c csvReader, out chan map[string]any) error {
 			bCol := make([]byte, 8)
 			binary.BigEndian.PutUint64(bCol, col)
 			//key := bytes.Join([][]byte{bRow, bCol}, []byte{})
-			//log.Printf("Put %x", key)
 			key := bytes.Join([][]byte{bCol, bRow}, []byte{})
 			err := pbw.Set(key, []byte(record[col]))
 			if err != nil {
-				log.Printf("Put Error: %s", err)
+				logger.Error("Put Error", "message", err)
 			}
 		}
 		rowCount = row + 1
 	}
 	if err := pbw.Close(); err != nil {
-		log.Print(err)
+		logger.Error("close error", "message", err)
 	}
 
-	log.Println(db.Metrics().String())
+	logger.Info(db.Metrics().String())
 
-	log.Printf("Col/Row counts: %d %d", colCount, rowCount)
+	logger.Info("Col/Row counts", "col", colCount, "row", rowCount)
 
 	columns := []string{}
 
@@ -238,15 +236,13 @@ func transposeInDB(workdir string, c csvReader, out chan map[string]any) error {
 			columns = append(columns, string(val))
 			c.Close()
 		} else {
-			log.Printf("Column error: %s", err)
+			logger.Error("Column error", "message", err)
 		}
 	}
 
-	//log.Printf("Columns: %#v", columns)
-
 	for col := uint64(1); col < colCount; col++ {
 		if (col % 100) == 0 {
-			log.Printf("Writing Col %d", col)
+			logger.Info("Writing Col", "id", col)
 		}
 		prefix := make([]byte, 8)
 		binary.BigEndian.PutUint64(prefix, col)
@@ -259,7 +255,6 @@ func transposeInDB(workdir string, c csvReader, out chan map[string]any) error {
 			o = append(o, string(r))
 		}
 		it.Close()
-		//log.Printf("Col width: %d %d", len(columns), len(o))
 		if len(o) == len(columns) {
 			res := make(map[string]any, len(columns))
 			for i := 0; i < len(o); i++ {
@@ -292,7 +287,7 @@ func transposeInTable(workdir string, fieldSize int, c csvReader, out chan map[s
 	writer := bufio.NewWriterSize(table, 1024*10)
 	for row := int64(0); ; row++ {
 		if (row % 100) == 0 {
-			log.Printf("Row: %d", row)
+			logger.Info("Row", "i", row)
 		}
 		record, err := r.Read()
 		if err == io.EOF {
@@ -302,7 +297,7 @@ func transposeInTable(workdir string, fieldSize int, c csvReader, out chan map[s
 			colCount = int64(len(record))
 		}
 		if colCount != int64(len(record)) {
-			log.Printf("Incorrectly sized row: %d != %d", colCount, uint64(len(record)))
+			logger.Error("Incorrectly sized row", "colCount", colCount, "recordSize", uint64(len(record)))
 		}
 		for col := int64(0); col < colCount; col++ {
 			b := []byte(record[col])
@@ -316,7 +311,7 @@ func transposeInTable(workdir string, fieldSize int, c csvReader, out chan map[s
 
 	stepSize := colCount * int64(fieldSize)
 
-	log.Printf("Col/Row counts: %d %d", colCount, rowCount)
+	logger.Info("Col/Row counts", "col", colCount, "row", rowCount)
 
 	columns := []string{}
 	for row := int64(0); row < rowCount; row++ {
@@ -326,15 +321,15 @@ func transposeInTable(workdir string, fieldSize int, c csvReader, out chan map[s
 		if err == nil {
 			columns = append(columns, string(tmp[0]))
 		} else {
-			log.Printf("Column error: %s", err)
+			logger.Error("Column error", "message", err)
 		}
 	}
 
-	log.Printf("Columns: %s\n", columns)
+	logger.Info("Columns", "columns", columns)
 
 	for col := int64(1); col < colCount; col++ {
 		if (col % 100) == 0 {
-			log.Printf("Writing Col %d", col)
+			logger.Info("Writing Col", "i", col)
 		}
 		record := map[string]any{}
 		for row := int64(0); row < rowCount; row++ {

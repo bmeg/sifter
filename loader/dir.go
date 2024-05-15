@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/bmeg/sifter/logger"
+
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -70,7 +72,11 @@ func (s *DirDataLoader) Emit(name string, v map[string]interface{}, useName bool
 	if !ok {
 		// log.Printf("output path %s", outputPath)
 
-		j, err := os.Create(path.Join(s.dl.dir, name+".json.gz"))
+		opath := path.Join(s.dl.dir, name+".json.gz")
+
+		logger.Info("Creating emit file", "name", name, "path", opath)
+
+		j, err := os.Create(opath)
 		if err != nil {
 			return err
 		}

@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strings"
 
@@ -12,6 +11,7 @@ import (
 
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -49,7 +49,7 @@ func buildUniqueArray(src []string) []string {
 }
 
 func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
-	log.Printf("Starting Table Load")
+	logger.Info("Starting Table Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface
 	} else if s.IsDir() {
 		return nil, fmt.Errorf("input not a file: %s", inputPath)
 	}
-	log.Printf("Loading table: %s", inputPath)
+	logger.Info("Loading table", "path", inputPath)
 
 	var inputStream io.ReadCloser
 	if gfile, err := os.Open(inputPath); err == nil {
@@ -121,9 +121,9 @@ func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface
 							err = nil
 						}
 					} else if pe.Err == csv.ErrQuote {
-						log.Printf("quote error: %s", record)
+						logger.Error("quote error", "record", record)
 					} else if pe.Err == csv.ErrBareQuote {
-						log.Printf("bare quote error: %s", record)
+						logger.Error("bare quote error", "record", record)
 					}
 				}
 			}
@@ -150,10 +150,10 @@ func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface
 					}
 				}
 			} else {
-				log.Printf("Error: %s", err)
+				logger.Error("Error", "error", err)
 			}
 		}
-		log.Printf("Done Loading")
+		logger.Info("Done Loading")
 		close(procChan)
 	}()
 

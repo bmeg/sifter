@@ -2,7 +2,8 @@ module github.com/bmeg/sifter
 
 replace github.com/santhosh-tekuri/jsonschema/v5 v5.3.0 => github.com/bmeg/jsonschema/v5 v5.3.3
 
-go 1.21
+go 1.21.10
+
 toolchain go1.22.3
 
 require (

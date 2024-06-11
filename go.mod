@@ -11,6 +11,7 @@ require (
 	github.com/bmeg/golib v0.0.0-20200725232156-e799a31439fc
 	github.com/bmeg/grip v0.0.0-20231102165002-fa720cf43d53
 	github.com/bmeg/jsonpath v0.0.0-20210207014051-cca5355553ad
+	github.com/bmeg/jsonschema/v5 v5.3.4-0.20241111204732-55db82022a92
 	github.com/bmeg/jsonschemagraph v0.0.3-0.20241219173929-eecb8489b8f4
 	github.com/bmeg/lathe v0.0.0-20241016182028-d3a46dacd5b0
 	github.com/cockroachdb/pebble v0.0.0-20230701135918-609ae80aea41
@@ -24,9 +25,8 @@ require (
 	github.com/lmittmann/tint v1.0.4
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/rdleal/intervalst v1.3.0
-	github.com/santhosh-tekuri/jsonschema/v5 v5.1.1
 	github.com/spf13/cobra v1.8.1
-	google.golang.org/grpc v1.56.3
+	google.golang.org/grpc v1.59.0
 	google.golang.org/protobuf v1.34.2
 	sigs.k8s.io/yaml v1.4.0
 	vitess.io/vitess v0.16.2
@@ -45,7 +45,6 @@ require (
 	github.com/alevinval/sse v1.0.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bitly/go-simplejson v0.5.0 // indirect
-	github.com/bmeg/jsonschema/v5 v5.3.4-0.20241111204732-55db82022a92 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cockroachdb/errors v1.8.1 // indirect
@@ -59,7 +58,7 @@ require (
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/glog v1.1.0 // indirect
+	github.com/golang/glog v1.1.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
@@ -122,7 +121,9 @@ require (
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
-	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
+	google.golang.org/genproto v0.0.0-20231030173426-d783a09b4405 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20231016165738-49dd2c1f3d0b // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20231106174013-bbf56f31fb17 // indirect
 	gopkg.in/DataDog/dd-trace-go.v1 v1.47.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

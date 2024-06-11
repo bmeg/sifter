@@ -5,12 +5,12 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -41,7 +41,7 @@ func (tw *TableWriteStep) Init(task task.RuntimeTask) (Processor, error) {
 		return nil, err
 	}
 	outputPath := filepath.Join(task.OutDir(), output)
-	log.Printf("Starting TableWriter to %s", outputPath)
+	logger.Info("Starting TableWriter to %s", outputPath)
 
 	te := tableWriteProcess{}
 	te.handle, _ = os.Create(outputPath)
@@ -70,7 +70,7 @@ func (tw *TableWriteStep) GetOutputs(task task.RuntimeTask) []string {
 		return []string{}
 	}
 	outputPath := filepath.Join(task.OutDir(), output)
-	log.Printf("table output %s %s", task.OutDir(), output)
+	logger.Debug("table output %s %s", task.OutDir(), output)
 	return []string{outputPath}
 }
 
@@ -95,7 +95,7 @@ func (tp *tableWriteProcess) Process(i map[string]any) map[string]any {
 }
 
 func (tp *tableWriteProcess) Close() {
-	log.Printf("Closing tableWriter: %s", tp.config.Output)
+	logger.Debug("Closing tableWriter: %s", tp.config.Output)
 	tp.writer.Flush()
 	tp.out.Close()
 	tp.handle.Close()

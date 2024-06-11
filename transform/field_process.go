@@ -1,9 +1,8 @@
 package transform
 
 import (
-	"log"
-
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -66,10 +65,8 @@ func (fs *fieldProcess) Process(i map[string]any) []map[string]any {
 			}
 			out = append(out, vMap)
 		} else {
-			log.Printf("Field list incorrect type: %T", v)
+			logger.Error("Field list incorrect type: %T", v)
 		}
-	} else {
-		//log.Printf("Field %s missing", fs.Field)
 	}
 	return out
 }

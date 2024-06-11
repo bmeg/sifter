@@ -1,13 +1,12 @@
 package transform
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 
 	schema "github.com/bmeg/jsonschemagraph/util"
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	_ "github.com/santhosh-tekuri/jsonschema/v5/httploader" // setup the httploader for the jsonschema checker
@@ -20,12 +19,13 @@ type ObjectValidateStep struct {
 }
 
 type objectProcess struct {
-	config     ObjectValidateStep
-	task       task.RuntimeTask
-	className  string
-	schema     schema.GraphSchema
-	class      *jsonschema.Schema
-	errorCount int
+	config      ObjectValidateStep
+	task        task.RuntimeTask
+	className   string
+	schema      schema.GraphSchema
+	class       *jsonschema.Schema
+	errorCount  int
+	objectCount uint64
 }
 
 func (ts ObjectValidateStep) Init(task task.RuntimeTask) (Processor, error) {
@@ -40,14 +40,14 @@ func (ts ObjectValidateStep) Init(task task.RuntimeTask) (Processor, error) {
 	}
 	if ts.Title != "" {
 		if cls := sc.GetClass(ts.Title); cls != nil {
-			return &objectProcess{ts, task, ts.Title, sc, cls, 0}, nil
+			return &objectProcess{ts, task, ts.Title, sc, cls, 0, 0}, nil
 		}
 		return nil, fmt.Errorf("class %s not found", ts.Title)
 	}
 	if ts.URI != "" {
 		uri := path + "/" + ts.URI
 		if cls := sc.GetClass(uri); cls != nil {
-			return &objectProcess{ts, task, cls.Title, sc, cls, 0}, nil
+			return &objectProcess{ts, task, cls.Title, sc, cls, 0, 0}, nil
 		}
 		return nil, fmt.Errorf("uri %s not found", uri)
 	}
@@ -69,18 +69,19 @@ func (ts *objectProcess) PoolReady() bool {
 }
 
 func (ts *objectProcess) Process(i map[string]interface{}) []map[string]interface{} {
+	ts.objectCount++
 	out, err := ts.schema.CleanAndValidate(ts.class, i)
 	if err == nil {
 		return []map[string]any{out}
 	}
 	//if ts.errorCount < 10 {
-	data, _ := json.Marshal(i)
-	log.Printf("validate %s error: %s on %s", ts.className, err, data)
+	logger.Error("validation error", "className", ts.className, "error", err)
+	logger.Debug("validation data", "data", i)
 	//}
 	ts.errorCount++
 	return []map[string]any{}
 }
 
 func (ts *objectProcess) Close() {
-	log.Printf("Total incorrect rows: %d", ts.errorCount)
+	logger.Info("Validation Summary", "name", ts.task.GetName(), "class", ts.className, "errorCount", ts.errorCount, "validationCount", ts.objectCount)
 }

@@ -1,8 +1,7 @@
 package transform
 
 import (
-	"log"
-
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -25,10 +24,10 @@ func (pls *pipelineLookupProcess) Process(left chan map[string]any, right chan m
 				vals[kStr] = i
 			}
 		} else {
-			log.Printf("Missing key %s : %#v", pls.config.Pipeline.Key, i)
+			logger.Info("Missing key", "key", pls.config.Pipeline.Key)
 		}
 	}
-	log.Printf("Pipeline lookup loaded %d values", len(vals))
+	logger.Info("Pipeline lookup", "size", len(vals))
 	table := recordTable{vals, pls.config.Pipeline.Value}
 	lk := lookupProcess{pls.config, &table, pls.task.GetConfig(), 0, 0}
 

@@ -9,12 +9,12 @@ import (
 	//"bytes"
 	"context"
 	"encoding/json"
-	"io/ioutil"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 
+	"github.com/bmeg/sifter/logger"
 	grpc "google.golang.org/grpc"
 )
 
@@ -66,7 +66,7 @@ func (d PythonProcessor) EvaluateArray(inputs ...map[string]interface{}) ([]any,
 func (d PythonProcessor) EvaluateBool(inputs ...map[string]interface{}) (bool, error) {
 	i, err := json.Marshal(inputs)
 	if err != nil {
-		log.Printf("Serialization Error: %s", err)
+		logger.Error("Serialization Error: %s", err)
 		return false, err
 	}
 	out, err := d.runner.Call(&Input{Data: string(i), Code: d.fNum})
@@ -106,7 +106,7 @@ type LocalRunner struct {
 
 func StartLocalExecutor(workdir string) (Runner, error) {
 
-	d, err := ioutil.TempDir(workdir, "sifterexec_") //TODO: use directory from user config
+	d, err := os.MkdirTemp(workdir, "sifterexec_") //TODO: use directory from user config
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func StartLocalExecutor(workdir string) (Runner, error) {
 	stdout, _ := cmd.StdoutPipe()
 	err = cmd.Start()
 	if err != nil {
-		log.Printf("Error starting python: %s", err)
+		logger.Error("Error starting python: %s", err)
 		return nil, err
 	}
 
@@ -152,7 +152,7 @@ func StartLocalExecutor(workdir string) (Runner, error) {
 					d := buf[:n]
 					out = append(out, d...)
 				}
-				log.Printf("Read %d (%s) Buffer: %s", n, ierr, string(out))
+				logger.Debug("Read %d (%s) Buffer: %s", n, ierr, string(out))
 				if strings.Contains(string(out), "\n") {
 					t := strings.Split(string(out), "\n")
 					log.Printf("Return port: %s", out)
@@ -164,9 +164,9 @@ func StartLocalExecutor(workdir string) (Runner, error) {
 			}
 			if ierr != nil {
 				if ierr == io.EOF {
-					log.Printf("Executor closed")
+					logger.Debug("Executor closed")
 					if cmd.ProcessState.ExitCode() != 0 {
-						log.Printf("Executor error: %d", cmd.ProcessState.ExitCode())
+						logger.Error("Executor error: %d", cmd.ProcessState.ExitCode())
 					}
 					ierr = nil
 				}

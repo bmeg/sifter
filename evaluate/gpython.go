@@ -2,8 +2,8 @@ package evaluate
 
 import (
 	"fmt"
-	"log"
 
+	"github.com/bmeg/sifter/logger"
 	"github.com/go-python/gpython/py"
 	_ "github.com/go-python/gpython/stdlib" // Load modiles in gpython environment
 )
@@ -80,7 +80,7 @@ func PyObject(i interface{}) py.Object {
 	} else if i == nil {
 		return py.None
 	} else {
-		log.Printf("gpython conversion Not found: %T", i)
+		logger.Error("gpython conversion Not found: %T", i)
 	}
 	return nil
 }
@@ -127,7 +127,7 @@ func FromPyObject(i py.Object) interface{} {
 	} else if i == py.None {
 		return nil
 	} else {
-		log.Printf("gpython conversion Not found: %T", i)
+		logger.Error("gpython conversion Not found: %T", i)
 	}
 	return nil
 }
@@ -138,7 +138,7 @@ type PyCode struct {
 
 func PyCompile(codeStr string) (*PyCode, error) {
 
-	log.Printf("Gpython compile: %s", codeStr)
+	logger.Debug("Gpython compile: %s", codeStr)
 
 	opts := py.ContextOpts{SysArgs: []string{}, SysPaths: []string{}}
 	ctx := py.NewContext(opts)
@@ -166,9 +166,9 @@ func (p *PyCode) Evaluate(method string, inputs ...map[string]interface{}) (map[
 	out, err := py.Call(fun, in, nil)
 	if err != nil {
 		py.TracebackDump(err)
-		log.Printf("Error Inputs: %#v", inputs)
-		log.Printf("Error Inputs: %#v", in)
-		log.Printf("Map Error: %s", err)
+		logger.Error("Error Inputs: %#v", inputs)
+		logger.Error("Error Inputs: %#v", in)
+		logger.Error("Map Error: %s", err)
 		return nil, err
 	}
 	o := FromPyObject(out)
@@ -188,9 +188,9 @@ func (p *PyCode) EvaluateArray(method string, inputs ...map[string]interface{}) 
 	out, err := py.Call(fun, in, nil)
 	if err != nil {
 		py.TracebackDump(err)
-		log.Printf("Error Inputs: %#v", inputs)
-		log.Printf("Error Inputs: %#v", in)
-		log.Printf("Map Error: %s", err)
+		logger.Error("Error Inputs: %#v", inputs)
+		logger.Error("Error Inputs: %#v", in)
+		logger.Error("Map Error: %s", err)
 		return nil, err
 	}
 	o := FromPyObject(out)
@@ -210,7 +210,7 @@ func (p *PyCode) EvaluateBool(method string, inputs ...map[string]interface{}) (
 	out, err := py.Call(fun, in, nil)
 	if err != nil {
 		py.TracebackDump(err)
-		log.Printf("Map Error: %s", err)
+		logger.Error("Map Error: %s", err)
 		return false, err
 	}
 	o := FromPyObject(out)

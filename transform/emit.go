@@ -2,6 +2,7 @@ package transform
 
 import (
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -13,19 +14,21 @@ type EmitStep struct {
 type emitProcess struct {
 	config EmitStep
 	task   task.RuntimeTask
+	count  uint64
 }
 
 func (ts EmitStep) Init(t task.RuntimeTask) (Processor, error) {
-	return &emitProcess{ts, t}, nil
+	return &emitProcess{ts, t, 0}, nil
 }
 
-func (ts *emitProcess) Close() {}
+func (ts *emitProcess) Close() {
+	logger.Info("Emit Summary", "name", ts.config.Name, "count", ts.count)
+}
 
 func (ts *emitProcess) Process(i map[string]interface{}) []map[string]interface{} {
 	name, err := evaluate.ExpressionString(ts.config.Name, ts.task.GetConfig(), i)
 	if err == nil {
-		// log.Printf("Emitting: %s", i)
-		// log.Printf("value of UseName flag: %t", ts.config.UseName)
+		ts.count++
 		ts.task.Emit(name, i, ts.config.UseName)
 	}
 	return []map[string]any{i}

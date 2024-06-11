@@ -7,12 +7,12 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strings"
 
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 
 	xj "github.com/basgys/goxml2json"
@@ -24,17 +24,16 @@ type XMLLoadStep struct {
 }
 
 func (ml *XMLLoadStep) Start(task task.RuntimeTask) (chan map[string]any, error) {
-	//log.Printf("Starting XML Load")
 	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
 	if err != nil {
-		log.Printf("Error: %s", err)
+		logger.Error("Error open xml", "error", err)
 		return nil, err
 	}
 
 	if _, err := os.Stat(input); os.IsNotExist(err) {
 		return nil, fmt.Errorf("file not found: %s", input)
 	}
-	log.Printf("Loading: %s", input)
+	logger.Info("Loading xml", "input", input)
 
 	fhd, err := os.Open(input)
 	if err != nil {
@@ -77,7 +76,7 @@ func (ml *XMLLoadStep) Start(task task.RuntimeTask) (chan map[string]any, error)
 					// EOF means we're done.
 					break
 				} else if err != nil {
-					log.Printf("Error decoding token: %s", err)
+					logger.Error("Error decoding token", "error", err)
 				}
 				if len(stack) >= ml.Level {
 					buffer = append(buffer, xml.CopyToken(tok))

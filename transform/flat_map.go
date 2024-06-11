@@ -4,9 +4,9 @@ import (
 
 	//"sync"
 	"fmt"
-	"log"
 
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -23,20 +23,20 @@ type flatMapProcess struct {
 
 func (ms *FlatMapStep) Init(task task.RuntimeTask) (Processor, error) {
 	if ms.Python != "" {
-		log.Printf("Init Map: %s", ms.Python)
+		logger.Debug("Init Map: %s", ms.Python)
 		e := evaluate.GetEngine("python", task.WorkDir())
 		c, err := e.Compile(ms.Python, ms.Method)
 		if err != nil {
-			log.Printf("Compile Error: %s", err)
+			logger.Error("Compile Error: %s", err)
 		}
 		return &flatMapProcess{ms, c}, nil
 	} else if ms.GPython != nil {
-		log.Printf("Init Map: %s", ms.GPython)
+		logger.Debug("Init Map: %s", ms.GPython)
 		ms.GPython.SetBaseDir(task.BaseDir())
 		e := evaluate.GetEngine("gpython", task.WorkDir())
 		c, err := e.Compile(ms.GPython.String(), ms.Method)
 		if err != nil {
-			log.Printf("Compile Error: %s", err)
+			logger.Error("Compile Error: %s", err)
 		}
 		return &flatMapProcess{ms, c}, nil
 	}
@@ -50,15 +50,14 @@ func (mp *flatMapProcess) PoolReady() bool {
 func (mp *flatMapProcess) Process(i map[string]interface{}) []map[string]interface{} {
 	o, err := mp.proc.EvaluateArray(i)
 	if err != nil {
-		log.Printf("FlatMap Step error: %s", err)
+		logger.Error("FlatMap Step error: %s", err)
 	}
-	//log.Printf("Flatmap out: %#v", o)
 	out := []map[string]any{}
 	for _, i := range o {
 		if m, ok := i.(map[string]any); ok {
 			out = append(out, m)
 		} else {
-			log.Printf("Flatmap output error: %#v", i)
+			logger.Error("Flatmap output error: %#v", i)
 		}
 	}
 	return out

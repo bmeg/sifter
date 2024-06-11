@@ -2,9 +2,9 @@ package transform
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -27,20 +27,20 @@ type filterProcessor struct {
 func (fs FilterStep) Init(task task.RuntimeTask) (Processor, error) {
 
 	if fs.Python != "" && fs.Method != "" {
-		log.Printf("Starting Filter Map: %s", fs.Python)
+		logger.Debug("Starting Filter Map: %s", fs.Python)
 		e := evaluate.GetEngine("python", task.WorkDir())
 		c, err := e.Compile(fs.Python, fs.Method)
 		if err != nil {
-			log.Printf("Compile Error: %s", err)
+			logger.Error("Compile Error: %s", err)
 		}
 		return &filterProcessor{fs, c, task}, nil
 	} else if fs.GPython != nil && fs.Method != "" {
-		log.Printf("Starting Filter Map: %s", fs.GPython)
+		logger.Debug("Starting Filter Map: %s", fs.GPython)
 		fs.GPython.SetBaseDir(task.BaseDir())
 		e := evaluate.GetEngine("gpython", task.WorkDir())
 		c, err := e.Compile(fs.GPython.String(), fs.Method)
 		if err != nil {
-			log.Printf("Compile Error: %s", err)
+			logger.Error("Compile Error: %s", err)
 		}
 		return &filterProcessor{fs, c, task}, nil
 	}
@@ -58,7 +58,7 @@ func (fs *filterProcessor) Process(row map[string]interface{}) []map[string]any 
 	if fs.proc != nil {
 		out, err := fs.proc.EvaluateBool(row)
 		if err != nil {
-			log.Printf("Filter Error: %s", err)
+			logger.Error("Filter Error: %s", err)
 		}
 		if out {
 			return []map[string]any{row}
@@ -70,7 +70,7 @@ func (fs *filterProcessor) Process(row map[string]interface{}) []map[string]any 
 	if fs.config.Value != "" {
 		value, err = evaluate.ExpressionString(fs.config.Value, fs.task.GetConfig(), row)
 		if err != nil {
-			log.Printf("Expression Error: %s", err)
+			logger.Error("Expression Error: %s", err)
 		}
 	} else if fs.config.Field != "" {
 		i, e := evaluate.GetJSONPath(fs.config.Field, row)
@@ -86,7 +86,7 @@ func (fs *filterProcessor) Process(row map[string]interface{}) []map[string]any 
 		return []map[string]any{}
 	} else if fs.config.Check == "hasValue" {
 		if err != nil {
-			log.Printf("Field Error: %s", err)
+			logger.Error("Field Error: %s", err)
 		}
 		if err == nil && value != "" {
 			return []map[string]any{row}
@@ -94,7 +94,7 @@ func (fs *filterProcessor) Process(row map[string]interface{}) []map[string]any 
 		return []map[string]any{}
 	} else if fs.config.Check == "not" {
 		if err != nil {
-			log.Printf("Field Error: %s", err)
+			logger.Error("Field Error: %s", err)
 		}
 		if err == nil && value != fs.config.Match {
 			return []map[string]any{row}

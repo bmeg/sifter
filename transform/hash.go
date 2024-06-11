@@ -32,7 +32,7 @@ func (fs HashStep) Init(task task.RuntimeTask) (Processor, error) {
 	} else if fs.Method == "md5" || fs.Method == "" {
 		return &hashProcessor{fs, md5.New(), task}, nil
 	}
-	return nil, fmt.Errorf("Hash method %s not found", fs.Method)
+	return nil, fmt.Errorf("hash method %s not found", fs.Method)
 }
 
 func (fs *hashProcessor) Process(i map[string]any) []map[string]any {

@@ -55,31 +55,32 @@ type Transform interface {
 }
 
 type Step struct {
-	Docs           string              `json:"docs"`
-	From           *FromStep           `json:"from"`
-	Split          *SplitStep          `json:"split"`
-	FieldParse     *FieldParseStep     `json:"fieldParse" jsonschema_description:"fieldParse to run"`
-	FieldType      *FieldTypeStep      `json:"fieldType" jsonschema_description:"Change type of a field (ie string -> integer)"`
-	ObjectValidate *ObjectValidateStep `json:"objectValidate" jsonschema_description:"Validate a JSON schema based object"`
-	Emit           *EmitStep           `json:"emit" jsonschema_description:"Write to unstructured JSON file"`
-	Filter         *FilterStep         `json:"filter"`
-	Clean          *CleanStep          `json:"clean"`
-	Debug          *DebugStep          `json:"debug" jsonschema_description:"Print message contents to stdout"`
-	RegexReplace   *RegexReplaceStep   `json:"regexReplace"`
-	Project        *ProjectStep        `json:"project" jsonschema_description:"Run a projection mapping message"`
-	Map            *MapStep            `json:"map" jsonschema_description:"Apply a single function to all records"`
-	Plugin         *PluginStep         `json:"plugin"`
-	FlatMap        *FlatMapStep        `json:"flatmap" jsonschema_description:"Apply a single function to all records, flatten list responses"`
-	Reduce         *ReduceStep         `json:"reduce"`
-	Distinct       *DistinctStep       `json:"distinct"`
-	FieldProcess   *FieldProcessStep   `json:"fieldProcess" jsonschema_description:"Take an array field from a message and run in child transform"`
-	DropNull       *DropNullStep       `json:"dropNull"`
-	Lookup         *LookupStep         `json:"lookup"`
-	Hash           *HashStep           `json:"hash"`
-	GraphBuild     *GraphBuildStep     `json:"graphBuild"`
-	TableWrite     *TableWriteStep     `json:"tableWrite"`
-	Accumulate     *AccumulateStep     `json:"accumulate"`
-	UUID           *UUIDStep           `json:"uuid"`
+	Docs              string              `json:"docs"`
+	From              *FromStep           `json:"from"`
+	Split             *SplitStep          `json:"split"`
+	FieldParse        *FieldParseStep     `json:"fieldParse" jsonschema_description:"fieldParse to run"`
+	FieldType         *FieldTypeStep      `json:"fieldType" jsonschema_description:"Change type of a field (ie string -> integer)"`
+	ObjectValidate    *ObjectValidateStep `json:"objectValidate" jsonschema_description:"Validate a JSON schema based object"`
+	Emit              *EmitStep           `json:"emit" jsonschema_description:"Write to unstructured JSON file"`
+	Filter            *FilterStep         `json:"filter"`
+	Clean             *CleanStep          `json:"clean"`
+	Debug             *DebugStep          `json:"debug" jsonschema_description:"Print message contents to stdout"`
+	RegexReplace      *RegexReplaceStep   `json:"regexReplace"`
+	Project           *ProjectStep        `json:"project" jsonschema_description:"Run a projection mapping message"`
+	Map               *MapStep            `json:"map" jsonschema_description:"Apply a single function to all records"`
+	Plugin            *PluginStep         `json:"plugin"`
+	FlatMap           *FlatMapStep        `json:"flatmap" jsonschema_description:"Apply a single function to all records, flatten list responses"`
+	Reduce            *ReduceStep         `json:"reduce"`
+	Distinct          *DistinctStep       `json:"distinct"`
+	FieldProcess      *FieldProcessStep   `json:"fieldProcess" jsonschema_description:"Take an array field from a message and run in child transform"`
+	DropNull          *DropNullStep       `json:"dropNull"`
+	Lookup            *LookupStep         `json:"lookup"`
+	IntervalIntersect *IntervalStep       `json:"intervalIntersect"`
+	Hash              *HashStep           `json:"hash"`
+	GraphBuild        *GraphBuildStep     `json:"graphBuild"`
+	TableWrite        *TableWriteStep     `json:"tableWrite"`
+	Accumulate        *AccumulateStep     `json:"accumulate"`
+	UUID              *UUIDStep           `json:"uuid"`
 }
 
 type Pipe []Step

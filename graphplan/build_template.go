@@ -2,12 +2,12 @@ package graphplan
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"text/template"
 
 	"github.com/bmeg/sifter/evaluate"
+	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/playbook"
 	"github.com/bmeg/sifter/task"
 )
@@ -76,7 +76,7 @@ func uniqueName(name string, used []string) string {
 	}
 }
 
-func NewGraphBuild(pb *playbook.Playbook, scriptOutDir, dataDir string) error {
+func NewGraphBuild(pb *playbook.Playbook, scriptOutDir, dataDir string, objectExclude []string) error {
 	userInputs := map[string]string{}
 	localInputs, _ := pb.PrepConfig(userInputs, filepath.Dir(pb.GetPath()))
 
@@ -96,41 +96,44 @@ func NewGraphBuild(pb *playbook.Playbook, scriptOutDir, dataDir string) error {
 		if emitName != "" {
 			for _, s := range p {
 				if s.ObjectValidate != nil {
-					schema, _ := evaluate.ExpressionString(s.ObjectValidate.Schema, task.GetConfig(), map[string]any{})
-					outdir := pb.GetDefaultOutDir()
-					outname := fmt.Sprintf("%s.%s.%s.json.gz", pb.Name, pname, emitName)
+					if !contains(s.ObjectValidate.Title, objectExclude) {
+						schema, _ := evaluate.ExpressionString(s.ObjectValidate.Schema, task.GetConfig(), map[string]any{})
+						outdir := pb.GetDefaultOutDir()
+						outname := fmt.Sprintf("%s.%s.%s.json.gz", pb.Name, pname, emitName)
 
-					outpath := filepath.Join(outdir, outname)
-					outpath, _ = filepath.Rel(scriptOutDir, outpath)
+						outpath := filepath.Join(outdir, outname)
+						outpath, _ = filepath.Rel(scriptOutDir, outpath)
 
-					schemaPath, _ := filepath.Rel(scriptOutDir, schema)
+						schemaPath, _ := filepath.Rel(scriptOutDir, schema)
 
-					_ = schemaPath
+						_ = schemaPath
 
-					objCreate := ObjectConvertStep{Name: pname, Input: outpath, Class: s.ObjectValidate.Title, Schema: schemaPath}
-					gb.Objects = append(gb.Objects, objCreate)
-
+						objCreate := ObjectConvertStep{Name: pname, Input: outpath, Class: s.ObjectValidate.Title, Schema: schemaPath}
+						gb.Objects = append(gb.Objects, objCreate)
+					}
 				}
 			}
 		}
 	}
 
 	if len(gb.Objects) > 0 {
-		log.Printf("Found %d objects", len(gb.Objects))
 		tmpl, err := template.New("graphscript").Parse(graphScript)
 		if err != nil {
 			panic(err)
 		}
 
-		outfile, err := os.Create(filepath.Join(scriptOutDir, fmt.Sprintf("%s.yaml", pb.Name)))
+		outPath := filepath.Join(scriptOutDir, fmt.Sprintf("%s.yaml", pb.Name))
+		outfile, err := os.Create(outPath)
 		if err != nil {
-			fmt.Printf("Error: %s\n", err)
+			logger.Error("File Error", "error", err)
 		}
+
+		logger.Info("Summary", "ObjectFound", len(gb.Objects), "outPath", outPath)
 
 		err = tmpl.Execute(outfile, gb)
 		outfile.Close()
 		if err != nil {
-			fmt.Printf("Error: %s\n", err)
+			logger.Error("Template Error", "error", err)
 		}
 	}
 	return nil

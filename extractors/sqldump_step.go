@@ -87,7 +87,8 @@ func (ml *SQLDumpStep) Start(task task.RuntimeTask) (chan map[string]interface{}
 			case *sqlparser.Insert:
 				//fmt.Printf("Inserting into: %s\n", stmt.Table.Name)
 
-				tableName := stmt.Table.Name.CompliantName()
+				t, _ := stmt.Table.TableName()
+				tableName := t.Name.CompliantName()
 
 				if _, ok := tables[tableName]; ok || len(tables) == 0 {
 					cols := tableColumns[tableName]

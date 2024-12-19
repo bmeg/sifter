@@ -61,7 +61,8 @@ func (ml *SQLDumpStep) Start(task task.RuntimeTask) (chan map[string]interface{}
 		defer close(out)
 		tableColumns := map[string][]string{}
 		data, _ := io.ReadAll(hd)
-		tokens := sqlparser.NewStringTokenizer(string(data))
+		parser := sqlparser.Parser{}
+		tokens := parser.NewStringTokenizer(string(data))
 		for {
 			stmt, err := sqlparser.ParseNext(tokens)
 			if err == io.EOF {

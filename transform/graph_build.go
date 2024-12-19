@@ -1,7 +1,8 @@
 package transform
 
 import (
-	schema "github.com/bmeg/jsonschemagraph/util"
+	"github.com/bmeg/grip/gripql"
+	"github.com/bmeg/jsonschemagraph/graph"
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/logger"
@@ -24,7 +25,7 @@ type GraphBuildStep struct {
 type graphBuildProcess struct {
 	config GraphBuildStep
 	task   task.RuntimeTask
-	sch    schema.GraphSchema
+	sch    graph.GraphSchema
 	class  string
 
 	edgeFix evaluate.Processor
@@ -37,7 +38,7 @@ func (ts GraphBuildStep) Init(task task.RuntimeTask) (Processor, error) {
 		return nil, err
 	}
 
-	sc, err := schema.Load(path)
+	sc, err := graph.Load(path)
 	if err != nil {
 		return nil, err
 	}
@@ -82,21 +83,16 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 
 	out := []map[string]any{}
 
-	if o, err := ts.sch.Generate(ts.class, i, ts.config.Clean); err == nil {
+	if o, err := ts.sch.Generate(ts.class, i, ts.config.Clean, map[string]any{}); err == nil {
 		for _, j := range o {
 			if j.Vertex != nil {
 				err := ts.task.Emit("vertex", ts.vertexToMap(j.Vertex), false)
 				if err != nil {
 					logger.Error("Emit Error: %s", err)
 				}
-			} else if j.OutEdge != nil || j.InEdge != nil {
-				var edge *schema.Edge
-				if j.OutEdge != nil {
-					edge = j.OutEdge
-				}
-				if j.InEdge != nil {
-					edge = j.InEdge
-				}
+			} else if j.Edge != nil {
+				var edge *gripql.Edge
+				edge = j.Edge
 				if edge != nil {
 					edgeData := ts.edgeToMap(edge)
 					if ts.edgeFix != nil {
@@ -120,7 +116,7 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 
 }
 
-func (ts *graphBuildProcess) edgeToMap(e *schema.Edge) map[string]interface{} {
+func (ts *graphBuildProcess) edgeToMap(e *gripql.Edge) map[string]interface{} {
 	d := e.Data.AsMap()
 	if d == nil {
 		d = map[string]interface{}{}
@@ -146,7 +142,7 @@ func (ts *graphBuildProcess) edgeToMap(e *schema.Edge) map[string]interface{} {
 	return out
 }
 
-func (ts *graphBuildProcess) vertexToMap(v *schema.Vertex) map[string]interface{} {
+func (ts *graphBuildProcess) vertexToMap(v *gripql.Vertex) map[string]interface{} {
 	d := v.Data.AsMap()
 	if d == nil {
 		d = map[string]interface{}{}

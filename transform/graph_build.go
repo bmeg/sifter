@@ -93,16 +93,15 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 	out := []map[string]any{}
 	if o, err := ts.sch.Generate(ts.class, i, ts.config.Clean, map[string]any{}); err == nil {
 		ts.objectCount++
-		for _, j := range o {
-			if j.Vertex != nil {
+		for i := range o {
+			if o[i].Vertex != nil {
 				ts.vertexCount++
-				err := ts.task.Emit("vertex", ts.vertexToMap(j.Vertex), false)
+				err := ts.task.Emit("vertex", ts.vertexToMap(o[i].Vertex), false)
 				if err != nil {
 					logger.Error("Emit Error: %s", err)
 				}
-			} else if j.Edge != nil {
-				var edge *gripql.Edge
-				edge = j.Edge
+			} else if o[i].Edge != nil {
+				var edge *gripql.Edge = o[i].Edge
 				if edge != nil {
 					edgeData := ts.edgeToMap(edge)
 					if ts.edgeFix != nil {

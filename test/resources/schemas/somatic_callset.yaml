@@ -23,7 +23,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: somatic_callsets
+    backref: 
+    - somatic_callsets
 - rel: aliquots
   href: aliquot/{id}
   templateRequired:
@@ -37,7 +38,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: somatic_callsets
+    backref: 
+    - somatic_callsets
 properties:
   id:
     type: string

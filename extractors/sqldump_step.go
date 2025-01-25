@@ -61,7 +61,8 @@ func (ml *SQLDumpStep) Start(task task.RuntimeTask) (chan map[string]interface{}
 		defer close(out)
 		tableColumns := map[string][]string{}
 		data, _ := io.ReadAll(hd)
-		tokens := sqlparser.NewStringTokenizer(string(data))
+		parser := sqlparser.Parser{}
+		tokens := parser.NewStringTokenizer(string(data))
 		for {
 			stmt, err := sqlparser.ParseNext(tokens)
 			if err == io.EOF {
@@ -87,7 +88,8 @@ func (ml *SQLDumpStep) Start(task task.RuntimeTask) (chan map[string]interface{}
 			case *sqlparser.Insert:
 				//fmt.Printf("Inserting into: %s\n", stmt.Table.Name)
 
-				tableName := stmt.Table.Name.CompliantName()
+				t, _ := stmt.Table.TableName()
+				tableName := t.Name.CompliantName()
 
 				if _, ok := tables[tableName]; ok || len(tables) == 0 {
 					cols := tableColumns[tableName]

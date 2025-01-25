@@ -23,7 +23,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: genomic_features
+    backref: 
+    - genomic_features
 properties:
   annotations:
     type:

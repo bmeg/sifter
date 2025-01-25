@@ -3,13 +3,13 @@ package transform
 import (
 	"fmt"
 
-	schema "github.com/bmeg/jsonschemagraph/util"
+	"github.com/bmeg/jsonschema/v5"
+	_ "github.com/bmeg/jsonschema/v5/httploader" // setup the httploader for the jsonschema checker
+	"github.com/bmeg/jsonschemagraph/graph"
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/logger"
 	"github.com/bmeg/sifter/task"
-	"github.com/santhosh-tekuri/jsonschema/v5"
-	_ "github.com/santhosh-tekuri/jsonschema/v5/httploader" // setup the httploader for the jsonschema checker
 )
 
 type ObjectValidateStep struct {
@@ -22,7 +22,7 @@ type objectProcess struct {
 	config      ObjectValidateStep
 	task        task.RuntimeTask
 	className   string
-	schema      schema.GraphSchema
+	schema      graph.GraphSchema
 	class       *jsonschema.Schema
 	errorCount  int
 	objectCount uint64
@@ -34,7 +34,7 @@ func (ts ObjectValidateStep) Init(task task.RuntimeTask) (Processor, error) {
 		return nil, err
 	}
 
-	sc, err := schema.Load(path)
+	sc, err := graph.Load(path)
 	if err != nil {
 		return nil, err
 	}

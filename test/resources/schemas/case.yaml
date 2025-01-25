@@ -24,7 +24,10 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: cases
+    backref:
+    - cases
+    regex_match:
+    - Compound/*
 - rel: projects
   href: project/{id}
   templateRequired:
@@ -38,7 +41,10 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: cases
+    backref:
+    - cases
+    regex_match:
+    - Project/*
 - rel: phenotypes
   href: phenotype/{id}
   templateRequired:
@@ -52,7 +58,10 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: cases
+    backref: 
+    - cases
+    regex_match:
+    - Phenotypes/*
 - rel: same_as
   href: case/{id}
   templateRequired:
@@ -66,7 +75,10 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: cases
+    backref: 
+    - cases
+    regex_match:
+    - Case/*
 properties:
   case_id:
     type: string

@@ -32,11 +32,15 @@ func (pb *Playbook) PrepConfig(inputs map[string]string, workdir string) (map[st
 				out[v.Name] = val
 			}
 		} else if val, ok := pb.Config[v.Name]; ok {
-			if v.IsFile() || v.IsDir() {
-				defaultPath := filepath.Join(filepath.Dir(pb.path), val)
-				out[v.Name], _ = filepath.Abs(defaultPath)
+			if val != nil {
+				if v.IsFile() || v.IsDir() {
+					defaultPath := filepath.Join(filepath.Dir(pb.path), *val)
+					out[v.Name], _ = filepath.Abs(defaultPath)
+				} else {
+					out[v.Name] = *val
+				}
 			} else {
-				out[v.Name] = val
+				return nil, fmt.Errorf("undefine parameter %s", v.Name)
 			}
 		} else {
 			return nil, fmt.Errorf("config %s not defined", v.Name)

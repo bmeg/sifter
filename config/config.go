@@ -2,7 +2,7 @@ package config
 
 import "strings"
 
-type Config map[string]string
+type Config map[string]*string
 
 type Type string
 

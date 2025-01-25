@@ -28,7 +28,8 @@ links:
     - outbound
     multiplicity:
     - has_one
-    backref: samples
+    backref: 
+    - samples
 - rel: projects
   href: project/{id}
   templateRequired:
@@ -42,7 +43,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: samples
+    backref: 
+    - samples
 - rel: phenotypes
   href: phenotype/{id}
   templateRequired:
@@ -56,7 +58,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: samples
+    backref: 
+    - samples
 properties:
   id:
     type: string

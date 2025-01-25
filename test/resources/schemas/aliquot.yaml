@@ -24,7 +24,8 @@ links:
     - outbound
     multiplicity:
     - has_one
-    backref: aliquots
+    backref: 
+    - aliquots
 - rel: projects
   href: project/{id}
   templateRequired:
@@ -38,7 +39,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: aliquots
+    backref: 
+    - aliquots
 properties:
   id:
     type: string

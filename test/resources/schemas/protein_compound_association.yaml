@@ -21,7 +21,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: protein_compound_associations
+    backref: 
+    - protein_compound_associations
 - rel: genes
   href: gene/{id}
   templateRequired:
@@ -35,7 +36,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: protein_compound_associations
+    backref: 
+    - protein_compound_associations
 - rel: compound
   href: compound/{id}
   templateRequired:
@@ -49,7 +51,8 @@ links:
     - outbound
     multiplicity:
     - has_one
-    backref: protein_compound_associations
+    backref: 
+    - protein_compound_associations
 - rel: publications
   href: publication/{id}
   templateRequired:
@@ -63,7 +66,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: protein_compound_associations
+    backref: 
+    - protein_compound_associations
 - rel: protein_structures
   href: protein_structure/{id}
   templateRequired:
@@ -77,7 +81,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: protein_compound_associations
+    backref: 
+    - protein_compound_associations
 properties:
   id:
     type: string

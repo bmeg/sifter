@@ -23,7 +23,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: pathways
+    backref: 
+    - pathways
 - rel: interactions
   href: interaction/{id}
   templateRequired:
@@ -37,7 +38,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: pathways
+    backref: 
+    - pathways
 - rel: sub_pathways
   href: pathway/{id}
   templateRequired:
@@ -51,7 +53,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: pathways
+    backref: 
+    - pathways
 - rel: publications
   href: publication/{id}
   templateRequired:

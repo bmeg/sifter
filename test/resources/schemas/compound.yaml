@@ -21,7 +21,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: compounds
+    backref: 
+    - compounds
 properties:
   id:
     type: string

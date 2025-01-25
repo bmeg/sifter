@@ -25,7 +25,8 @@ links:
     - outbound
     multiplicity:
     - has_one
-    backref: gene_expressions
+    backref: 
+    - gene_expressions
 properties:
   id:
     type: string

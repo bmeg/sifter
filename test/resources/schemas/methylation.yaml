@@ -24,7 +24,8 @@ links:
     - outbound
     multiplicity:
     - has_one
-    backref: methylations
+    backref: 
+    - methylations
 properties:
   method:
     type: string

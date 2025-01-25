@@ -25,7 +25,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: interactions
+    backref: 
+    - interactions
 - rel: publications
   href: publication/{id}
   templateRequired:
@@ -39,7 +40,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: interactions
+    backref: 
+    - interactions
 - rel: interaction_input
   href: interactioninpu/{id}
   templateRequired:

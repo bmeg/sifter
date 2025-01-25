@@ -29,7 +29,8 @@ links:
     - outbound
     multiplicity:
     - has_one
-    backref: transcripts
+    backref: 
+    - transcripts
 properties:
   transcript_id:
     type: string

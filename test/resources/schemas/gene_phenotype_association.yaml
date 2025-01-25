@@ -24,7 +24,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: gene_phenotype_associations
+    backref: 
+    - gene_phenotype_associations
 - rel: alleles
   href: allele/{id}
   templateRequired:
@@ -38,7 +39,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: gene_phenotype_associations
+    backref: 
+    - gene_phenotype_associations
 - rel: genes
   href: gene/{id}
   templateRequired:
@@ -52,7 +54,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: gene_phenotype_associations
+    backref: 
+    - gene_phenotype_associations
 - rel: genomic_features
   href: genomic_feature/{id}
   templateRequired:
@@ -66,7 +69,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: gene_phenotype_associations
+    backref: 
+    - gene_phenotype_associations
 - rel: publications
   href: publication/{id}
   templateRequired:
@@ -80,7 +84,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: gene_phenotype_associations
+    backref: 
+    - gene_phenotype_associations
 - rel: phenotypes
   href: phenotype/{id}
   templateRequired:
@@ -94,7 +99,8 @@ links:
     - outbound
     multiplicity:
     - has_many
-    backref: gene_phenotype_associations
+    backref: 
+    - gene_phenotype_associations
 properties:
   id:
     type: string

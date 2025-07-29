@@ -62,6 +62,6 @@ var Cmd = &cobra.Command{
 func init() {
 	flags := Cmd.Flags()
 	flags.BoolVarP(&verbose, "verbose", "v", verbose, "Verbose logging")
-	flags.StringToStringVarP(&cmdInputs, "inputs", "i", cmdInputs, "Input variables")
-	flags.StringVarP(&inputFile, "inputfile", "f", inputFile, "Input variables file")
+	flags.StringToStringVarP(&cmdInputs, "config", "c", cmdInputs, "Config variable")
+	flags.StringVarP(&inputFile, "configFile", "f", inputFile, "Config file")
 }

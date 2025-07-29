@@ -3,6 +3,7 @@ package playbook
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/bmeg/flame"
 	"github.com/bmeg/sifter/logger"
@@ -22,6 +23,7 @@ func fileExists(filename string) bool {
 
 func (pb *Playbook) PrepConfig(inputs map[string]string, workdir string) (map[string]string, error) {
 	workdir, _ = filepath.Abs(workdir)
+	missing := map[string]bool{}
 	out := map[string]string{}
 	for _, v := range pb.GetConfigFields() {
 		if val, ok := inputs[v.Name]; ok {
@@ -32,15 +34,26 @@ func (pb *Playbook) PrepConfig(inputs map[string]string, workdir string) (map[st
 				out[v.Name] = val
 			}
 		} else if val, ok := pb.Config[v.Name]; ok {
-			if v.IsFile() || v.IsDir() {
-				defaultPath := filepath.Join(filepath.Dir(pb.path), val)
-				out[v.Name], _ = filepath.Abs(defaultPath)
+			if val != nil {
+				if v.IsFile() || v.IsDir() {
+					defaultPath := filepath.Join(filepath.Dir(pb.path), *val)
+					out[v.Name], _ = filepath.Abs(defaultPath)
+				} else {
+					out[v.Name] = *val
+				}
 			} else {
-				out[v.Name] = val
+				missing[v.Name] = true
 			}
 		} else {
 			return nil, fmt.Errorf("config %s not defined", v.Name)
 		}
+	}
+	if len(missing) > 0 {
+		o := []string{}
+		for k := range missing {
+			o = append(o, k)
+		}
+		return nil, fmt.Errorf("missing inputs: %s", strings.Join(o, ","))
 	}
 	return out, nil
 }

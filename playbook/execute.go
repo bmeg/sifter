@@ -28,11 +28,15 @@ func (pb *Playbook) PrepConfig(inputs map[string]string, workdir string) (map[st
 	for _, v := range pb.GetConfigFields() {
 		if val, ok := inputs[v.Name]; ok {
 			if v.IsFile() || v.IsDir() {
-				defaultPath := filepath.Join(workdir, val)
+				var defaultPath = val
+				if !filepath.IsAbs(val) {
+					defaultPath = filepath.Join(workdir, val)
+				}
 				out[v.Name], _ = filepath.Abs(defaultPath)
 			} else {
 				out[v.Name] = val
 			}
+			logger.Debug("input: ", v.Name, out[v.Name])
 		} else if val, ok := pb.Config[v.Name]; ok {
 			if val != nil {
 				if v.IsFile() || v.IsDir() {

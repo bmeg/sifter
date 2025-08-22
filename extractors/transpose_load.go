@@ -246,7 +246,7 @@ func transposeInDB(workdir string, c csvReader, out chan map[string]any) error {
 		}
 		prefix := make([]byte, 8)
 		binary.BigEndian.PutUint64(prefix, col)
-		it := db.NewIter(&pebble.IterOptions{LowerBound: prefix})
+		it, _ := db.NewIter(&pebble.IterOptions{LowerBound: prefix})
 		o := []string{}
 		for it.First(); it.Valid() && bytes.HasPrefix(it.Key(), prefix); it.Next() {
 			v := it.Value()

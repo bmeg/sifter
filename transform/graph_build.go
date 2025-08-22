@@ -131,25 +131,13 @@ func (ts *graphBuildProcess) edgeToMap(e *gripql.Edge) map[string]interface{} {
 	if d == nil {
 		d = map[string]interface{}{}
 	}
-	if ts.config.Flat {
-		if e.Gid != "" {
-			d["_id"] = e.Gid
-		}
-		d["_to"] = e.To
-		d["_from"] = e.From
-		d["_label"] = e.Label
-		return d
+	if e.Id != "" {
+		d["_id"] = e.Id
 	}
-
-	out := map[string]any{}
-	if e.Gid != "" {
-		out["gid"] = e.Gid
-	}
-	out["to"] = e.To
-	out["from"] = e.From
-	out["label"] = e.Label
-	out["data"] = d
-	return out
+	d["_to"] = e.To
+	d["_from"] = e.From
+	d["_label"] = e.Label
+	return d
 }
 
 func (ts *graphBuildProcess) vertexToMap(v *gripql.Vertex) map[string]interface{} {
@@ -157,18 +145,9 @@ func (ts *graphBuildProcess) vertexToMap(v *gripql.Vertex) map[string]interface{
 	if d == nil {
 		d = map[string]interface{}{}
 	}
-	if ts.config.Flat {
-		if v.Gid != "" {
-			d["_id"] = v.Gid
-		}
-		d["_label"] = v.Label
-		return d
+	if v.Id != "" {
+		d["_id"] = v.Id
 	}
-	out := map[string]any{}
-	if v.Gid != "" {
-		out["gid"] = v.Gid
-	}
-	out["label"] = v.Label
-	out["data"] = d
-	return out
+	d["_label"] = v.Label
+	return d
 }

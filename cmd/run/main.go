@@ -35,6 +35,7 @@ var Cmd = &cobra.Command{
 		}
 		for k, v := range cmdInputs {
 			inputs[k] = v
+			logger.Info("Input Params", k, v)
 		}
 		for _, playFile := range args {
 			if playFile == "-" {

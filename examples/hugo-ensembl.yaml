@@ -1,29 +1,25 @@
 
-class: Playbook
+class: sifter
+name: hugo-ensembl
 
-
-desc: >
-  This takes a Gene TSV, filters rows, selects columns and outputs a 2
-  column TSV into the working directory
+config:
+  hugoJSON: ftp://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/json/locus_types/gene_with_protein_product.json
 
 inputs:
-  hugoJSON:
-    type: File
-    default: ftp://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/json/locus_types/gene_with_protein_product.json
+  hugoReader:
+    jsonLoad:
+      input: "{{config.hugoJSON}}"
 
-steps:
-  - jsonLoad:
-      input: "{{inputs.hugoJSON}}"
-      transform:
-        - fieldProcess:
-            field: response.docs
-            steps:
-              - filter:
-                  field: "ensembl_gene_id"
-                  exists: True
-                  steps:
-                    - tableWrite:
-                        output: "hugo-ensembl.table"
-                        columns:
-                          - symbol
-                          - ensembl_gene_id
+pipelines:
+  transform:
+    - from: hugoReader
+    - fieldProcess:
+        field: response.docs
+    - filter:
+        field: ensembl_gene_id
+        check: exists
+    - tableWrite:
+        output: hugo-ensembl.table
+        columns:
+          - symbol
+          - ensembl_gene_id

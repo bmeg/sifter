@@ -1,85 +1,96 @@
 
 
-class: Playbook
-name: GDCCpnvert
+class: sifter
+name: GDCConvert
 
-inputs: {}
+config:
+  schema: bmeg-dictionary/gdcdictionary/schemas
 
-schema: bmeg-dictionary/gdcdictionary/schemas
-
-steps:
-  - desc: Scrape GDC Projects
-    script:
-      dockerImage: bmeg/sifter-gdc-scan
-      command: [/opt/gdc-scan.py, projects]
-  - desc: Scrape GDC Cases
-    script:
-      dockerImage: bmeg/sifter-gdc-scan
-      command: [/opt/gdc-scan.py, cases]
-  - desc: Loading ProjectData
+inputs:
+  projects_scrape:
+    plugin:
+      commandLine: docker run --rm bmeg/sifter-gdc-scan /opt/gdc-scan.py projects
+  cases_scrape:
+    plugin:
+      commandLine: docker run --rm bmeg/sifter-gdc-scan /opt/gdc-scan.py cases
+  projects_data:
     jsonLoad:
       input: out.projects.json
-      transform:
-        - fork:
-            transform:
-              -
-                - project:
-                    mapping:
-                      code: "{{row.project_id}}"
-                      programs: "{{row.program.name}}"
-                - objectCreate:
-                    class: project
-              -
-                - project:
-                    mapping:
-                      code: "{{row.project_id}}"
-                      programs: "{{row.program.name}}"
-                      submitter_id: "{{row.program.name}}"
-                      projects: "{{row.project_id}}"
-                      type: experiment
-                - objectCreate:
-                    class: experiment
-  - desc: Loading CaseData
+  cases_data:
     jsonLoad:
       input: out.case.json
-      transform:
-        - project:
-            mapping:
-              studies: "{{row.project.project_id}}"
-              experiments: "exp:{{row.project.project_id}}"
-              type: case
-        - objectCreate:
-            class: case
-        - fieldProcess:
-            field: samples
-            mapping:
-              cases: "{{row.id}}"
-            steps:
-              #- debug: {}
-              - project:
-                  mapping:
-                    type: sample
-                    id: "{{row.sample_id}}"
-              - objectCreate:
-                  class: sample
-              - fieldProcess:
-                  field: portions
-                  mapping:
-                    samples: "{{row.id}}"
-                  steps:
-                    - fieldProcess:
-                        field: analytes
-                        mapping:
-                          samples: "{{row.samples}}"
-                        steps:
-                          - fieldProcess:
-                              field: aliquots
-                              mapping:
-                                samples: "{{row.samples}}"
-                              steps:
-                                - project:
-                                    mapping:
-                                      type: aliquot
-                                      id: "{{row.aliquot_id}}"
-                                - objectCreate:
-                                    class: aliquot
+
+pipelines:
+  projects:
+    - from: projects_data
+    - project:
+        mapping:
+          code: "{{row.project_id}}"
+          programs: "{{row.program.name}}"
+    - objectValidate:
+        title: project
+        schema: "{{config.schema}}"
+    - emit:
+        name: project
+  
+  experiments:
+    - from: projects_data
+    - project:
+        mapping:
+          code: "{{row.project_id}}"
+          programs: "{{row.program.name}}"
+          submitter_id: "{{row.program.name}}"
+          projects: "{{row.project_id}}"
+          type: experiment
+    - objectValidate:
+        title: experiment
+        schema: "{{config.schema}}"
+    - emit:
+        name: experiment
+
+  cases:
+    - from: cases_data
+    - project:
+        mapping:
+          studies: "{{row.project.project_id}}"
+          experiments: "exp:{{row.project.project_id}}"
+          type: case
+    - objectValidate:
+        title: case
+        schema: "{{config.schema}}"
+    - emit:
+        name: case
+
+  samples:
+    - from: cases_data
+    - fieldProcess:
+        field: samples
+    - project:
+        mapping:
+          type: sample
+          id: "{{row.sample_id}}"
+    - objectValidate:
+        title: sample
+        schema: "{{config.schema}}"
+    - emit:
+        name: sample
+
+  aliquots:
+    - from: cases_data
+    - fieldProcess:
+        field: samples
+    - fieldProcess:
+        field: portions
+    - fieldProcess:
+        field: analytes
+    - fieldProcess:
+        field: aliquots
+    - project:
+        mapping:
+          type: aliquot
+          id: "{{row.aliquot_id}}"
+    - objectValidate:
+        title: aliquot
+        schema: "{{config.schema}}"
+    - emit:
+        name: aliquot

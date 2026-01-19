@@ -7,6 +7,7 @@ import (
 	"github.com/bmeg/sifter/cmd/inspect"
 	"github.com/bmeg/sifter/cmd/run"
 	"github.com/bmeg/sifter/cmd/scan"
+	"github.com/bmeg/sifter/cmd/web"
 	"github.com/spf13/cobra"
 )
 
@@ -22,6 +23,7 @@ func init() {
 	RootCmd.AddCommand(inspect.Cmd)
 	RootCmd.AddCommand(graphplan.Cmd)
 	RootCmd.AddCommand(scan.Cmd)
+	RootCmd.AddCommand(web.Cmd)
 }
 
 var genBashCompletionCmd = &cobra.Command{

@@ -1,0 +1,18 @@
+site_name: Sifter
+
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: custom
+  features:
+    - navigation.indexes 
+    # - navigation.footer
+    - content.code.copy
+    - navigation.tabs
+    # - navigation.sections
+    - navigation.top
+    - header.autohide
+    - navigation.tabs

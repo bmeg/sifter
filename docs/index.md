@@ -7,5 +7,3 @@ files and external databases. It includes a pipeline description language to
 define a set of Transform steps to create object messages that can be
 validated using a JSON schema data.
 
-
-![Example of sifter code](sifter_example.png)

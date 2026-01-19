@@ -1,11 +1,3 @@
----
-title: Example
-menu:
-  main:
-    identifier: example
-    weight: 3
----
-
 
 # Example Pipeline
 Our first task will be to convert a ZIP code TSV into a set of county level

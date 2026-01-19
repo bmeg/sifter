@@ -1,15 +1,7 @@
 
----
-title: Overview
-menu:
-  main:
-    identifier: overview
-    weight: 1
----
-
 # Sifter pipelines
 
-Sifter pipelines process steams of nested JSON messages. Sifter comes with a number of 
+Sifter pipelines process streams of nested JSON messages. Sifter comes with a number of 
 file extractors that operate as inputs to these pipelines. The pipeline engine 
 connects togeather arrays of transform steps into directed acylic graph that is processed
 in parallel.

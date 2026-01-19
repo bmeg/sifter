@@ -20,8 +20,10 @@ A Playbook is a YAML file that defines an ETL pipeline.
 
 ## Configuration Variables (`config`)
 
-Configuration variables allow playbooks to be parameterized.
 
+Configuration variables allow playbooks to be parameterized. They are defined in the `config` section of the playbook YAML file.
+
+### Configuration Syntax
 ```yaml
 config:
   variableName:
@@ -29,7 +31,25 @@ config:
     default: "path/to/default"
 ```
 
----
+### Supported Types
+- `File`: Represents a file path
+- `Dir`: Represents a directory path
+
+### Example Configuration
+```yaml
+config:
+  inputDir:
+    type: Dir
+    default: "./data/input"
+  outputDir:
+    type: Dir
+    default: "./data/output"
+  schemaFile:
+    type: File
+    default: "./config/schema.json"
+```
+
+
 
 ## Input Methods (Extractors)
 

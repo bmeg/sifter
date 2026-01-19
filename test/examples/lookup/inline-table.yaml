@@ -1,14 +1,16 @@
 
 outdir: output/
 
-config:
-  json: ../../resources/projects.json
+params:
+  json:
+    type: File
+    default: ../../resources/projects.json
 
 
 inputs:
   jsonData:
     jsonLoad:
-      input: "{{config.json}}"
+      input: "{{params.json}}"
 
 
 pipelines:

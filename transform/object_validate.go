@@ -54,11 +54,11 @@ func (ts ObjectValidateStep) Init(task task.RuntimeTask) (Processor, error) {
 	return nil, fmt.Errorf("class not configured")
 }
 
-func (ts ObjectValidateStep) GetConfigFields() []config.Variable {
-	out := []config.Variable{}
+func (ts ObjectValidateStep) GetRequiredParams() []config.ParamRequest {
+	out := []config.ParamRequest{}
 	if ts.Schema != "" {
 		for _, s := range evaluate.ExpressionIDs(ts.Schema) {
-			out = append(out, config.Variable{Type: config.Dir, Name: config.TrimPrefix(s)})
+			out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 		}
 	}
 	return out

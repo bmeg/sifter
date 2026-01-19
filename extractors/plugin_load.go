@@ -81,10 +81,10 @@ func (ml *PluginLoadStep) Start(task task.RuntimeTask) (chan map[string]interfac
 	return procChan, nil
 }
 
-func (ml *PluginLoadStep) GetConfigFields() []config.Variable {
-	out := []config.Variable{}
+func (ml *PluginLoadStep) GetRequiredParams() []config.ParamRequest {
+	out := []config.ParamRequest{}
 	for _, s := range evaluate.ExpressionIDs(ml.CommandLine) {
-		out = append(out, config.Variable{Type: "File", Name: config.TrimPrefix(s)})
+		out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 	}
 	return out
 }

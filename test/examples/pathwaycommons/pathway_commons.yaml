@@ -2,13 +2,15 @@
 name: pathway_commons
 outdir: output
 
-config:
-  sifFile: ../../resources/pathways.sif
+params:
+  sifFile:
+    type: File
+    default: ../../resources/pathways.sif
 
 inputs:
   sifFile:
     tableLoad:
-      input: "{{config.sifFile}}"
+      input: "{{params.sifFile}}"
       sep: "\t"
       columns: [_from, _label, _to]
 

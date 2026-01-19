@@ -2,14 +2,14 @@
 class: sifter
 name: RefGenome
 
-config:
+params:
   gtfPath: ftp://ftp.ensembl.org/pub/grch37/release-96/gff3/homo_sapiens/Homo_sapiens.GRCh37.87.gff3.gz
   schema: ./bmeg-dictionary/gdcdictionary/schemas
 
 inputs:
   gtfReader:
     tableLoad:
-      input: "{{config.gtfPath}}"
+      input: "{{params.gtfPath}}"
       columns:
         - seqid
         - source
@@ -54,7 +54,7 @@ pipelines:
             return x
     - objectValidate:
         title: exon
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
     - emit:
         name: exon
 
@@ -68,7 +68,7 @@ pipelines:
           gene_id: "{{row.gene_id}}"
     - objectValidate:
         title: gene
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
     - emit:
         name: gene
 
@@ -87,6 +87,6 @@ pipelines:
           transcript_id: "{{row.transcript_id}}"
     - objectValidate:
         title: transcript
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
     - emit:
         name: transcript

@@ -2,13 +2,15 @@
 class: Playbook
 
 
-config:
-  genes: ./gene_with_protein_product.json
+params:
+  genes: 
+    type: File
+    default: ./gene_with_protein_product.json
 
 inputs:
   geneData:
     jsonLoad:
-      input: "{{config.genes}}"
+      input: "{{params.genes}}"
 
 
 pipelines:

@@ -23,7 +23,7 @@ type Playbook struct {
 	MemMB     int                             `json:"memMB"` //annotation of potential memory usage, for build Snakefile
 	Docs      string                          `json:"docs"`
 	Outdir    string                          `json:"outdir"`
-	Config    config.Config                   `json:"config,omitempty" jsonschema_description:"Configuration for Playbook"`
+	Params    config.Params                   `json:"params,omitempty" jsonschema_description:"Parameters for Playbook"`
 	Inputs    map[string]extractors.Extractor `json:"inputs" jsonschema_description:"Steps of the transformation"`
 	Pipelines map[string]transform.Pipe       `json:"pipelines"`
 	path      string

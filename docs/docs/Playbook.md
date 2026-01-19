@@ -64,12 +64,12 @@ any parameters. However, to apply this playbook to a new input file, the
 input parameter `zipcode` could be used to define the source file.
 
 ```
-config:
+params:
   schema:
-    type: Dir
+    type: path
     default: ../covid19_datadictionary/gdcdictionary/schemas/
   zipcode:
-    type: File
+    type: file
     default: ../data/ZIP-COUNTY-FIPS_2017-06.csv
 ```
 
@@ -78,13 +78,13 @@ only one input, which is to run the table loader.
 ```
 inputs:
   tableLoad:
-    input: "{{config.zipcode}}"
+    input: "{{params.zipcode}}"
     sep: ","
 ```
 
 Tableload operaters of the input file that was originally passed in using the
 `inputs` stanza. SIFTER string parsing is based on mustache template system.
-To access the string passed in the template is `{{config.zipcode}}`.
+To access the string passed in the template is `{{params.zipcode}}`.
 The seperator in the file input file is a `,` so that is also passed in as a
 parameter to the extractor.
 
@@ -366,7 +366,7 @@ An array of Extractors, each defining a different extraction step
 ```
 - desc: Untar the input file
   untar:
-    input: "{{inputs.tar}}"
+    input: "{{params.tar}}"
 - desc: Loading Patient List
   tableLoad:
     input: data_clinical_patient.txt
@@ -458,7 +458,7 @@ An array of Extractors, each defining a different extraction step
 ```
 - desc: Convert Census File
   jsonLoad:
-    input: "{{inputs.census}}"
+    input: "{{params.census}}"
     transform:
       ...
 ```
@@ -614,7 +614,7 @@ The transform:
 
 ```
   - tableReplace:
-      input: "{{inputs.stateTable}}"
+      input: "{{params.stateTable}}"
       field: sub_region_1
 ```
 

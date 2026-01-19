@@ -22,13 +22,13 @@ func (pr ProjectStep) Init(t task.RuntimeTask) (Processor, error) {
 	return &projectStepProcess{pr, t}, nil
 }
 
-func (pr ProjectStep) GetConfigFields() []config.Variable {
-	out := []config.Variable{}
+func (pr ProjectStep) GetRequiredParams() []config.ParamRequest {
+	out := []config.ParamRequest{}
 	for _, v := range pr.Mapping {
 		t := scanIds(v)
 		for i := range t {
 			if strings.HasPrefix(t[i], "config.") {
-				out = append(out, config.Variable{Name: config.TrimPrefix(t[i])})
+				out = append(out, config.ParamRequest{Name: config.TrimPrefix(t[i])})
 			}
 		}
 	}

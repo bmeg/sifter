@@ -31,7 +31,7 @@ More detailed descriptions can be found in out [Playbook manual](Playbook.md)
 class: sifter
 name: census_2010
 
-config:
+params:
   census: ../data/census_2010_byzip.json
   date: "2010-01-01"
   schema: ../covid19_datadictionary/gdcdictionary/schemas/
@@ -39,7 +39,7 @@ config:
 inputs:
   censusData:
     jsonLoad:
-      input: "{{config.census}}"
+      input: "{{params.census}}"
 
 pipelines:
   transform:
@@ -54,13 +54,13 @@ pipelines:
         method: f
     - project:
         mapping:
-          submitter_id: "{{row.geo_id}}:{{inputs.date}}"
+          submitter_id: "{{row.geo_id}}:{{params.date}}"
           type: census_report
-          date: "{{config.date}}"
+          date: "{{params.date}}"
           summary_location: "{{row.zipcode}}"
     - objectValidate:
         title: census_report
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
 ```
 
 

@@ -6,13 +6,15 @@ docs: >
   This takes a Gene TSV, filters rows, selects columns and outputs a 2
   column TSV into the working directory
 
-config:
-  geneTSV: ../../resources/gene2ensembl.gz
+params:
+  geneTSV:
+    type: File
+    default: ../../resources/gene2ensembl.gz
 
 inputs:
   genes:
     tableLoad:
-      input: "{{config.geneTSV}}"
+      input: "{{params.geneTSV}}"
       columns:
         - tax_id
         - GeneID

@@ -97,10 +97,10 @@ func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 	return nil, fmt.Errorf("not found")
 }
 
-func (gl *GlobLoadStep) GetConfigFields() []config.Variable {
-	out := []config.Variable{}
+func (gl *GlobLoadStep) GetRequiredParams() []config.ParamRequest {
+	out := []config.ParamRequest{}
 	for _, s := range evaluate.ExpressionIDs(gl.Input) {
-		out = append(out, config.Variable{Type: "File", Name: config.TrimPrefix(s)})
+		out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 	}
 	return out
 }

@@ -2,13 +2,13 @@
 class: sifter
 name: hugo-ensembl
 
-config:
+params:
   hugoJSON: ftp://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/json/locus_types/gene_with_protein_product.json
 
 inputs:
   hugoReader:
     jsonLoad:
-      input: "{{config.hugoJSON}}"
+      input: "{{params.hugoJSON}}"
 
 pipelines:
   transform:

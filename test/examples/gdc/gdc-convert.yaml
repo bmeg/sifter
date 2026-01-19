@@ -2,14 +2,18 @@
 name: gdc
 outdir: output/
 
-config:
-  cases: ../../resources/gdc-case.json.gz
-  schema: ../../resources/schemas
+params:
+  cases: 
+    type: file
+    default: ../../resources/gdc-case.json.gz
+  schema: 
+    type: path
+    default: ../../resources/schemas
 
 inputs:
   caseData:
     jsonLoad:
-      input: "{{config.cases}}"
+      input: "{{params.cases}}"
 
 pipelines:
   caseObject:
@@ -21,7 +25,7 @@ pipelines:
           type: case
     - objectValidate:
         title: Case
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
     - emit:
         # Testing that this doesn't do anything
         useName: False
@@ -30,7 +34,7 @@ pipelines:
   caseGraph:
     - from: caseObject
     - graphBuild:
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
         title: Case
         EdgeFix:
           method: test

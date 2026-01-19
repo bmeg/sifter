@@ -67,10 +67,10 @@ func (ml *JSONLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 	return procChan, nil
 }
 
-func (ml *JSONLoadStep) GetConfigFields() []config.Variable {
-	out := []config.Variable{}
+func (ml *JSONLoadStep) GetRequiredParams() []config.ParamRequest {
+	out := []config.ParamRequest{}
 	for _, s := range evaluate.ExpressionIDs(ml.Input) {
-		out = append(out, config.Variable{Type: "File", Name: config.TrimPrefix(s)})
+		out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 	}
 	return out
 }

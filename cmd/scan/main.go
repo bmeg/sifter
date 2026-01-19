@@ -140,7 +140,7 @@ var ScriptCommand = &cobra.Command{
 
 			inputs := []string{}
 			outputs := []string{}
-			for _, p := range pb.GetConfigFields() {
+			for _, p := range pb.GetRequiredParams() {
 				if p.IsDir() || p.IsFile() {
 					inputs = append(inputs, config[p.Name])
 				}

@@ -101,15 +101,15 @@ func (tr *LookupStep) Init(task task.RuntimeTask) (Processor, error) {
 	return nil, fmt.Errorf("table input not defined")
 }
 
-func (tr *LookupStep) GetConfigFields() []config.Variable {
-	out := []config.Variable{}
+func (tr *LookupStep) GetRequiredParams() []config.ParamRequest {
+	out := []config.ParamRequest{}
 	if tr.TSV != nil && tr.TSV.Input != "" {
 		for _, s := range evaluate.ExpressionIDs(tr.TSV.Input) {
-			out = append(out, config.Variable{Type: config.File, Name: config.TrimPrefix(s)})
+			out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 		}
 	} else if tr.JSON != nil && tr.JSON.Input != "" {
 		for _, s := range evaluate.ExpressionIDs(tr.JSON.Input) {
-			out = append(out, config.Variable{Type: config.File, Name: config.TrimPrefix(s)})
+			out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 		}
 	}
 	return out

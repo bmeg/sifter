@@ -66,11 +66,11 @@ func (ts GraphBuildStep) Init(task task.RuntimeTask) (Processor, error) {
 	return &graphBuildProcess{ts, task, sc, ts.Title, edgeFix, 0, 0, 0}, nil
 }
 
-func (ts GraphBuildStep) GetConfigFields() []config.Variable {
-	out := []config.Variable{}
+func (ts GraphBuildStep) GetRequiredParams() []config.ParamRequest {
+	out := []config.ParamRequest{}
 	if ts.Schema != "" {
 		for _, s := range evaluate.ExpressionIDs(ts.Schema) {
-			out = append(out, config.Variable{Type: config.Dir, Name: config.TrimPrefix(s)})
+			out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 		}
 	}
 	return out

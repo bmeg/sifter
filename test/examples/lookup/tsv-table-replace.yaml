@@ -3,14 +3,18 @@ name: gdc-projects
 
 outdir: output-tsv/
 
-config:
-  cases: ../../resources/case.json
-  diseaseTSV: ../../resources/disease_table.tsv
+params:
+  cases:
+    type: File
+    default: ../../resources/case.json
+  diseaseTSV:
+    type: File
+    default: ../../resources/disease_table.tsv
 
 inputs:
   caseReader:
     jsonLoad:
-      input: "{{config.cases}}"
+      input: "{{params.cases}}"
 
 pipelines:
   tranform:
@@ -20,7 +24,7 @@ pipelines:
     - lookup:
         replace: disease_type
         tsv:
-          input: "{{config.diseaseTSV}}"
+          input: "{{params.diseaseTSV}}"
           header:
             - disease
             - mondo

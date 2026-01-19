@@ -8,16 +8,16 @@ import (
 	"github.com/bmeg/sifter/task"
 )
 
-func (pb *Playbook) GetConfigFields() []config.Variable {
-	out := []config.Variable{}
+func (pb *Playbook) GetRequiredParams() []config.ParamRequest {
+	out := []config.ParamRequest{}
 
 	for _, v := range pb.Inputs {
-		out = append(out, v.GetConfigFields()...)
+		out = append(out, v.GetRequiredParams()...)
 	}
 
 	for _, v := range pb.Pipelines {
 		for _, s := range v {
-			out = append(out, s.GetConfigFields()...)
+			out = append(out, s.GetRequiredParams()...)
 		}
 	}
 

@@ -3,8 +3,10 @@
 class: sifter
 name: GDCConvert
 
-config:
-  schema: bmeg-dictionary/gdcdictionary/schemas
+params:
+  schema:
+    type: path
+    default: bmeg-dictionary/gdcdictionary/schemas
 
 inputs:
   projects_scrape:
@@ -29,7 +31,7 @@ pipelines:
           programs: "{{row.program.name}}"
     - objectValidate:
         title: project
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
     - emit:
         name: project
   
@@ -44,7 +46,7 @@ pipelines:
           type: experiment
     - objectValidate:
         title: experiment
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
     - emit:
         name: experiment
 
@@ -57,7 +59,7 @@ pipelines:
           type: case
     - objectValidate:
         title: case
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
     - emit:
         name: case
 
@@ -71,7 +73,7 @@ pipelines:
           id: "{{row.sample_id}}"
     - objectValidate:
         title: sample
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
     - emit:
         name: sample
 
@@ -91,6 +93,6 @@ pipelines:
           id: "{{row.aliquot_id}}"
     - objectValidate:
         title: aliquot
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
     - emit:
         name: aliquot

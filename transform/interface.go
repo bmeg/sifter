@@ -99,15 +99,15 @@ func (ts Step) Init(t task.RuntimeTask) (Processor, error) {
 	return nil, fmt.Errorf(("Transform not defined"))
 }
 
-func (ts Step) GetConfigFields() []config.Variable {
-	out := []config.Variable{}
+func (ts Step) GetRequiredParams() []config.ParamRequest {
+	out := []config.ParamRequest{}
 	v := reflect.ValueOf(ts)
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)
 		x := f.Interface()
 		if z, ok := x.(config.Configurable); ok {
 			if !f.IsNil() {
-				out = append(out, z.GetConfigFields()...)
+				out = append(out, z.GetRequiredParams()...)
 			}
 		}
 	}

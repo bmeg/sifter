@@ -44,15 +44,15 @@ func (ex *Extractor) Start(t task.RuntimeTask) (chan map[string]interface{}, err
 	return nil, fmt.Errorf(("Extractor not defined"))
 }
 
-func (ex *Extractor) GetConfigFields() []config.Variable {
-	out := []config.Variable{}
+func (ex *Extractor) GetRequiredParams() []config.ParamRequest {
+	out := []config.ParamRequest{}
 	v := reflect.ValueOf(ex).Elem()
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)
 		x := f.Interface()
 		if z, ok := x.(config.Configurable); ok {
 			if !f.IsNil() {
-				out = append(out, z.GetConfigFields()...)
+				out = append(out, z.GetRequiredParams()...)
 			}
 		}
 	}

@@ -1,13 +1,15 @@
 
-config:
-  file: ../../resources/1000G.pfb.avro
+params:
+  file:
+    type: file
+    default: ../../resources/1000G.pfb.avro
 
 outdir: output/
 
 inputs:
   pfb:
     avroLoad:
-      input: "{{config.file}}"
+      input: "{{params.file}}"
 
 pipelines:
   transform:

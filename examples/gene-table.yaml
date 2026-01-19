@@ -2,13 +2,13 @@
 class: sifter
 name: gene-table
 
-config:
+params:
   geneTSV: ftp://ftp.ncbi.nih.gov/gene/DATA/gene2ensembl.gz
 
 inputs:
   geneReader:
     tableLoad:
-      input: "{{config.geneTSV}}"
+      input: "{{params.geneTSV}}"
       columns:
         - tax_id
         - GeneID

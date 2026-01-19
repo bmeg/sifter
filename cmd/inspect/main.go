@@ -53,12 +53,12 @@ var Cmd = &cobra.Command{
 		out := map[string]any{}
 
 		cf := map[string]string{}
-		for _, f := range pb.GetConfigFields() {
+		for _, f := range pb.GetRequiredParams() {
 			cf[f.Name] = f.Name //f.Type
 		}
 		out["configFields"] = cf
 
-		ins := pb.GetConfigFields()
+		ins := pb.GetRequiredParams()
 		out["config"] = ins
 
 		outputs := map[string]any{}

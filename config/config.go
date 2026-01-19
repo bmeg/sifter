@@ -2,33 +2,41 @@ package config
 
 import "strings"
 
-type Config map[string]*string
+type Params map[string]Param
 
-type Type string
+type Param struct {
+	Type    string `json:"type"`
+	Default any    `json:"default,omitempty"`
+}
 
-const (
-	Unknown Type = ""
-	File    Type = "File"
-	Dir     Type = "Dir"
-)
-
-type Variable struct {
+type ParamRequest struct {
+	Type string `json:"type"`
 	Name string `json:"name"`
-	Type Type
 }
 
 type Configurable interface {
-	GetConfigFields() []Variable
+	GetRequiredParams() []ParamRequest
 }
 
-func (in *Variable) IsFile() bool {
-	return in.Type == File
+func (in *Param) IsFile() bool {
+	return strings.ToLower(in.Type) == "file"
 }
 
-func (in *Variable) IsDir() bool {
-	return in.Type == Dir
+func (in *Param) IsDir() bool {
+	return strings.ToLower(in.Type) == "path"
 }
 
 func TrimPrefix(s string) string {
-	return strings.TrimPrefix(s, "config.")
+	if strings.HasPrefix(s, "params.") {
+		return strings.TrimPrefix(s, "params.")
+	}
+	return s
+}
+
+func (in *ParamRequest) IsFile() bool {
+	return strings.ToLower(in.Type) == "file"
+}
+
+func (in *ParamRequest) IsDir() bool {
+	return strings.ToLower(in.Type) == "path"
 }

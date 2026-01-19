@@ -2,7 +2,7 @@
 class: sifter
 name: CBioPortal
 
-config:
+params:
   tar: ""
   geneTable: ""
   schema: bmeg-dictionary/gdcdictionary/schemas
@@ -10,7 +10,7 @@ config:
 inputs:
   untar:
     plugin:
-      commandLine: tar -xzf {{config.tar}}
+      commandLine: tar -xzf {{params.tar}}
   
   patientReader:
     tableLoad:
@@ -41,7 +41,7 @@ pipelines:
             submitter_id: "TCGA"
     - objectValidate:
         title: Case
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
     - emit:
         name: case
 
@@ -56,7 +56,7 @@ pipelines:
           type: "sample"
     - objectValidate:
         title: Sample
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
     - emit:
         name: sample
 
@@ -71,7 +71,7 @@ pipelines:
           type: "aliquot"
     - objectValidate:
         title: Aliquot
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
     - emit:
         name: aliquot
 
@@ -83,7 +83,7 @@ pipelines:
           aliquot_id: "{{row.Entrez_Gene_Id}}-0000"
     - lookup:
         tsv:
-          input: "{{config.geneTable}}"
+          input: "{{params.geneTable}}"
         lookup: "{{row.Entrez_Gene_Id}}"
     - map:
         method: nodeMap
@@ -120,7 +120,7 @@ pipelines:
           ensembl_transcript: "{{row.Transcript_ID}}"
     - objectValidate:
         title: SomaticVariant
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
     - emit:
         name: somatic_variant
     
@@ -139,6 +139,6 @@ pipelines:
           effect: "{{row.Variant_Classification}}"
     - objectValidate:
         title: Allele
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
     - emit:
         name: allele

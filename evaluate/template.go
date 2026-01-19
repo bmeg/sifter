@@ -20,8 +20,8 @@ func init() {
 	})
 }
 
-func ExpressionString(expression string, config map[string]string, row map[string]interface{}) (string, error) {
-	d := map[string]interface{}{"config": config}
+func ExpressionString(expression string, params map[string]string, row map[string]interface{}) (string, error) {
+	d := map[string]interface{}{"params": params}
 	if row != nil {
 		d["row"] = row
 	}

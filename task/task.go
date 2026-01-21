@@ -1,18 +1,16 @@
 package task
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/bmeg/sifter/loader"
 )
 
 type RuntimeTask interface {
 	SetName(name string)
-	SubTask(ext string) RuntimeTask
 
-	Emit(name string, e map[string]interface{}, useName bool) error
+	Emit(name string, e map[string]interface{}) error
 
 	GetConfig() map[string]string
 	AbsPath(p string) (string, error)
@@ -61,18 +59,6 @@ func (m *Task) GetName() string {
 	return m.Prefix + "." + m.Name
 }
 
-func (m *Task) SubTask(ext string) RuntimeTask {
-	return &Task{
-		Prefix:  m.GetName(),
-		Name:    ext,
-		Workdir: m.Workdir,
-		Basedir: m.Basedir,
-		Config:  m.Config,
-		Emitter: m.Emitter,
-		Outdir:  m.Outdir,
-	}
-}
-
 func (m *Task) GetConfig() map[string]string {
 	return m.Config
 }
@@ -93,7 +79,7 @@ func (m *Task) OutDir() string {
 }
 
 func (m *Task) TempDir() string {
-	name, _ := ioutil.TempDir(m.Workdir, "tmp")
+	name, _ := os.MkdirTemp(m.Workdir, "tmp")
 	return name
 }
 
@@ -105,12 +91,6 @@ func (m *Task) BaseDir() string {
 	return m.Basedir
 }
 
-func (m *Task) Emit(n string, e map[string]interface{}, useName bool) error {
-
-	newName := m.GetName() + "." + n
-	if useName {
-		temp := strings.Split(n, ".")
-		newName = temp[len(temp)-1]
-	}
-	return m.Emitter.Emit(newName, e, useName)
+func (m *Task) Emit(name string, e map[string]interface{}) error {
+	return m.Emitter.Emit(name, e)
 }

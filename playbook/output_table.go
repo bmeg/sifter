@@ -1,4 +1,4 @@
-package transform
+package playbook
 
 import (
 	"compress/gzip"
@@ -30,7 +30,7 @@ type tableWriteProcess struct {
 	writer  *csv.Writer
 }
 
-func (tw *TableWriteStep) Init(task task.RuntimeTask) (Processor, error) {
+func (tw *TableWriteStep) Init(task task.RuntimeTask) (OutputProcessor, error) {
 	sep := '\t'
 	if tw.Sep != "" {
 		sep = rune(tw.Sep[0])
@@ -78,7 +78,7 @@ func (tp *tableWriteProcess) PoolReady() bool {
 	return false
 }
 
-func (tp *tableWriteProcess) Process(i map[string]any) map[string]any {
+func (tp *tableWriteProcess) Process(i map[string]any) {
 	o := make([]string, len(tp.columns))
 	for j, k := range tp.columns {
 		if v, ok := i[k]; ok {
@@ -91,7 +91,6 @@ func (tp *tableWriteProcess) Process(i map[string]any) map[string]any {
 		}
 	}
 	tp.writer.Write(o)
-	return i
 }
 
 func (tp *tableWriteProcess) Close() {

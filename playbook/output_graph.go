@@ -1,4 +1,4 @@
-package transform
+package playbook
 
 import (
 	"github.com/bmeg/grip/gripql"
@@ -6,12 +6,13 @@ import (
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/logger"
+	"github.com/bmeg/sifter/playbook/refs"
 	"github.com/bmeg/sifter/task"
 )
 
 type EdgeFix struct {
-	Method  string     `json:"method"`
-	GPython *CodeBlock `json:"gpython"`
+	Method  string          `json:"method"`
+	GPython *refs.CodeBlock `json:"gpython"`
 }
 
 type GraphBuildStep struct {
@@ -34,7 +35,7 @@ type graphBuildProcess struct {
 	edgeCount   int
 }
 
-func (ts GraphBuildStep) Init(task task.RuntimeTask) (Processor, error) {
+func (ts GraphBuildStep) Init(task task.RuntimeTask) (OutputProcessor, error) {
 
 	path, err := evaluate.ExpressionString(ts.Schema, task.GetConfig(), nil)
 	if err != nil {
@@ -47,8 +48,8 @@ func (ts GraphBuildStep) Init(task task.RuntimeTask) (Processor, error) {
 	}
 	//force the two emitters to be created. nil messages don't get emitted
 	//but the output file will be created
-	task.Emit("vertex", nil, false)
-	task.Emit("edge", nil, false)
+	task.Emit("vertex", nil)
+	task.Emit("edge", nil)
 
 	var edgeFix evaluate.Processor
 	if ts.EdgeFix != nil {
@@ -88,15 +89,14 @@ func (ts *graphBuildProcess) Close() {
 		"class", ts.class)
 }
 
-func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]interface{} {
+func (ts *graphBuildProcess) Process(i map[string]interface{}) {
 
-	out := []map[string]any{}
 	if o, err := ts.sch.Generate(ts.class, i, ts.config.Clean, map[string]any{}); err == nil {
 		ts.objectCount++
 		for i := range o {
 			if o[i].Vertex != nil {
 				ts.vertexCount++
-				err := ts.task.Emit("vertex", ts.vertexToMap(o[i].Vertex), false)
+				err := ts.task.Emit("vertex", ts.vertexToMap(o[i].Vertex))
 				if err != nil {
 					logger.Error("Emit Error: %s", err)
 				}
@@ -111,7 +111,7 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 						}
 					}
 					ts.edgeCount++
-					err := ts.task.Emit("edge", edgeData, false)
+					err := ts.task.Emit("edge", edgeData)
 					if err != nil {
 						logger.Error("Emit Error: %s", err)
 					}
@@ -121,9 +121,6 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 	} else {
 		logger.Error("Graphbuild %s error : %s", ts.config.Title, err)
 	}
-
-	return out
-
 }
 
 func (ts *graphBuildProcess) edgeToMap(e *gripql.Edge) map[string]interface{} {

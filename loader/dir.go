@@ -65,14 +65,14 @@ func (s *DirLoader) Close() {
 	s.dout = map[string]io.WriteCloser{}
 }
 
-func (s *DirDataLoader) Emit(name string, v map[string]interface{}, useName bool) error {
+func (s *DirDataLoader) Emit(name string, v map[string]interface{}) error {
 	s.dl.mux.Lock()
 	defer s.dl.mux.Unlock()
 	f, ok := s.dl.dout[name]
 	if !ok {
 		// log.Printf("output path %s", outputPath)
 
-		opath := path.Join(s.dl.dir, name+".json.gz")
+		opath := path.Join(s.dl.dir, name)
 
 		logger.Info("Creating emit file", "name", name, "path", opath)
 

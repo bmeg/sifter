@@ -149,11 +149,10 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 	joins := []joinStruct{}
 
 	for k, v := range pb.Pipelines {
-		sub := task.SubTask(k)
 		var lastStep flame.Emitter[map[string]any]
 		var firstStep flame.Receiver[map[string]any]
 		for i, s := range v {
-			b, err := s.Init(sub)
+			b, err := s.Init(task)
 			if err != nil {
 				logger.Error("Pipeline error", "name", k, "error", err)
 				return err
@@ -329,6 +328,10 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 			logger.Error("Join source not found", "name", r)
 		}
 	}
+
+	//for _, i := range pb.Outputs {
+	//	outNode = flame.AddMapper(wf, mProcess.Process)
+	//}
 
 	//log.Printf("WF: %#v", wf)
 

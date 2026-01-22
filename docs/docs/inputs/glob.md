@@ -27,7 +27,7 @@ as input.
 inputs:
   pubmedRead:
     glob:
-      input: "{{config.baseline}}/*.xml.gz"
+      path: "{{config.baseline}}/*.xml.gz"
       xmlLoad: {}
 
 ```

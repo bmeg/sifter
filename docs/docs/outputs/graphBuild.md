@@ -6,7 +6,7 @@ menu:
     weight: 100
 ---
 
-# graphBuild
+# Output: graphBuild
 
 Build graph elements from JSON objects using the JSON Schema graph extensions.
 

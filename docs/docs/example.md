@@ -19,7 +19,7 @@ ZIP,COUNTYNAME,STATE,STCOUNTYFP,CLASSFP
 First is the header of the pipeline. This declares the
 unique name of the pipeline and it's output directory.
 
-```
+```yaml
 name: zipcode_map
 outdir: ./
 docs: Converts zipcode TSV into graph elements
@@ -30,7 +30,7 @@ There is a default value, so the pipeline can be invoked without passing in
 any parameters. However, to apply this pipeline to a new input file, the
 input parameter `zipcode` could be used to define the source file.
 
-```
+```yaml
 config:
   schema: ../covid19_datadictionary/gdcdictionary/schemas/
   zipcode: ../data/ZIP-COUNTY-FIPS_2017-06.csv
@@ -41,7 +41,7 @@ only one input, which is to run the table loader.
 ```
 inputs:
   tableLoad:
-    input: "{{config.zipcode}}"
+    path: "{{config.zipcode}}"
     sep: ","
 ```
 
@@ -179,7 +179,7 @@ outputs:
   zip2fips:
     tableWrite:
       from: 
-      output: zip2fips
+      path: zip2fips.tsv
       columns:
         - ZIP
         - STCOUNTYFP

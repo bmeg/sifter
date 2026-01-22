@@ -13,7 +13,7 @@ Scan file produced produced from sqldump.
 
 | Name | Type | Description |
 |-------|---|--------|
-| input | string | Path to the SQL dump file | 
+| path | string | Path to the SQL dump file | 
 | tables | []string | Names of tables to read out |
 
 ## Example
@@ -22,7 +22,7 @@ Scan file produced produced from sqldump.
 inputs:
   database:
     sqldumpLoad:
-      input: "{{config.sql}}"
+      path: "{{config.sql}}"
       tables:
         - cells
         - cell_tissues

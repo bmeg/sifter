@@ -1,0 +1,10 @@
+
+nav:
+  - index.md
+  - example.md
+  - playbook.md
+  - schema.md
+  - config.md
+  - inputs
+  - transforms
+  - outputs

@@ -15,6 +15,7 @@ import (
 )
 
 type OutputTable struct {
+	From             string   `json:"from"`
 	Output           string   `json:"output" jsonschema_description:"Name of file to create"`
 	Columns          []string `json:"columns" jsonschema_description:"Columns to be written into table file"`
 	Header           string   `json:"header"`

@@ -13,6 +13,12 @@ inputs:
       sep: "\t"
       columns: [_from, _label, _to]
 
+outputs:
+  sifout:
+    json:
+      output: sifout.json.gz
+      from: geneReduce
+
 pipelines:
   geneReduce:
     - from: sifFile
@@ -25,9 +31,3 @@ pipelines:
             y["_from"] = x["_from"]
             y["_to"].append(x["_to"])
             return y
-  newpip:
-    - from: geneReduce
-    - emit:
-        useName: True
-        name: sifout
-

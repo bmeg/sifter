@@ -12,6 +12,11 @@ inputs:
     jsonLoad:
       input: "{{params.json}}"
 
+outputs:
+  translated:
+    json:
+      output: sifter.transform.test.json.gz
+      from: transform
 
 pipelines:
   transform:
@@ -21,5 +26,3 @@ pipelines:
         table:
           TCGA-KIRC: 1
           TCGA-SARC: 2
-    - emit:
-        name: test

@@ -14,6 +14,16 @@ inputs:
       sep: "\t"
       columns: [_from, _label, _to]
 
+outputs:
+  edgeFile:
+    json:
+      from: sifFile
+      output: pathway_commons.edges.json.gz
+  nodeFile:
+    json:
+      from: nodes
+      output: pathway_commons.nodes.json.gz
+
 pipelines:
   nodes:
     - from: sifFile
@@ -29,10 +39,3 @@ pipelines:
     - project:
         mapping:
           _label: "Protein"
-    - emit:
-        name: node
-
-  edges:
-    - from: sifFile
-    - emit:
-        name: edge

@@ -18,7 +18,8 @@ type EdgeFix struct {
 }
 
 type OutputGraph struct {
-	Path    string   `json:"path"`
+	From    string   `json:"from"`
+	Output  string   `json:"output"`
 	Schema  string   `json:"schema"`
 	Title   string   `json:"title"`
 	Clean   bool     `json:"clean"`
@@ -27,7 +28,7 @@ type OutputGraph struct {
 }
 
 func (oj *OutputGraph) GetOutputs(task task.RuntimeTask) []string {
-	output, err := evaluate.ExpressionString(oj.Path, task.GetConfig(), nil)
+	output, err := evaluate.ExpressionString(oj.Output, task.GetConfig(), nil)
 	if err != nil {
 		return []string{}
 	}
@@ -41,6 +42,9 @@ type graphBuildProcess struct {
 	task   task.RuntimeTask
 	sch    graph.GraphSchema
 	class  string
+
+	edgeName    string
+	verrtexName string
 
 	edgeFix     evaluate.Processor
 	objectCount int
@@ -59,10 +63,17 @@ func (ts OutputGraph) Init(task task.RuntimeTask) (OutputProcessor, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	output, err := evaluate.ExpressionString(ts.Output, task.GetConfig(), nil)
+
+	//TODO: make this more flexible
+	edgeName := output + ".edge.json.gz"
+	vertexName := output + ".vertex.json.gz"
+
 	//force the two emitters to be created. nil messages don't get emitted
 	//but the output file will be created
-	task.Emit("vertex", nil)
-	task.Emit("edge", nil)
+	task.Emit(vertexName, nil)
+	task.Emit(edgeName, nil)
 
 	var edgeFix evaluate.Processor
 	if ts.EdgeFix != nil {
@@ -77,7 +88,17 @@ func (ts OutputGraph) Init(task task.RuntimeTask) (OutputProcessor, error) {
 			edgeFix = c
 		}
 	}
-	return &graphBuildProcess{ts, task, sc, ts.Title, edgeFix, 0, 0, 0}, nil
+	return &graphBuildProcess{
+		config:      ts,
+		task:        task,
+		sch:         sc,
+		edgeName:    edgeName,
+		verrtexName: vertexName,
+		class:       ts.Title,
+		edgeFix:     edgeFix,
+		objectCount: 0,
+		vertexCount: 0,
+		edgeCount:   0}, nil
 }
 
 func (ts OutputGraph) GetRequiredParams() []config.ParamRequest {
@@ -109,7 +130,7 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) {
 		for i := range o {
 			if o[i].Vertex != nil {
 				ts.vertexCount++
-				err := ts.task.Emit("vertex", ts.vertexToMap(o[i].Vertex))
+				err := ts.task.Emit(ts.verrtexName, ts.vertexToMap(o[i].Vertex))
 				if err != nil {
 					logger.Error("Emit Error: %s", err)
 				}
@@ -124,7 +145,7 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) {
 						}
 					}
 					ts.edgeCount++
-					err := ts.task.Emit("edge", edgeData)
+					err := ts.task.Emit(ts.edgeName, edgeData)
 					if err != nil {
 						logger.Error("Emit Error: %s", err)
 					}

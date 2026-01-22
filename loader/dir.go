@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/bmeg/sifter/logger"
@@ -80,7 +81,11 @@ func (s *DirDataLoader) Emit(name string, v map[string]interface{}) error {
 		if err != nil {
 			return err
 		}
-		f = gzip.NewWriter(j)
+		if strings.HasSuffix(opath, ".gz") {
+			f = gzip.NewWriter(j)
+		} else {
+			f = j
+		}
 		s.dl.dout[name] = f
 	}
 	if v != nil {

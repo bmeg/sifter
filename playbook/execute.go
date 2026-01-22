@@ -334,20 +334,29 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 		if v.JSON != nil {
 			proc, err := v.JSON.Init(task)
 			if err == nil {
-				flame.AddSink(wf, proc.Process)
-				outputs[k] = proc
+				if srcNode, ok := outNodes[v.JSON.From]; ok {
+					s := flame.AddSink(wf, proc.Process)
+					outputs[k] = proc
+					s.Connect(srcNode)
+				}
 			}
 		} else if v.Table != nil {
 			proc, err := v.Table.Init(task)
 			if err == nil {
-				flame.AddSink(wf, proc.Process)
-				outputs[k] = proc
+				if srcNode, ok := outNodes[v.Table.From]; ok {
+					s := flame.AddSink(wf, proc.Process)
+					outputs[k] = proc
+					s.Connect(srcNode)
+				}
 			}
 		} else if v.Graph != nil {
 			proc, err := v.Graph.Init(task)
 			if err == nil {
-				flame.AddSink(wf, proc.Process)
-				outputs[k] = proc
+				if srcNode, ok := outNodes[v.Graph.From]; ok {
+					s := flame.AddSink(wf, proc.Process)
+					outputs[k] = proc
+					s.Connect(srcNode)
+				}
 			}
 		}
 	}

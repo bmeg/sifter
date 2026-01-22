@@ -15,6 +15,23 @@ inputs:
     jsonLoad:
       input: "{{params.cases}}"
 
+outputs:
+  caseFile:
+    json:
+      output: gdc.caseObject.case.json.gz
+      from: caseObject
+  caseGraph:
+    graph:
+      output: gdc.caseGraph
+      from: caseObject
+      schema: "{{params.schema}}"
+      title: Case
+      EdgeFix:
+        method: test
+        gpython:
+          $ref: test.py
+
+
 pipelines:
   caseObject:
     - from: caseData
@@ -26,17 +43,3 @@ pipelines:
     - objectValidate:
         title: Case
         schema: "{{params.schema}}"
-    - emit:
-        # Testing that this doesn't do anything
-        useName: False
-        name: case
-
-  caseGraph:
-    - from: caseObject
-    - graphBuild:
-        schema: "{{params.schema}}"
-        title: Case
-        EdgeFix:
-          method: test
-          gpython:
-            $ref: test.py

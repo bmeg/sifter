@@ -16,8 +16,14 @@ inputs:
     jsonLoad:
       input: "{{params.cases}}"
 
+outputs:
+  case-mondo:
+    json:
+      output: gdc-projects.transform.case-mondo.json.gz
+      from: transform
+
 pipelines:
-  tranform:
+  transform:
     - from: caseReader
     - fieldProcess:
         field: project
@@ -30,5 +36,3 @@ pipelines:
             - mondo
           key: disease
           value: mondo
-    - emit:
-        name: case-mondo

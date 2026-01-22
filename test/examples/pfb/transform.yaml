@@ -11,6 +11,16 @@ inputs:
     avroLoad:
       input: "{{params.file}}"
 
+outputs:
+  vertexFile:
+    json:
+      output: pfb.vertex.json
+      from: vertex
+  edgeFile:
+    json:
+      output: pfb.edge.json
+      from: edge
+
 pipelines:
   transform:
     - from: pfb
@@ -56,9 +66,6 @@ pipelines:
             o = x["object"][x["name"]]
             return { "gid" : x["name"] + ":" + x["id"], "label" : x["name"], "data" : o }
 
-    - emit:
-        name: vertex
-
   edge:
     - from: transform
     - fieldProcess:
@@ -74,5 +81,3 @@ pipelines:
           - to
           - from
           - label
-    - emit:
-        name: edge

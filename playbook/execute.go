@@ -132,6 +132,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 
 	outNodes := map[string]flame.Emitter[map[string]any]{}
 	inNodes := map[string]flame.Receiver[map[string]any]{}
+	outputs := map[string]OutputProcessor{}
 
 	for n, v := range pb.Inputs {
 		logger.Debug("Setting Up", "name", n)
@@ -329,9 +330,27 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 		}
 	}
 
-	//for _, i := range pb.Outputs {
-	//	outNode = flame.AddMapper(wf, mProcess.Process)
-	//}
+	for k, v := range pb.Outputs {
+		if v.JSON != nil {
+			proc, err := v.JSON.Init(task)
+			if err == nil {
+				flame.AddSink(wf, proc.Process)
+				outputs[k] = proc
+			}
+		} else if v.Table != nil {
+			proc, err := v.Table.Init(task)
+			if err == nil {
+				flame.AddSink(wf, proc.Process)
+				outputs[k] = proc
+			}
+		} else if v.Graph != nil {
+			proc, err := v.Graph.Init(task)
+			if err == nil {
+				flame.AddSink(wf, proc.Process)
+				outputs[k] = proc
+			}
+		}
+	}
 
 	//log.Printf("WF: %#v", wf)
 
@@ -342,6 +361,10 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 
 	for p := range procs {
 		procs[p].Close()
+	}
+
+	for k := range outputs {
+		outputs[k].Close()
 	}
 
 	task.Close()

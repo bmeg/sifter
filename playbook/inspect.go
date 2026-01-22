@@ -28,8 +28,10 @@ func (pb *Playbook) GetOutputs(task task.RuntimeTask) (map[string]string, error)
 	//inputs := task.GetInputs()
 
 	for k, v := range pb.Outputs {
-		filePath := filepath.Join(pb.GetOutDir(task), v.Path)
-		out[k] = filePath
+		for _, o := range v.GetOutputs(task) {
+			filePath := filepath.Join(pb.GetOutDir(task), o)
+			out[k] = filePath
+		}
 	}
 	return out, nil
 }

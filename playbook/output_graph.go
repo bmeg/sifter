@@ -1,6 +1,8 @@
 package playbook
 
 import (
+	"path/filepath"
+
 	"github.com/bmeg/grip/gripql"
 	"github.com/bmeg/jsonschemagraph/graph"
 	"github.com/bmeg/sifter/config"
@@ -15,7 +17,8 @@ type EdgeFix struct {
 	GPython *refs.CodeBlock `json:"gpython"`
 }
 
-type GraphBuildStep struct {
+type OutputGraph struct {
+	Path    string   `json:"path"`
 	Schema  string   `json:"schema"`
 	Title   string   `json:"title"`
 	Clean   bool     `json:"clean"`
@@ -23,8 +26,18 @@ type GraphBuildStep struct {
 	EdgeFix *EdgeFix `json:"edgeFix"`
 }
 
+func (oj *OutputGraph) GetOutputs(task task.RuntimeTask) []string {
+	output, err := evaluate.ExpressionString(oj.Path, task.GetConfig(), nil)
+	if err != nil {
+		return []string{}
+	}
+	outputPath := filepath.Join(task.OutDir(), output)
+	logger.Debug("table output %s %s", task.OutDir(), output)
+	return []string{outputPath + ".edge", outputPath + ".vertex"}
+}
+
 type graphBuildProcess struct {
-	config GraphBuildStep
+	config OutputGraph
 	task   task.RuntimeTask
 	sch    graph.GraphSchema
 	class  string
@@ -35,7 +48,7 @@ type graphBuildProcess struct {
 	edgeCount   int
 }
 
-func (ts GraphBuildStep) Init(task task.RuntimeTask) (OutputProcessor, error) {
+func (ts OutputGraph) Init(task task.RuntimeTask) (OutputProcessor, error) {
 
 	path, err := evaluate.ExpressionString(ts.Schema, task.GetConfig(), nil)
 	if err != nil {
@@ -67,7 +80,7 @@ func (ts GraphBuildStep) Init(task task.RuntimeTask) (OutputProcessor, error) {
 	return &graphBuildProcess{ts, task, sc, ts.Title, edgeFix, 0, 0, 0}, nil
 }
 
-func (ts GraphBuildStep) GetRequiredParams() []config.ParamRequest {
+func (ts OutputGraph) GetRequiredParams() []config.ParamRequest {
 	out := []config.ParamRequest{}
 	if ts.Schema != "" {
 		for _, s := range evaluate.ExpressionIDs(ts.Schema) {

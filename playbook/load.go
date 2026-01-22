@@ -18,9 +18,9 @@ type Loader interface {
 }
 
 type Output struct {
-	From string `json:"from"`
-	Type string `json:"type"`
-	Path string `json:"path"`
+	JSON  *OutputJSON  `json:"json"`
+	Table *OutputTable `json:"table"`
+	Graph *OutputGraph `json:"graph"`
 }
 
 type Playbook struct {

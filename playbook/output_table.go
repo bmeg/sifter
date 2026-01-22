@@ -16,7 +16,7 @@ import (
 
 type OutputTable struct {
 	From             string   `json:"from"`
-	Output           string   `json:"output" jsonschema_description:"Name of file to create"`
+	Path             string   `json:"path" jsonschema_description:"Name of file to create"`
 	Columns          []string `json:"columns" jsonschema_description:"Columns to be written into table file"`
 	Header           string   `json:"header"`
 	SkipColumnHeader bool     `json:"skipColumnHeader"`
@@ -37,7 +37,7 @@ func (tw *OutputTable) Init(task task.RuntimeTask) (OutputProcessor, error) {
 		sep = rune(tw.Sep[0])
 	}
 
-	output, err := evaluate.ExpressionString(tw.Output, task.GetConfig(), nil)
+	output, err := evaluate.ExpressionString(tw.Path, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (tw *OutputTable) Init(task task.RuntimeTask) (OutputProcessor, error) {
 }
 
 func (tw *OutputTable) GetOutputs(task task.RuntimeTask) []string {
-	output, err := evaluate.ExpressionString(tw.Output, task.GetConfig(), nil)
+	output, err := evaluate.ExpressionString(tw.Path, task.GetConfig(), nil)
 	if err != nil {
 		return []string{}
 	}
@@ -95,7 +95,7 @@ func (tp *tableWriteProcess) Process(i map[string]any) {
 }
 
 func (tp *tableWriteProcess) Close() {
-	logger.Debug("Closing tableWriter: %s", tp.config.Output)
+	logger.Debug("Closing tableWriter: %s", tp.config.Path)
 	tp.writer.Flush()
 	tp.out.Close()
 	tp.handle.Close()

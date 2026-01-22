@@ -20,7 +20,7 @@ import (
 )
 
 type TransposeLoadStep struct {
-	Input    string `json:"input" jsonschema_description:"TSV to be transformed"`
+	Path     string `json:"path" jsonschema_description:"TSV to be transformed"`
 	RowSkip  int    `json:"rowSkip" jsonschema_description:"Number of header rows to skip"`
 	Sep      string `json:"sep" jsonschema_description:"Separator \\t for TSVs or , for CSVs"`
 	UseDB    bool   `json:"useDB" jsonschema_description:"Do transpose without caching matrix in memory. Takes longer but works on large files"`
@@ -28,7 +28,7 @@ type TransposeLoadStep struct {
 }
 
 func (ml *TransposeLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
-	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
+	input, err := evaluate.ExpressionString(ml.Path, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (ml *TransposeLoadStep) Start(task task.RuntimeTask) (chan map[string]inter
 
 func (ml *TransposeLoadStep) GetRequiredParams() []config.ParamRequest {
 	out := []config.ParamRequest{}
-	for _, s := range evaluate.ExpressionIDs(ml.Input) {
+	for _, s := range evaluate.ExpressionIDs(ml.Path) {
 		out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 	}
 	return out
@@ -316,7 +316,7 @@ func transposeInTable(workdir string, fieldSize int, c csvReader, out chan map[s
 	columns := []string{}
 	for row := int64(0); row < rowCount; row++ {
 		buf := make([]byte, fieldSize)
-		table.ReadAt(buf, row*stepSize)
+		_, err := table.ReadAt(buf, row*stepSize)
 		tmp := bytes.Split(buf, []byte{0})
 		if err == nil {
 			columns = append(columns, string(tmp[0]))

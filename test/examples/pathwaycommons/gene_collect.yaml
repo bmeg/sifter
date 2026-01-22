@@ -9,14 +9,14 @@ params:
 inputs:
   sifFile:
     tableLoad:
-      input: "{{params.sifFile}}"
+      path: "{{params.sifFile}}"
       sep: "\t"
       columns: [_from, _label, _to]
 
 outputs:
   sifout:
     json:
-      output: sifout.json.gz
+      path: sifout.json.gz
       from: geneReduce
 
 pipelines:

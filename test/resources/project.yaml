@@ -10,13 +10,13 @@ params:
 inputs:
   geneData:
     jsonLoad:
-      input: "{{params.genes}}"
+      path: "{{params.genes}}"
 
 outputs:
   new_ids:
     json:
       from: step1
-      output: new_ids.ndjson
+      path: new_ids.ndjson
 
 pipelines:
   step1:

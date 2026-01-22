@@ -14,7 +14,7 @@ import (
 type GlobLoadStep struct {
 	StoreFilename string         `json:"storeFilename"`
 	StoreFilepath string         `json:"storeFilepath"`
-	Input         string         `json:"input" jsonschema_description:"Path of avro object file to transform"`
+	Path          string         `json:"path" jsonschema_description:"Path of avro object file to transform"`
 	Parallelize   bool           `json:"parallelize"`
 	XMLLoad       *XMLLoadStep   `json:"xmlLoad"`
 	TableLoad     *TableLoadStep `json:"tableLoad" jsonschema_description:"Run transform pipeline on a TSV or CSV"`
@@ -28,7 +28,7 @@ type fileSource struct {
 }
 
 func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
-	input, err := evaluate.ExpressionString(gl.Input, task.GetConfig(), nil)
+	input, err := evaluate.ExpressionString(gl.Path, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -53,15 +53,15 @@ func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 				var a Source
 				if gl.XMLLoad != nil {
 					t := *gl.XMLLoad
-					t.Input = f
+					t.Path = f
 					a = &t
 				} else if gl.JSONLoad != nil {
 					t := *gl.JSONLoad
-					t.Input = f
+					t.Path = f
 					a = &t
 				} else if gl.TableLoad != nil {
 					t := *gl.TableLoad
-					t.Input = f
+					t.Path = f
 					a = &t
 				}
 				sources <- fileSource{source: a, file: f}
@@ -99,7 +99,7 @@ func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 
 func (gl *GlobLoadStep) GetRequiredParams() []config.ParamRequest {
 	out := []config.ParamRequest{}
-	for _, s := range evaluate.ExpressionIDs(gl.Input) {
+	for _, s := range evaluate.ExpressionIDs(gl.Path) {
 		out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 	}
 	return out

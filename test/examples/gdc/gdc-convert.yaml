@@ -13,16 +13,16 @@ params:
 inputs:
   caseData:
     jsonLoad:
-      input: "{{params.cases}}"
+      path: "{{params.cases}}"
 
 outputs:
   caseFile:
     json:
-      output: gdc.caseObject.case.json.gz
+      path: gdc.caseObject.case.json.gz
       from: caseObject
   caseGraph:
     graph:
-      output: gdc.caseGraph
+      path: gdc.caseGraph
       from: caseObject
       schema: "{{params.schema}}"
       title: Case

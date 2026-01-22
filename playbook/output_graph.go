@@ -19,7 +19,7 @@ type EdgeFix struct {
 
 type OutputGraph struct {
 	From    string   `json:"from"`
-	Output  string   `json:"output"`
+	Path    string   `json:"path"`
 	Schema  string   `json:"schema"`
 	Title   string   `json:"title"`
 	Clean   bool     `json:"clean"`
@@ -28,7 +28,7 @@ type OutputGraph struct {
 }
 
 func (oj *OutputGraph) GetOutputs(task task.RuntimeTask) []string {
-	output, err := evaluate.ExpressionString(oj.Output, task.GetConfig(), nil)
+	output, err := evaluate.ExpressionString(oj.Path, task.GetConfig(), nil)
 	if err != nil {
 		return []string{}
 	}
@@ -64,7 +64,7 @@ func (ts OutputGraph) Init(task task.RuntimeTask) (OutputProcessor, error) {
 		return nil, err
 	}
 
-	output, err := evaluate.ExpressionString(ts.Output, task.GetConfig(), nil)
+	output, err := evaluate.ExpressionString(ts.Path, task.GetConfig(), nil)
 
 	//TODO: make this more flexible
 	edgeName := output + ".edge.json.gz"

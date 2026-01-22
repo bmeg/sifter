@@ -19,12 +19,12 @@ import (
 )
 
 type XMLLoadStep struct {
-	Input string `json:"input"`
+	Path  string `json:"path"`
 	Level int    `json:"level"`
 }
 
 func (ml *XMLLoadStep) Start(task task.RuntimeTask) (chan map[string]any, error) {
-	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
+	input, err := evaluate.ExpressionString(ml.Path, task.GetConfig(), nil)
 	if err != nil {
 		logger.Error("Error open xml", "error", err)
 		return nil, err
@@ -112,7 +112,7 @@ func (ml *XMLLoadStep) Start(task task.RuntimeTask) (chan map[string]any, error)
 
 func (ml *XMLLoadStep) GetRequiredParams() []config.ParamRequest {
 	out := []config.ParamRequest{}
-	for _, s := range evaluate.ExpressionIDs(ml.Input) {
+	for _, s := range evaluate.ExpressionIDs(ml.Path) {
 		out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 	}
 	return out

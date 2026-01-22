@@ -9,16 +9,16 @@ outdir: output/
 inputs:
   pfb:
     avroLoad:
-      input: "{{params.file}}"
+      path: "{{params.file}}"
 
 outputs:
   vertexFile:
     json:
-      output: pfb.vertex.json
+      path: pfb.vertex.json
       from: vertex
   edgeFile:
     json:
-      output: pfb.edge.json
+      path: pfb.edge.json
       from: edge
 
 pipelines:

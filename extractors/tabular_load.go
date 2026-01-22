@@ -16,7 +16,7 @@ import (
 )
 
 type TableLoadStep struct {
-	Input        string   `json:"input" jsonschema_description:"TSV to be transformed"`
+	Path         string   `json:"Path" jsonschema_description:"TSV to be transformed"`
 	RowSkip      int      `json:"rowSkip" jsonschema_description:"Number of header rows to skip"`
 	Columns      []string `json:"columns" jsonschema_description:"Manually set names of columns"`
 	ExtraColumns string   `json:"extraColumns" jsonschema_description:"Columns beyond originally declared columns will be placed in this array"`
@@ -50,7 +50,7 @@ func buildUniqueArray(src []string) []string {
 
 func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 	logger.Info("Starting Table Load")
-	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
+	input, err := evaluate.ExpressionString(ml.Path, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +75,7 @@ func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface
 		} else {
 			inputStream = gfile
 		}
-	}
-	if err != nil {
+	} else {
 		return nil, err
 	}
 
@@ -162,7 +161,7 @@ func (ml *TableLoadStep) Start(task task.RuntimeTask) (chan map[string]interface
 
 func (ml *TableLoadStep) GetRequiredParams() []config.ParamRequest {
 	out := []config.ParamRequest{}
-	for _, s := range evaluate.ExpressionIDs(ml.Input) {
+	for _, s := range evaluate.ExpressionIDs(ml.Path) {
 		out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 	}
 	return out

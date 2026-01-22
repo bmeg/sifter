@@ -14,7 +14,7 @@ params:
 inputs:
   genes:
     tableLoad:
-      input: "{{params.geneTSV}}"
+      path: "{{params.geneTSV}}"
       columns:
         - tax_id
         - GeneID
@@ -28,7 +28,7 @@ outputs:
   geneTable:
     table:
       from: translate
-      output: "gene.table"
+      path: "gene.table"
       columns:
         - GeneID
         - Ensembl_gene_identifier

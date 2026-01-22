@@ -27,12 +27,12 @@ type OutputProcessor interface {
 }
 
 type OutputJSON struct {
-	Output string `json:"output"`
-	From   string `json:"from"`
+	Path string `json:"path"`
+	From string `json:"from"`
 }
 
 func (oj *OutputJSON) GetOutputs(task task.RuntimeTask) []string {
-	output, err := evaluate.ExpressionString(oj.Output, task.GetConfig(), nil)
+	output, err := evaluate.ExpressionString(oj.Path, task.GetConfig(), nil)
 	if err != nil {
 		return []string{}
 	}
@@ -52,10 +52,10 @@ type jsonOutputProcess struct {
 }
 
 func (op *jsonOutputProcess) Close() {
-	logger.Info("Emit Summary", "name", op.config.Output, "count", op.count)
+	logger.Info("Emit Summary", "name", op.config.Path, "count", op.count)
 }
 
 func (op *jsonOutputProcess) Process(i map[string]interface{}) {
 	op.count++
-	op.task.Emit(op.config.Output, i)
+	op.task.Emit(op.config.Path, i)
 }

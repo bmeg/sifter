@@ -14,12 +14,12 @@ params:
 inputs:
   caseReader:
     jsonLoad:
-      input: "{{params.cases}}"
+      path: "{{params.cases}}"
 
 outputs:
   case-mondo:
     json:
-      output: gdc-projects.transform.case-mondo.json.gz
+      path: gdc-projects.transform.case-mondo.json.gz
       from: transform
 
 pipelines:

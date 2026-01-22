@@ -10,12 +10,12 @@ params:
 inputs:
   jsonData:
     jsonLoad:
-      input: "{{params.json}}"
+      path: "{{params.json}}"
 
 outputs:
   translated:
     json:
-      output: sifter.transform.test.json.gz
+      path: sifter.transform.test.json.gz
       from: transform
 
 pipelines:

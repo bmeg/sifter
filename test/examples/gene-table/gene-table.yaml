@@ -13,7 +13,7 @@ params:
 
 inputs:
   genes:
-    tableLoad:
+    table:
       path: "{{params.geneTSV}}"
       columns:
         - tax_id

@@ -13,7 +13,7 @@ params:
 
 inputs:
   caseReader:
-    jsonLoad:
+    json:
       path: "{{params.cases}}"
 
 outputs:

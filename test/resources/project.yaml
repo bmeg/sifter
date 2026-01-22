@@ -9,7 +9,7 @@ params:
 
 inputs:
   geneData:
-    jsonLoad:
+    json:
       path: "{{params.genes}}"
 
 outputs:

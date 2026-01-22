@@ -8,7 +8,7 @@ outdir: output/
 
 inputs:
   pfb:
-    avroLoad:
+    avro:
       path: "{{params.file}}"
 
 outputs:

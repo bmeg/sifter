@@ -8,7 +8,7 @@ params:
 
 inputs:
   sifFile:
-    tableLoad:
+    table:
       path: "{{params.sifFile}}"
       sep: "\t"
       columns: [_from, _label, _to]

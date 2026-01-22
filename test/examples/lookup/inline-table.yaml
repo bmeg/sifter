@@ -9,7 +9,7 @@ params:
 
 inputs:
   jsonData:
-    jsonLoad:
+    json:
       path: "{{params.json}}"
 
 outputs:

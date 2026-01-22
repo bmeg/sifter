@@ -12,7 +12,7 @@ params:
 
 inputs:
   caseData:
-    jsonLoad:
+    json:
       path: "{{params.cases}}"
 
 outputs:

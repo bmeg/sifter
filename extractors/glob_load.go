@@ -16,10 +16,10 @@ type GlobLoadStep struct {
 	StoreFilepath string         `json:"storeFilepath"`
 	Path          string         `json:"path" jsonschema_description:"Path of avro object file to transform"`
 	Parallelize   bool           `json:"parallelize"`
-	XMLLoad       *XMLLoadStep   `json:"xmlLoad"`
-	TableLoad     *TableLoadStep `json:"tableLoad" jsonschema_description:"Run transform pipeline on a TSV or CSV"`
-	JSONLoad      *JSONLoadStep  `json:"jsonLoad" jsonschema_description:"Run a transform pipeline on a multi line json file"`
-	AvroLoad      *AvroLoadStep  `json:"avroLoad" jsonschema_description:"Load data from avro file"`
+	XMLLoad       *XMLLoadStep   `json:"xml"`
+	TableLoad     *TableLoadStep `json:"table" jsonschema_description:"Run transform pipeline on a TSV or CSV"`
+	JSONLoad      *JSONLoadStep  `json:"json" jsonschema_description:"Run a transform pipeline on a multi line json file"`
+	AvroLoad      *AvroLoadStep  `json:"avro" jsonschema_description:"Load data from avro file"`
 }
 
 type fileSource struct {

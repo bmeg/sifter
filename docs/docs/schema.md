@@ -1,4 +1,8 @@
-# Sifter Playbook Schema and Documentation
+---
+title: Schema
+---
+
+# Sifter Playbook Schema
 
 This document provides a comprehensive description of the Sifter Playbook format, its input methods (extractors), and its transformation steps.
 
@@ -12,20 +16,21 @@ A Playbook is a YAML file that defines an ETL pipeline.
 | `name` | string | Unique name of the playbook. |
 | `docs` | string | Documentation string for the playbook. |
 | `outdir` | string | Default output directory for emitted files. |
-| `config` | map | Configuration variables with optional defaults and types (`File`, `Dir`). |
+| `params` | map | Configuration variables with optional defaults and types (`File`, `Dir`). |
 | `inputs` | map | Named extractor definitions. |
+| `outputs` | map | Named outputs definitions. |
 | `pipelines` | map | Named transformation pipelines (arrays of steps). |
 
 ---
 
-## Configuration Variables (`config`)
+## Parameters (`params`)
 
 
-Configuration variables allow playbooks to be parameterized. They are defined in the `config` section of the playbook YAML file.
+Parameters allow playbooks to be parameterized. They are defined in the `params` section of the playbook YAML file.
 
-### Configuration Syntax
+### Params Syntax
 ```yaml
-config:
+params:
   variableName:
     type: File # or Dir
     default: "path/to/default"
@@ -35,9 +40,8 @@ config:
 - `File`: Represents a file path
 - `Dir`: Represents a directory path
 
-### Example Configuration
 ```yaml
-config:
+params:
   inputDir:
     type: Dir
     default: "./data/input"
@@ -50,12 +54,11 @@ config:
 ```
 
 
-
 ## Input Methods (Extractors)
 
 Extractors produce a stream of messages from various sources.
 
-### `tableLoad`
+### `table`
 Loads data from a delimited file (TSV/CSV).
 - `path`: Path to the file.
 - `rowSkip`: Number of header rows to skip.
@@ -101,7 +104,7 @@ Load data from embedded structure.
 Scan files using `*` based glob statement and open all files as input.
 - `path`: Path of avro object file to transform.
 - `storeFilename`: Store value of filename in parameter each row.
-- `xml`: xmlLoad configuration.
+- `xml`: xmlLoad data.
 - `table`: Run transform pipeline on a TSV or CSV.
 - `json`: Run a transform pipeline on a multi line json file.
 - `avro`: Load data from avro file.

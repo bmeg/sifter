@@ -16,10 +16,10 @@ as input.
 |-------|--------|
 | storeFilename | Store value of filename in parameter each row |
 | input | Path of avro object file to transform |
-| xmlLoad | xmlLoad configutation |
-| tableLoad | Run transform pipeline on a TSV or CSV |
-| jsonLoad | Run a transform pipeline on a multi line json file |
-| avroLoad | Load data from avro file |
+| xml | xmlLoad configutation |
+| table | Run transform pipeline on a TSV or CSV |
+| json | Run a transform pipeline on a multi line json file |
+| avro | Load data from avro file |
 
 ## Example
 
@@ -27,7 +27,7 @@ as input.
 inputs:
   pubmedRead:
     glob:
-      path: "{{config.baseline}}/*.xml.gz"
-      xmlLoad: {}
+      path: "{{params.baseline}}/*.xml.gz"
+      xml: {}
 
 ```

@@ -25,13 +25,15 @@ Extract data from tabular file, includiong TSV and CSV files.
 
 ```yaml
 
-config:
-  gafFile: ../../source/go/goa_human.gaf.gz
+params:
+  gafFile:
+    default: ../../source/go/goa_human.gaf.gz
+    type: File
 
 inputs:
   gafLoad:
     tableLoad:
-      path: "{{config.gafFile}}"
+      path: "{{params.gafFile}}"
       columns:
         - db
         - id

@@ -15,7 +15,7 @@ Run user program for customized data extraction.
 inputs:
   oboData:
     plugin:
-      commandLine: ../../util/obo_reader.py {{config.oboFile}}
+      commandLine: ../../util/obo_reader.py {{params.oboFile}}
 ```
 
 The plugin program is expected to output JSON messages, one per line, to STDOUT that will then 

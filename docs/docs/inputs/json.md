@@ -23,5 +23,5 @@ Load data from a JSON file. Default behavior expects a single dictionary per lin
 inputs:
   caseData:
     json:
-      path: "{{config.casesJSON}}"
+      path: "{{params.casesJSON}}"
 ```

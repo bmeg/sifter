@@ -21,5 +21,5 @@ Load an XML file
 inputs:
   loader:
     xmlLoad:
-      path: "{{config.xmlPath}}"
+      path: "{{params.xmlPath}}"
 ```

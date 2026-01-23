@@ -22,7 +22,7 @@ Scan file produced produced from sqldump.
 inputs:
   database:
     sqldumpLoad:
-      path: "{{config.sql}}"
+      path: "{{params.sql}}"
       tables:
         - cells
         - cell_tissues

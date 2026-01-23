@@ -14,6 +14,6 @@ Build graph elements from JSON objects using the JSON Schema graph extensions.
 # example
 ```yaml
       - graphBuild:
-          schema: "{{config.allelesSchema}}"
+          schema: "{{params.allelesSchema}}"
           title: Allele
 ```

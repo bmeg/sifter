@@ -1,9 +1,13 @@
+---
+title: Sifter
+---
 
-# Sifter pipelines
 
-Sifter pipelines process streams of nested JSON messages. Sifter comes with a number of 
+# Sifter
+
+Sifter is a stream based processing engine. It comes with a number of 
 file extractors that operate as inputs to these pipelines. The pipeline engine 
-connects togeather arrays of transform steps into directed acylic graph that is processed
+connects togeather several processing data into directed acylic graph that is processed
 in parallel.
 
 Example Message:
@@ -35,7 +39,7 @@ be done in a transform pipeline these include:
 # Pipeline File
 
 An sifter pipeline file is in YAML format and describes an entire processing pipelines. 
-If is composed of the following sections: `config`, `inputs`, `pipelines`, `outputs`. In addition,
+If is composed of the following sections: `params`, `inputs`, `pipelines`, `outputs`. In addition,
 for tracking, the file will also include `name` and `class` entries. 
 
 ```yaml
@@ -44,9 +48,12 @@ class: sifter
 name: <script name>
 outdir: <where output files should go, relative to this file>
 
-config:
-  <config key>: <config value>
-  <config key>: <config value> 
+params:
+  <param key>: 
+    type: <param type>
+    default: <default value that make parameter optional at runtime>
+  <param key>: 
+    type: <param value> 
   # values that are referenced in pipeline parameters for 
   # files will be treated like file paths and be 
   # translated to full paths
@@ -79,18 +86,24 @@ name: <name of script>
 outdir: <where files should be stored>
 ```
 
-# Config and templating
-The `config` section is a set of defined keys that are used throughout the rest of the script. 
+# Parameters and templating
+The `params` section is a set of defined keys that are used throughout the rest of the script. 
 
-Example config:
-```
-config:
-  sqlite:  ../../source/chembl/chembl_33/chembl_33_sqlite/chembl_33.db
-  uniprot2ensembl: ../../tables/uniprot2ensembl.tsv
-  schema: ../../schema/
+Example params:
+```yaml
+params:
+  sqlite:  
+    type: File
+    default: ../../source/chembl/chembl_33/chembl_33_sqlite/chembl_33.db
+  uniprot2ensembl: 
+    type: File
+    default: ../../tables/uniprot2ensembl.tsv
+  schema: 
+    type: Path
+    default: ../../schema/
 ```
 
-Various fields in the script file will be be parsed using a [Mustache](https://mustache.github.io/) template engine. For example, to access the various values within the config block, the template `{{config.sqlite}}`.
+Various fields in the script file will be be parsed using a [Mustache](https://mustache.github.io/) template engine. For example, to access the various values within the params block, the template `{{params.sqlite}}`.
 
 
 # Inputs
@@ -137,14 +150,20 @@ class: sifter
 name: go
 outdir: ../../output/go/
 
-config:
+params:
   oboFile: ../../source/go/go.obo
   schema: ../../schema
 
 inputs:
   oboData:
     plugin:
-      commandLine: ../../util/obo_reader.py {{config.oboFile}}
+      commandLine: ../../util/obo_reader.py {{params.oboFile}}
+
+outputs:
+  goObjects:
+    json:
+      path: GeneOntologyTerm.json
+      from: transform
 
 pipelines:
   transform:
@@ -170,7 +189,5 @@ pipelines:
             return row
     - objectValidate:
         title: GeneOntologyTerm
-        schema: "{{config.schema}}"
-    - emit:
-        name: term
+        schema: "{{params.schema}}"
 ```

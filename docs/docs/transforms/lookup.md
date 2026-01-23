@@ -25,12 +25,12 @@ Using key from current row, get values from a reference source
 
 ### JSON file based lookup
 
-The JSON file defined by `config.doseResponseFile` is opened and loaded into memory, using the `experiment_id` field as a primary key. 
+The JSON file defined by `params.doseResponseFile` is opened and loaded into memory, using the `experiment_id` field as a primary key. 
 
 ```yaml
     - lookup:
         json:
-          input: "{{config.doseResponseFile}}"
+          input: "{{params.doseResponseFile}}"
           key: experiment_id
         lookup: "{{row.experiment_id}}"
         copy:

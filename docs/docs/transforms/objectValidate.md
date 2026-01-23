@@ -22,5 +22,5 @@ Use JSON schema to validate row contents
 ```
     - objectValidate:
         title: Aliquot
-        schema: "{{config.schema}}"
+        schema: "{{params.schema}}"
 ```

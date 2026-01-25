@@ -8,8 +8,18 @@ outdir: output/
 
 inputs:
   pfb:
-    avroLoad:
-      input: "{{params.file}}"
+    avro:
+      path: "{{params.file}}"
+
+outputs:
+  vertexFile:
+    json:
+      path: pfb.vertex.json
+      from: vertex
+  edgeFile:
+    json:
+      path: pfb.edge.json
+      from: edge
 
 pipelines:
   transform:
@@ -56,9 +66,6 @@ pipelines:
             o = x["object"][x["name"]]
             return { "gid" : x["name"] + ":" + x["id"], "label" : x["name"], "data" : o }
 
-    - emit:
-        name: vertex
-
   edge:
     - from: transform
     - fieldProcess:
@@ -74,5 +81,3 @@ pipelines:
           - to
           - from
           - label
-    - emit:
-        name: edge

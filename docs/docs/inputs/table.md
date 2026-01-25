@@ -1,12 +1,12 @@
 ---
-title: tableLoad
+title: table
 menu:
   main:
     parent: inputs
     weight: 100
 ---
 
-# tableLoad
+# table
 
 Extract data from tabular file, includiong TSV and CSV files. 
 
@@ -14,7 +14,7 @@ Extract data from tabular file, includiong TSV and CSV files.
 
 | Name | Type | Description |
 |-------|---|--------|
-| input     |   string   | File to be transformed |
+| path     |   string   | File to be transformed |
 |	rowSkip   |   int       | Number of header rows to skip | 
 |	columns   |   []string  | Manually set names of columns |
 |	extraColumns | string   |  Columns beyond originally declared columns will be placed in this array |
@@ -25,13 +25,15 @@ Extract data from tabular file, includiong TSV and CSV files.
 
 ```yaml
 
-config:
-  gafFile: ../../source/go/goa_human.gaf.gz
+params:
+  gafFile:
+    default: ../../source/go/goa_human.gaf.gz
+    type: File
 
 inputs:
   gafLoad:
     tableLoad:
-      input: "{{config.gafFile}}"
+      path: "{{params.gafFile}}"
       columns:
         - db
         - id

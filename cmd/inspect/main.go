@@ -63,13 +63,8 @@ var Cmd = &cobra.Command{
 
 		outputs := map[string]any{}
 
-		sinks, _ := pb.GetOutputs(task)
-		for k, v := range sinks {
-			outputs[k] = v
-		}
-
-		emitters, _ := pb.GetEmitters(task)
-		for k, v := range emitters {
+		pouts, _ := pb.GetOutputs(task)
+		for k, v := range pouts {
 			outputs[k] = v
 		}
 

@@ -3,10 +3,8 @@ package cmd
 import (
 	"os"
 
-	"github.com/bmeg/sifter/cmd/graphplan"
 	"github.com/bmeg/sifter/cmd/inspect"
 	"github.com/bmeg/sifter/cmd/run"
-	"github.com/bmeg/sifter/cmd/scan"
 	"github.com/bmeg/sifter/cmd/web"
 	"github.com/spf13/cobra"
 )
@@ -21,8 +19,6 @@ var RootCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(run.Cmd)
 	RootCmd.AddCommand(inspect.Cmd)
-	RootCmd.AddCommand(graphplan.Cmd)
-	RootCmd.AddCommand(scan.Cmd)
 	RootCmd.AddCommand(web.Cmd)
 }
 

@@ -8,10 +8,16 @@ params:
 
 inputs:
   sifFile:
-    tableLoad:
-      input: "{{params.sifFile}}"
+    table:
+      path: "{{params.sifFile}}"
       sep: "\t"
       columns: [_from, _label, _to]
+
+outputs:
+  sifout:
+    json:
+      path: sifout.json.gz
+      from: geneReduce
 
 pipelines:
   geneReduce:
@@ -25,9 +31,3 @@ pipelines:
             y["_from"] = x["_from"]
             y["_to"].append(x["_to"])
             return y
-  newpip:
-    - from: geneReduce
-    - emit:
-        useName: True
-        name: sifout
-

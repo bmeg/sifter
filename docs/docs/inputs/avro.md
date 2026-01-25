@@ -1,17 +1,17 @@
 ---
-title: avroLoad
+title: avro
 menu:
   main:
     parent: inputs
     weight: 100
 ---
 
-# avroLoad
+# avro
 Load an AvroFile
 
 ## Parameters
 
 | name | Description |
 | --- | --- |
-| input | Path to input file |
+| path | Path to input file |
 

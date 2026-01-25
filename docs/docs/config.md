@@ -1,16 +1,16 @@
 ---
-title: Configuration Reference
+title: Paramaters
 ---
 
-## Configuration Variables
+## Paramaters Variables
 
-Configuration variables allow playbooks to be parameterized. They are defined in the `config` section of the playbook YAML file.
+Playbooks can be parameterized. They are defined in the `params` section of the playbook YAML file.
 
 ### Configuration Syntax
 ```yaml
-config:
+params:
   variableName:
-    type: File # or Dir
+    type: File # one of: File, Path, String, Number
     default: "path/to/default"
 ```
 
@@ -20,7 +20,7 @@ config:
 
 ### Example Configuration
 ```yaml
-config:
+params:
   inputDir:
     type: Dir
     default: "/data/input"
@@ -32,7 +32,3 @@ config:
     default: "/config/schema.json"
 ```
 
-### Best Practices
-1. Use descriptive names for configuration variables
-2. Provide reasonable default values
-3. Document all configuration variables in your playbook's documentation section

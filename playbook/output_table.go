@@ -1,4 +1,4 @@
-package transform
+package playbook
 
 import (
 	"compress/gzip"
@@ -14,8 +14,9 @@ import (
 	"github.com/bmeg/sifter/task"
 )
 
-type TableWriteStep struct {
-	Output           string   `json:"output" jsonschema_description:"Name of file to create"`
+type OutputTable struct {
+	From             string   `json:"from"`
+	Path             string   `json:"path" jsonschema_description:"Name of file to create"`
 	Columns          []string `json:"columns" jsonschema_description:"Columns to be written into table file"`
 	Header           string   `json:"header"`
 	SkipColumnHeader bool     `json:"skipColumnHeader"`
@@ -23,20 +24,20 @@ type TableWriteStep struct {
 }
 
 type tableWriteProcess struct {
-	config  *TableWriteStep
+	config  *OutputTable
 	columns []string
 	out     io.WriteCloser
 	handle  io.WriteCloser
 	writer  *csv.Writer
 }
 
-func (tw *TableWriteStep) Init(task task.RuntimeTask) (Processor, error) {
+func (tw *OutputTable) Init(task task.RuntimeTask) (OutputProcessor, error) {
 	sep := '\t'
 	if tw.Sep != "" {
 		sep = rune(tw.Sep[0])
 	}
 
-	output, err := evaluate.ExpressionString(tw.Output, task.GetConfig(), nil)
+	output, err := evaluate.ExpressionString(tw.Path, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +65,8 @@ func (tw *TableWriteStep) Init(task task.RuntimeTask) (Processor, error) {
 	return &te, nil
 }
 
-func (tw *TableWriteStep) GetOutputs(task task.RuntimeTask) []string {
-	output, err := evaluate.ExpressionString(tw.Output, task.GetConfig(), nil)
+func (tw *OutputTable) GetOutputs(task task.RuntimeTask) []string {
+	output, err := evaluate.ExpressionString(tw.Path, task.GetConfig(), nil)
 	if err != nil {
 		return []string{}
 	}
@@ -78,7 +79,7 @@ func (tp *tableWriteProcess) PoolReady() bool {
 	return false
 }
 
-func (tp *tableWriteProcess) Process(i map[string]any) map[string]any {
+func (tp *tableWriteProcess) Process(i map[string]any) {
 	o := make([]string, len(tp.columns))
 	for j, k := range tp.columns {
 		if v, ok := i[k]; ok {
@@ -91,11 +92,10 @@ func (tp *tableWriteProcess) Process(i map[string]any) map[string]any {
 		}
 	}
 	tp.writer.Write(o)
-	return i
 }
 
 func (tp *tableWriteProcess) Close() {
-	logger.Debug("Closing tableWriter: %s", tp.config.Output)
+	logger.Debug("Closing tableWriter: %s", tp.config.Path)
 	tp.writer.Flush()
 	tp.out.Close()
 	tp.handle.Close()

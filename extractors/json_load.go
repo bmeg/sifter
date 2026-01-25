@@ -15,14 +15,14 @@ import (
 )
 
 type JSONLoadStep struct {
-	Input     string         `json:"input" jsonschema_description:"Path of multiline JSON file to transform"`
+	Path      string         `json:"path" jsonschema_description:"Path of multiline JSON file to transform"`
 	Transform transform.Pipe `json:"transform" jsonschema_description:"Transformation Pipeline"`
 	Multiline bool           `json:"multiline" jsonschema_description:"Load file as a single multiline JSON object"`
 }
 
 func (ml *JSONLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 	logger.Debug("Starting JSON Load")
-	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
+	input, err := evaluate.ExpressionString(ml.Path, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (ml *JSONLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 
 func (ml *JSONLoadStep) GetRequiredParams() []config.ParamRequest {
 	out := []config.ParamRequest{}
-	for _, s := range evaluate.ExpressionIDs(ml.Input) {
+	for _, s := range evaluate.ExpressionIDs(ml.Path) {
 		out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 	}
 	return out

@@ -9,10 +9,20 @@ params:
 
 inputs:
   sifFile:
-    tableLoad:
-      input: "{{params.sifFile}}"
+    table:
+      path: "{{params.sifFile}}"
       sep: "\t"
       columns: [_from, _label, _to]
+
+outputs:
+  edgeFile:
+    json:
+      from: sifFile
+      path: pathway_commons.edges.json.gz
+  nodeFile:
+    json:
+      from: nodes
+      path: pathway_commons.nodes.json.gz
 
 pipelines:
   nodes:
@@ -29,10 +39,3 @@ pipelines:
     - project:
         mapping:
           _label: "Protein"
-    - emit:
-        name: node
-
-  edges:
-    - from: sifFile
-    - emit:
-        name: edge

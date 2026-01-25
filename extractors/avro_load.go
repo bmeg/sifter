@@ -13,13 +13,13 @@ import (
 )
 
 type AvroLoadStep struct {
-	Input string `json:"input" jsonschema_description:"Path of avro object file to transform"`
+	Path string `json:"path" jsonschema_description:"Path of avro object file to transform"`
 }
 
 func (ml *AvroLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 	logger.Debug("Starting Avro Load")
 
-	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
+	input, err := evaluate.ExpressionString(ml.Path, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (ml *AvroLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 
 func (ml *AvroLoadStep) GetRequiredParams() []config.ParamRequest {
 	out := []config.ParamRequest{}
-	for _, s := range evaluate.ExpressionIDs(ml.Input) {
+	for _, s := range evaluate.ExpressionIDs(ml.Path) {
 		out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 	}
 	return out

@@ -2,6 +2,10 @@ site_name: Sifter
 
 docs_dir: docs
 
+plugins:
+   - search
+   - awesome-nav
+   
 theme:
   name: material
   palette:

@@ -1,0 +1,11 @@
+
+title: Sifter Documentation
+
+nav:
+  - index.md
+  - example.md
+  - schema.md
+  - config.md
+  - inputs
+  - transforms
+  - outputs

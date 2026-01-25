@@ -9,9 +9,14 @@ params:
 
 inputs:
   geneData:
-    jsonLoad:
-      input: "{{params.genes}}"
+    json:
+      path: "{{params.genes}}"
 
+outputs:
+  new_ids:
+    json:
+      from: step1
+      path: new_ids.ndjson
 
 pipelines:
   step1:
@@ -19,5 +24,3 @@ pipelines:
     - project:
           mapping:
             _id: "{{row.ensembl_gene_id}}"
-    - emit:
-        name: new_ids

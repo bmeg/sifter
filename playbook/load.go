@@ -17,14 +17,21 @@ type Loader interface {
 	Load() chan gripql.GraphElement
 }
 
+type Output struct {
+	JSON  *OutputJSON  `json:"json"`
+	Table *OutputTable `json:"table"`
+	Graph *OutputGraph `json:"graph"`
+}
+
 type Playbook struct {
+	Inputs    map[string]extractors.Extractor `json:"inputs" jsonschema_description:"Steps of the transformation"`
+	Outputs   map[string]Output               `json:"outputs"`
 	Class     string                          `json:"class"`
 	Name      string                          `json:"name" jsonschema_description:"Unique name of the playbook"`
 	MemMB     int                             `json:"memMB"` //annotation of potential memory usage, for build Snakefile
 	Docs      string                          `json:"docs"`
 	Outdir    string                          `json:"outdir"`
 	Params    config.Params                   `json:"params,omitempty" jsonschema_description:"Parameters for Playbook"`
-	Inputs    map[string]extractors.Extractor `json:"inputs" jsonschema_description:"Steps of the transformation"`
 	Pipelines map[string]transform.Pipe       `json:"pipelines"`
 	path      string
 }

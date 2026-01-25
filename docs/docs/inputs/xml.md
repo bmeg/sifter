@@ -1,19 +1,19 @@
 ---
-title: xmlLoad
+title: xml
 menu:
   main:
     parent: inputs
     weight: 100
 ---
 
-# xmlLoad
+# xml
 Load an XML file
 
 ## Parameters
 
 | name | Description |
 | --- | --- |
-| input | Path to input file |
+| path | Path to input file |
 
 ## Example
 
@@ -21,5 +21,5 @@ Load an XML file
 inputs:
   loader:
     xmlLoad:
-      input: "{{config.xmlPath}}"
+      path: "{{params.xmlPath}}"
 ```

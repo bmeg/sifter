@@ -132,6 +132,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 
 	outNodes := map[string]flame.Emitter[map[string]any]{}
 	inNodes := map[string]flame.Receiver[map[string]any]{}
+	outputs := map[string]OutputProcessor{}
 
 	for n, v := range pb.Inputs {
 		logger.Debug("Setting Up", "name", n)
@@ -149,11 +150,10 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 	joins := []joinStruct{}
 
 	for k, v := range pb.Pipelines {
-		sub := task.SubTask(k)
 		var lastStep flame.Emitter[map[string]any]
 		var firstStep flame.Receiver[map[string]any]
 		for i, s := range v {
-			b, err := s.Init(sub)
+			b, err := s.Init(task)
 			if err != nil {
 				logger.Error("Pipeline error", "name", k, "error", err)
 				return err
@@ -330,6 +330,37 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 		}
 	}
 
+	for k, v := range pb.Outputs {
+		if v.JSON != nil {
+			proc, err := v.JSON.Init(task)
+			if err == nil {
+				if srcNode, ok := outNodes[v.JSON.From]; ok {
+					s := flame.AddSink(wf, proc.Process)
+					outputs[k] = proc
+					s.Connect(srcNode)
+				}
+			}
+		} else if v.Table != nil {
+			proc, err := v.Table.Init(task)
+			if err == nil {
+				if srcNode, ok := outNodes[v.Table.From]; ok {
+					s := flame.AddSink(wf, proc.Process)
+					outputs[k] = proc
+					s.Connect(srcNode)
+				}
+			}
+		} else if v.Graph != nil {
+			proc, err := v.Graph.Init(task)
+			if err == nil {
+				if srcNode, ok := outNodes[v.Graph.From]; ok {
+					s := flame.AddSink(wf, proc.Process)
+					outputs[k] = proc
+					s.Connect(srcNode)
+				}
+			}
+		}
+	}
+
 	//log.Printf("WF: %#v", wf)
 
 	wf.Start()
@@ -339,6 +370,10 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 
 	for p := range procs {
 		procs[p].Close()
+	}
+
+	for k := range outputs {
+		outputs[k].Close()
 	}
 
 	task.Close()

@@ -1,20 +1,25 @@
-package transform
+package playbook
 
 import (
+	"path/filepath"
+
 	"github.com/bmeg/grip/gripql"
 	"github.com/bmeg/jsonschemagraph/graph"
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/logger"
+	"github.com/bmeg/sifter/playbook/refs"
 	"github.com/bmeg/sifter/task"
 )
 
 type EdgeFix struct {
-	Method  string     `json:"method"`
-	GPython *CodeBlock `json:"gpython"`
+	Method  string          `json:"method"`
+	GPython *refs.CodeBlock `json:"gpython"`
 }
 
-type GraphBuildStep struct {
+type OutputGraph struct {
+	From    string   `json:"from"`
+	Path    string   `json:"path"`
 	Schema  string   `json:"schema"`
 	Title   string   `json:"title"`
 	Clean   bool     `json:"clean"`
@@ -22,11 +27,24 @@ type GraphBuildStep struct {
 	EdgeFix *EdgeFix `json:"edgeFix"`
 }
 
+func (oj *OutputGraph) GetOutputs(task task.RuntimeTask) []string {
+	output, err := evaluate.ExpressionString(oj.Path, task.GetConfig(), nil)
+	if err != nil {
+		return []string{}
+	}
+	outputPath := filepath.Join(task.OutDir(), output)
+	logger.Debug("table output %s %s", task.OutDir(), output)
+	return []string{outputPath + ".edge", outputPath + ".vertex"}
+}
+
 type graphBuildProcess struct {
-	config GraphBuildStep
+	config OutputGraph
 	task   task.RuntimeTask
 	sch    graph.GraphSchema
 	class  string
+
+	edgeName    string
+	verrtexName string
 
 	edgeFix     evaluate.Processor
 	objectCount int
@@ -34,7 +52,7 @@ type graphBuildProcess struct {
 	edgeCount   int
 }
 
-func (ts GraphBuildStep) Init(task task.RuntimeTask) (Processor, error) {
+func (ts OutputGraph) Init(task task.RuntimeTask) (OutputProcessor, error) {
 
 	path, err := evaluate.ExpressionString(ts.Schema, task.GetConfig(), nil)
 	if err != nil {
@@ -45,10 +63,17 @@ func (ts GraphBuildStep) Init(task task.RuntimeTask) (Processor, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	output, err := evaluate.ExpressionString(ts.Path, task.GetConfig(), nil)
+
+	//TODO: make this more flexible
+	edgeName := output + ".edge.json.gz"
+	vertexName := output + ".vertex.json.gz"
+
 	//force the two emitters to be created. nil messages don't get emitted
 	//but the output file will be created
-	task.Emit("vertex", nil, false)
-	task.Emit("edge", nil, false)
+	task.Emit(vertexName, nil)
+	task.Emit(edgeName, nil)
 
 	var edgeFix evaluate.Processor
 	if ts.EdgeFix != nil {
@@ -63,10 +88,20 @@ func (ts GraphBuildStep) Init(task task.RuntimeTask) (Processor, error) {
 			edgeFix = c
 		}
 	}
-	return &graphBuildProcess{ts, task, sc, ts.Title, edgeFix, 0, 0, 0}, nil
+	return &graphBuildProcess{
+		config:      ts,
+		task:        task,
+		sch:         sc,
+		edgeName:    edgeName,
+		verrtexName: vertexName,
+		class:       ts.Title,
+		edgeFix:     edgeFix,
+		objectCount: 0,
+		vertexCount: 0,
+		edgeCount:   0}, nil
 }
 
-func (ts GraphBuildStep) GetRequiredParams() []config.ParamRequest {
+func (ts OutputGraph) GetRequiredParams() []config.ParamRequest {
 	out := []config.ParamRequest{}
 	if ts.Schema != "" {
 		for _, s := range evaluate.ExpressionIDs(ts.Schema) {
@@ -88,15 +123,14 @@ func (ts *graphBuildProcess) Close() {
 		"class", ts.class)
 }
 
-func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]interface{} {
+func (ts *graphBuildProcess) Process(i map[string]interface{}) {
 
-	out := []map[string]any{}
 	if o, err := ts.sch.Generate(ts.class, i, ts.config.Clean, map[string]any{}); err == nil {
 		ts.objectCount++
 		for i := range o {
 			if o[i].Vertex != nil {
 				ts.vertexCount++
-				err := ts.task.Emit("vertex", ts.vertexToMap(o[i].Vertex), false)
+				err := ts.task.Emit(ts.verrtexName, ts.vertexToMap(o[i].Vertex))
 				if err != nil {
 					logger.Error("Emit Error: %s", err)
 				}
@@ -111,7 +145,7 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 						}
 					}
 					ts.edgeCount++
-					err := ts.task.Emit("edge", edgeData, false)
+					err := ts.task.Emit(ts.edgeName, edgeData)
 					if err != nil {
 						logger.Error("Emit Error: %s", err)
 					}
@@ -121,9 +155,6 @@ func (ts *graphBuildProcess) Process(i map[string]interface{}) []map[string]inte
 	} else {
 		logger.Error("Graphbuild %s error : %s", ts.config.Title, err)
 	}
-
-	return out
-
 }
 
 func (ts *graphBuildProcess) edgeToMap(e *gripql.Edge) map[string]interface{} {

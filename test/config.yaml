@@ -4,8 +4,8 @@
     - 200
     - 192
   outputs:
-    - output/pathway_commons.edges.edge.json.gz
-    - output/pathway_commons.nodes.node.json.gz
+    - output/pathway_commons.edges.json.gz
+    - output/pathway_commons.nodes.json.gz
 - playbook: examples/pathwaycommons/gene_collect.yaml
   LineCount:
     - 3
@@ -26,7 +26,7 @@
   LineCount:
     - 10
   outputs:
-    - output-tsv/gdc-projects.tranform.case-mondo.json.gz
+    - output-tsv/gdc-projects.transform.case-mondo.json.gz
 - playbook: examples/gdc/gdc-convert.yaml
   LineCount:
     - 0 #TODO: fix this test
@@ -41,8 +41,8 @@
     - 1138
     - 873
   outputs:
-    - output/sifter.edge.edge.json.gz
-    - output/sifter.vertex.vertex.json.gz
+    - output/pfb.edge.json
+    - output/pfb.vertex.json
 - playbook: examples/code-ref/Pipeline.yaml
 - playbook: examples/code-ref/flatMappipeline.yaml
   LineCount:

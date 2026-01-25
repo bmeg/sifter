@@ -5,6 +5,7 @@ import (
 
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/logger"
+	"github.com/bmeg/sifter/playbook/refs"
 	"github.com/bmeg/sifter/task"
 )
 
@@ -12,7 +13,7 @@ type ReduceStep struct {
 	Field    string                  `json:"field"`
 	Method   string                  `json:"method"`
 	Python   string                  `json:"python"`
-	GPython  *CodeBlock              `json:"gpython"`
+	GPython  *refs.CodeBlock         `json:"gpython"`
 	InitData *map[string]interface{} `json:"init"`
 }
 

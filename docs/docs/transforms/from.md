@@ -8,22 +8,18 @@ menu:
 
 # from
 
-## Parmeters
+Start a pipeline from a named input or another pipeline.
 
-Name of data source
+## Parameters
+
+| Name | Type | Description |
+| --- | --- | --- |
+| source | string | Name of the input or pipeline to start from |
 
 ## Example
 
 ```yaml
-
-
-inputs:
-  profileReader:
-    tableLoad:
-      input: "{{config.profiles}}"
-
 pipelines:
   profileProcess:
     - from: profileReader
-
 ```

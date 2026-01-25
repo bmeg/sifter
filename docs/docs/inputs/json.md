@@ -1,19 +1,19 @@
 ---
-title: jsonLoad
+title: json
 menu:
   main:
     parent: inputs
     weight: 100
 ---
 
-# jsonLoad
+# json
 Load data from a JSON file. Default behavior expects a single dictionary per line. Each line is a seperate entry. The `multiline` parameter reads all of the lines of the files and returns a single object.
 
 ## Parameters
 
 | name | Description |
 | --- | --- |
-| input | Path of JSON file to transform |
+| path | Path of JSON file to transform |
 |	multiline | Load file as a single multiline JSON object |
 
 
@@ -22,6 +22,6 @@ Load data from a JSON file. Default behavior expects a single dictionary per lin
 ```yaml
 inputs:
   caseData:
-    jsonLoad:
-      input: "{{config.casesJSON}}"
+    json:
+      path: "{{params.casesJSON}}"
 ```

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sigs.k8s.io/yaml"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -18,6 +19,7 @@ import (
 var staticFS embed.FS
 
 var playbookDir string
+var siteDir string
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
@@ -27,13 +29,18 @@ var Cmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		playbookDir = args[0]
-		// Serve embedded static files
-		staticFiles, err := fs.Sub(staticFS, "static")
-		if err != nil {
-			log.Fatalf("failed to create sub FS: %v", err)
-		}
-		http.Handle("/", http.FileServer(http.FS(staticFiles)))
 
+		if siteDir == "" {
+			// Serve embedded static files
+			staticFiles, err := fs.Sub(staticFS, "static")
+			if err != nil {
+				log.Fatalf("failed to create sub FS: %v", err)
+			}
+			http.Handle("/", http.FileServer(http.FS(staticFiles)))
+		} else {
+			http.Handle("/", http.FileServer(http.Dir(siteDir)))
+
+		}
 		// API endpoints
 		http.HandleFunc("/api/playbooks", listPlaybooksHandler)
 		http.HandleFunc("/api/playbook", getPlaybookHandler)
@@ -83,6 +90,22 @@ func getPlaybookHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "playbook not found", http.StatusNotFound)
 		return
 	}
+	format := r.URL.Query().Get("format")
+	if format == "json" {
+		jsonBytes, err := yaml.YAMLToJSON(content)
+		if err != nil {
+			http.Error(w, "failed to convert yaml to json", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(jsonBytes)
+		return
+	}
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write(content)
+}
+
+func init() {
+	flags := Cmd.Flags()
+	flags.StringVarP(&siteDir, "site-dir", "s", siteDir, "Serve Custom site dir")
 }

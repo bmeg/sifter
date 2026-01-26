@@ -9,8 +9,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"sigs.k8s.io/yaml"
 	"strings"
+
+	"sigs.k8s.io/yaml"
 
 	"github.com/spf13/cobra"
 )
@@ -30,20 +31,24 @@ var Cmd = &cobra.Command{
 
 		playbookDir = args[0]
 
+		var httpFS http.FileSystem
+
 		if siteDir == "" {
 			// Serve embedded static files
 			staticFiles, err := fs.Sub(staticFS, "static")
 			if err != nil {
 				log.Fatalf("failed to create sub FS: %v", err)
 			}
-			http.Handle("/", http.FileServer(http.FS(staticFiles)))
+			httpFS = http.FS(staticFiles)
 		} else {
-			http.Handle("/", http.FileServer(http.Dir(siteDir)))
-
+			httpFS = http.Dir(siteDir)
 		}
+		http.Handle("/", http.FileServer(httpFS))
+
 		// API endpoints
-		http.HandleFunc("/api/playbooks", listPlaybooksHandler)
-		http.HandleFunc("/api/playbook", getPlaybookHandler)
+		ph := playbookHandler{playbookDir}
+		http.HandleFunc("/api/playbooks", ph.listPlaybooksHandler)
+		http.HandleFunc("/api/playbook", ph.getPlaybookHandler)
 
 		port := "8081"
 		fmt.Printf("Server listening on http://localhost:%s\n", port)
@@ -53,8 +58,12 @@ var Cmd = &cobra.Command{
 	},
 }
 
-func listPlaybooksHandler(w http.ResponseWriter, r *http.Request) {
-	entries, err := os.ReadDir(playbookDir)
+type playbookHandler struct {
+	baseDir string
+}
+
+func (ph *playbookHandler) listPlaybooksHandler(w http.ResponseWriter, r *http.Request) {
+	entries, err := os.ReadDir(ph.baseDir)
 	if err != nil {
 		http.Error(w, "failed to read playbook directory", http.StatusInternalServerError)
 		return
@@ -73,7 +82,7 @@ func listPlaybooksHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(names)
 }
 
-func getPlaybookHandler(w http.ResponseWriter, r *http.Request) {
+func (ph *playbookHandler) getPlaybookHandler(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 	if name == "" {
 		http.Error(w, "missing name parameter", http.StatusBadRequest)
@@ -84,7 +93,7 @@ func getPlaybookHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid playbook name", http.StatusBadRequest)
 		return
 	}
-	path := filepath.Join("examples", name)
+	path := filepath.Join(ph.baseDir, name)
 	content, err := os.ReadFile(path)
 	if err != nil {
 		http.Error(w, "playbook not found", http.StatusNotFound)

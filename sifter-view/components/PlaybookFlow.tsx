@@ -24,8 +24,9 @@ import type { Node, Edge } from '@xyflow/react';
 // Types for the Sifter playbook JSON (imported as a static module)
 // -------------------------------------------------------------------
 interface Playbook {
-  class: string;
+  class?: string;
   name?: string;
+  outdir: string;
   inputs: Record<string, any>;
   outputs?: Record<string, any>;
   pipelines: Record<string, PipelineStep[]>;
@@ -37,84 +38,51 @@ type PipelineStep = Record<string, any>; // each step is a single‑key object
 
 
 var playbook : Playbook = {
-  "class": "sifter",
   "inputs": {
-    "cases_data": {
-      "jsonLoad": {
-        "input": "out.case.json"
-      }
-    },
-    "cases_scrape": {
-      "plugin": {
-        "commandLine": "docker run --rm bmeg/sifter-gdc-scan /opt/gdc-scan.py cases"
-      }
-    },
-    "projects_data": {
-      "jsonLoad": {
-        "input": "out.projects.json"
-      }
-    },
-    "projects_scrape": {
-      "plugin": {
-        "commandLine": "docker run --rm bmeg/sifter-gdc-scan /opt/gdc-scan.py projects"
+    "caseData": {
+      "json": {
+        "path": "{{params.cases}}"
       }
     }
   },
-  "name": "GDCConvert",
+  "name": "gdc",
+  "outdir": "output/",
+  "outputs": {
+    "caseFile": {
+      "json": {
+        "from": "caseObject",
+        "path": "gdc.caseObject.case.json.gz"
+      }
+    },
+    "caseGraph": {
+      "graph": {
+        "EdgeFix": {
+          "gpython": {
+            "$ref": "test.py"
+          },
+          "method": "test"
+        },
+        "from": "caseObject",
+        "path": "gdc.caseGraph",
+        "schema": "{{params.schema}}",
+        "title": "Case"
+      }
+    }
+  },
   "params": {
+    "cases": {
+      "default": "../../resources/gdc-case.json.gz",
+      "type": "file"
+    },
     "schema": {
-      "default": "bmeg-dictionary/gdcdictionary/schemas",
+      "default": "../../resources/schemas",
       "type": "path"
     }
   },
   "pipelines": {
-    "aliquots": [
+    "caseObject": [
       {
-        "from": "cases_data"
-      },
-      {
-        "fieldProcess": {
-          "field": "samples"
-        }
-      },
-      {
-        "fieldProcess": {
-          "field": "portions"
-        }
-      },
-      {
-        "fieldProcess": {
-          "field": "analytes"
-        }
-      },
-      {
-        "fieldProcess": {
-          "field": "aliquots"
-        }
-      },
-      {
-        "project": {
-          "mapping": {
-            "id": "{{row.aliquot_id}}",
-            "type": "aliquot"
-          }
-        }
-      },
-      {
-        "objectValidate": {
-          "schema": "{{params.schema}}",
-          "title": "aliquot"
-        }
-      },
-      {
-        "emit": {
-          "name": "aliquot"
-        }
-      }
-    ],
-    "cases": [
-      {
-        "from": "cases_data"
+        "from": "caseData"
       },
       {
         "project": {
@@ -128,92 +96,7 @@ var playbook : Playbook = {
       {
         "objectValidate": {
           "schema": "{{params.schema}}",
-          "title": "case"
-        }
-      },
-      {
-        "emit": {
-          "name": "case"
-        }
-      }
-    ],
-    "experiments": [
-      {
-        "from": "projects_data"
-      },
-      {
-        "project": {
-          "mapping": {
-            "code": "{{row.project_id}}",
-            "programs": "{{row.program.name}}",
-            "projects": "{{row.project_id}}",
-            "submitter_id": "{{row.program.name}}",
-            "type": "experiment"
-          }
-        }
-      },
-      {
-        "objectValidate": {
-          "schema": "{{params.schema}}",
-          "title": "experiment"
-        }
-      },
-      {
-        "emit": {
-          "name": "experiment"
-        }
-      }
-    ],
-    "projects": [
-      {
-        "from": "projects_data"
-      },
-      {
-        "project": {
-          "mapping": {
-            "code": "{{row.project_id}}",
-            "programs": "{{row.program.name}}"
-          }
-        }
-      },
-      {
-        "objectValidate": {
-          "schema": "{{params.schema}}",
-          "title": "project"
-        }
-      },
-      {
-        "emit": {
-          "name": "project"
-        }
-      }
-    ],
-    "samples": [
-      {
-        "from": "cases_data"
-      },
-      {
-        "fieldProcess": {
-          "field": "samples"
-        }
-      },
-      {
-        "project": {
-          "mapping": {
-            "id": "{{row.sample_id}}",
-            "type": "sample"
-          }
-        }
-      },
-      {
-        "objectValidate": {
-          "schema": "{{params.schema}}",
-          "title": "sample"
-        }
-      },
-      {
-        "emit": {
-          "name": "sample"
+          "title": "Case"
         }
       }
     ]

@@ -9,6 +9,8 @@ import {
   addEdge, 
   Background, 
   Controls,
+  Handle,
+  Position,
   NodeProps,
   OnConnect,
   Connection
@@ -40,6 +42,7 @@ const PipelineStackNode = memo(function PipelineStackNode({ data }: NodeProps<No
   return (
     <div
       style={{
+        position: 'relative',
         width: PIPELINE_NODE_WIDTH,
         border: '1px solid #ccc',
         borderRadius: 8,
@@ -48,6 +51,8 @@ const PipelineStackNode = memo(function PipelineStackNode({ data }: NodeProps<No
         overflow: 'hidden',
       }}
     >
+      <Handle type="target" position={Position.Left} />
+      <Handle type="source" position={Position.Right} />
       <div
         style={{
           height: PIPELINE_HEADER_HEIGHT,
@@ -149,18 +154,6 @@ function buildGraph(pb: Playbook): { nodes: Node[]; edges: Edge[] } {
         g.setEdge(fromName, pipelineName);
       }
     }
-
-    if (pb.outputs) {
-      steps.forEach((stepObj) => {
-        const stepKey = Object.keys(stepObj)[0];
-        if (stepKey === 'emit') {
-          const emitName = (stepObj as any).emit?.name;
-          if (emitName && pb.outputs?.[emitName]) {
-            g.setEdge(pipelineName, `output-${emitName}`);
-          }
-        }
-      });
-    }
   });
 
   if (pb.outputs) {
@@ -196,6 +189,8 @@ function buildGraph(pb: Playbook): { nodes: Node[]; edges: Edge[] } {
       position: { x: x - width / 2, y: y - height / 2 },
       data: nodeData ?? { label },
       type: nodeType ?? 'default',
+      targetPosition: Position.Left,
+      sourcePosition: Position.Right,
       style: nodeType === 'pipeline'
         ? undefined
         : {
@@ -216,6 +211,10 @@ function buildGraph(pb: Playbook): { nodes: Node[]; edges: Edge[] } {
     source: e.v,
     target: e.w,
     animated: true,
+    style: {
+      stroke: '#64748b',
+      strokeWidth: 2.5,
+    },
   }));
 
   return { nodes, edges };
@@ -288,7 +287,7 @@ export default function PlaybookFlow() {
   }
 
   return (
-    <div style={{ width: '100vw', height: '500px', border: '1px solid #ccc' }}>
+    <div style={{ width: '100vw', height: '90vw', border: '1px solid #ccc' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}

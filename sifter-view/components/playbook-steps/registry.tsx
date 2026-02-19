@@ -12,7 +12,7 @@ import {
 
 export type StepCellComponent = ComponentType<StepCellProps>;
 
-const STEP_OPERATIONS = [
+export const STEP_OPERATIONS = [
   'from',
   'split',
   'fieldParse',

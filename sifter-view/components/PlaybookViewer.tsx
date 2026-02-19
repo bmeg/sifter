@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import hljs from "highlight.js";
 import "highlight.js/styles/github-dark.css";
 import { getPlaybook, getPlaybooks } from "@/lib/playbookApi";
+import PlaybookFlow from "./PlaybookFlow";
 
 // Types for API responses
 type PlaybookList = string[];
@@ -42,9 +43,9 @@ export default function PlaybookViewer(_: PlaybookViewerProps) {
   }, [content]);
 
   return (
-    <div className="flex w-[90vw] h-[80vh] backdrop-blur-xl rounded-xl overflow-hidden shadow-2xl bg-gradient-to-br from-[#1e1e2f] to-[#2a2a3d]">
+    <div className="flex w-[80vw] h-[100vh] backdrop-blur-xl rounded-xl overflow-hidden shadow-2xl bg-gradient-to-br from-[#1e1e2f] to-[#2a2a3d]">
       {/* Sidebar */}
-      <aside className="flex-none w-64 bg-white/5 p-5 overflow-y-auto">
+      <aside className="flex-none w-48 bg-white/5 p-5 overflow-y-auto">
         <h1 className="text-lg mb-4 text-[#4f9bff]">Sifter Playbooks</h1>
         <ul>
           {playbooks.map((name) => (
@@ -63,11 +64,7 @@ export default function PlaybookViewer(_: PlaybookViewerProps) {
 
       {/* Content */}
       <main className="flex-1 bg-white/4 p-5 overflow-y-auto">
-        <pre className="h-full overflow-auto m-0">
-          <code id="playbook-content" className="language-json">
-            {content || "Select a playbook to view its content"}
-          </code>
-        </pre>
+        <PlaybookFlow/>
       </main>
     </div>
   );

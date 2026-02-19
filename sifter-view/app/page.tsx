@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <div>
       <main>
-        <PlaybookFlow/>
+        <PlaybookViewer/>
       </main>
     </div>
   );

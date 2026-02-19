@@ -22,11 +22,13 @@ import "@xyflow/react/dist/style.css";
 import dagre from 'dagre';
 import type { Node, Edge } from '@xyflow/react';
 import { getPlaybook, type Playbook } from '@/lib/playbookApi';
+import { getStepCellComponent } from './playbook-steps/registry';
+import type { PipelineStep } from './playbook-steps/types';
 
 
 type PipelineNodeData = {
   label: string;
-  steps: string[];
+  steps: PipelineStep[];
 };
 
 const BASE_NODE_WIDTH = 170;
@@ -66,22 +68,17 @@ const PipelineStackNode = memo(function PipelineStackNode({ data }: NodeProps<No
       >
         {typedData.label}
       </div>
-      {steps.map((step: string, index: number) => (
-        <div
-          key={`${typedData.label}-${index}`}
-          style={{
-            height: PIPELINE_CELL_HEIGHT,
-            display: 'flex',
-            alignItems: 'center',
-            padding: '0 10px',
-            borderBottom: index < steps.length - 1 ? '1px solid #eee' : 'none',
-            fontSize: 12,
-            color: '#000',
-          }}
-        >
-          {index + 1}. {step}
-        </div>
-      ))}
+      {steps.map((step: PipelineStep, index: number) => {
+        const CellComponent = getStepCellComponent(step.operation);
+        return (
+          <CellComponent
+            key={`${typedData.label}-${step.operation}-${index}`}
+            step={step}
+            index={index}
+            isLast={index === steps.length - 1}
+          />
+        );
+      })}
     </div>
   );
 });
@@ -134,15 +131,18 @@ function buildGraph(pb: Playbook): { nodes: Node[]; edges: Edge[] } {
 
   // ---- PIPELINE NODES --------------------------------------------------
   Object.entries(pb.pipelines).forEach(([pipelineName, steps]) => {
-    const stepLabels = steps.map((stepObj) => Object.keys(stepObj)[0]);
-    const nodeHeight = PIPELINE_HEADER_HEIGHT + Math.max(1, stepLabels.length) * PIPELINE_CELL_HEIGHT;
+    const stepData: PipelineStep[] = steps.map((stepObj) => {
+      const [operation, config] = Object.entries(stepObj)[0] ?? ['unknown', undefined];
+      return { operation, config };
+    });
+    const nodeHeight = PIPELINE_HEADER_HEIGHT + Math.max(1, stepData.length) * PIPELINE_CELL_HEIGHT;
 
     g.setNode(pipelineName, {
       label: pipelineName,
       width: PIPELINE_NODE_WIDTH,
       height: nodeHeight,
       nodeType: 'pipeline',
-      nodeData: { label: pipelineName, steps: stepLabels },
+      nodeData: { label: pipelineName, steps: stepData },
     });
 
     const firstStep = steps[0] as any;

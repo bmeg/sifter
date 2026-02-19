@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   ReactFlow, 
@@ -9,6 +9,7 @@ import {
   addEdge, 
   Background, 
   Controls,
+  NodeProps,
   OnConnect,
   Connection
 } from "@xyflow/react";
@@ -18,162 +19,195 @@ import "@xyflow/react/dist/style.css";
 
 import dagre from 'dagre';
 import type { Node, Edge } from '@xyflow/react';
+import { getPlaybook, type Playbook } from '@/lib/playbookApi';
 
 
-// -------------------------------------------------------------------
-// Types for the Sifter playbook JSON (imported as a static module)
-// -------------------------------------------------------------------
-interface Playbook {
-  class?: string;
-  name?: string;
-  outdir: string;
-  inputs: Record<string, any>;
-  outputs?: Record<string, any>;
-  pipelines: Record<string, PipelineStep[]>;
-  params?: any;
-}
+type PipelineNodeData = {
+  label: string;
+  steps: string[];
+};
 
-type PipelineStep = Record<string, any>; // each step is a single‑key object
+const BASE_NODE_WIDTH = 170;
+const BASE_NODE_HEIGHT = 44;
+const PIPELINE_NODE_WIDTH = 260;
+const PIPELINE_CELL_HEIGHT = 34;
+const PIPELINE_HEADER_HEIGHT = 36;
 
+const PipelineStackNode = memo(function PipelineStackNode({ data }: NodeProps<Node>) {
+  const typedData = data as PipelineNodeData;
+  const steps = typedData?.steps ?? [];
 
-
-var playbook : Playbook = {
-  "inputs": {
-    "caseData": {
-      "json": {
-        "path": "{{params.cases}}"
-      }
-    }
-  },
-  "name": "gdc",
-  "outdir": "output/",
-  "outputs": {
-    "caseFile": {
-      "json": {
-        "from": "caseObject",
-        "path": "gdc.caseObject.case.json.gz"
-      }
-    },
-    "caseGraph": {
-      "graph": {
-        "EdgeFix": {
-          "gpython": {
-            "$ref": "test.py"
-          },
-          "method": "test"
-        },
-        "from": "caseObject",
-        "path": "gdc.caseGraph",
-        "schema": "{{params.schema}}",
-        "title": "Case"
-      }
-    }
-  },
-  "params": {
-    "cases": {
-      "default": "../../resources/gdc-case.json.gz",
-      "type": "file"
-    },
-    "schema": {
-      "default": "../../resources/schemas",
-      "type": "path"
-    }
-  },
-  "pipelines": {
-    "caseObject": [
-      {
-        "from": "caseData"
-      },
-      {
-        "project": {
-          "mapping": {
-            "experiments": "exp:{{row.project.project_id}}",
-            "studies": "{{row.project.project_id}}",
-            "type": "case"
-          }
-        }
-      },
-      {
-        "objectValidate": {
-          "schema": "{{params.schema}}",
-          "title": "Case"
-        }
-      }
-    ]
-  }
-}
-
+  return (
+    <div
+      style={{
+        width: PIPELINE_NODE_WIDTH,
+        border: '1px solid #ccc',
+        borderRadius: 8,
+        background: '#fff',
+        color: '#000',
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          height: PIPELINE_HEADER_HEIGHT,
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0 10px',
+          borderBottom: '1px solid #ddd',
+          fontWeight: 600,
+          color: '#000',
+        }}
+      >
+        {typedData.label}
+      </div>
+      {steps.map((step: string, index: number) => (
+        <div
+          key={`${typedData.label}-${index}`}
+          style={{
+            height: PIPELINE_CELL_HEIGHT,
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 10px',
+            borderBottom: index < steps.length - 1 ? '1px solid #eee' : 'none',
+            fontSize: 12,
+            color: '#000',
+          }}
+        >
+          {index + 1}. {step}
+        </div>
+      ))}
+    </div>
+  );
+});
 
 // -------------------------------------------------------------------
 // Build a React‑Flow graph from a Playbook, using Dagre for layout
 // -------------------------------------------------------------------
 
-const NODE_WIDTH = 150;
-const NODE_HEIGHT = 40;
+function getOutputSourcePipeline(outputDefinition: Record<string, any>): string | undefined {
+  for (const value of Object.values(outputDefinition)) {
+    if (value && typeof value === 'object' && typeof value.from === 'string') {
+      return value.from;
+    }
+  }
+  return undefined;
+}
 
 function buildGraph(pb: Playbook): { nodes: Node[]; edges: Edge[] } {
   // Create a directed Dagre graph
   const g = new dagre.graphlib.Graph({ directed: true });
-  //g.setGraph({ rankdir: 'LR', nodesep: 80, ranksep: 120 });
-  g.setGraph({});
+  g.setGraph({ rankdir: 'LR', nodesep: 60, ranksep: 100 });
   
   g.setDefaultEdgeLabel(function() { return {}; });
 
   // ---- INPUT NODES ---------------------------------------------------
   Object.keys(pb.inputs).forEach((name) => {
     const id = `input-${name}`;
-    g.setNode(id, { label: name, width: NODE_WIDTH, height: NODE_HEIGHT });
+    g.setNode(id, {
+      label: name,
+      width: BASE_NODE_WIDTH,
+      height: BASE_NODE_HEIGHT,
+      nodeType: 'default',
+      nodeData: { label: `INPUT · ${name}` },
+    });
   });
 
   // ---- OUTPUT NODES ---------------------------------------------------
   if (pb.outputs) {
     Object.keys(pb.outputs).forEach((name) => {
       const id = `output-${name}`;
-      g.setNode(id, { label: name, width: NODE_WIDTH, height: NODE_HEIGHT });
+      g.setNode(id, {
+        label: name,
+        width: BASE_NODE_WIDTH,
+        height: BASE_NODE_HEIGHT,
+        nodeType: 'default',
+        nodeData: { label: `OUTPUT · ${name}` },
+      });
     });
   }
 
-  // ---- PIPELINE STEP NODES & EDGES -----------------------------------
+  // ---- PIPELINE NODES --------------------------------------------------
   Object.entries(pb.pipelines).forEach(([pipelineName, steps]) => {
-    steps.forEach((stepObj, idx) => {
-      const stepKey = Object.keys(stepObj)[0]; // e.g. "from", "fieldProcess", "emit", …
-      const nodeId = `${pipelineName}-${idx}`;
-      g.setNode(nodeId, { label: stepKey, width: NODE_WIDTH, height: NODE_HEIGHT });
+    const stepLabels = steps.map((stepObj) => Object.keys(stepObj)[0]);
+    const nodeHeight = PIPELINE_HEADER_HEIGHT + Math.max(1, stepLabels.length) * PIPELINE_CELL_HEIGHT;
 
-      // Edge from previous step (if any)
-      if (idx > 0) {
-        const prevId = `${pipelineName}-${idx - 1}`;
-        g.setEdge(prevId, nodeId);
-      } else {
-        // First step – connect to the input referenced by the "from" field
-        const fromName = (stepObj as any).from;
-        if (fromName) {
-          g.setEdge(`input-${fromName}`, nodeId);
-        }
+    g.setNode(pipelineName, {
+      label: pipelineName,
+      width: PIPELINE_NODE_WIDTH,
+      height: nodeHeight,
+      nodeType: 'pipeline',
+      nodeData: { label: pipelineName, steps: stepLabels },
+    });
+
+    const firstStep = steps[0] as any;
+    const fromName = firstStep?.from;
+    if (fromName) {
+      if (pb.inputs?.[fromName]) {
+        g.setEdge(`input-${fromName}`, pipelineName);
+      } else if (pb.pipelines?.[fromName]) {
+        g.setEdge(fromName, pipelineName);
       }
+    }
 
-      // If this step is an emit and an explicit output exists, connect to it
-      if (stepKey === 'emit' && pb.outputs) {
-        const emitName = (stepObj as any).emit?.name;
-        if (emitName && pb.outputs[emitName]) {
-          g.setEdge(nodeId, `output-${emitName}`);
+    if (pb.outputs) {
+      steps.forEach((stepObj) => {
+        const stepKey = Object.keys(stepObj)[0];
+        if (stepKey === 'emit') {
+          const emitName = (stepObj as any).emit?.name;
+          if (emitName && pb.outputs?.[emitName]) {
+            g.setEdge(pipelineName, `output-${emitName}`);
+          }
         }
+      });
+    }
+  });
+
+  if (pb.outputs) {
+    Object.entries(pb.outputs).forEach(([outputName, outputDefinition]) => {
+      const sourcePipeline = getOutputSourcePipeline(outputDefinition);
+      if (sourcePipeline && pb.pipelines?.[sourcePipeline]) {
+        g.setEdge(sourcePipeline, `output-${outputName}`);
       }
     });
-  });
+  }
 
   // Run the layout algorithm
   dagre.layout(g);
 
   // Convert Dagre nodes/edges to React‑Flow structures
   const nodes: Node[] = g.nodes().map((id) => {
-    const { x, y, label } = g.node(id);
+    const nodeDefinition = g.node(id) as {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      label?: string;
+      nodeType?: string;
+      nodeData?: Record<string, any>;
+    };
+
+    const { x, y, label, width, height, nodeType, nodeData } = nodeDefinition;
+    const isInputNode = id.startsWith('input-');
+    const isOutputNode = id.startsWith('output-');
+
     return {
       id,
-      position: { x, y },
-      data: { label },
-      // Optional: give each node a consistent size for the UI
-      style: { width: NODE_WIDTH, height: NODE_HEIGHT },
+      position: { x: x - width / 2, y: y - height / 2 },
+      data: nodeData ?? { label },
+      type: nodeType ?? 'default',
+      style: nodeType === 'pipeline'
+        ? undefined
+        : {
+            width: BASE_NODE_WIDTH,
+            height: BASE_NODE_HEIGHT,
+            color: '#000',
+            fontWeight: 600,
+            borderWidth: 2,
+            borderStyle: 'solid',
+            borderColor: isInputNode ? '#3b82f6' : isOutputNode ? '#16a34a' : '#999',
+            backgroundColor: isInputNode ? '#eff6ff' : isOutputNode ? '#f0fdf4' : '#fff',
+          },
     } as Node;
   });
 
@@ -193,26 +227,72 @@ function buildGraph(pb: Playbook): { nodes: Node[]; edges: Edge[] } {
 
 
 export default function PlaybookFlow() {
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const nodeTypes = useMemo(() => ({ pipeline: PipelineStackNode }), []);
 
-  
-  var initialGraph = buildGraph(playbook);
+  useEffect(() => {
+    let isMounted = true;
 
-  var initialEdges: Edge[] = initialGraph.edges;
-  var initialNodes: Node[] = initialGraph.nodes;
+    const loadPlaybook = async () => {
+      try {
+        setLoadError(null);
+        setIsLoading(true);
+        const playbook = await getPlaybook();
+        const graph = buildGraph(playbook);
+        if (!isMounted) {
+          return;
+        }
+        setNodes(graph.nodes);
+        setEdges(graph.edges);
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+        setLoadError(error instanceof Error ? error.message : 'Failed to load playbook');
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+    void loadPlaybook();
 
-    const onConnect: OnConnect = useCallback(
-        (connection: Connection) => setEdges((edges) => addEdge(connection, edges)),
-        [setEdges]
+    return () => {
+      isMounted = false;
+    };
+  }, [setEdges, setNodes]);
+
+  const onConnect: OnConnect = useCallback(
+    (connection: Connection) => setEdges((currentEdges) => addEdge(connection, currentEdges)),
+    [setEdges]
+  );
+
+  if (loadError) {
+    return (
+      <div style={{ width: '100vw', height: '500px', border: '1px solid #ccc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        Failed to load playbook: {loadError}
+      </div>
     );
+  }
+
+  if (isLoading) {
+    return (
+      <div style={{ width: '100vw', height: '500px', border: '1px solid #ccc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        Loading playbook...
+      </div>
+    );
+  }
 
   return (
     <div style={{ width: '100vw', height: '500px', border: '1px solid #ccc' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}

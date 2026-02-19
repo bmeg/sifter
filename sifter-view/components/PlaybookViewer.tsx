@@ -1,6 +1,9 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import hljs from "highlight.js";
 import "highlight.js/styles/github-dark.css";
+import { getPlaybook, getPlaybooks } from "@/lib/playbookApi";
 
 // Types for API responses
 type PlaybookList = string[];
@@ -14,11 +17,7 @@ export default function PlaybookViewer(_: PlaybookViewerProps) {
 
   // Load list of playbooks on mount
   useEffect(() => {
-    fetch("/api/playbooks")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch playbook list");
-        return res.json();
-      })
+    getPlaybooks()
       .then((data: PlaybookList) => setPlaybooks(data))
       .catch((err) => console.error(err));
   }, []);
@@ -26,12 +25,8 @@ export default function PlaybookViewer(_: PlaybookViewerProps) {
   // Load selected playbook content
   const loadPlaybook = (name: string) => {
     setSelected(name);
-    fetch(`/api/playbook?name=${encodeURIComponent(name)}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Playbook not found");
-        return res.text();
-      })
-      .then((txt) => setContent(txt))
+    getPlaybook(name)
+      .then((playbook) => setContent(JSON.stringify(playbook, null, 2)))
       .catch((err) => console.error(err));
   };
 
@@ -69,7 +64,7 @@ export default function PlaybookViewer(_: PlaybookViewerProps) {
       {/* Content */}
       <main className="flex-1 bg-white/4 p-5 overflow-y-auto">
         <pre className="h-full overflow-auto m-0">
-          <code id="playbook-content" className="language-yaml">
+          <code id="playbook-content" className="language-json">
             {content || "Select a playbook to view its content"}
           </code>
         </pre>

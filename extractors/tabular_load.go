@@ -16,7 +16,7 @@ import (
 )
 
 type TableLoadStep struct {
-	Path         string   `json:"Path" jsonschema_description:"TSV to be transformed"`
+	Path         string   `json:"path" jsonschema_description:"TSV to be transformed"`
 	RowSkip      int      `json:"rowSkip" jsonschema_description:"Number of header rows to skip"`
 	Columns      []string `json:"columns" jsonschema_description:"Manually set names of columns"`
 	ExtraColumns string   `json:"extraColumns" jsonschema_description:"Columns beyond originally declared columns will be placed in this array"`

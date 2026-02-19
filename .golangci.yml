@@ -1,27 +1,30 @@
 
-run:
-  skip-files:
-    - ".*bindata.go$"
-    - ".*pb.go"
-    - ".*pb.gw.go"
+version: "2"
 
+run:
   timeout: 5m
 
-issues:
-  exclude:
-    - "not declared by package utf8"
-    - "unicode/utf8/utf8.go"
-
 linters:
-  # Disable all linters.
-  # Default: false
-  disable-all: true
+  default: none
   # Enable specific linter
   # https://golangci-lint.run/usage/linters/#enabled-by-default
   enable:
+    - misspell
+    - govet
+  exclusions:
+    paths:
+      - ".*bindata.go$"
+      - ".*pb.go"
+      - ".*pb.gw.go"
+    rules:
+      - text: "not declared by package utf8"
+        linters:
+          - govet
+      - path: "unicode/utf8/utf8.go"
+        linters:
+          - govet
+
+formatters:
+  enable:
     - gofmt
     - goimports
-    - misspell
-    - typecheck
-    - gosimple
-    - govet

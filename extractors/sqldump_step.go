@@ -15,7 +15,7 @@ import (
 )
 
 type SQLDumpStep struct {
-	Path   string   `json:"Path" jsonschema_description:"Path to the SQL dump file"`
+	Path   string   `json:"path" jsonschema_description:"Path to the SQL dump file"`
 	Tables []string `json:"tables" jsonschema_description:"Array of transforms for the different tables in the SQL dump"`
 }
 

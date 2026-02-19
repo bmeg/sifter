@@ -271,7 +271,7 @@ func transposeInDB(workdir string, c csvReader, out chan map[string]any) error {
 }
 
 func transposeInTable(workdir string, fieldSize int, c csvReader, out chan map[string]any) error {
-
+	defer close(out)
 	table, err := os.Create(filepath.Join(workdir, "transpose"))
 	if err != nil {
 		return err
@@ -316,12 +316,14 @@ func transposeInTable(workdir string, fieldSize int, c csvReader, out chan map[s
 	columns := []string{}
 	for row := int64(0); row < rowCount; row++ {
 		buf := make([]byte, fieldSize)
-		_, err := table.ReadAt(buf, row*stepSize)
-		tmp := bytes.Split(buf, []byte{0})
-		if err == nil {
-			columns = append(columns, string(tmp[0]))
-		} else {
+		n, err := table.ReadAt(buf, row*stepSize)
+		if err != nil && err != io.EOF {
 			logger.Error("Column error", "message", err)
+			continue
+		}
+		if n > 0 {
+			tmp := bytes.Split(buf[:n], []byte{0})
+			columns = append(columns, string(tmp[0]))
 		}
 	}
 
@@ -341,7 +343,6 @@ func transposeInTable(workdir string, fieldSize int, c csvReader, out chan map[s
 		out <- record
 	}
 	table.Close()
-	close(out)
 	os.RemoveAll(workdir)
 	return nil
 }

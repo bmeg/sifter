@@ -1,8 +1,8 @@
 ---
-title: Paramaters
+title: Parameters
 ---
 
-## Paramaters Variables
+## Parameters Variables
 
 Playbooks can be parameterized. They are defined in the `params` section of the playbook YAML file.
 

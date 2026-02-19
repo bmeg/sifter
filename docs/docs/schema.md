@@ -87,7 +87,7 @@ Loads data from a SQLite database.
 
 ### `transpose`
 Loads a TSV and transposes it (making rows from columns).
-- `input`: Path to the file.
+- `path`: Path to the file.
 - `rowSkip`: Rows to skip.
 - `sep`: Separator.
 - `useDB`: Use a temporary disk database for large transpositions.

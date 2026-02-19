@@ -5,17 +5,18 @@ import (
 
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/logger"
+	"github.com/bmeg/sifter/playbook/refs"
 	"github.com/bmeg/sifter/task"
 )
 
 type FilterStep struct {
-	Field   string     `json:"field"`
-	Value   string     `json:"value"`
-	Match   string     `json:"match"`
-	Check   string     `json:"check" jsonschema_description:"How to check value, 'exists' or 'hasValue'"`
-	Method  string     `json:"method"`
-	Python  string     `json:"python"`
-	GPython *CodeBlock `json:"gpython"`
+	Field   string          `json:"field"`
+	Value   string          `json:"value"`
+	Match   string          `json:"match"`
+	Check   string          `json:"check" jsonschema_description:"How to check value, 'exists' or 'hasValue'"`
+	Method  string          `json:"method"`
+	Python  string          `json:"python"`
+	GPython *refs.CodeBlock `json:"gpython"`
 }
 
 type filterProcessor struct {

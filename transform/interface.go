@@ -61,7 +61,6 @@ type Step struct {
 	FieldParse        *FieldParseStep     `json:"fieldParse" jsonschema_description:"fieldParse to run"`
 	FieldType         *FieldTypeStep      `json:"fieldType" jsonschema_description:"Change type of a field (ie string -> integer)"`
 	ObjectValidate    *ObjectValidateStep `json:"objectValidate" jsonschema_description:"Validate a JSON schema based object"`
-	Emit              *EmitStep           `json:"emit" jsonschema_description:"Write to unstructured JSON file"`
 	Filter            *FilterStep         `json:"filter"`
 	Clean             *CleanStep          `json:"clean"`
 	Debug             *DebugStep          `json:"debug" jsonschema_description:"Print message contents to stdout"`
@@ -77,8 +76,6 @@ type Step struct {
 	Lookup            *LookupStep         `json:"lookup"`
 	IntervalIntersect *IntervalStep       `json:"intervalIntersect"`
 	Hash              *HashStep           `json:"hash"`
-	GraphBuild        *GraphBuildStep     `json:"graphBuild"`
-	TableWrite        *TableWriteStep     `json:"tableWrite"`
 	Accumulate        *AccumulateStep     `json:"accumulate"`
 	UUID              *UUIDStep           `json:"uuid"`
 }
@@ -99,34 +96,17 @@ func (ts Step) Init(t task.RuntimeTask) (Processor, error) {
 	return nil, fmt.Errorf(("Transform not defined"))
 }
 
-func (ts Step) GetConfigFields() []config.Variable {
-	out := []config.Variable{}
+func (ts Step) GetRequiredParams() []config.ParamRequest {
+	out := []config.ParamRequest{}
 	v := reflect.ValueOf(ts)
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)
 		x := f.Interface()
 		if z, ok := x.(config.Configurable); ok {
 			if !f.IsNil() {
-				out = append(out, z.GetConfigFields()...)
+				out = append(out, z.GetRequiredParams()...)
 			}
 		}
 	}
 	return out
-}
-
-func (ts Step) GetEmitters() []string {
-	if ts.Emit != nil {
-		return []string{ts.Emit.Name}
-	}
-	if ts.GraphBuild != nil {
-		return []string{"vertex", "edge"}
-	}
-	return []string{}
-}
-
-func (ts Step) GetOutputs() []string {
-	if ts.TableWrite != nil {
-		return []string{ts.TableWrite.Output}
-	}
-	return []string{}
 }

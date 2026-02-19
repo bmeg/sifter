@@ -21,35 +21,62 @@ func fileExists(filename string) bool {
 }
 */
 
-func (pb *Playbook) PrepConfig(inputs map[string]string, workdir string) (map[string]string, error) {
+func (pb *Playbook) PrepConfig(inputParams map[string]string, workdir string) (map[string]string, error) {
+
+	playbookParams := map[string]string{}
+	for k, v := range pb.Params {
+		if _, ok := inputParams[k]; ok {
+			if v.IsFile() || v.IsDir() {
+				var defaultPath = inputParams[k]
+				if !filepath.IsAbs(inputParams[k]) {
+					defaultPath = filepath.Join(workdir, inputParams[k])
+				}
+				playbookParams[k], _ = filepath.Abs(defaultPath)
+			} else {
+				playbookParams[k] = inputParams[k]
+			}
+		} else {
+			if v.Default != nil {
+				if v.IsFile() || v.IsDir() {
+					var defaultPath = fmt.Sprintf("%v", v.Default)
+					if !filepath.IsAbs(defaultPath) {
+						dirPath := filepath.Dir(pb.path)
+						defaultPath = filepath.Join(dirPath, defaultPath)
+					}
+					playbookParams[k], _ = filepath.Abs(defaultPath)
+				} else {
+					playbookParams[k] = fmt.Sprintf("%v", v.Default)
+				}
+			} else {
+				return nil, fmt.Errorf("parameter %s not defined", k)
+			}
+		}
+	}
+
 	workdir, _ = filepath.Abs(workdir)
 	missing := map[string]bool{}
 	out := map[string]string{}
-	for _, v := range pb.GetConfigFields() {
-		if val, ok := inputs[v.Name]; ok {
-			if v.IsFile() || v.IsDir() {
-				var defaultPath = val
-				if !filepath.IsAbs(val) {
-					defaultPath = filepath.Join(workdir, val)
-				}
-				out[v.Name], _ = filepath.Abs(defaultPath)
-			} else {
-				out[v.Name] = val
-			}
+	for _, v := range pb.GetRequiredParams() {
+		if val, ok := playbookParams[v.Name]; ok {
+			out[v.Name] = val
 			logger.Debug("input: ", v.Name, out[v.Name])
-		} else if val, ok := pb.Config[v.Name]; ok {
-			if val != nil {
+		} else if p, ok := pb.Params[v.Name]; ok {
+			if p.Default != nil {
+				val := fmt.Sprintf("%v", p.Default)
 				if v.IsFile() || v.IsDir() {
-					defaultPath := filepath.Join(filepath.Dir(pb.path), *val)
+					var defaultPath = val
+					if !filepath.IsAbs(val) {
+						defaultPath = filepath.Join(filepath.Dir(pb.path), val)
+					}
 					out[v.Name], _ = filepath.Abs(defaultPath)
 				} else {
-					out[v.Name] = *val
+					out[v.Name] = val
 				}
 			} else {
 				missing[v.Name] = true
 			}
 		} else {
-			return nil, fmt.Errorf("config %s not defined", v.Name)
+			return nil, fmt.Errorf("parameter %s not defined", v.Name)
 		}
 	}
 	if len(missing) > 0 {
@@ -59,6 +86,7 @@ func (pb *Playbook) PrepConfig(inputs map[string]string, workdir string) (map[st
 		}
 		return nil, fmt.Errorf("missing inputs: %s", strings.Join(o, ","))
 	}
+	logger.Debug("prep config inputs", "config", out)
 	return out, nil
 }
 
@@ -104,6 +132,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 
 	outNodes := map[string]flame.Emitter[map[string]any]{}
 	inNodes := map[string]flame.Receiver[map[string]any]{}
+	outputs := map[string]OutputProcessor{}
 
 	for n, v := range pb.Inputs {
 		logger.Debug("Setting Up", "name", n)
@@ -121,11 +150,10 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 	joins := []joinStruct{}
 
 	for k, v := range pb.Pipelines {
-		sub := task.SubTask(k)
 		var lastStep flame.Emitter[map[string]any]
 		var firstStep flame.Receiver[map[string]any]
 		for i, s := range v {
-			b, err := s.Init(sub)
+			b, err := s.Init(task)
 			if err != nil {
 				logger.Error("Pipeline error", "name", k, "error", err)
 				return err
@@ -302,6 +330,37 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 		}
 	}
 
+	for k, v := range pb.Outputs {
+		if v.JSON != nil {
+			proc, err := v.JSON.Init(task)
+			if err == nil {
+				if srcNode, ok := outNodes[v.JSON.From]; ok {
+					s := flame.AddSink(wf, proc.Process)
+					outputs[k] = proc
+					s.Connect(srcNode)
+				}
+			}
+		} else if v.Table != nil {
+			proc, err := v.Table.Init(task)
+			if err == nil {
+				if srcNode, ok := outNodes[v.Table.From]; ok {
+					s := flame.AddSink(wf, proc.Process)
+					outputs[k] = proc
+					s.Connect(srcNode)
+				}
+			}
+		} else if v.Graph != nil {
+			proc, err := v.Graph.Init(task)
+			if err == nil {
+				if srcNode, ok := outNodes[v.Graph.From]; ok {
+					s := flame.AddSink(wf, proc.Process)
+					outputs[k] = proc
+					s.Connect(srcNode)
+				}
+			}
+		}
+	}
+
 	//log.Printf("WF: %#v", wf)
 
 	wf.Start()
@@ -311,6 +370,10 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 
 	for p := range procs {
 		procs[p].Close()
+	}
+
+	for k := range outputs {
+		outputs[k].Close()
 	}
 
 	task.Close()

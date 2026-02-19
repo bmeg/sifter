@@ -97,11 +97,11 @@ func toInt64(v any) int64 {
 	return 0
 }
 
-func (tr *IntervalStep) GetConfigFields() []config.Variable {
-	out := []config.Variable{}
+func (tr *IntervalStep) GetRequiredParams() []config.ParamRequest {
+	out := []config.ParamRequest{}
 	if tr.JSON != nil && tr.JSON.Input != "" {
 		for _, s := range evaluate.ExpressionIDs(tr.JSON.Input) {
-			out = append(out, config.Variable{Type: config.File, Name: config.TrimPrefix(s)})
+			out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 		}
 	}
 	return out

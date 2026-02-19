@@ -15,13 +15,13 @@ import (
 )
 
 type SQLDumpStep struct {
-	Input  string   `json:"input" jsonschema_description:"Path to the SQL dump file"`
+	Path   string   `json:"path" jsonschema_description:"Path to the SQL dump file"`
 	Tables []string `json:"tables" jsonschema_description:"Array of transforms for the different tables in the SQL dump"`
 }
 
 func (ml *SQLDumpStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
 
-	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
+	input, err := evaluate.ExpressionString(ml.Path, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -114,10 +114,10 @@ func (ml *SQLDumpStep) Start(task task.RuntimeTask) (chan map[string]interface{}
 	return out, nil
 }
 
-func (ml *SQLDumpStep) GetConfigFields() []config.Variable {
-	out := []config.Variable{}
-	for _, s := range evaluate.ExpressionIDs(ml.Input) {
-		out = append(out, config.Variable{Type: "File", Name: config.TrimPrefix(s)})
+func (ml *SQLDumpStep) GetRequiredParams() []config.ParamRequest {
+	out := []config.ParamRequest{}
+	for _, s := range evaluate.ExpressionIDs(ml.Path) {
+		out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 	}
 	return out
 }

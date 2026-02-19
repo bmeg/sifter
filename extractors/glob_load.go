@@ -14,12 +14,12 @@ import (
 type GlobLoadStep struct {
 	StoreFilename string         `json:"storeFilename"`
 	StoreFilepath string         `json:"storeFilepath"`
-	Input         string         `json:"input" jsonschema_description:"Path of avro object file to transform"`
+	Path          string         `json:"path" jsonschema_description:"Path of avro object file to transform"`
 	Parallelize   bool           `json:"parallelize"`
-	XMLLoad       *XMLLoadStep   `json:"xmlLoad"`
-	TableLoad     *TableLoadStep `json:"tableLoad" jsonschema_description:"Run transform pipeline on a TSV or CSV"`
-	JSONLoad      *JSONLoadStep  `json:"jsonLoad" jsonschema_description:"Run a transform pipeline on a multi line json file"`
-	AvroLoad      *AvroLoadStep  `json:"avroLoad" jsonschema_description:"Load data from avro file"`
+	XMLLoad       *XMLLoadStep   `json:"xml"`
+	TableLoad     *TableLoadStep `json:"table" jsonschema_description:"Run transform pipeline on a TSV or CSV"`
+	JSONLoad      *JSONLoadStep  `json:"json" jsonschema_description:"Run a transform pipeline on a multi line json file"`
+	AvroLoad      *AvroLoadStep  `json:"avro" jsonschema_description:"Load data from avro file"`
 }
 
 type fileSource struct {
@@ -28,7 +28,7 @@ type fileSource struct {
 }
 
 func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
-	input, err := evaluate.ExpressionString(gl.Input, task.GetConfig(), nil)
+	input, err := evaluate.ExpressionString(gl.Path, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -53,15 +53,15 @@ func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 				var a Source
 				if gl.XMLLoad != nil {
 					t := *gl.XMLLoad
-					t.Input = f
+					t.Path = f
 					a = &t
 				} else if gl.JSONLoad != nil {
 					t := *gl.JSONLoad
-					t.Input = f
+					t.Path = f
 					a = &t
 				} else if gl.TableLoad != nil {
 					t := *gl.TableLoad
-					t.Input = f
+					t.Path = f
 					a = &t
 				}
 				sources <- fileSource{source: a, file: f}
@@ -97,10 +97,10 @@ func (gl *GlobLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{
 	return nil, fmt.Errorf("not found")
 }
 
-func (gl *GlobLoadStep) GetConfigFields() []config.Variable {
-	out := []config.Variable{}
-	for _, s := range evaluate.ExpressionIDs(gl.Input) {
-		out = append(out, config.Variable{Type: "File", Name: config.TrimPrefix(s)})
+func (gl *GlobLoadStep) GetRequiredParams() []config.ParamRequest {
+	out := []config.ParamRequest{}
+	for _, s := range evaluate.ExpressionIDs(gl.Path) {
+		out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 	}
 	return out
 }

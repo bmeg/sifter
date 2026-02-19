@@ -1,127 +1,144 @@
 
-class: PlayBook
+class: sifter
 name: CBioPortal
 
+params:
+  tar: ""
+  geneTable: ""
+  schema: bmeg-dictionary/gdcdictionary/schemas
+
 inputs:
-  tar:
-    type: File
-  geneTable:
-    type: File
-
-schema: bmeg-dictionary/gdcdictionary/schemas
-
-steps:
-  - desc: Untar
-    untar:
-      input: "{{inputs.tar}}"
-  - desc: Loading Patient List
+  untar:
+    plugin:
+      commandLine: tar -xzf {{params.tar}}
+  
+  patientReader:
     tableLoad:
       input: data_clinical_patient.txt
-      transform:
-        - debug: {}
-        - project:
-            mapping:
-              id : "{{row.PATIENT_ID}}"
-              submitter_id : "{{row.PATIENT_ID}}"
-              type: "case"
-              experiments:
-                  submitter_id: "TCGA"
-        - objectCreate:
-            class: case
-  - desc: Loading Sample List
+  
+  sampleReader:
     tableLoad:
       input: data_clinical_sample.txt
-      transform:
-        - fork:
-            transform:
-              -
-                - project:
-                    mapping:
-                      id : "{{row.SAMPLE_ID}}"
-                      submitter_id : "{{row.SAMPLE_ID}}"
-                      cases:
-                        submitter_id: "{{row.PATIENT_ID}}"
-                      type: "sample"
-                - objectCreate:
-                    class: sample
-              -
-                - project:
-                    mapping:
-                      id : "{{row.SAMPLE_ID}}-0000"
-                      submitter_id : "{{row.SAMPLE_ID}}-0000"
-                      samples:
-                        submitter_id: "{{row.SAMPLE_ID}}"
-                      type: "aliquot"
-                - objectCreate:
-                    class: aliquot
-  - fileGlob:
-      files: [ data_RNA_Seq_expression_median.txt, data_RNA_Seq_V2_expression_median.txt ]
-      limit: 1
-      inputName: rnaFile
-      steps:
-        - desc: Transpose RNA file
-          transposeFile:
-              input: "{{inputs.rnaFile}}"
-              output: data_RNA_Seq_expression_median_transpose.txt
-        -
-          desc: Loading RNA File
-          tableLoad:
-            input: data_RNA_Seq_expression_median_transpose.txt
-            rowSkip: 1
-            transform:
-              - project:
-                  mapping:
-                    id: "gexp:{{row.Entrez_Gene_Id}}" #after the transpose, the index column header is `Entrez_Gene_Id`
-                    aliquot_id: "{{row.Entrez_Gene_Id}}-0000"
-              - tableProject:
-                  input: "{{inputs.geneTable}}"
-              - map:
-                  method: nodeMap
-                  python: >
-                    def nodeMap(x):
-                      values = {}
-                      for k, v in x.items():
-                        if k != "id" and k != "aliquot_id" and k != "Entrez_Gene_Id":
-                          values[k] = v
-                      return {
-                        "id" : x["id"],
-                        "aliquot_id" : x["aliquot_id"],
-                        "metric" : "OTHER",
-                        "values": values
-                      }
-              - objectCreate:
-                  class: gene_expression
-  - desc: Loading Mutations
+
+  rnaReader:
+    transposeLoad:
+      input: data_RNA_Seq_expression_median.txt
+      rowSkip: 1
+
+  mutationReader:
     tableLoad:
       input: data_mutations_extended.txt
-      transform:
-        - alleleID:
-            dst: allele_id
-            prefix: "Allele:"
-            genome: GRCh37
-            chromosome: "{{row.Chromosome}}"
-            start: "{{row.Start_Position}}"
-            end: "{{row.End_Position}}"
-            reference_bases: "{{row.Reference_Allele}}"
-            alternate_bases: "{{row.Tumor_Seq_Allele1}}"
-        - project:
-            mapping:
-              aliquot: "{{row.Tumor_Sample_Barcode}}-0000"
-              ref: "{{row.Reference_Allele}}"
-              alt: "{{row.Tumor_Seq_Allele1}}"
-              ensembl_transcript: "{{row.Transcript_ID}}"
-        - objectCreate:
-            class: somatic_variant
-        - project:
-            mapping:
-              genome: "{{row.NCBI_Build}}"
-              chromosome: "{{row.Chromosome}}"
-              start: "{{row.Start_Position}}"
-              end: "{{row.End_Position}}"
-              strand: "{{row.Strand}}"
-              reference_bases: "{{row.Reference_Allele}}"
-              alternate_bases: "{{row.Tumor_Seq_Allele1}}"
-              hugo_symbol: "{{row.Hugo_Symbol}}"
-              effect: "{{row.Variant_Classification}}"
-        - objectCreate:
-            class: allele
+
+pipelines:
+  cases:
+    - from: patientReader
+    - project:
+        mapping:
+          id: "{{row.PATIENT_ID}}"
+          submitter_id: "{{row.PATIENT_ID}}"
+          type: "case"
+          experiments:
+            submitter_id: "TCGA"
+    - objectValidate:
+        title: Case
+        schema: "{{params.schema}}"
+    - emit:
+        name: case
+
+  samples:
+    - from: sampleReader
+    - project:
+        mapping:
+          id: "{{row.SAMPLE_ID}}"
+          submitter_id: "{{row.SAMPLE_ID}}"
+          cases:
+            submitter_id: "{{row.PATIENT_ID}}"
+          type: "sample"
+    - objectValidate:
+        title: Sample
+        schema: "{{params.schema}}"
+    - emit:
+        name: sample
+
+  aliquots:
+    - from: sampleReader
+    - project:
+        mapping:
+          id: "{{row.SAMPLE_ID}}-0000"
+          submitter_id: "{{row.SAMPLE_ID}}-0000"
+          samples:
+            submitter_id: "{{row.SAMPLE_ID}}"
+          type: "aliquot"
+    - objectValidate:
+        title: Aliquot
+        schema: "{{params.schema}}"
+    - emit:
+        name: aliquot
+
+  gene_expression:
+    - from: rnaReader
+    - project:
+        mapping:
+          id: "gexp:{{row.Entrez_Gene_Id}}"
+          aliquot_id: "{{row.Entrez_Gene_Id}}-0000"
+    - lookup:
+        tsv:
+          input: "{{params.geneTable}}"
+        lookup: "{{row.Entrez_Gene_Id}}"
+    - map:
+        method: nodeMap
+        python: |
+          def nodeMap(x):
+            values = {}
+            for k, v in x.items():
+              if k not in ["id", "aliquot_id", "Entrez_Gene_Id"]:
+                values[k] = v
+            return {
+              "id": x["id"],
+              "aliquot_id": x["aliquot_id"],
+              "metric": "OTHER",
+              "values": values
+            }
+    - emit:
+        name: gene_expression
+
+  mutations:
+    - from: mutationReader
+    - map:
+        method: alleleID
+        python: |
+          import hashlib
+          def alleleID(row):
+            s = "GRCh37" + row["Chromosome"] + str(row["Start_Position"]) + str(row["End_Position"]) + row["Reference_Allele"] + row["Tumor_Seq_Allele1"]
+            row["allele_id"] = "Allele:" + hashlib.sha1(s.encode()).hexdigest()
+            return row
+    - project:
+        mapping:
+          aliquot: "{{row.Tumor_Sample_Barcode}}-0000"
+          ref: "{{row.Reference_Allele}}"
+          alt: "{{row.Tumor_Seq_Allele1}}"
+          ensembl_transcript: "{{row.Transcript_ID}}"
+    - objectValidate:
+        title: SomaticVariant
+        schema: "{{params.schema}}"
+    - emit:
+        name: somatic_variant
+    
+  alleles:
+    - from: mutationReader 
+    - project:
+        mapping:
+          genome: "{{row.NCBI_Build}}"
+          chromosome: "{{row.Chromosome}}"
+          start: "{{row.Start_Position}}"
+          end: "{{row.End_Position}}"
+          strand: "{{row.Strand}}"
+          reference_bases: "{{row.Reference_Allele}}"
+          alternate_bases: "{{row.Tumor_Seq_Allele1}}"
+          hugo_symbol: "{{row.Hugo_Symbol}}"
+          effect: "{{row.Variant_Classification}}"
+    - objectValidate:
+        title: Allele
+        schema: "{{params.schema}}"
+    - emit:
+        name: allele

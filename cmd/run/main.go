@@ -11,9 +11,9 @@ import (
 )
 
 var outDir string = ""
-var inputFile string = ""
+var paramsFile string = ""
 var verbose bool = false
-var cmdInputs map[string]string
+var cmdParams map[string]string
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
@@ -26,15 +26,15 @@ var Cmd = &cobra.Command{
 			logger.Init(true, false)
 		}
 
-		inputs := map[string]string{}
-		if inputFile != "" {
-			if err := playbook.ParseStringFile(inputFile, &inputs); err != nil {
+		params := map[string]string{}
+		if paramsFile != "" {
+			if err := playbook.ParseStringFile(paramsFile, &params); err != nil {
 				logger.Error("%s", err)
 				return err
 			}
 		}
-		for k, v := range cmdInputs {
-			inputs[k] = v
+		for k, v := range cmdParams {
+			params[k] = v
 			logger.Info("Input Params", k, v)
 		}
 		for _, playFile := range args {
@@ -46,11 +46,11 @@ var Cmd = &cobra.Command{
 				}
 				pb := playbook.Playbook{}
 				playbook.ParseBytes(yaml, "./playbook.yaml", &pb)
-				if err := Execute(pb, "./", "./", outDir, inputs); err != nil {
+				if err := Execute(pb, "./", "./", outDir, params); err != nil {
 					return err
 				}
 			} else {
-				if err := ExecuteFile(playFile, "./", outDir, inputs); err != nil {
+				if err := ExecuteFile(playFile, "./", outDir, params); err != nil {
 					return err
 				}
 			}
@@ -63,6 +63,6 @@ var Cmd = &cobra.Command{
 func init() {
 	flags := Cmd.Flags()
 	flags.BoolVarP(&verbose, "verbose", "v", verbose, "Verbose logging")
-	flags.StringToStringVarP(&cmdInputs, "config", "c", cmdInputs, "Config variable")
-	flags.StringVarP(&inputFile, "configFile", "f", inputFile, "Config file")
+	flags.StringToStringVarP(&cmdParams, "param", "p", cmdParams, "Parameter variable")
+	flags.StringVarP(&paramsFile, "params-file", "f", paramsFile, "Parameter file")
 }

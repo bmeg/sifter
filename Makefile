@@ -1,6 +1,6 @@
 
 
-SIFTER_VERSION=0.1.5
+SIFTER_VERSION=0.2.0
 
 #hack to get around submodule weirdness in automated docker builds
 hub-build:
@@ -30,5 +30,3 @@ test: .TEST
 .TEST:
 	go test ./test
 
-docs:
-	@go run docschema/main.go | ./docschema/schema-to-markdown.py > Playbook.md

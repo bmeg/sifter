@@ -20,7 +20,7 @@ import (
 )
 
 type TransposeLoadStep struct {
-	Input    string `json:"input" jsonschema_description:"TSV to be transformed"`
+	Path     string `json:"path" jsonschema_description:"TSV to be transformed"`
 	RowSkip  int    `json:"rowSkip" jsonschema_description:"Number of header rows to skip"`
 	Sep      string `json:"sep" jsonschema_description:"Separator \\t for TSVs or , for CSVs"`
 	UseDB    bool   `json:"useDB" jsonschema_description:"Do transpose without caching matrix in memory. Takes longer but works on large files"`
@@ -28,7 +28,7 @@ type TransposeLoadStep struct {
 }
 
 func (ml *TransposeLoadStep) Start(task task.RuntimeTask) (chan map[string]interface{}, error) {
-	input, err := evaluate.ExpressionString(ml.Input, task.GetConfig(), nil)
+	input, err := evaluate.ExpressionString(ml.Path, task.GetConfig(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -48,10 +48,10 @@ func (ml *TransposeLoadStep) Start(task task.RuntimeTask) (chan map[string]inter
 	return out, nil
 }
 
-func (ml *TransposeLoadStep) GetConfigFields() []config.Variable {
-	out := []config.Variable{}
-	for _, s := range evaluate.ExpressionIDs(ml.Input) {
-		out = append(out, config.Variable{Type: "File", Name: config.TrimPrefix(s)})
+func (ml *TransposeLoadStep) GetRequiredParams() []config.ParamRequest {
+	out := []config.ParamRequest{}
+	for _, s := range evaluate.ExpressionIDs(ml.Path) {
+		out = append(out, config.ParamRequest{Type: "File", Name: config.TrimPrefix(s)})
 	}
 	return out
 }
@@ -271,7 +271,7 @@ func transposeInDB(workdir string, c csvReader, out chan map[string]any) error {
 }
 
 func transposeInTable(workdir string, fieldSize int, c csvReader, out chan map[string]any) error {
-
+	defer close(out)
 	table, err := os.Create(filepath.Join(workdir, "transpose"))
 	if err != nil {
 		return err
@@ -316,12 +316,14 @@ func transposeInTable(workdir string, fieldSize int, c csvReader, out chan map[s
 	columns := []string{}
 	for row := int64(0); row < rowCount; row++ {
 		buf := make([]byte, fieldSize)
-		table.ReadAt(buf, row*stepSize)
-		tmp := bytes.Split(buf, []byte{0})
-		if err == nil {
-			columns = append(columns, string(tmp[0]))
-		} else {
+		n, err := table.ReadAt(buf, row*stepSize)
+		if err != nil && err != io.EOF {
 			logger.Error("Column error", "message", err)
+			continue
+		}
+		if n > 0 {
+			tmp := bytes.Split(buf[:n], []byte{0})
+			columns = append(columns, string(tmp[0]))
 		}
 	}
 
@@ -341,7 +343,6 @@ func transposeInTable(workdir string, fieldSize int, c csvReader, out chan map[s
 		out <- record
 	}
 	table.Close()
-	close(out)
 	os.RemoveAll(workdir)
 	return nil
 }

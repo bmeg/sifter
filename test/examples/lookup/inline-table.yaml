@@ -1,15 +1,22 @@
 
 outdir: output/
 
-config:
-  json: ../../resources/projects.json
+params:
+  json:
+    type: File
+    default: ../../resources/projects.json
 
 
 inputs:
   jsonData:
-    jsonLoad:
-      input: "{{config.json}}"
+    json:
+      path: "{{params.json}}"
 
+outputs:
+  translated:
+    json:
+      path: sifter.transform.test.json.gz
+      from: transform
 
 pipelines:
   transform:
@@ -19,5 +26,3 @@ pipelines:
         table:
           TCGA-KIRC: 1
           TCGA-SARC: 2
-    - emit:
-        name: test

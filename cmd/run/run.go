@@ -22,7 +22,7 @@ func ExecuteFile(playFile string, workDir string, outDir string, inputs map[stri
 	return Execute(pb, baseDir, workDir, outDir, inputs)
 }
 
-func Execute(pb playbook.Playbook, baseDir string, workDir string, outDir string, inputs map[string]string) error {
+func Execute(pb playbook.Playbook, baseDir string, workDir string, outDir string, params map[string]string) error {
 
 	if outDir == "" {
 		outDir = pb.GetDefaultOutDir()
@@ -32,7 +32,7 @@ func Execute(pb playbook.Playbook, baseDir string, workDir string, outDir string
 		os.MkdirAll(outDir, 0777)
 	}
 
-	nInputs, err := pb.PrepConfig(inputs, workDir)
+	nInputs, err := pb.PrepConfig(params, workDir)
 	if err != nil {
 		return err
 	}

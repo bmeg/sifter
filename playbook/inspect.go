@@ -1,58 +1,36 @@
 package playbook
 
 import (
-	"fmt"
 	"path/filepath"
 
 	"github.com/bmeg/sifter/config"
 	"github.com/bmeg/sifter/task"
 )
 
-func (pb *Playbook) GetConfigFields() []config.Variable {
-	out := []config.Variable{}
+func (pb *Playbook) GetRequiredParams() []config.ParamRequest {
+	out := []config.ParamRequest{}
 
 	for _, v := range pb.Inputs {
-		out = append(out, v.GetConfigFields()...)
+		out = append(out, v.GetRequiredParams()...)
 	}
 
 	for _, v := range pb.Pipelines {
 		for _, s := range v {
-			out = append(out, s.GetConfigFields()...)
+			out = append(out, s.GetRequiredParams()...)
 		}
 	}
 
 	return out
 }
 
-func (pb *Playbook) GetOutputs(task task.RuntimeTask) (map[string][]string, error) {
-	out := map[string][]string{}
+func (pb *Playbook) GetOutputs(task task.RuntimeTask) (map[string]string, error) {
+	out := map[string]string{}
 	//inputs := task.GetInputs()
 
-	for k, v := range pb.Pipelines {
-		for _, s := range v {
-			fArray := []string{}
-			for _, fileName := range s.GetOutputs() {
-				filePath := filepath.Join(pb.GetOutDir(task), fileName)
-				fArray = append(fArray, filePath)
-			}
-			if len(fArray) > 0 {
-				out[k] = fArray
-			}
-		}
-	}
-	return out, nil
-}
-
-func (pb *Playbook) GetEmitters(task task.RuntimeTask) (map[string]string, error) {
-	out := map[string]string{}
-
-	for k, v := range pb.Pipelines {
-		for _, s := range v {
-			for _, e := range s.GetEmitters() {
-				fileName := fmt.Sprintf("%s.%s.%s.json.gz", pb.Name, k, e)
-				filePath := filepath.Join(pb.GetOutDir(task), fileName)
-				out[k+"."+e] = filePath
-			}
+	for k, v := range pb.Outputs {
+		for _, o := range v.GetOutputs(task) {
+			filePath := filepath.Join(pb.GetOutDir(task), o)
+			out[k] = filePath
 		}
 	}
 	return out, nil

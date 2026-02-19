@@ -44,7 +44,7 @@ func (cd *CountDataEmitter) Close() {
 	cd.d.Close()
 }
 
-func (cd *CountDataEmitter) Emit(name string, e map[string]interface{}, useName bool) error {
+func (cd *CountDataEmitter) Emit(name string, e map[string]interface{}) error {
 	cd.cl.increment()
-	return cd.d.Emit(name, e, useName)
+	return cd.d.Emit(name, e)
 }

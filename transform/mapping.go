@@ -7,13 +7,14 @@ import (
 
 	"github.com/bmeg/sifter/evaluate"
 	"github.com/bmeg/sifter/logger"
+	"github.com/bmeg/sifter/playbook/refs"
 	"github.com/bmeg/sifter/task"
 )
 
 type MapStep struct {
-	Method  string     `json:"method" jsonschema_description:"Name of function to call"`
-	Python  string     `json:"python" jsonschema_description:"Python code to be run"`
-	GPython *CodeBlock `json:"gpython" jsonschema_description:"Python code to be run using GPython"`
+	Method  string          `json:"method" jsonschema_description:"Name of function to call"`
+	Python  string          `json:"python" jsonschema_description:"Python code to be run"`
+	GPython *refs.CodeBlock `json:"gpython" jsonschema_description:"Python code to be run using GPython"`
 }
 
 type mapProcess struct {

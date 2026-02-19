@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/bmeg/sifter/logger"
@@ -65,14 +66,14 @@ func (s *DirLoader) Close() {
 	s.dout = map[string]io.WriteCloser{}
 }
 
-func (s *DirDataLoader) Emit(name string, v map[string]interface{}, useName bool) error {
+func (s *DirDataLoader) Emit(name string, v map[string]interface{}) error {
 	s.dl.mux.Lock()
 	defer s.dl.mux.Unlock()
 	f, ok := s.dl.dout[name]
 	if !ok {
 		// log.Printf("output path %s", outputPath)
 
-		opath := path.Join(s.dl.dir, name+".json.gz")
+		opath := path.Join(s.dl.dir, name)
 
 		logger.Info("Creating emit file", "name", name, "path", opath)
 
@@ -80,7 +81,11 @@ func (s *DirDataLoader) Emit(name string, v map[string]interface{}, useName bool
 		if err != nil {
 			return err
 		}
-		f = gzip.NewWriter(j)
+		if strings.HasSuffix(opath, ".gz") {
+			f = gzip.NewWriter(j)
+		} else {
+			f = j
+		}
 		s.dl.dout[name] = f
 	}
 	if v != nil {

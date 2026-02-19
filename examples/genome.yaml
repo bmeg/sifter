@@ -1,22 +1,15 @@
 
-class: Playbook
+class: sifter
 name: RefGenome
 
+params:
+  gtfPath: ftp://ftp.ensembl.org/pub/grch37/release-96/gff3/homo_sapiens/Homo_sapiens.GRCh37.87.gff3.gz
+  schema: ./bmeg-dictionary/gdcdictionary/schemas
+
 inputs:
-  gtf:
-    type: File
-    default: ftp://ftp.ensembl.org/pub/grch37/release-96/gff3/homo_sapiens/Homo_sapiens.GRCh37.87.gff3.gz
-
-  schema:
-    type: Directory
-    default: ./bmeg-dictionary/gdcdictionary/schemas
-
-schema: "{{inputs.schema}}"
-
-steps:
-  - desc: GTF Seq
+  gtfReader:
     tableLoad:
-      input: "{{inputs.gtf}}"
+      input: "{{params.gtfPath}}"
       columns:
         - seqid
         - source
@@ -27,60 +20,73 @@ steps:
         - strand
         - phase
         - attributes
-      transform:
-        - fieldMap:
-            col: attributes
-            sep: ";"
-        - fieldType:
-            start: int
-            end: int
-        - filter:
-            field: row.type
-            match: exon
-            steps:
-              - regexReplace:
-                  col: "{{row.attributes.Parent}}"
-                  regex: "^transcript:"
-                  replace: ""
-                  dst: transcript_id
-              - project:
-                  mapping:
-                    exon_id : "{{row.attributes.exon_id}}"
-              - map:
-                  method: mapList
-                  python: >
-                    def mapList(x):
-                      x['transcript_id'] = [x['transcript_id']]
-                      return x
-              - reduce:
-                  field: "{{row.exon_id}}"
-                  method: merge
-                  python: >
-                    def merge(x,y):
-                      x['transcript_id'] = x['transcript_id'] + y['transcript_id']
-                      return x
-              - objectCreate:
-                  class: exon
-        - filter:
-            field: row.type
-            match: gene
-            steps:
-              - project:
-                  mapping:
-                    gene_id : "{{row.attributes.gene_id}}"
-              - objectCreate:
-                  class: gene
-        - filter:
-            field: row.type
-            match: mRNA
-            steps:
-              - regexReplace:
-                  col: "{{row.attributes.Parent}}"
-                  regex: "^gene:"
-                  replace: ""
-                  dst: gene_id
-              - project:
-                  mapping:
-                    transcript_id : "{{row.attributes.transcript_id}}"
-              - objectCreate:
-                  class: transcript
+
+pipelines:
+  transform:
+    - from: gtfReader
+    - fieldParse:
+        field: attributes
+        sep: ";"
+    - fieldType:
+        start: integer
+        end: integer
+
+  exons:
+    - from: transform
+    - filter:
+        field: type
+        match: exon
+    - regexReplace:
+        field: Parent
+        regex: "^transcript:"
+        replace: ""
+        dst: transcript_id
+    - project:
+        mapping:
+          exon_id: "{{row.exon_id}}"
+          transcript_id: ["{{row.transcript_id}}"]
+    - reduce:
+        field: exon_id
+        method: merge
+        python: |
+          def merge(x, y):
+            x['transcript_id'] = x['transcript_id'] + y['transcript_id']
+            return x
+    - objectValidate:
+        title: exon
+        schema: "{{params.schema}}"
+    - emit:
+        name: exon
+
+  genes:
+    - from: transform
+    - filter:
+        field: type
+        match: gene
+    - project:
+        mapping:
+          gene_id: "{{row.gene_id}}"
+    - objectValidate:
+        title: gene
+        schema: "{{params.schema}}"
+    - emit:
+        name: gene
+
+  transcripts:
+    - from: transform
+    - filter:
+        field: type
+        match: mRNA
+    - regexReplace:
+        field: Parent
+        regex: "^gene:"
+        replace: ""
+        dst: gene_id
+    - project:
+        mapping:
+          transcript_id: "{{row.transcript_id}}"
+    - objectValidate:
+        title: transcript
+        schema: "{{params.schema}}"
+    - emit:
+        name: transcript

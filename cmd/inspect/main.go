@@ -53,23 +53,18 @@ var Cmd = &cobra.Command{
 		out := map[string]any{}
 
 		cf := map[string]string{}
-		for _, f := range pb.GetConfigFields() {
+		for _, f := range pb.GetRequiredParams() {
 			cf[f.Name] = f.Name //f.Type
 		}
 		out["configFields"] = cf
 
-		ins := pb.GetConfigFields()
+		ins := pb.GetRequiredParams()
 		out["config"] = ins
 
 		outputs := map[string]any{}
 
-		sinks, _ := pb.GetOutputs(task)
-		for k, v := range sinks {
-			outputs[k] = v
-		}
-
-		emitters, _ := pb.GetEmitters(task)
-		for k, v := range emitters {
+		pouts, _ := pb.GetOutputs(task)
+		for k, v := range pouts {
 			outputs[k] = v
 		}
 

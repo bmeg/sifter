@@ -23,7 +23,7 @@ The `table` loader is a good starting point because it demonstrates the typical 
 params:
   gafFile:
     type: File
-    value: ../../source/go/goa_human.gaf.gz
+    default: ../../source/go/goa_human.gaf.gz
 
 inputs:
   gafLoad:

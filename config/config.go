@@ -23,7 +23,8 @@ func (in *Param) IsFile() bool {
 }
 
 func (in *Param) IsDir() bool {
-	return strings.ToLower(in.Type) == "path"
+	t := strings.ToLower(in.Type)
+	return t == "path" || t == "dir"
 }
 
 func TrimPrefix(s string) string {
@@ -38,5 +39,6 @@ func (in *ParamRequest) IsFile() bool {
 }
 
 func (in *ParamRequest) IsDir() bool {
-	return strings.ToLower(in.Type) == "path"
+	t := strings.ToLower(in.Type)
+	return t == "path" || t == "dir"
 }

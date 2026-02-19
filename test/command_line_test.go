@@ -60,7 +60,7 @@ func TestCommandLines(t *testing.T) {
 	// read in conf, ie config.yaml in this case
 	for _, c := range conf {
 		cmd := exec.Command("../sifter", "run", c.Playbook)
-		fmt.Printf("Running: %s\n", c.Playbook)
+		t.Logf("Running: %s\n", c.Playbook)
 		err = cmd.Run()
 		if err != nil {
 			t.Errorf("Failed running %s: %s", c.Playbook, err)
@@ -68,7 +68,7 @@ func TestCommandLines(t *testing.T) {
 			for i, chk := range c.Outputs {
 				// iterate through expected output paths
 				path := filepath.Join(filepath.Dir(c.Playbook), chk)
-				fmt.Printf("Checking %s \n", path)
+				t.Logf("Checking %s \n", path)
 				if stat, err := os.Stat(path); err == nil {
 					if stat.Size() > 0 {
 						file, err := os.Open(path)

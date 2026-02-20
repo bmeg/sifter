@@ -43,7 +43,7 @@ export default function PlaybookViewer(_: PlaybookViewerProps) {
   }, [content]);
 
   return (
-    <div className="flex w-[80vw] h-[100vh] backdrop-blur-xl rounded-xl overflow-hidden shadow-2xl bg-gradient-to-br from-[#1e1e2f] to-[#2a2a3d]">
+    <div className="flex w-[100vw] h-[100vh] backdrop-blur-xl rounded-xl overflow-hidden shadow-2xl bg-gradient-to-br from-[#1e1e2f] to-[#2a2a3d]">
       {/* Sidebar */}
       <aside className="flex-none w-48 bg-white/5 p-5 overflow-y-auto">
         <h1 className="text-lg mb-4 text-[#4f9bff]">Sifter Playbooks</h1>

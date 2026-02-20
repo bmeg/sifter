@@ -8,3 +8,8 @@ export type StepCellProps = {
   index: number;
   isLast: boolean;
 };
+
+export type StepEditorProps = {
+  step: PipelineStep;
+  onChangeConfig: (nextConfig: unknown) => void;
+};

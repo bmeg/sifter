@@ -1,0 +1,66 @@
+name: sqldumpExample
+outdir: output/
+
+docs: >
+  This example demonstrates the SQL dump loader. It parses a SQL dump file
+  containing protein and mutation tables, transforms the data, and outputs
+  filtered results.
+
+params:
+  sqlDumpFile:
+    type: File
+    default: sample.sql
+
+inputs:
+  proteins:
+    sqldump:
+      path: "{{params.sqlDumpFile}}"
+      tables:
+        - proteins
+
+  mutations:
+    sqldump:
+      path: "{{params.sqlDumpFile}}"
+      tables:
+        - mutations
+
+outputs:
+  proteinOutput:
+    table:
+      from: processProteins
+      path: "proteins.tsv"
+      columns:
+        - id
+        - name
+        - length
+
+  mutationOutput:
+    table:
+      from: processMutations
+      path: "mutations.tsv"
+      columns:
+        - id
+        - protein_id
+        - position
+        - cancer_type
+
+pipelines:
+  processProteins:
+    - from: proteins
+    - project:
+        mapping:
+          id: "{{row.id}}"
+          name: "{{row.name}}"
+          length: "{{row.length}}"
+
+  processMutations:
+    - from: mutations
+    - filter:
+        field: cancer_type
+        match: "breast_cancer"
+    - project:
+        mapping:
+          id: "{{row.id}}"
+          protein_id: "{{row.protein_id}}"
+          amino_acid_from: "{{row.amino_acid_from}}"  
+          cancer_type: "{{row.cancer_type}}"

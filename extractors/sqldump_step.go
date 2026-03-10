@@ -62,14 +62,13 @@ func (ml *SQLDumpStep) Start(task task.RuntimeTask) (chan map[string]interface{}
 		tableColumns := map[string][]string{}
 		data, _ := io.ReadAll(hd)
 		parser := sqlparser.Parser{}
-		tokens := parser.NewStringTokenizer(string(data))
-		for {
-			stmt, err := sqlparser.ParseNext(tokens)
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				log.Printf("read error: %s", err)
+		stmts, err := parser.ParseMultiple(string(data))
+		if err != nil {
+			log.Printf("read error: %s", err)
+		}
+		for _, stmt := range stmts {
+			if stmt == nil {
+				continue
 			}
 			switch stmt := stmt.(type) {
 			case *sqlparser.CreateTable:
@@ -104,8 +103,6 @@ func (ml *SQLDumpStep) Start(task task.RuntimeTask) (chan map[string]interface{}
 							out <- map[string]any{"table": tableName, "data": data}
 						}
 					}
-				} else {
-					log.Printf("WARNING: Other sql.InsertValue: %s", tableName)
 				}
 			}
 		}

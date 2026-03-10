@@ -32,14 +32,22 @@ class: sifter
 name: census_2010
 
 params:
-  census: ../data/census_2010_byzip.json
-  date: "2010-01-01"
-  schema: ../covid19_datadictionary/gdcdictionary/schemas/
+  census: 
+    type: file
+    default: ../data/census_2010_byzip.json
+  date: 
+    default: "2010-01-01"
+  schema: 
+    type: path
+    default: ../covid19_datadictionary/gdcdictionary/schemas/
 
 inputs:
   censusData:
     jsonLoad:
       input: "{{params.census}}"
+
+outputs:
+
 
 pipelines:
   transform:

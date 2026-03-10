@@ -1,6 +1,7 @@
 package test
 
 import (
+	"bufio"
 	"bytes"
 	"compress/gzip"
 	"fmt"
@@ -100,4 +101,72 @@ func TestCommandLines(t *testing.T) {
 		}
 
 	}
+}
+
+// TestCaptureMode verifies that --capture-dir and --capture-limit flags create
+// NDJSON capture files and respect the record limit.
+func TestCaptureMode(t *testing.T) {
+	captureDir, err := os.MkdirTemp("", "sifter-capture-*")
+	if err != nil {
+		t.Fatalf("Failed to create temp capture dir: %s", err)
+	}
+	defer os.RemoveAll(captureDir)
+
+	playbook := "examples/gene-table/gene-table.yaml"
+	limit := 3
+
+	cmd := exec.Command("../sifter", "run",
+		"--capture-dir", captureDir,
+		"--capture-limit", fmt.Sprintf("%d", limit),
+		playbook,
+	)
+	t.Logf("Running: %s with capture-dir=%s capture-limit=%d", playbook, captureDir, limit)
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("Failed running %s: %s", playbook, err)
+	}
+
+	// Check that at least one .ndjson file was created
+	entries, err := os.ReadDir(captureDir)
+	if err != nil {
+		t.Fatalf("Failed to read capture dir: %s", err)
+	}
+	if len(entries) == 0 {
+		t.Errorf("Expected capture NDJSON files in %s, but directory is empty", captureDir)
+		return
+	}
+
+	// Verify each capture file has at most `limit` records
+	for _, entry := range entries {
+		if !strings.HasSuffix(entry.Name(), ".ndjson") {
+			continue
+		}
+		filePath := filepath.Join(captureDir, entry.Name())
+		f, err := os.Open(filePath)
+		if err != nil {
+			t.Errorf("Failed to open capture file %s: %s", filePath, err)
+			continue
+		}
+
+		lineCount := 0
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			if scanner.Text() != "" {
+				lineCount++
+			}
+		}
+		scanErr := scanner.Err()
+		f.Close()
+
+		if scanErr != nil {
+			t.Errorf("Error reading capture file %s: %s", filePath, scanErr)
+		}
+		if lineCount > limit {
+			t.Errorf("Capture file %s has %d records, expected at most %d", entry.Name(), lineCount, limit)
+		}
+		t.Logf("Capture file %s has %d records (limit=%d)", entry.Name(), lineCount, limit)
+	}
+
+	// Clean up the playbook output
+	outputDir := filepath.Join(filepath.Dir(playbook), "output")
+	os.RemoveAll(outputDir)
 }

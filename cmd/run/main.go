@@ -14,6 +14,8 @@ var outDir string = ""
 var paramsFile string = ""
 var verbose bool = false
 var cmdParams map[string]string
+var captureDir string = ""
+var captureLimit int = 10
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
@@ -46,11 +48,11 @@ var Cmd = &cobra.Command{
 				}
 				pb := playbook.Playbook{}
 				playbook.ParseBytes(yaml, "./playbook.yaml", &pb)
-				if err := Execute(pb, "./", "./", outDir, params); err != nil {
+				if err := Execute(pb, "./", "./", outDir, params, captureDir, captureLimit); err != nil {
 					return err
 				}
 			} else {
-				if err := ExecuteFile(playFile, "./", outDir, params); err != nil {
+				if err := ExecuteFile(playFile, "./", outDir, params, captureDir, captureLimit); err != nil {
 					return err
 				}
 			}
@@ -65,4 +67,7 @@ func init() {
 	flags.BoolVarP(&verbose, "verbose", "v", verbose, "Verbose logging")
 	flags.StringToStringVarP(&cmdParams, "param", "p", cmdParams, "Parameter variable")
 	flags.StringVarP(&paramsFile, "params-file", "f", paramsFile, "Parameter file")
+	flags.StringVarP(&captureDir, "capture-dir", "d", "", "Directory for capture files (default: None)")
+	flags.IntVarP(&captureLimit, "capture-limit", "l", 10, "Max records to capture per step (0 = unlimited)")
+	flags.StringVarP(&outDir, "output", "o", outDir, "Output directory for playbook results (default: current directory or value specified in playbook)")
 }

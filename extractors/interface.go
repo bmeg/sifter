@@ -44,6 +44,20 @@ func (ex *Extractor) Start(t task.RuntimeTask) (chan map[string]interface{}, err
 	return nil, fmt.Errorf(("Extractor not defined"))
 }
 
+func (ex *Extractor) GetType() reflect.Type {
+	v := reflect.ValueOf(ex).Elem()
+	for i := 0; i < v.NumField(); i++ {
+		f := v.Field(i)
+		x := f.Interface()
+		if _, ok := x.(Source); ok {
+			if !f.IsNil() {
+				return f.Type()
+			}
+		}
+	}
+	return nil
+}
+
 func (ex *Extractor) GetRequiredParams() []config.ParamRequest {
 	out := []config.ParamRequest{}
 	v := reflect.ValueOf(ex).Elem()

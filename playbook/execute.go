@@ -169,7 +169,7 @@ func (s *stepCaptureState) captureRecord(record map[string]any) {
 	}
 }
 
-func (pb *Playbook) Execute(task task.RuntimeTask, debugDir string, debugLimit int) error {
+func (pb *Playbook) Execute(task task.RuntimeTask, captureDir string, captureLimit int) error {
 	logger.Debug("Running playbook")
 	logger.Debug("Inputs", "config", task.GetConfig())
 
@@ -180,22 +180,6 @@ func (pb *Playbook) Execute(task task.RuntimeTask, debugDir string, debugLimit i
 	}
 	task.SetName(pb.Name)
 
-	outNodes := map[string]flame.Emitter[map[string]any]{}
-	inNodes := map[string]flame.Receiver[map[string]any]{}
-	outputs := map[string]OutputProcessor{}
-
-	for n, v := range pb.Inputs {
-		logger.Debug("Setting Up", "name", n)
-		s, err := v.Start(task)
-		if err == nil {
-			c := flame.AddSourceChan(wf, s)
-			outNodes[n] = c
-		} else {
-			logger.Error("Source error", "error", err)
-			return err
-		}
-	}
-
 	procs := []transform.Processor{}
 	joins := []joinStruct{}
 	captureFiles := []*os.File{} // Track all open capture files for cleanup
@@ -205,17 +189,19 @@ func (pb *Playbook) Execute(task task.RuntimeTask, debugDir string, debugLimit i
 		s = strings.ReplaceAll(s, "*", "")
 		s = strings.ReplaceAll(s, "/", "_")
 		s = strings.ReplaceAll(s, "\\", "_")
+		s = strings.ReplaceAll(s, "transform.", "")  // Remove package prefix for readability
+		s = strings.ReplaceAll(s, "extractors.", "") // Remove package prefix for readability
 		return s
 	}
 
 	// Helper function to create capture state for a step
 	createCaptureState := func(pipelineName string, stepIndex int, stepType string) *stepCaptureState {
-		if debugDir == "" {
+		if captureDir == "" {
 			return nil
 		}
 
-		filename := fmt.Sprintf("%s.step%d.%s.ndjson", pipelineName, stepIndex, sanitizeFilename(stepType))
-		filepath := filepath.Join(debugDir, filename)
+		filename := fmt.Sprintf("%s.%d.%s.ndjson", pipelineName, stepIndex, sanitizeFilename(stepType))
+		filepath := filepath.Join(captureDir, filename)
 
 		file, err := os.Create(filepath)
 		if err != nil {
@@ -231,8 +217,35 @@ func (pb *Playbook) Execute(task task.RuntimeTask, debugDir string, debugLimit i
 			stepIndex:    stepIndex,
 			stepType:     stepType,
 			count:        0,
-			limit:        debugLimit,
+			limit:        captureLimit,
 			file:         file,
+		}
+	}
+
+	outNodes := map[string]flame.Emitter[map[string]any]{}
+	inNodes := map[string]flame.Receiver[map[string]any]{}
+	outputs := map[string]OutputProcessor{}
+
+	for n, v := range pb.Inputs {
+		logger.Debug("Setting Up", "name", n)
+		s, err := v.Start(task)
+		if err == nil {
+			sourceNode := flame.AddSourceChan(wf, s)
+
+			captureState := createCaptureState(n, 0, v.GetType().String())
+			if captureState != nil {
+				captureMapper := flame.AddMapper(wf, func(record map[string]any) map[string]any {
+					captureState.captureRecord(record)
+					return record
+				})
+				captureMapper.Connect(sourceNode)
+				outNodes[n] = captureMapper
+			} else {
+				outNodes[n] = sourceNode
+			}
+		} else {
+			logger.Error("Source error", "error", err)
+			return err
 		}
 	}
 
@@ -240,6 +253,7 @@ func (pb *Playbook) Execute(task task.RuntimeTask, debugDir string, debugLimit i
 		var lastStep flame.Emitter[map[string]any]
 		var firstStep flame.Receiver[map[string]any]
 		for i, s := range v {
+
 			b, err := s.Init(task)
 			if err != nil {
 				logger.Error("Pipeline error", "name", k, "error", err)
@@ -258,8 +272,11 @@ func (pb *Playbook) Execute(task task.RuntimeTask, debugDir string, debugLimit i
 				var processFunc func(map[string]any) []map[string]any
 				if captureState != nil {
 					processFunc = func(record map[string]any) []map[string]any {
-						captureState.captureRecord(record)
-						return mProcess.Process(record)
+						out := mProcess.Process(record)
+						for _, r := range out {
+							captureState.captureRecord(r)
+						}
+						return out
 					}
 				} else {
 					processFunc = mProcess.Process
@@ -288,8 +305,9 @@ func (pb *Playbook) Execute(task task.RuntimeTask, debugDir string, debugLimit i
 				var processFunc func(map[string]any) map[string]any
 				if captureState != nil {
 					processFunc = func(record map[string]any) map[string]any {
-						captureState.captureRecord(record)
-						return mProcess.Process(record)
+						out := mProcess.Process(record)
+						captureState.captureRecord(out)
+						return out
 					}
 				} else {
 					processFunc = mProcess.Process
@@ -324,8 +342,11 @@ func (pb *Playbook) Execute(task task.RuntimeTask, debugDir string, debugLimit i
 				var processFunc func(map[string]any) []map[string]any
 				if captureState != nil {
 					processFunc = func(record map[string]any) []map[string]any {
-						captureState.captureRecord(record)
-						return mProcess.Process(record)
+						out := mProcess.Process(record)
+						for _, r := range out {
+							captureState.captureRecord(r)
+						}
+						return out
 					}
 				} else {
 					processFunc = mProcess.Process

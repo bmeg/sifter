@@ -1,6 +1,7 @@
 package run
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -41,11 +42,19 @@ func Execute(pb playbook.Playbook, baseDir string, workDir string, outDir string
 		} else if !filepath.IsAbs(debugDir) {
 			debugDir = filepath.Join(workDir, debugDir)
 		}
-		if _, err := os.Stat(debugDir); os.IsNotExist(err) {
-			if err := os.MkdirAll(debugDir, 0777); err != nil {
-				logger.Error("Failed to create debug directory", "error", err)
+		if info, err := os.Stat(debugDir); err != nil {
+			if os.IsNotExist(err) {
+				if mkErr := os.MkdirAll(debugDir, 0777); mkErr != nil {
+					logger.Error("Failed to create debug directory", "error", mkErr)
+					return mkErr
+				}
+			} else {
+				logger.Error("Failed to access debug directory", "path", debugDir, "error", err)
 				return err
 			}
+		} else if !info.IsDir() {
+			logger.Error("Debug path exists but is not a directory", "path", debugDir)
+			return fmt.Errorf("debug path %s exists but is not a directory", debugDir)
 		}
 		logger.Info("Debug capture enabled", "dir", debugDir, "limit", debugLimit)
 	}
@@ -57,6 +66,6 @@ func Execute(pb playbook.Playbook, baseDir string, workDir string, outDir string
 	logger.Debug("Running", "outDir", outDir)
 
 	t := task.NewTask(pb.Name, baseDir, workDir, outDir, nInputs)
-	err = pb.Execute(t, debugDir, debugLimit)
+	err = pb.ExecuteWithCapture(t, debugDir, debugLimit)
 	return err
 }

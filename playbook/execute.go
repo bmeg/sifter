@@ -137,14 +137,22 @@ type stepCaptureState struct {
 
 // captureRecord writes a debug record to the capture file
 func (s *stepCaptureState) captureRecord(record map[string]any) {
-	if s.limit > 0 {
+	var recordNum uint64
+
+	for {
 		currentCount := atomic.LoadUint64(&s.count)
-		if currentCount >= uint64(s.limit) {
+
+		// Enforce limit strictly under concurrency
+		if s.limit > 0 && currentCount >= uint64(s.limit) {
 			return
 		}
-	}
 
-	recordNum := atomic.AddUint64(&s.count, 1)
+		next := currentCount + 1
+		if atomic.CompareAndSwapUint64(&s.count, currentCount, next) {
+			recordNum = next
+			break
+		}
+	}
 
 	envelope := map[string]any{
 		"pipeline":   s.pipelineName,
@@ -161,15 +169,28 @@ func (s *stepCaptureState) captureRecord(record map[string]any) {
 	if s.file != nil {
 		data, err := json.Marshal(envelope)
 		if err == nil {
-			s.file.Write(data)
-			s.file.Write([]byte("\n"))
+			if _, writeErr := s.file.Write(data); writeErr != nil {
+				logger.Error("Failed to write debug record data", "error", writeErr)
+				return
+			}
+			if _, writeErr := s.file.Write([]byte("\n")); writeErr != nil {
+				logger.Error("Failed to write debug record newline", "error", writeErr)
+				return
+			}
 		} else {
 			logger.Error("Failed to marshal debug record", "error", err)
 		}
 	}
 }
 
-func (pb *Playbook) Execute(task task.RuntimeTask, captureDir string, captureLimit int) error {
+// Execute runs the playbook without debug capture.
+// This maintains the original public API signature for backward compatibility.
+func (pb *Playbook) Execute(task task.RuntimeTask) error {
+	return pb.ExecuteWithCapture(task, "", 0)
+}
+
+// ExecuteWithCapture runs the playbook with optional debug capture configuration.
+func (pb *Playbook) ExecuteWithCapture(task task.RuntimeTask, captureDir string, captureLimit int) error {
 	logger.Debug("Running playbook")
 	logger.Debug("Inputs", "config", task.GetConfig())
 
@@ -183,6 +204,13 @@ func (pb *Playbook) Execute(task task.RuntimeTask, captureDir string, captureLim
 	procs := []transform.Processor{}
 	joins := []joinStruct{}
 	captureFiles := []*os.File{} // Track all open capture files for cleanup
+	defer func() {
+		for _, f := range captureFiles {
+			if f != nil {
+				_ = f.Close()
+			}
+		}
+	}()
 
 	// Helper function to sanitize filename components
 	sanitizeFilename := func(s string) string {
@@ -194,23 +222,41 @@ func (pb *Playbook) Execute(task task.RuntimeTask, captureDir string, captureLim
 		return s
 	}
 
+	// Helper function to sanitize pipeline names used in filenames
+	sanitizePipelineName := func(s string) string {
+		// Use only the last path element to avoid directory traversal
+		s = filepath.Base(s)
+
+		// Treat empty, current-dir, parent-dir, or bare separator as invalid and use a default
+		if s == "" || s == "." || s == ".." || s == string(os.PathSeparator) {
+			s = "pipeline"
+		}
+
+		// Replace any remaining path separators with underscores
+		s = strings.ReplaceAll(s, string(os.PathSeparator), "_")
+		s = strings.ReplaceAll(s, "/", "_")
+		s = strings.ReplaceAll(s, "\\", "_")
+
+		return s
+	}
+
 	// Helper function to create capture state for a step
 	createCaptureState := func(pipelineName string, stepIndex int, stepType string) *stepCaptureState {
 		if captureDir == "" {
 			return nil
 		}
 
-		filename := fmt.Sprintf("%s.%d.%s.ndjson", pipelineName, stepIndex, sanitizeFilename(stepType))
-		filepath := filepath.Join(captureDir, filename)
+		filename := fmt.Sprintf("%s.%d.%s.ndjson", sanitizePipelineName(pipelineName), stepIndex, sanitizeFilename(stepType))
+		filePath := filepath.Join(captureDir, filename)
 
-		file, err := os.Create(filepath)
+		file, err := os.Create(filePath)
 		if err != nil {
-			logger.Error("Failed to create debug capture file", "path", filepath, "error", err)
+			logger.Error("Failed to create debug capture file", "path", filePath, "error", err)
 			return nil
 		}
 
 		captureFiles = append(captureFiles, file)
-		logger.Debug("Created debug capture file", "path", filepath)
+		logger.Debug("Created debug capture file", "path", filePath)
 
 		return &stepCaptureState{
 			pipelineName: pipelineName,
@@ -588,13 +634,6 @@ func (pb *Playbook) Execute(task task.RuntimeTask, captureDir string, captureLim
 
 	for k := range outputs {
 		outputs[k].Close()
-	}
-
-	// Close all debug capture files
-	for _, f := range captureFiles {
-		if f != nil {
-			f.Close()
-		}
 	}
 
 	task.Close()

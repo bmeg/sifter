@@ -1,9 +1,14 @@
 package playbook
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
 
 	"github.com/bmeg/flame"
 	"github.com/bmeg/sifter/logger"
@@ -119,7 +124,52 @@ type joinStruct struct {
 	proc transform.JoinProcessor
 }
 
-func (pb *Playbook) Execute(task task.RuntimeTask) error {
+// stepCaptureState tracks debug capture state for a single step
+type stepCaptureState struct {
+	pipelineName string
+	stepIndex    int
+	stepType     string
+	count        uint64
+	limit        int
+	file         *os.File
+	mu           sync.Mutex
+}
+
+// captureRecord writes a debug record to the capture file
+func (s *stepCaptureState) captureRecord(record map[string]any) {
+	if s.limit > 0 {
+		currentCount := atomic.LoadUint64(&s.count)
+		if currentCount >= uint64(s.limit) {
+			return
+		}
+	}
+
+	recordNum := atomic.AddUint64(&s.count, 1)
+
+	envelope := map[string]any{
+		"pipeline":   s.pipelineName,
+		"step_index": s.stepIndex,
+		"step_type":  s.stepType,
+		"record_num": recordNum,
+		"timestamp":  time.Now().UTC().Format(time.RFC3339),
+		"data":       record,
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.file != nil {
+		data, err := json.Marshal(envelope)
+		if err == nil {
+			s.file.Write(data)
+			s.file.Write([]byte("\n"))
+		} else {
+			logger.Error("Failed to marshal debug record", "error", err)
+		}
+	}
+}
+
+func (pb *Playbook) Execute(task task.RuntimeTask, debugDir string, debugLimit int) error {
 	logger.Debug("Running playbook")
 	logger.Debug("Inputs", "config", task.GetConfig())
 
@@ -148,6 +198,43 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 
 	procs := []transform.Processor{}
 	joins := []joinStruct{}
+	captureFiles := []*os.File{} // Track all open capture files for cleanup
+
+	// Helper function to sanitize filename components
+	sanitizeFilename := func(s string) string {
+		s = strings.ReplaceAll(s, "*", "")
+		s = strings.ReplaceAll(s, "/", "_")
+		s = strings.ReplaceAll(s, "\\", "_")
+		return s
+	}
+
+	// Helper function to create capture state for a step
+	createCaptureState := func(pipelineName string, stepIndex int, stepType string) *stepCaptureState {
+		if debugDir == "" {
+			return nil
+		}
+
+		filename := fmt.Sprintf("%s.step%d.%s.ndjson", pipelineName, stepIndex, sanitizeFilename(stepType))
+		filepath := filepath.Join(debugDir, filename)
+
+		file, err := os.Create(filepath)
+		if err != nil {
+			logger.Error("Failed to create debug capture file", "path", filepath, "error", err)
+			return nil
+		}
+
+		captureFiles = append(captureFiles, file)
+		logger.Debug("Created debug capture file", "path", filepath)
+
+		return &stepCaptureState{
+			pipelineName: pipelineName,
+			stepIndex:    stepIndex,
+			stepType:     stepType,
+			count:        0,
+			limit:        debugLimit,
+			file:         file,
+		}
+	}
 
 	for k, v := range pb.Pipelines {
 		var lastStep flame.Emitter[map[string]any]
@@ -163,7 +250,22 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 
 			if mProcess, ok := b.(transform.NodeProcessor); ok {
 				logger.Debug("PipelineSetup", "name", k, "step", i, "processor", fmt.Sprintf("%T", mProcess))
-				c := flame.AddFlatMapper(wf, mProcess.Process)
+
+				// Create capture state for this step
+				captureState := createCaptureState(k, i, fmt.Sprintf("%T", mProcess))
+
+				// Wrap the process function if capture is enabled
+				var processFunc func(map[string]any) []map[string]any
+				if captureState != nil {
+					processFunc = func(record map[string]any) []map[string]any {
+						captureState.captureRecord(record)
+						return mProcess.Process(record)
+					}
+				} else {
+					processFunc = mProcess.Process
+				}
+
+				c := flame.AddFlatMapper(wf, processFunc)
 				if lastStep != nil {
 					c.Connect(lastStep)
 				}
@@ -178,12 +280,27 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 				}
 			} else if mProcess, ok := b.(transform.MapProcessor); ok {
 				logger.Debug("Pipeline Pool", "name", k, "step", i, "processor", b)
+
+				// Create capture state for this step
+				captureState := createCaptureState(k, i, fmt.Sprintf("%T", mProcess))
+
+				// Wrap the process function if capture is enabled
+				var processFunc func(map[string]any) map[string]any
+				if captureState != nil {
+					processFunc = func(record map[string]any) map[string]any {
+						captureState.captureRecord(record)
+						return mProcess.Process(record)
+					}
+				} else {
+					processFunc = mProcess.Process
+				}
+
 				var c flame.Node[map[string]any, map[string]any]
 				if mProcess.PoolReady() {
 					logger.Debug("Starting pool worker")
-					c = flame.AddMapperPool(wf, mProcess.Process, 4) // TODO: config pool count
+					c = flame.AddMapperPool(wf, processFunc, 4) // TODO: config pool count
 				} else {
-					c = flame.AddMapper(wf, mProcess.Process)
+					c = flame.AddMapper(wf, processFunc)
 				}
 				if lastStep != nil {
 					c.Connect(lastStep)
@@ -199,12 +316,27 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 				}
 			} else if mProcess, ok := b.(transform.FlatMapProcessor); ok {
 				logger.Debug("Pipeline flatmap", "name", k, "step", i, "processor", b)
+
+				// Create capture state for this step
+				captureState := createCaptureState(k, i, fmt.Sprintf("%T", mProcess))
+
+				// Wrap the process function if capture is enabled
+				var processFunc func(map[string]any) []map[string]any
+				if captureState != nil {
+					processFunc = func(record map[string]any) []map[string]any {
+						captureState.captureRecord(record)
+						return mProcess.Process(record)
+					}
+				} else {
+					processFunc = mProcess.Process
+				}
+
 				var c flame.Node[map[string]any, map[string]any]
 				if mProcess.PoolReady() {
 					//	log.Printf("Starting pool worker")
-					c = flame.AddFlatMapperPool(wf, mProcess.Process, 4) // TODO: config pool count
+					c = flame.AddFlatMapperPool(wf, processFunc, 4) // TODO: config pool count
 				} else {
-					c = flame.AddFlatMapper(wf, mProcess.Process)
+					c = flame.AddFlatMapper(wf, processFunc)
 				}
 				if lastStep != nil {
 					c.Connect(lastStep)
@@ -220,6 +352,8 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 				}
 			} else if mProcess, ok := b.(transform.StreamProcessor); ok {
 				logger.Info("Pipeline stream %s step %d: %T", k, i, b)
+				// Note: StreamProcessor uses channels, not suitable for simple record capture
+				// Would need to wrap the entire channel processing, which is complex
 				c := flame.AddStreamer(wf, mProcess.Process)
 				if c != nil {
 					if lastStep != nil {
@@ -235,6 +369,8 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 				}
 			} else if jProcess, ok := b.(transform.JoinProcessor); ok {
 				logger.Debug("Pipeline Join Step")
+				// Note: JoinProcessor uses channels, not suitable for simple record capture
+				// Would need to wrap the entire channel processing, which is complex
 				c := flame.AddJoin(wf, jProcess.Process)
 				if c != nil {
 					if lastStep != nil {
@@ -253,9 +389,38 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 				}
 			} else if rProcess, ok := b.(transform.ReduceProcessor); ok {
 				logger.Debug("Pipeline reduce %s step %d: %T", k, i, b)
+
+				// Create capture state for this step (pre-reduce)
+				captureStateInput := createCaptureState(k, i, fmt.Sprintf("%T-input", rProcess))
+				captureStateOutput := createCaptureState(k, i, fmt.Sprintf("%T-output", rProcess))
+
 				wrap := reduceWrapper{rProcess}
-				k := flame.AddMapper(wf, wrap.addKeyValue)
-				r := flame.AddReduceKey(wf, rProcess.Reduce, rProcess.GetInit())
+
+				// Wrap addKeyValue if capturing input
+				var addKeyValueFunc func(map[string]any) flame.KeyValue[string, map[string]any]
+				if captureStateInput != nil {
+					addKeyValueFunc = func(x map[string]any) flame.KeyValue[string, map[string]any] {
+						captureStateInput.captureRecord(x)
+						return wrap.addKeyValue(x)
+					}
+				} else {
+					addKeyValueFunc = wrap.addKeyValue
+				}
+
+				// Wrap reduce function if capturing output
+				var reduceFunc func(string, map[string]any, map[string]any) map[string]any
+				if captureStateOutput != nil {
+					reduceFunc = func(key string, acc map[string]any, val map[string]any) map[string]any {
+						result := rProcess.Reduce(key, acc, val)
+						captureStateOutput.captureRecord(result)
+						return result
+					}
+				} else {
+					reduceFunc = rProcess.Reduce
+				}
+
+				k := flame.AddMapper(wf, addKeyValueFunc)
+				r := flame.AddReduceKey(wf, reduceFunc, rProcess.GetInit())
 				c := flame.AddFlatMapper(wf, wrap.removeKeyValue)
 				if lastStep != nil {
 					k.Connect(lastStep)
@@ -269,9 +434,37 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 			} else if rProcess, ok := b.(transform.AccumulateProcessor); ok {
 				logger.Debug("Pipeline accumulate %s step %d: %T", k, i, b)
 
+				// Create capture state for this step
+				captureStateInput := createCaptureState(k, i, fmt.Sprintf("%T-input", rProcess))
+				captureStateOutput := createCaptureState(k, i, fmt.Sprintf("%T-output", rProcess))
+
 				wrap := accumulateWrapper{rProcess}
-				k := flame.AddMapper(wf, wrap.addKeyValue)
-				r := flame.AddAccumulate(wf, rProcess.Accumulate)
+
+				// Wrap addKeyValue if capturing input
+				var addKeyValueFunc func(map[string]any) flame.KeyValue[string, map[string]any]
+				if captureStateInput != nil {
+					addKeyValueFunc = func(x map[string]any) flame.KeyValue[string, map[string]any] {
+						captureStateInput.captureRecord(x)
+						return wrap.addKeyValue(x)
+					}
+				} else {
+					addKeyValueFunc = wrap.addKeyValue
+				}
+
+				// Wrap accumulate function if capturing output
+				var accumulateFunc func(string, []map[string]any) map[string]any
+				if captureStateOutput != nil {
+					accumulateFunc = func(key string, vals []map[string]any) map[string]any {
+						result := rProcess.Accumulate(key, vals)
+						captureStateOutput.captureRecord(result)
+						return result
+					}
+				} else {
+					accumulateFunc = rProcess.Accumulate
+				}
+
+				k := flame.AddMapper(wf, addKeyValueFunc)
+				r := flame.AddAccumulate(wf, accumulateFunc)
 				c := flame.AddFlatMapper(wf, wrap.removeKeyValue)
 				if lastStep != nil {
 					k.Connect(lastStep)
@@ -374,6 +567,13 @@ func (pb *Playbook) Execute(task task.RuntimeTask) error {
 
 	for k := range outputs {
 		outputs[k].Close()
+	}
+
+	// Close all debug capture files
+	for _, f := range captureFiles {
+		if f != nil {
+			f.Close()
+		}
 	}
 
 	task.Close()

@@ -9,7 +9,7 @@ import (
 	"github.com/bmeg/sifter/task"
 )
 
-func ExecuteFile(playFile string, workDir string, outDir string, inputs map[string]string) error {
+func ExecuteFile(playFile string, workDir string, outDir string, inputs map[string]string, debugDir string, debugLimit int) error {
 	logger.Info("Starting", "playFile", playFile)
 	pb := playbook.Playbook{}
 	if err := playbook.ParseFile(playFile, &pb); err != nil {
@@ -19,10 +19,10 @@ func ExecuteFile(playFile string, workDir string, outDir string, inputs map[stri
 	a, _ := filepath.Abs(playFile)
 	baseDir := filepath.Dir(a)
 	logger.Debug("parsed file", "baseDir", baseDir, "playbook", pb)
-	return Execute(pb, baseDir, workDir, outDir, inputs)
+	return Execute(pb, baseDir, workDir, outDir, inputs, debugDir, debugLimit)
 }
 
-func Execute(pb playbook.Playbook, baseDir string, workDir string, outDir string, params map[string]string) error {
+func Execute(pb playbook.Playbook, baseDir string, workDir string, outDir string, params map[string]string, debugDir string, debugLimit int) error {
 
 	if outDir == "" {
 		outDir = pb.GetDefaultOutDir()
@@ -32,6 +32,24 @@ func Execute(pb playbook.Playbook, baseDir string, workDir string, outDir string
 		os.MkdirAll(outDir, 0777)
 	}
 
+	// Setup debug capture directory if enabled
+	// Enable if: user explicitly set dir, OR user changed limit from default
+	enableDebug := debugDir != "" || (debugLimit != 10)
+	if enableDebug {
+		if debugDir == "" {
+			debugDir = filepath.Join(workDir, "debug-capture")
+		} else if !filepath.IsAbs(debugDir) {
+			debugDir = filepath.Join(workDir, debugDir)
+		}
+		if _, err := os.Stat(debugDir); os.IsNotExist(err) {
+			if err := os.MkdirAll(debugDir, 0777); err != nil {
+				logger.Error("Failed to create debug directory", "error", err)
+				return err
+			}
+		}
+		logger.Info("Debug capture enabled", "dir", debugDir, "limit", debugLimit)
+	}
+
 	nInputs, err := pb.PrepConfig(params, workDir)
 	if err != nil {
 		return err
@@ -39,6 +57,6 @@ func Execute(pb playbook.Playbook, baseDir string, workDir string, outDir string
 	logger.Debug("Running", "outDir", outDir)
 
 	t := task.NewTask(pb.Name, baseDir, workDir, outDir, nInputs)
-	err = pb.Execute(t)
+	err = pb.Execute(t, debugDir, debugLimit)
 	return err
 }

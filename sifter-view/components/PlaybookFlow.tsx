@@ -21,7 +21,7 @@ import "@xyflow/react/dist/style.css";
 
 import dagre from 'dagre';
 import type { Node, Edge } from '@xyflow/react';
-import { getPlaybook, type Playbook } from '@/lib/playbookApi';
+import { getFiles, getPlaybook, type Playbook, type PlaybookFileNode } from '@/lib/playbookApi';
 import { getStepCellComponent, STEP_OPERATIONS } from './playbook-steps/registry';
 import PlaybookInspectorPanel from './PlaybookInspectorPanel';
 import type { PipelineStep } from './playbook-steps/types';
@@ -98,7 +98,11 @@ function getOutputSourcePipeline(outputDefinition: Record<string, any>): string 
   return undefined;
 }
 
-function buildGraph(pb: Playbook): { nodes: Node[]; edges: Edge[] } {
+function buildGraph(pb: Playbook | null): { nodes: Node[]; edges: Edge[] } {
+  if (!pb || !pb.inputs || !pb.pipelines) {
+    return { nodes: [], edges: [] };
+  }
+
   // Create a directed Dagre graph
   const g = new dagre.graphlib.Graph({ directed: true });
   g.setGraph({ rankdir: 'LR', nodesep: 60, ranksep: 100 });
@@ -160,7 +164,7 @@ function buildGraph(pb: Playbook): { nodes: Node[]; edges: Edge[] } {
 
   if (pb.outputs) {
     Object.entries(pb.outputs).forEach(([outputName, outputDefinition]) => {
-      const sourcePipeline = getOutputSourcePipeline(outputDefinition);
+      const sourcePipeline = getOutputSourcePipeline(outputDefinition as Record<string, any>);
       if (sourcePipeline && pb.pipelines?.[sourcePipeline]) {
         g.setEdge(sourcePipeline, `output-${outputName}`);
       }
@@ -222,6 +226,24 @@ function buildGraph(pb: Playbook): { nodes: Node[]; edges: Edge[] } {
   return { nodes, edges };
 }
 
+function findFirstYamlFile(nodes: PlaybookFileNode[]): string | null {
+  for (const node of nodes) {
+    if (node.isDir && node.children) {
+      const childMatch = findFirstYamlFile(node.children);
+      if (childMatch) {
+        return childMatch;
+      }
+      continue;
+    }
+
+    if (/\.ya?ml$/i.test(node.path)) {
+      return node.path;
+    }
+  }
+
+  return null;
+}
+
 // -------------------------------------------------------------------
 // React component – PlaybookFlow
 // -------------------------------------------------------------------
@@ -269,7 +291,13 @@ export default function PlaybookFlow() {
       try {
         setLoadError(null);
         setIsLoading(true);
-        const loadedPlaybook = await getPlaybook();
+        const files = await getFiles();
+        const playbookPath = findFirstYamlFile(files);
+        if (!playbookPath) {
+          throw new Error('No YAML playbook files found');
+        }
+
+        const loadedPlaybook = await getPlaybook(playbookPath);
         if (!isMounted) {
           return;
         }

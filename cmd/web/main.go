@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"sigs.k8s.io/yaml"
@@ -21,6 +22,7 @@ var staticFS embed.FS
 
 var playbookDir string
 var siteDir string
+var port string = "8081"
 
 // Cmd is the declaration of the command line
 var Cmd = &cobra.Command{
@@ -47,10 +49,9 @@ var Cmd = &cobra.Command{
 
 		// API endpoints
 		ph := playbookHandler{playbookDir}
-		http.HandleFunc("/api/playbooks", ph.listPlaybooksHandler)
+		http.HandleFunc("/api/files", ph.listFilesHandler)
 		http.HandleFunc("/api/playbook", ph.getPlaybookHandler)
 
-		port := "8081"
 		fmt.Printf("Server listening on http://localhost:%s\n", port)
 		log.Fatal(http.ListenAndServe(":"+port, nil))
 
@@ -62,24 +63,64 @@ type playbookHandler struct {
 	baseDir string
 }
 
-func (ph *playbookHandler) listPlaybooksHandler(w http.ResponseWriter, r *http.Request) {
-	entries, err := os.ReadDir(ph.baseDir)
+type fileTreeNode struct {
+	Name     string         `json:"name"`
+	Path     string         `json:"path"`
+	IsDir    bool           `json:"isDir"`
+	Children []fileTreeNode `json:"children,omitempty"`
+}
+
+func buildFileTree(absDir string, relativeDir string) ([]fileTreeNode, error) {
+	entries, err := os.ReadDir(absDir)
+	if err != nil {
+		return nil, err
+	}
+
+	sort.Slice(entries, func(i, j int) bool {
+		if entries[i].IsDir() != entries[j].IsDir() {
+			return entries[i].IsDir()
+		}
+		return entries[i].Name() < entries[j].Name()
+	})
+
+	nodes := make([]fileTreeNode, 0, len(entries))
+	for _, entry := range entries {
+		entryRelPath := filepath.Join(relativeDir, entry.Name())
+		node := fileTreeNode{
+			Name:  entry.Name(),
+			Path:  filepath.ToSlash(entryRelPath),
+			IsDir: entry.IsDir(),
+		}
+
+		if entry.IsDir() {
+			children, err := buildFileTree(filepath.Join(absDir, entry.Name()), entryRelPath)
+			if err != nil {
+				return nil, err
+			}
+			node.Children = children
+		}
+
+		nodes = append(nodes, node)
+	}
+
+	return nodes, nil
+}
+
+func (ph *playbookHandler) listFilesHandler(w http.ResponseWriter, r *http.Request) {
+	basePath, err := filepath.Abs(ph.baseDir)
+	if err != nil {
+		http.Error(w, "failed to resolve playbook directory", http.StatusInternalServerError)
+		return
+	}
+
+	entries, err := buildFileTree(basePath, "")
+
 	if err != nil {
 		http.Error(w, "failed to read playbook directory", http.StatusInternalServerError)
 		return
 	}
-	var names []string
-	for _, e := range entries {
-		if e.IsDir() {
-			continue
-		}
-		// Only include yaml files
-		if strings.HasSuffix(e.Name(), ".yaml") || strings.HasSuffix(e.Name(), ".yml") {
-			names = append(names, e.Name())
-		}
-	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(names)
+	json.NewEncoder(w).Encode(entries)
 }
 
 func (ph *playbookHandler) getPlaybookHandler(w http.ResponseWriter, r *http.Request) {
@@ -88,12 +129,33 @@ func (ph *playbookHandler) getPlaybookHandler(w http.ResponseWriter, r *http.Req
 		http.Error(w, "missing name parameter", http.StatusBadRequest)
 		return
 	}
-	// Prevent directory traversal
-	if strings.Contains(name, "..") || strings.ContainsAny(name, "/\\") {
+
+	// Allow nested relative paths while preventing traversal and absolute paths.
+	cleanName := filepath.Clean(name)
+	if cleanName == "." || strings.HasPrefix(cleanName, "..") || filepath.IsAbs(cleanName) {
 		http.Error(w, "invalid playbook name", http.StatusBadRequest)
 		return
 	}
-	path := filepath.Join(ph.baseDir, name)
+
+	baseAbsPath, err := filepath.Abs(ph.baseDir)
+	if err != nil {
+		http.Error(w, "failed to resolve playbook directory", http.StatusInternalServerError)
+		return
+	}
+
+	path := filepath.Join(ph.baseDir, cleanName)
+	targetAbsPath, err := filepath.Abs(path)
+	if err != nil {
+		http.Error(w, "invalid playbook path", http.StatusBadRequest)
+		return
+	}
+
+	basePrefix := baseAbsPath + string(os.PathSeparator)
+	if targetAbsPath != baseAbsPath && !strings.HasPrefix(targetAbsPath, basePrefix) {
+		http.Error(w, "invalid playbook name", http.StatusBadRequest)
+		return
+	}
+
 	content, err := os.ReadFile(path)
 	if err != nil {
 		http.Error(w, "playbook not found", http.StatusNotFound)
@@ -117,4 +179,5 @@ func (ph *playbookHandler) getPlaybookHandler(w http.ResponseWriter, r *http.Req
 func init() {
 	flags := Cmd.Flags()
 	flags.StringVarP(&siteDir, "site-dir", "s", siteDir, "Serve Custom site dir")
+	flags.StringVarP(&port, "port", "p", port, "Port to listen on")
 }

@@ -18,10 +18,9 @@ name: census_2010
 
 params:
   census: 
-    type: File
+    type: file
     default: ../data/census_2010_byzip.json
   date: 
-    type: string
     default: "2010-01-01"
   schema: 
     type: path
@@ -36,6 +35,9 @@ outputs:
   validated:
     json:
       path: census_data.ndjson
+
+outputs:
+
 
 pipelines:
   transform:

@@ -6,9 +6,8 @@ inputs:
     type: File
     default: test.xml
 
-steps:
-  - xmlLoad:
-      input: "{{inputs.xml}}"
-      transform:
-        - emit:
-            name: output
+outputs:
+  jsonXml:
+    json:
+      from: xml
+
